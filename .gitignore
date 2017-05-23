@@ -1,0 +1,9 @@
+
+*.pyc
+*.root
+*.o
+*.log
+*.un~
+*.txt
+
+*FileDump.py
