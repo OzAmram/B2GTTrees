@@ -22,8 +22,8 @@ git cms-merge-topic -u cms-btv-pog:BoostedDoubleSVTaggerV4-WithWeightFiles-v1_fr
 git cms-merge-topic cms-met:METRecipe_8020
 git cms-merge-topic ikrav:egm_id_80X_v3_photons
 git clone https://github.com/cms-jet/JetToolbox.git JMEAnalysis/JetToolbox -b jetToolbox_80X_V3
-git clone https://github.com/jkarancs/B2GAnaFW.git  Analysis/B2GAnaFW -b v8.0.x_v3.1_May10
-git clone https://github.com/jkarancs/B2GTTrees.git Analysis/B2GTTrees -b v8.0.x_v3.1_May10
+git clone https://github.com/jkarancs/B2GAnaFW.git  Analysis/B2GAnaFW -b v8.0.x_v3.1
+git clone https://github.com/ozamram/B2GTTrees.git Analysis/B2GTTrees -b v8.0.x_v3.1_May09
 scram b -j 20
 ```
 
