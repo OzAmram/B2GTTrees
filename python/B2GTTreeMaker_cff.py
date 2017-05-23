@@ -6,7 +6,7 @@ import os
 # Set to false, and define your own lists (eg. comment out unused vairables)
 getVariablesFromConfig = False
 
-from Analysis.B2GAnaFW.b2gedmntuples_cff import puppimetFull, metFull, metFullClean, genPart, electrons, muons, photons, photonjets, jetsAK4CHS, jetsAK4Puppi, jetsAK8CHS, subjetsAK8CHS, jetsAK8Puppi, subjetsAK8Puppi, genJetsAK8, genJetsAK8SoftDrop, eventInfo # metNoHF, subjetsCmsTopTag off since 76X
+from Analysis.B2GAnaFW.b2gedmntuples_cff import puppimetFull, metFull, genPart, electrons, muons, photons, photonjets, jetsAK4CHS, jetsAK4Puppi, jetsAK8CHS, subjetsAK8CHS, jetsAK8Puppi, subjetsAK8Puppi, genJetsAK8, genJetsAK8SoftDrop, eventInfo,  metFullClean #, metNoHF, subjetsCmsTopTag off since 76X
 
 if getVariablesFromConfig:
     
@@ -20,10 +20,10 @@ if getVariablesFromConfig:
         s = str(pset.tag).replace("cms.untracked.string('","").replace("')","")
         metFull_var.append(s)
 
-    metFullClean_var = cms.untracked.vstring()
-    for pset in metFullClean.variables:
-        s = str(pset.tag).replace("cms.untracked.string('","").replace("')","")
-        metFullClean_var.append(s)
+    #metFullClean_var = cms.untracked.vstring()
+    #for pset in metFullClean.variables:
+    #    s = str(pset.tag).replace("cms.untracked.string('","").replace("')","")
+    #    metFullClean_var.append(s)
 
     puppimetFull_var = cms.untracked.vstring()
     for pset in puppimetFull.variables:
@@ -65,40 +65,40 @@ if getVariablesFromConfig:
         s = str(pset.tag).replace("cms.untracked.string('","").replace("')","")
         jetsAK4Puppi_var.append(s)
     
-    jetsAK8CHS_var = cms.untracked.vstring()
-    for pset in jetsAK8CHS.variables:
-        s = str(pset.tag).replace("cms.untracked.string('","").replace("')","")
-        jetsAK8CHS_var.append(s)
-    
-    jetsAK8Puppi_var = cms.untracked.vstring()
-    for pset in jetsAK8Puppi.variables:
-        s = str(pset.tag).replace("cms.untracked.string('","").replace("')","")
-        jetsAK8Puppi_var.append(s)
-    
-    subjetsAK8CHS_var = cms.untracked.vstring()
-    for pset in subjetsAK8CHS.variables:
-        s = str(pset.tag).replace("cms.untracked.string('","").replace("')","")
-        subjetsAK8CHS_var.append(s)
-    
-    subjetsAK8Puppi_var = cms.untracked.vstring()
-    for pset in subjetsAK8Puppi.variables:
-        s = str(pset.tag).replace("cms.untracked.string('","").replace("')","")
-        subjetsAK8Puppi_var.append(s)
-    
+    #jetsAK8CHS_var = cms.untracked.vstring()
+    #for pset in jetsAK8CHS.variables:
+    #    s = str(pset.tag).replace("cms.untracked.string('","").replace("')","")
+    #    jetsAK8CHS_var.append(s)
+    #
+    #jetsAK8Puppi_var = cms.untracked.vstring()
+    #for pset in jetsAK8Puppi.variables:
+    #    s = str(pset.tag).replace("cms.untracked.string('","").replace("')","")
+    #    jetsAK8Puppi_var.append(s)
+    #
+    #subjetsAK8CHS_var = cms.untracked.vstring()
+    #for pset in subjetsAK8CHS.variables:
+    #    s = str(pset.tag).replace("cms.untracked.string('","").replace("')","")
+    #    subjetsAK8CHS_var.append(s)
+    #
+    #subjetsAK8Puppi_var = cms.untracked.vstring()
+    #for pset in subjetsAK8Puppi.variables:
+    #    s = str(pset.tag).replace("cms.untracked.string('","").replace("')","")
+    #    subjetsAK8Puppi_var.append(s)
+    #
     #subjetsCmsTopTag_var = cms.untracked.vstring()
     #for pset in subjetsCmsTopTag.variables:
     #    s = str(pset.tag).replace("cms.untracked.string('","").replace("')","")
     #    subjetsCmsTopTag_var.append(s)
     
-    genJetsAK8_var = cms.untracked.vstring()
-    for pset in genJetsAK8.variables:
-        s = str(pset.tag).replace("cms.untracked.string('","").replace("')","")
-        genJetsAK8_var.append(s)
-    
-    genJetsAK8SoftDrop_var = cms.untracked.vstring()
-    for pset in genJetsAK8SoftDrop.variables:
-        s = str(pset.tag).replace("cms.untracked.string('","").replace("')","")
-        genJetsAK8SoftDrop_var.append(s)
+    #genJetsAK8_var = cms.untracked.vstring()
+    #for pset in genJetsAK8.variables:
+    #    s = str(pset.tag).replace("cms.untracked.string('","").replace("')","")
+    #    genJetsAK8_var.append(s)
+    #
+    #genJetsAK8SoftDrop_var = cms.untracked.vstring()
+    #for pset in genJetsAK8SoftDrop.variables:
+    #    s = str(pset.tag).replace("cms.untracked.string('","").replace("')","")
+    #    genJetsAK8SoftDrop_var.append(s)
 else:
     # Currrent B2GAnaFW ver: v8.0.x_v3.1
     metNoHF_var = cms.untracked.vstring(
@@ -140,26 +140,26 @@ else:
         'Iso03',
         'Iso03db',
         'MiniIso',
-        #'rho',
-        #'EA',
-        #'sumChargedHadronPt',
-        #'sumNeutralHadronEt',
-        #'sumPhotonEt',
-        #'sumPUPt',
+        'rho',
+        'EA',
+        'sumChargedHadronPt',
+        'sumNeutralHadronEt',
+        'sumPhotonEt',
+        'sumPUPt',
         'Dxy',
         'Dz',
         'DB',
         'DBerr',
-        #'dEtaIn',
-        #'dEtaInSeed',
-        #'dPhiIn',
-        #'HoE',
-        #'full5x5siee',
-        #'ooEmooP',
-        #'missHits',
-        #'hasMatchedConVeto',
+        'dEtaIn',
+        'dEtaInSeed',
+        'dPhiIn',
+        'HoE',
+        'full5x5siee',
+        'ooEmooP',
+        'missHits',
+        'hasMatchedConVeto',
         'SCEta',
-        #'SCPhi',
+        'SCPhi',
         'vidVeto',
         'vidLoose',
         'vidMedium',
@@ -190,74 +190,74 @@ else:
         'IsMediumMuon2016',
         'IsTightMuon',
         'IsHighPtMuon',
-        #'InnerTrackPt',
-        #'TunePMuonBestTrackPt',
-        #'IsPFMuon',
-        #'IsGlobalMuon',
-        #'IsTrackerMuon',
-        #'CombQualChi2LocalPos',
-        #'CombQualTrkKink',
-        #'InTrkValidFraction',
-        #'SegmentCompatibility',
-        #'GlbTrkNormChi2',
-        #'NumberValidMuonHits',
-        #'NumberMatchedStations',
-        #'NumberValidPixelHits',
-        #'NumberTrackerLayers',
-        #'NumberOfValidTrackerHits',
-        #'NumberOfPixelLayers',
-        #'InTrkNormChi2',
-        #'SumChargedHadronPt',
-        #'SumNeutralHadronPt',
-        #'SumPhotonPt',
-        #'SumPUPt',
-        #'TrackerSumPt',
-        #'GenMuonEta',
-        #'GenMuonPhi',
-        #'GenMuonPt',
-        #'GenMuonE',
-        #'GenMuonCharge',
+        'InnerTrackPt',
+        'TunePMuonBestTrackPt',
+        'IsPFMuon',
+        'IsGlobalMuon',
+        'IsTrackerMuon',
+        'CombQualChi2LocalPos',
+        'CombQualTrkKink',
+        'InTrkValidFraction',
+        'SegmentCompatibility',
+        'GlbTrkNormChi2',
+        'NumberValidMuonHits',
+        'NumberMatchedStations',
+        'NumberValidPixelHits',
+        'NumberTrackerLayers',
+        'NumberOfValidTrackerHits',
+        'NumberOfPixelLayers',
+        'InTrkNormChi2',
+        'SumChargedHadronPt',
+        'SumNeutralHadronPt',
+        'SumPhotonPt',
+        'SumPUPt',
+        'TrackerSumPt',
+        'GenMuonEta',
+        'GenMuonPhi',
+        'GenMuonPt',
+        'GenMuonE',
+        'GenMuonCharge',
     )
     
     photonVars = cms.untracked.vstring(
-        'SCEta',
-        'SCPhi',
-        'SCRawE',
-        'HasPixelSeed',
-        'ElectronVeto',
-        'SigmaIEtaIEta',
-        'SigmaIEtaIPhi',
-        'SigmaIPhiIPhi',
-        'E1x5',
-        'E5x5',
-        'HoverE',
-        'R9',
-        'ChargedHadronIso',
-        'PhotonIso',
-        'NeutralHadronIso',
-        'PhotonIsoEAcorrectedsp15',
-        'NeutralHadronIsoEAcorrectedsp15',
-        'PassLooseID',
-        'PassMediumID',
-        'PassTightID',
+        #'SCEta',
+        #'SCPhi',
+        #'SCRawE',
+        #'HasPixelSeed',
+        #'ElectronVeto',
+        #'SigmaIEtaIEta',
+        #'SigmaIEtaIPhi',
+        #'SigmaIPhiIPhi',
+        #'E1x5',
+        #'E5x5',
+        #'HoverE',
+        #'R9',
+        #'ChargedHadronIso',
+        #'PhotonIso',
+        #'NeutralHadronIso',
+        #'PhotonIsoEAcorrectedsp15',
+        #'NeutralHadronIsoEAcorrectedsp15',
+        #'PassLooseID',
+        #'PassMediumID',
+        #'PassTightID',
     )
     
     photonjetVars = cms.untracked.vstring(
-        'PhotonIndex',
-        'SubwGammatIndex',
-        'PhotonSubjetFrac',
-        'SubjetPt0',
-        'SubjetPt1',
-        'SubjetPt2',
-        'SubjetEta0',
-        'SubjetEta1',
-        'SubjetEta2',
-        'SubjetPhi0',
-        'SubjetPhi1',
-        'SubjetPhi2',
-        'SubjetEne0',
-        'SubjetEne1',
-        'SubjetEne2',
+        #'PhotonIndex',
+        #'SubwGammatIndex',
+        #'PhotonSubjetFrac',
+        #'SubjetPt0',
+        #'SubjetPt1',
+        #'SubjetPt2',
+        #'SubjetEta0',
+        #'SubjetEta1',
+        #'SubjetEta2',
+        #'SubjetPhi0',
+        #'SubjetPhi1',
+        #'SubjetPhi2',
+        #'SubjetEne0',
+        #'SubjetEne1',
+        #'SubjetEne2',
     )
     
     jetVars = cms.untracked.vstring(
@@ -320,12 +320,12 @@ else:
     )
     
     jetAK8Vars = cms.untracked.vstring(
-        'vSubjetIndex0',
-        'vSubjetIndex1',
-        'tau1',
-        'tau2',
-        'tau3',
-        'softDropMass',
+        #'vSubjetIndex0',
+        #'vSubjetIndex1',
+        #'tau1',
+        #'tau2',
+        #'tau3',
+        #'softDropMass',
         #'trimmedMass',
         #'prunedMass',
         #'filteredMass',
@@ -334,38 +334,38 @@ else:
     jetToolboxAK8Vars = cms.untracked.vstring(
         #'DoubleBAK8',
         #'DoubleBCA15',
-        'vSubjetIndex0',
-        'vSubjetIndex1',
-        #'vSubjetPuppiIndex0',
-        #'vSubjetPuppiIndex1',
-        'tau1CHS',
-        'tau2CHS',
-        'tau3CHS',
-        'softDropMassCHS',
+        #'vSubjetIndex0',
+        #'vSubjetIndex1',
+        ##'vSubjetPuppiIndex0',
+        ##'vSubjetPuppiIndex1',
+        #'tau1CHS',
+        #'tau2CHS',
+        #'tau3CHS',
+        #'softDropMassCHS',
         #'trimmedMassCHS',
         #'prunedMassCHS',
         #'filteredMassCHS',
-        'softDropMassPuppi',
-        "PtPuppi",
-        "EtaPuppi",
-        "PhiPuppi",
-        "MassPuppi",
-        'tau1Puppi',
-        'tau2Puppi',
-        'tau3Puppi',
-        'uncorrSDMassPuppi',
-        'corrSDMassPuppi',
+        #'softDropMassPuppi',
+        #"PtPuppi",
+        #"EtaPuppi",
+        #"PhiPuppi",
+        #"MassPuppi",
+        #'tau1Puppi',
+        #'tau2Puppi',
+        #'tau3Puppi',
+        #'uncorrSDMassPuppi',
+        #'corrSDMassPuppi',
     )
     
     jetToolboxAK8PuppiVars = cms.untracked.vstring(
-        'DoubleBAK8',
-        'DoubleBCA15',
-        'vSubjetIndex0',
-        'vSubjetIndex1',
-        'tau1',
-        'tau2',
-        'tau3',
-        'softDropMass',
+        #'DoubleBAK8',
+        #'DoubleBCA15',
+        #'vSubjetIndex0',
+        #'vSubjetIndex1',
+        #'tau1',
+        #'tau2',
+        #'tau3',
+        #'softDropMass',
         #'trimmedMass',
         #'prunedMass',
         #'filteredMass',
@@ -403,29 +403,29 @@ else:
     jetsAK4Puppi_var   += jetVars
     jetsAK4Puppi_var   += jetVarsForSys
     
-    jetsAK8CHS_var      = copy.deepcopy(basicVars)
-    jetsAK8CHS_var     += jetVars
-    jetsAK8CHS_var     += jetVarsForSys
-    jetsAK8CHS_var     += jetToolboxAK8Vars
-    #jetsAK8CHS_var     += photonjetVars
-    
-    jetsAK8Puppi_var    = copy.deepcopy(basicVars)
-    jetsAK8Puppi_var   += jetVars
-    jetsAK8Puppi_var   += jetVarsForSys
-    jetsAK8Puppi_var   += jetToolboxAK8PuppiVars
-    
-    subjetsAK8CHS_var   = copy.deepcopy(basicVars)
-    subjetsAK8CHS_var  += jetVars
-    subjetsAK8CHS_var  += jetToolboxAK8SubjetVars
-    
-    subjetsAK8Puppi_var = copy.deepcopy(subjetsAK8CHS_var)
-    
-    #subjetsCmsTopTag_var  = copy.deepcopy(basicVars)
-    #subjetsCmsTopTag_var += jetVars
-    
-    genJetsAK8_var = copy.deepcopy(basicVars)
-    
-    genJetsAK8SoftDrop_var = copy.deepcopy(basicVars)
+    #jetsAK8CHS_var      = copy.deepcopy(basicVars)
+    #jetsAK8CHS_var     += jetVars
+    #jetsAK8CHS_var     += jetVarsForSys
+    #jetsAK8CHS_var     += jetToolboxAK8Vars
+    ##jetsAK8CHS_var     += photonjetVars
+    #
+    #jetsAK8Puppi_var    = copy.deepcopy(basicVars)
+    #jetsAK8Puppi_var   += jetVars
+    #jetsAK8Puppi_var   += jetVarsForSys
+    #jetsAK8Puppi_var   += jetToolboxAK8PuppiVars
+    #
+    #subjetsAK8CHS_var   = copy.deepcopy(basicVars)
+    #subjetsAK8CHS_var  += jetVars
+    #subjetsAK8CHS_var  += jetToolboxAK8SubjetVars
+    #
+    #subjetsAK8Puppi_var = copy.deepcopy(subjetsAK8CHS_var)
+    #
+    ##subjetsCmsTopTag_var  = copy.deepcopy(basicVars)
+    ##subjetsCmsTopTag_var += jetVars
+    #
+    #genJetsAK8_var = copy.deepcopy(basicVars)
+    #
+    #genJetsAK8SoftDrop_var = copy.deepcopy(basicVars)
 
 B2GTTreeMaker = cms.EDAnalyzer("B2GTTreeMaker",
     isData = cms.untracked.bool(False),
@@ -512,14 +512,14 @@ B2GTTreeMaker = cms.EDAnalyzer("B2GTTreeMaker",
             prefix_out = cms.untracked.string("puppimet_"),
             vectorF = puppimetFull_var,
         ),
-        # GenParticles
-        #cms.PSet(
-        #    label = cms.untracked.string("genPart"),
-        #    prefix_in = genPart.prefix,
-        #    prefix_out = cms.untracked.string("gen_"),
-        #    vectorF = genPart_var,
-        #    mc_only = cms.untracked.bool(True),
-        #),
+         #GenParticles
+        cms.PSet(
+            label = cms.untracked.string("genPart"),
+            prefix_in = genPart.prefix,
+            prefix_out = cms.untracked.string("gen_"),
+            vectorF = genPart_var,
+            mc_only = cms.untracked.bool(True),
+        ),
         # Electrons
         cms.PSet(
             label = cms.untracked.string("electrons"),
@@ -548,7 +548,7 @@ B2GTTreeMaker = cms.EDAnalyzer("B2GTTreeMaker",
         #    prefix_out = cms.untracked.string("phojet_"),
         #    vectorF = photonjets_var,
         #),
-        # AK4 Jets
+        #AK4 Jets
         cms.PSet(
             label = cms.untracked.string("jetsAK4CHS"),
             key_label = cms.untracked.string("jetKeysAK4CHS"),
@@ -557,21 +557,21 @@ B2GTTreeMaker = cms.EDAnalyzer("B2GTTreeMaker",
             vectorF = jetsAK4CHS_var,
         ),
         # AK4 Puppi Jets
-        #cms.PSet(
-        #    label = cms.untracked.string("jetsAK4Puppi"),
-        #    key_label = cms.untracked.string("jetKeysAK4Puppi"),
-        #    prefix_in = jetsAK4Puppi.prefix,
-        #    prefix_out = cms.untracked.string("jetAK4Puppi_"),
-        #    vectorF = jetsAK4Puppi_var,
-        #),
-        # AK8 CHS Jets
         cms.PSet(
-            label = cms.untracked.string("jetsAK8CHS"),
-            key_label = cms.untracked.string("jetKeysAK8CHS"),
-            prefix_in = jetsAK8CHS.prefix,
-            prefix_out = cms.untracked.string("jetAK8CHS_"),
-            vectorF = jetsAK8CHS_var,
+            label = cms.untracked.string("jetsAK4Puppi"),
+            key_label = cms.untracked.string("jetKeysAK4Puppi"),
+            prefix_in = jetsAK4Puppi.prefix,
+            prefix_out = cms.untracked.string("jetAK4Puppi_"),
+            vectorF = jetsAK4Puppi_var,
         ),
+        # AK8 CHS Jets
+        #cms.PSet(
+        #    label = cms.untracked.string("jetsAK8CHS"),
+        #    key_label = cms.untracked.string("jetKeysAK8CHS"),
+        #    prefix_in = jetsAK8CHS.prefix,
+        #    prefix_out = cms.untracked.string("jetAK8CHS_"),
+        #    vectorF = jetsAK8CHS_var,
+        #),
         # AK8 Puppi Jets
         #cms.PSet(
         #    label = cms.untracked.string("jetsAK8Puppi"),
@@ -581,13 +581,13 @@ B2GTTreeMaker = cms.EDAnalyzer("B2GTTreeMaker",
         #    vectorF = jetsAK8Puppi_var,
         #),
         # Subjets of AK8 Jets
-        cms.PSet(
-            label = cms.untracked.string("subjetsAK8CHS"),
-            key_label = cms.untracked.string("subjetKeysAK8CHS"),
-            prefix_in = subjetsAK8CHS.prefix,
-            prefix_out = cms.untracked.string("subjetAK8CHS_"),
-            vectorF = subjetsAK8CHS_var,
-        ),
+        #cms.PSet(
+        #    label = cms.untracked.string("subjetsAK8CHS"),
+        #    key_label = cms.untracked.string("subjetKeysAK8CHS"),
+        #    prefix_in = subjetsAK8CHS.prefix,
+        #    prefix_out = cms.untracked.string("subjetAK8CHS_"),
+        #    vectorF = subjetsAK8CHS_var,
+        #),
         # Subjets of AK8 Puppi Jets
         #cms.PSet(
         #    label = cms.untracked.string("subjetsAK8Puppi"),
@@ -613,12 +613,12 @@ B2GTTreeMaker = cms.EDAnalyzer("B2GTTreeMaker",
         #    mc_only = cms.untracked.bool(True),
         #),
         # AK8 Gen jets (with SoftDrop grooming)
-        cms.PSet(
-            label = cms.untracked.string("genJetsAK8SoftDrop"),
-            prefix_in = genJetsAK8SoftDrop.prefix,
-            prefix_out = cms.untracked.string("genjetAK8SD_"),
-            vectorF = genJetsAK8SoftDrop_var,
-            mc_only = cms.untracked.bool(True),
-        ),
+        #cms.PSet(
+        #    label = cms.untracked.string("genJetsAK8SoftDrop"),
+        #    prefix_in = genJetsAK8SoftDrop.prefix,
+        #    prefix_out = cms.untracked.string("genjetAK8SD_"),
+        #    vectorF = genJetsAK8SoftDrop_var,
+        #    mc_only = cms.untracked.bool(True),
+        #),
     )
 )
