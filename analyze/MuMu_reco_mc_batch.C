@@ -5,6 +5,7 @@
 #include <cstring>
 #include <algorithm>
 #include "TFile.h"
+#include "ScaleFactors.C"
 
 #define GEN_SIZE 300
 #define MU_SIZE 100
@@ -16,12 +17,14 @@ double Ebeam = 6500.;
 double Pbeam = sqrt(Ebeam*Ebeam - 0.938*0.938);
 
 char *filename("mc_files_may9.txt");
-const TString fout_name("output_files/DYToLL_mc_2016_may9.root");
+const TString fout_name("output_files/DYToLL_mc_2016_may24.root");
 const double alpha = 0.05;
 const bool PRINT=false;
 const bool MUON_SELECTION_CHECK = false;
 
 const bool data_2016 = true;
+
+
 
 
 bool is_empty_line(const char *s) {
@@ -97,11 +100,17 @@ void MuMu_reco_mc_batch()
     compute_norms(norms, &nFiles);
     printf("Done with normalizations \n\n\n");
 
+    SFs runs_bcdef, runs_gh;
+    //separate SFs for runs BCDEF and GH
+    setup_SFs(&runs_bcdef, &runs_gh);
+    printf("Retrieved Scale Factors \n\n");
+
 
     TFile *fout = TFile::Open(fout_name, "RECREATE");
     TTree *t_signal= new TTree("T_data", "Tree with asym events (qq bar, qg)");
-    Double_t cm_m, xF, cost_r, cost_st, mu1_pt, mu2_pt, jet1_pt, jet2_pt, deltaC, gen_weight, reweight,
-             jet1_csv, jet1_cmva, jet2_csv, jet2_cmva;
+    Double_t cm_m, xF, cost_r, cost_st, mu1_pt, mu2_pt, mu1_eta, mu2_eta, jet1_pt, jet2_pt, deltaC, 
+             gen_weight, reweight, jet1_csv, jet1_cmva, jet2_csv, jet2_cmva;
+    Double_t bcdef_HLT_SF, bcdef_iso_SF, bcdef_id_SF, gh_HLT_SF, gh_iso_SF, gh_id_SF;
     Float_t met_pt;
     t_signal->Branch("m", &cm_m, "m/D");
     t_signal->Branch("xF", &xF, "xF/D");
@@ -109,6 +118,8 @@ void MuMu_reco_mc_batch()
     t_signal->Branch("cost_st", &cost_st, "cost/D");
     t_signal->Branch("mu1_pt", &mu1_pt, "mu1_pt/D");
     t_signal->Branch("mu2_pt", &mu2_pt, "mu2_pt/D");
+    t_signal->Branch("mu1_eta", &mu1_eta, "mu1_eta/D");
+    t_signal->Branch("mu2_eta", &mu2_eta, "mu2_eta/D");
     t_signal->Branch("jet1_pt", &jet1_pt, "jet1_pt/D");
     t_signal->Branch("jet1_CMVA", &jet1_cmva, "jet1_CMVA/D");
     t_signal->Branch("jet2_pt", &jet2_pt, "jet2_pt/D");
@@ -117,14 +128,23 @@ void MuMu_reco_mc_batch()
     t_signal->Branch("deltaC", &deltaC, "deltaC/D");
     t_signal->Branch("gen_weight", &gen_weight, "gen_weight/D");
     t_signal->Branch("reweight", &reweight, "reweight/D");
+    t_signal->Branch("bcdef_HLT_SF", &bcdef_HLT_SF);
+    t_signal->Branch("bcdef_iso_SF", &bcdef_iso_SF);
+    t_signal->Branch("bcdef_id_SF", &bcdef_id_SF);
+    t_signal->Branch("gh_HLT_SF", &gh_HLT_SF);
+    t_signal->Branch("gh_iso_SF", &gh_iso_SF);
+    t_signal->Branch("gh_id_SF", &gh_id_SF);
 
 
     TTree *t_back = new TTree("T_back", "Tree for events with no asym (qq, gg)");
     t_back->Branch("m", &cm_m, "m/D");
     t_back->Branch("xF", &xF, "xF/D");
     t_back->Branch("cost", &cost_r, "cost/D");
+    t_back->Branch("cost_st", &cost_st, "cost/D");
     t_back->Branch("mu1_pt", &mu1_pt, "mu1_pt/D");
     t_back->Branch("mu2_pt", &mu2_pt, "mu2_pt/D");
+    t_back->Branch("mu1_eta", &mu1_pt, "mu1_eta/D");
+    t_back->Branch("mu2_eta", &mu2_pt, "mu2_eta/D");
     t_back->Branch("jet1_pt", &jet1_pt, "jet1_pt/D");
     t_back->Branch("jet1_CMVA", &jet1_cmva, "jet1_CMVA/D");
     t_back->Branch("jet2_pt", &jet2_pt, "jet2_pt/D");
@@ -132,16 +152,15 @@ void MuMu_reco_mc_batch()
     t_back->Branch("met_pt", &met_pt, "met_Pt/F");
     t_back->Branch("deltaC", &deltaC, "deltaC/D");
     t_back->Branch("gen_weight", &gen_weight, "gen_weight/D");
+    t_back->Branch("reweight", &reweight, "reweight/D");
+    t_back->Branch("bcdef_HLT_SF", &bcdef_HLT_SF);
+    t_back->Branch("bcdef_iso_SF", &bcdef_iso_SF);
+    t_back->Branch("bcdef_id_SF", &bcdef_id_SF);
+    t_back->Branch("gh_HLT_SF", &gh_HLT_SF);
+    t_back->Branch("gh_iso_SF", &gh_iso_SF);
+    t_back->Branch("gh_id_SF", &gh_id_SF);
 
 
-
-    TH3F* f_sym = new TH3F("f_sym", "Symmetric Template of MuMu distribution (x_f, M, c_r)",
-            30, 0,1., 6, 0,300, 40, -1., 1.);
-    TH3F* f_asym = new TH3F("f_asym", "Anti-symmetric Template of MuMu distribution (x_f, M, c_r)",
-            30, 0,1., 6, 0,300, 40, -1., 1.);
-
-    TH3F* f_back = new TH3F("f_back", "Template for non asym events (x_f, M, c_r)",
-            30, 0,1., 6, 0,300, 40, -1., 1.);
 
 
     TH1F *mu_p_dr = new TH1F("mu_p_dr", "DeltaR, reco Muon and gen Muon", 20,0,1);
@@ -546,7 +565,7 @@ void MuMu_reco_mc_batch()
                         pzu.SetMag(1.0);
                         mu_m.RotateUz(pzu); 
                         double cost_r_b = mu_m.CosTheta();
-                        deltaC = fabsf(cost_r_b) - fabsf(cost);
+                        deltaC = std::abs(cost_r_b) - std::abs(cost);
                         //printf("cost_r, cost_r_b, cost_r_b2: %0.2f %0.2f %0.2f \n", cost_r, cost_r_b, cost_r_b2);
 
                         if(PRINT){
@@ -565,12 +584,28 @@ void MuMu_reco_mc_batch()
                         gen_weight = evt_Gen_Weight * normalization;
                         mu1_pt = mu_Pt[0];
                         mu2_pt = mu_Pt[1];
+                        mu1_eta = mu_Eta[0];
+                        mu2_eta = mu_Eta[1];
                         jet1_pt = jet_Pt[0];
                         jet1_csv = jet_CSV[0];
                         jet1_cmva = jet_CMVA[0];
                         jet2_pt = jet_Pt[1];
                         jet2_csv = jet_CSV[1];
                         jet2_cmva = jet_CMVA[1];
+
+
+                        //get SFs
+
+                        bcdef_HLT_SF = get_HLT_SF(mu1_pt, mu1_eta, runs_bcdef.HLT_SF);
+                        gh_HLT_SF = get_HLT_SF(mu1_pt, mu1_eta, runs_gh.HLT_SF);
+
+                        bcdef_iso_SF = get_SF(mu1_pt, mu1_eta, runs_bcdef.ISO_SF) * get_SF(mu2_pt, mu2_eta, runs_bcdef.ISO_SF);
+                        bcdef_id_SF = get_SF(mu1_pt, mu1_eta, runs_bcdef.ID_SF) * get_SF(mu2_pt, mu2_eta, runs_bcdef.ID_SF);
+
+                        gh_iso_SF = get_SF(mu1_pt, mu1_eta, runs_gh.ISO_SF) * get_SF(mu2_pt, mu2_eta, runs_gh.ISO_SF);
+                        gh_id_SF = get_SF(mu1_pt, mu1_eta, runs_gh.ID_SF) * get_SF(mu2_pt, mu2_eta, runs_gh.ID_SF);
+
+
                         if(signal_event){
                             //cost_st = cos(theta)_* correct angle obtained from 'cheating' and
                             //looking at initial quark direction
@@ -579,22 +614,17 @@ void MuMu_reco_mc_batch()
                                 cost_st = -cost;
                             }
                             else cost_st = cost;
-                            t_signal->Fill();
 
-                            f_sym->Fill(xF, cm_m, cost_r, gen_weight);
-                            f_sym->Fill(xF, cm_m, -cost_r, gen_weight);
                             //anti-symmetric template has computed weight and is 
                             //anti-symmetrized by flipping the sign of the weight and the bin
                             //in c_r
                             reweight = (4./3.)*cost_st*(2. + alpha)/
                                 (1. + cost_st*cost_st + alpha*(1.- cost_st*cost_st));
-                            f_asym->Fill(xF, cm_m, cost_r, reweight * gen_weight);
-                            f_asym->Fill(xF, cm_m, -cost_r, -reweight * gen_weight);
                             nSignal++;
+                            t_signal->Fill();
                         }
                         else{
                             t_back->Fill();
-                            f_back->Fill(xF, cm_m, cost_r, gen_weight);
                         }
 
                         nEvents++;
@@ -646,14 +676,6 @@ void MuMu_reco_mc_batch()
 
 
 
-    //normalize the histograms
-    Double_t scale = 1./(f_sym->Integral());
-    f_sym->Scale(scale);
-    f_asym->Scale(scale);
-    f_back->Scale(1./f_back->Integral());
-    f_sym->Write();
-    f_asym->Write();
-    f_back->Write();
 
     t_signal->Write();
     t_back->Write();

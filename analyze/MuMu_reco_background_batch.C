@@ -5,6 +5,7 @@
 #include <cstring>
 #include <algorithm>
 #include "TFile.h"
+#include "ScaleFactors.C"
 
 #define GEN_SIZE 300
 #define MU_SIZE 100
@@ -16,7 +17,7 @@ double Ebeam = 6500.;
 double Pbeam = sqrt(Ebeam*Ebeam - 0.938*0.938);
 
 char *filename("ttbar_files_may9.txt");
-const TString fout_name("output_files/ttbar_background_may11.root");
+const TString fout_name("output_files/ttbar_background_may24.root");
 const double alpha = 0.05;
 const bool PRINT=false;
 const bool MUON_SELECTION_CHECK = false;
@@ -96,30 +97,39 @@ void MuMu_reco_background_batch()
     compute_norms(norms, &nFiles);
     printf("Done with normalizations \n\n\n");
 
+    SFs runs_bcdef, runs_gh;
+    //separate SFs for runs BCDEF and GH
+    setup_SFs(&runs_bcdef, &runs_gh);
+    printf("Retrieved Scale Factors \n\n");
 
     TFile *fout = TFile::Open(fout_name, "RECREATE");
     TTree *tout= new TTree("T_data", "Tree with reco events");
-    Double_t cm_m, xF, cost_r, mu1_pt, mu2_pt, jet1_pt, jet2_pt, deltaC, gen_weight,
+    Double_t cm_m, xF, cost_r, mu1_pt, mu2_pt, mu1_eta, mu2_eta, jet1_pt, jet2_pt, deltaC, gen_weight,
              jet1_cmva, jet1_csv, jet2_cmva, jet2_csv;
+    Double_t bcdef_HLT_SF, bcdef_iso_SF, bcdef_id_SF, gh_HLT_SF, gh_iso_SF, gh_id_SF;
     Float_t met_pt;
     tout->Branch("m", &cm_m, "m/D");
     tout->Branch("xF", &xF, "xF/D");
     tout->Branch("cost", &cost_r, "cost/D");
     tout->Branch("mu1_pt", &mu1_pt, "mu1_pt/D");
     tout->Branch("mu2_pt", &mu2_pt, "mu2_pt/D");
+    tout->Branch("mu1_eta", &mu1_eta, "mu1_eta/D");
+    tout->Branch("mu2_eta", &mu2_eta, "mu2_eta/D");
     tout->Branch("jet1_pt", &jet1_pt, "jet1_pt/D");
-    tout->Branch("jet1_CSV", &jet1_csv, "jet1_csv/D");
     tout->Branch("jet1_CMVA", &jet1_cmva, "jet1_CMVA/D");
     tout->Branch("jet2_pt", &jet2_pt, "jet2_pt/D");
-    tout->Branch("jet2_CSV", &jet2_csv, "jet2_csv/D");
     tout->Branch("jet2_CMVA", &jet2_cmva, "jet2_CMVA/D");
     tout->Branch("met_pt", &met_pt, "met_Pt/F");
     tout->Branch("deltaC", &deltaC, "deltaC/D");
     tout->Branch("gen_weight", &gen_weight, "gen_weight/D");
+    tout->Branch("bcdef_HLT_SF", &bcdef_HLT_SF);
+    tout->Branch("bcdef_iso_SF", &bcdef_iso_SF);
+    tout->Branch("bcdef_id_SF", &bcdef_id_SF);
+    tout->Branch("gh_HLT_SF", &gh_HLT_SF);
+    tout->Branch("gh_iso_SF", &gh_iso_SF);
+    tout->Branch("gh_id_SF", &gh_id_SF);
 
 
-    TH3F* f_back = new TH3F("ttbar_back", "Template for ttbar events (x_f, M, c_r)",
-            30, 0,1., 6, 0,300, 40, -1., 1.);
 
 
     unsigned int nEvents=0;
@@ -285,13 +295,28 @@ void MuMu_reco_background_batch()
                         gen_weight = evt_Gen_Weight * normalization;
                         mu1_pt = mu_Pt[0];
                         mu2_pt = mu_Pt[1];
+                        mu1_eta = mu_Eta[0];
+                        mu2_eta = mu_Eta[1];
                         jet1_pt = jet_Pt[0];
                         jet1_csv = jet_CSV[0];
                         jet1_cmva = jet_CMVA[0];
                         jet2_pt = jet_Pt[1];
                         jet2_csv = jet_CSV[1];
                         jet2_cmva = jet_CMVA[1];
-                        f_back->Fill(xF, cm_m, cost_r, gen_weight);
+
+
+                        //get SFs
+
+                        bcdef_HLT_SF = get_HLT_SF(mu1_pt, mu1_eta, runs_bcdef.HLT_SF);
+                        gh_HLT_SF = get_HLT_SF(mu1_pt, mu1_eta, runs_gh.HLT_SF);
+
+                        bcdef_iso_SF = get_SF(mu1_pt, mu1_eta, runs_bcdef.ISO_SF) * get_SF(mu2_pt, mu2_eta, runs_bcdef.ISO_SF);
+                        bcdef_id_SF = get_SF(mu1_pt, mu1_eta, runs_bcdef.ID_SF) * get_SF(mu2_pt, mu2_eta, runs_bcdef.ID_SF);
+
+                        gh_iso_SF = get_SF(mu1_pt, mu1_eta, runs_gh.ISO_SF) * get_SF(mu2_pt, mu2_eta, runs_gh.ISO_SF);
+                        gh_id_SF = get_SF(mu1_pt, mu1_eta, runs_gh.ID_SF) * get_SF(mu2_pt, mu2_eta, runs_gh.ID_SF);
+
+
                         tout->Fill();
                         nEvents++;
 
@@ -316,8 +341,6 @@ void MuMu_reco_background_batch()
     fout->cd();
 
 
-    f_back->Scale(1./f_back->Integral());
-    f_back->Write();
     tout->Write();
 
     printf("Writing output to file at %s \n", fout_name.Data());
