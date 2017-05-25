@@ -16,8 +16,8 @@ const double root2 = sqrt(2);
 double Ebeam = 6500.;
 double Pbeam = sqrt(Ebeam*Ebeam - 0.938*0.938);
 
-char *filename("mc_files_may9.txt");
-const TString fout_name("output_files/DYToLL_mc_2016_may24.root");
+char *filename("mc_files_test.txt");
+const TString fout_name("output_files/DYToLL_mc_2016_may25_test.root");
 const double alpha = 0.05;
 const bool PRINT=false;
 const bool MUON_SELECTION_CHECK = false;
@@ -101,8 +101,10 @@ void MuMu_reco_mc_batch()
     printf("Done with normalizations \n\n\n");
 
     SFs runs_bcdef, runs_gh;
+    BTag_readers b_reader;
+    
     //separate SFs for runs BCDEF and GH
-    setup_SFs(&runs_bcdef, &runs_gh);
+    setup_SFs(&runs_bcdef, &runs_gh, &b_reader);
     printf("Retrieved Scale Factors \n\n");
 
 

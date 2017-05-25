@@ -16,8 +16,8 @@ const double root2 = sqrt(2);
 double Ebeam = 6500.;
 double Pbeam = sqrt(Ebeam*Ebeam - 0.938*0.938);
 
-char *filename("ttbar_files_may9.txt");
-const TString fout_name("SFs/BTag_efficiency_may24.root");
+char *filename("../ttbar_files_may9.txt");
+const TString fout_name("BTag_efficiency_may24.root");
 const double alpha = 0.05;
 const bool PRINT=false;
 

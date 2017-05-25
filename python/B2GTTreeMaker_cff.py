@@ -243,21 +243,21 @@ else:
     )
     
     photonjetVars = cms.untracked.vstring(
-        #'PhotonIndex',
-        #'SubwGammatIndex',
-        #'PhotonSubjetFrac',
-        #'SubjetPt0',
-        #'SubjetPt1',
-        #'SubjetPt2',
-        #'SubjetEta0',
-        #'SubjetEta1',
-        #'SubjetEta2',
-        #'SubjetPhi0',
-        #'SubjetPhi1',
-        #'SubjetPhi2',
-        #'SubjetEne0',
-        #'SubjetEne1',
-        #'SubjetEne2',
+        'PhotonIndex',
+        'SubwGammatIndex',
+        'PhotonSubjetFrac',
+        'SubjetPt0',
+        'SubjetPt1',
+        'SubjetPt2',
+        'SubjetEta0',
+        'SubjetEta1',
+        'SubjetEta2',
+        'SubjetPhi0',
+        'SubjetPhi1',
+        'SubjetPhi2',
+        'SubjetEne0',
+        'SubjetEne1',
+        'SubjetEne2',
     )
     
     jetVars = cms.untracked.vstring(
@@ -557,13 +557,13 @@ B2GTTreeMaker = cms.EDAnalyzer("B2GTTreeMaker",
             vectorF = jetsAK4CHS_var,
         ),
         # AK4 Puppi Jets
-        cms.PSet(
-            label = cms.untracked.string("jetsAK4Puppi"),
-            key_label = cms.untracked.string("jetKeysAK4Puppi"),
-            prefix_in = jetsAK4Puppi.prefix,
-            prefix_out = cms.untracked.string("jetAK4Puppi_"),
-            vectorF = jetsAK4Puppi_var,
-        ),
+        #cms.PSet(
+        #    label = cms.untracked.string("jetsAK4Puppi"),
+        #    key_label = cms.untracked.string("jetKeysAK4Puppi"),
+        #    prefix_in = jetsAK4Puppi.prefix,
+        #    prefix_out = cms.untracked.string("jetAK4Puppi_"),
+        #    vectorF = jetsAK4Puppi_var,
+        #),
         # AK8 CHS Jets
         #cms.PSet(
         #    label = cms.untracked.string("jetsAK8CHS"),

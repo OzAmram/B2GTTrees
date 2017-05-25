@@ -1,4 +1,3 @@
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
@@ -7,12 +6,23 @@
 #include <algorithm>
 #include "TFile.h"
 
+#include "CondFormats/BTauObjects/interface/BTagCalibration.h"
+#include "CondTools/BTau/interface/BTagCalibrationReader.h"
+
+
+
 
 typedef struct {
     TH2D *HLT_SF;
     TH2D *ISO_SF;
     TH2D *ID_SF;
 } SFs;
+
+typedef struct {
+    BTagCalibrationReader b_reader;
+    BTagCalibrationReader c_reader;
+    BTagCalibrationReader udsg_reader;
+} BTag_readers;
 
 
 Double_t get_SF(Double_t pt, Double_t eta, TH2D *h){
@@ -41,7 +51,23 @@ Double_t get_HLT_SF(Double_t pt, Double_t eta, TH2D *h){
     return result;
 }
 
-void setup_SFs(SFs *runs_BCDEF, SFs *runs_GH){
+Double_t get_btag_weight(Double_t pt, Double_t eta, Double_t SF, TH2D *mc_eff){
+    //compute weighting from btagging scale factors
+    return 1;
+}
+    
+
+
+void setup_SFs(SFs *runs_BCDEF, SFs *runs_GH, BTag_readers *btag_r){
+    BTagCalibration calib("csvv1", "SFs/cMVAv2_Moriond17_B_H.csv");
+    btag_r->b_reader = BTagCalibrationReader(BTagEntry::OP_MEDIUM, "central");
+    btag_r->b_reader.load(calib, BTagEntry::FLAV_B, "ttbar");
+    btag_r->c_reader = BTagCalibrationReader(BTagEntry::OP_MEDIUM, "central");
+    btag_r->c_reader.load(calib, BTagEntry::FLAV_C, "ttbar");
+    btag_r->udsg_reader = BTagCalibrationReader(BTagEntry::OP_MEDIUM, "central");
+    btag_r->udsg_reader.load(calib, BTagEntry::FLAV_UDSG, "incl");
+
+
     TFile *f1 = TFile::Open("SFs/EfficienciesAndSF_RunBtoF.root");
     f1->cd("IsoMu24_OR_IsoTkMu24_PtEtaBins");
     TDirectory *subdir1 = gDirectory;
