@@ -17,7 +17,7 @@ double Ebeam = 6500.;
 double Pbeam = sqrt(Ebeam*Ebeam - 0.938*0.938);
 
 char *filename("ttbar_files_may9.txt");
-const TString fout_name("output_files/ttbar_background_may24.root");
+const TString fout_name("output_files/ttbar_background_may26.root");
 const double alpha = 0.05;
 const bool PRINT=false;
 const bool MUON_SELECTION_CHECK = false;
@@ -98,15 +98,19 @@ void MuMu_reco_background_batch()
     printf("Done with normalizations \n\n\n");
 
     SFs runs_bcdef, runs_gh;
+    BTag_readers b_reader;
+    BTag_effs btag_effs;
     //separate SFs for runs BCDEF and GH
-    setup_SFs(&runs_bcdef, &runs_gh);
+    setup_SFs(&runs_bcdef, &runs_gh, &b_reader, &btag_effs);
     printf("Retrieved Scale Factors \n\n");
 
     TFile *fout = TFile::Open(fout_name, "RECREATE");
     TTree *tout= new TTree("T_data", "Tree with reco events");
-    Double_t cm_m, xF, cost_r, mu1_pt, mu2_pt, mu1_eta, mu2_eta, jet1_pt, jet2_pt, deltaC, gen_weight,
+    Double_t cm_m, xF, cost_r, mu1_pt, mu2_pt, mu1_eta, mu2_eta, jet1_pt, jet2_pt, deltaC, jet1_eta, jet2_eta, gen_weight,
              jet1_cmva, jet1_csv, jet2_cmva, jet2_csv;
-    Double_t bcdef_HLT_SF, bcdef_iso_SF, bcdef_id_SF, gh_HLT_SF, gh_iso_SF, gh_id_SF;
+    Double_t bcdef_HLT_SF, bcdef_iso_SF, bcdef_id_SF, gh_HLT_SF, gh_iso_SF, gh_id_SF,
+             jet1_b_weight, jet2_b_weight;
+    Int_t nJets, jet1_flavour, jet2_flavour;
     Float_t met_pt;
     tout->Branch("m", &cm_m, "m/D");
     tout->Branch("xF", &xF, "xF/D");
@@ -116,8 +120,10 @@ void MuMu_reco_background_batch()
     tout->Branch("mu1_eta", &mu1_eta, "mu1_eta/D");
     tout->Branch("mu2_eta", &mu2_eta, "mu2_eta/D");
     tout->Branch("jet1_pt", &jet1_pt, "jet1_pt/D");
+    tout->Branch("jet1_eta", &jet1_eta, "jet1_eta/D");
     tout->Branch("jet1_CMVA", &jet1_cmva, "jet1_CMVA/D");
     tout->Branch("jet2_pt", &jet2_pt, "jet2_pt/D");
+    tout->Branch("jet2_eta", &jet2_eta, "jet2_eta/D");
     tout->Branch("jet2_CMVA", &jet2_cmva, "jet2_CMVA/D");
     tout->Branch("met_pt", &met_pt, "met_Pt/F");
     tout->Branch("deltaC", &deltaC, "deltaC/D");
@@ -128,7 +134,11 @@ void MuMu_reco_background_batch()
     tout->Branch("gh_HLT_SF", &gh_HLT_SF);
     tout->Branch("gh_iso_SF", &gh_iso_SF);
     tout->Branch("gh_id_SF", &gh_id_SF);
-
+    tout->Branch("jet1_b_weight", &jet1_b_weight);
+    tout->Branch("jet2_b_weight", &jet2_b_weight);
+    tout->Branch("nJets", &nJets, "nJets/I");
+    tout->Branch("jet1_flavour", &jet1_flavour, "jet1_flavour/I");
+    tout->Branch("jet2_flavour", &jet2_flavour, "jet2_flavour/I");
 
 
 
@@ -177,7 +187,7 @@ void MuMu_reco_background_batch()
 
 
             Float_t jet_Pt[JET_SIZE], jet_Eta[JET_SIZE], jet_Phi[JET_SIZE], jet_E[JET_SIZE],
-                    jet_CSV[JET_SIZE], jet_CMVA[JET_SIZE];
+                    jet_CSV[JET_SIZE], jet_CMVA[JET_SIZE], jet_partonflavour[JET_SIZE];
 
             Float_t evt_Gen_Weight;
 
@@ -204,6 +214,7 @@ void MuMu_reco_background_batch()
                 t1->SetBranchAddress("jetAK4CHS_E", &jet_E);
                 t1->SetBranchAddress("jetAK4CHS_CSVv2", &jet_CSV);
                 t1->SetBranchAddress("jetAK4CHS_CMVAv2", &jet_CMVA);
+                t1->SetBranchAddress("jetAK4CHS_PartonFlavour", &jet_partonflavour);
 
                 t1->SetBranchAddress("HLT_IsoMu24", &HLT_IsoMu);
                 t1->SetBranchAddress("HLT_IsoTkMu24", &HLT_IsoTkMu);
@@ -297,15 +308,47 @@ void MuMu_reco_background_batch()
                         mu2_pt = mu_Pt[1];
                         mu1_eta = mu_Eta[0];
                         mu2_eta = mu_Eta[1];
-                        jet1_pt = jet_Pt[0];
-                        jet1_csv = jet_CSV[0];
-                        jet1_cmva = jet_CMVA[0];
-                        jet2_pt = jet_Pt[1];
-                        jet2_csv = jet_CSV[1];
-                        jet2_cmva = jet_CMVA[1];
+
+                        //pick out 2 highest pt jets with eta < 2.4
+                        nJets =0;
+                        for(int j=0; j < jet_size; j++){
+                            if(jet_Pt[j] > 20. && std::abs(jet_Eta[j]) < 2.4){
+                                if(nJets ==0){
+                                    jet1_pt = jet_Pt[j];
+                                    jet1_eta = jet_Eta[j];
+                                    jet1_cmva = jet_CMVA[j];
+                                    jet1_flavour = jet_partonflavour[j];
+                                    jet1_b_weight = get_btag_weight(jet_Pt[j], jet_Eta[j],jet_partonflavour[j],btag_effs, b_reader);
+                                    nJets = 1;
+                                }
+                                if(nJets == 1){
+                                    jet2_pt = jet_Pt[j];
+                                    jet2_eta = jet_Eta[j];
+                                    jet2_cmva = jet_CMVA[j];
+                                    jet2_flavour = jet_partonflavour[j];
+                                    jet2_b_weight = get_btag_weight(jet_Pt[j], jet_Eta[j],jet_partonflavour[j],btag_effs, b_reader);
+                                    nJets =2;
+                                    break;
+                                }
+                            }
+                        }
+
+                        /*
+                        if(jet_size >=2) nJets = 2;
+                        else nJets = jet_size;
+                        if(jet_size >=1){
+                            jet1_pt = jet_Pt[0];
+                            jet1_cmva = jet_CMVA[0];
+                        }
+                        if(jet_size >=2){
+                            jet2_pt = jet_Pt[1];
+                            jet2_cmva = jet_CMVA[1];
+                        }
+                        */
 
 
-                        //get SFs
+
+                        //get muon cut SFs
 
                         bcdef_HLT_SF = get_HLT_SF(mu1_pt, mu1_eta, runs_bcdef.HLT_SF);
                         gh_HLT_SF = get_HLT_SF(mu1_pt, mu1_eta, runs_gh.HLT_SF);

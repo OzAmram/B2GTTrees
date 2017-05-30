@@ -24,6 +24,12 @@ typedef struct {
     BTagCalibrationReader udsg_reader;
 } BTag_readers;
 
+typedef struct {
+    TH2D *b_eff;
+    TH2D *c_eff;
+    TH2D *udsg_eff;
+} BTag_effs;
+
 
 Double_t get_SF(Double_t pt, Double_t eta, TH2D *h){
     //stay in range of histogram
@@ -51,14 +57,53 @@ Double_t get_HLT_SF(Double_t pt, Double_t eta, TH2D *h){
     return result;
 }
 
-Double_t get_btag_weight(Double_t pt, Double_t eta, Double_t SF, TH2D *mc_eff){
-    //compute weighting from btagging scale factors
-    return 1;
+Double_t btag_weight_helper(Double_t pt, Double_t eta, Double_t SF, TH2D *mc_eff){
+    if (pt >=500) pt = 450;
+
+    TAxis* x_ax =  mc_eff->GetXaxis();
+    TAxis *y_ax =  mc_eff->GetYaxis();
+    int xbin = x_ax->FindBin(pt);
+    int ybin = y_ax->FindBin(std::abs(eta));
+
+    Double_t eff = mc_eff->GetBinContent(xbin, ybin);
+    if(eff == 0) printf("Warning: 0 efficiency for pt %.0f, eta %1.1f \n!", pt, eta);
+    //printf("Efficiency is %f \n", eff);
+    Double_t weight = (1-SF*eff)/(1-eff);
+    return weight;
 }
-    
 
 
-void setup_SFs(SFs *runs_BCDEF, SFs *runs_GH, BTag_readers *btag_r){
+
+Double_t get_btag_weight(Double_t pt, Double_t eta, Float_t flavour, BTag_effs btag_effs, BTag_readers b_readers){
+    //compute weighting from btagging scale factors
+
+    Double_t weight, bjet_SF;
+
+    if(std::abs(flavour - 5.) < 0.01){ //bjet
+        bjet_SF = b_readers.b_reader.eval_auto_bounds("central", BTagEntry::FLAV_B, eta, pt);
+        weight = btag_weight_helper(pt, eta, bjet_SF, btag_effs.b_eff);
+        //printf("B jet, SF is %0.3f, weight is %.4f \n", bjet_SF, weight);
+
+    }
+    else if (std::abs(flavour - 4.) < 0.01){ //cjet
+        bjet_SF = b_readers.c_reader.eval_auto_bounds("central", BTagEntry::FLAV_C, eta, pt);
+        weight = btag_weight_helper(pt, eta, bjet_SF, btag_effs.c_eff);
+        //printf("C jet, SF is %0.3f, weight is %.4f \n", bjet_SF, weight);
+    }
+    else{ //udsg jet
+        bjet_SF = b_readers.udsg_reader.eval_auto_bounds("central", BTagEntry::FLAV_UDSG, eta,pt);
+        weight = btag_weight_helper(pt, eta, bjet_SF, btag_effs.udsg_eff);
+        //printf("UDSG jet, SF is %0.3f, weight is %.4f \n", bjet_SF, weight);
+    }
+    if(bjet_SF == 0) printf("WARNING: Scale factor return 0 for Flavour %1.0f pt %.0f eta %1.1f \n!",
+                            flavour, pt, eta);
+    return weight;
+}
+
+
+
+
+void setup_SFs(SFs *runs_BCDEF, SFs *runs_GH, BTag_readers *btag_r, BTag_effs *b_effs){
     BTagCalibration calib("csvv1", "SFs/cMVAv2_Moriond17_B_H.csv");
     btag_r->b_reader = BTagCalibrationReader(BTagEntry::OP_MEDIUM, "central");
     btag_r->b_reader.load(calib, BTagEntry::FLAV_B, "ttbar");
@@ -66,6 +111,19 @@ void setup_SFs(SFs *runs_BCDEF, SFs *runs_GH, BTag_readers *btag_r){
     btag_r->c_reader.load(calib, BTagEntry::FLAV_C, "ttbar");
     btag_r->udsg_reader = BTagCalibrationReader(BTagEntry::OP_MEDIUM, "central");
     btag_r->udsg_reader.load(calib, BTagEntry::FLAV_UDSG, "incl");
+
+    TFile *f0 = TFile::Open("SFs/BTag_efficiency_may24.root");
+    TDirectory *subdir0 = gDirectory;
+    TH2D *b_eff = (TH2D *) subdir0->Get("b_eff")->Clone();
+    TH2D *c_eff = (TH2D *) subdir0->Get("c_eff")->Clone();
+    TH2D *udsg_eff = (TH2D *) subdir0->Get("udsg_eff")->Clone();
+    b_eff->SetDirectory(0);
+    c_eff->SetDirectory(0);
+    udsg_eff->SetDirectory(0);
+    b_effs->b_eff = b_eff;
+    b_effs->c_eff = c_eff;
+    b_effs->udsg_eff = udsg_eff;
+
 
 
     TFile *f1 = TFile::Open("SFs/EfficienciesAndSF_RunBtoF.root");
@@ -76,7 +134,7 @@ void setup_SFs(SFs *runs_BCDEF, SFs *runs_GH, BTag_readers *btag_r){
     runs_BCDEF->HLT_SF = HLT_1;
     f1->Close();
 
-    
+
     TFile *f2 = TFile::Open("SFs/EfficienciesAndSF_BCDEF_ID.root");
     f2->cd("MC_NUM_TightID_DEN_genTracks_PAR_pt_eta");
     TDirectory *subdir2 = gDirectory;
@@ -103,7 +161,7 @@ void setup_SFs(SFs *runs_BCDEF, SFs *runs_GH, BTag_readers *btag_r){
     runs_GH->HLT_SF = HLT_2;
     f4->Close();
 
-    
+
     TFile *f5 = TFile::Open("SFs/EfficienciesAndSF_GH_ID.root");
     f5->cd("MC_NUM_TightID_DEN_genTracks_PAR_pt_eta");
     TDirectory *subdir5 = gDirectory;

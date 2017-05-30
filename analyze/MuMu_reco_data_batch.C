@@ -33,6 +33,7 @@ void MuMu_reco_data_batch()
     TTree *tout= new TTree("T_data", "Tree with reco events");
     Double_t cm_m, xF, cost_r, mu1_pt, mu2_pt, jet1_pt, jet2_pt,
              jet1_cmva, jet1_csv, jet2_cmva, jet2_csv;
+    Int_t nJets;
     Float_t met_pt;
     tout->Branch("m", &cm_m, "m/D");
     tout->Branch("xF", &xF, "xF/D");
@@ -46,6 +47,7 @@ void MuMu_reco_data_batch()
     tout->Branch("jet2_CSV", &jet2_csv, "jet2_csv/D");
     tout->Branch("jet2_CMVA", &jet2_cmva, "jet2_CMVA/D");
     tout->Branch("met_pt", &met_pt, "met_Pt/F");
+    tout->Branch("nJets", &nJets, "nJets/I");
 
 
 
@@ -177,15 +179,19 @@ void MuMu_reco_data_batch()
                     else cost_r = cost;
 
 
-                    //muon selection checks
                     mu1_pt = mu_Pt[0];
                     mu2_pt = mu_Pt[1];
-                    jet1_pt = jet_Pt[0];
-                    jet1_csv = jet_CSV[0];
-                    jet1_cmva = jet_CMVA[0];
-                    jet2_pt = jet_Pt[1];
-                    jet2_csv = jet_CSV[1];
-                    jet2_cmva = jet_CMVA[1];
+
+                    if(jet_size >=2) nJets = 2;
+                    else nJets = jet_size;
+                    if(jet_size >=1){
+                        jet1_pt = jet_Pt[0];
+                        jet1_cmva = jet_CMVA[0];
+                    }
+                    if(jet_size >=2){
+                        jet2_pt = jet_Pt[1];
+                        jet2_cmva = jet_CMVA[1];
+                    }
                     tout->Fill();
 
                     nEvents++;
