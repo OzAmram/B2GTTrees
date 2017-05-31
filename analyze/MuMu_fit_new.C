@@ -21,6 +21,7 @@
 #include "TSystem.h"
 //#include"Minuit2/Minuit2Minimizer.h"
 #include "Math/Functor.h"
+#include "TemplateMaker.C"
 
 
 
@@ -34,28 +35,27 @@ Float_t cost_bins[] = {-1.0, -.8, -.6, -.4, -.2, 0., 0.2, 0.4, 0.6, 0.8, 1.0};
 
 
 
-float m_low = 150;
+float m_low = 700;
 float m_high = 100000;
 
-Double_t alpha = 0.05;
 
 Double_t med_btag = 0.4432;
 
 TH2F *h_asym, *h_sym, *h_nosig, *h_ttbar, *h_data, *h_mc;
-TH2F *h_mc_count, *h_nosig_count, *h_ttbar_count, *h_data_count;
+TH2F *h_mc_count, *h_nosig_count, *h_ttbar_count, *h_sym_count;
 //void *x_axp, *y_axp, *z_axp;
 
 //define axis globally for convinience 
 TAxis *x_ax, *y_ax, *z_ax;
 
 //MC templates
-TFile* f_mc = (TFile*) TFile::Open("output_files/DYToLL_mc_2016_may9.root");
+TFile* f_mc = (TFile*) TFile::Open("output_files/DYToLL_mc_2016_may26.root");
 TTree *t_mc = (TTree *) f_mc ->Get("T_data");
 TTree *t_nosig = (TTree *) f_mc ->Get("T_back");
-TFile* f_ttbar = (TFile*) TFile::Open("output_files/ttbar_background_may9.root");
+TFile* f_ttbar = (TFile*) TFile::Open("output_files/ttbar_background_may26.root");
 TTree *t_ttbar = (TTree *) f_ttbar ->Get("T_data");
 
-TFile *f_data = TFile::Open("output_files/DYToLL_data_samesign_may11.root");
+TFile *f_data = TFile::Open("output_files/DYToLL_data_2016_may9.root");
 TTree *t_data = (TTree *)f_data->Get("T_data"); 
 
 
@@ -115,115 +115,6 @@ Double_t  template_fcn(Double_t *x, Double_t *par){
 }
 
 
-int gen_template(TTree *t1, TH2F* h, TH2F* h_count,  bool is_data=false){
-    Long64_t nEntries  =  t1->GetEntries();
-    //printf("size is %i \n", nEntries);
-    Double_t m, xF, cost, gen_weight, jet1_cmva, jet2_cmva;
-    Float_t met_pt;
-    t1->SetBranchAddress("m", &m);
-    t1->SetBranchAddress("xF", &xF);
-    t1->SetBranchAddress("cost", &cost);
-    t1->SetBranchAddress("jet1_CMVA", &jet1_cmva);
-    t1->SetBranchAddress("jet2_CMVA", &jet2_cmva);
-    t1->SetBranchAddress("met_pt", &met_pt);
-    if(!is_data) t1->SetBranchAddress("gen_weight", &gen_weight);
-    else{
-        gen_weight = 1.0;
-        printf("total sample size is %i \n", (int) nEntries);
-    }
-    int nEvents = 0;
-    int n=0;
-    for (int i=0; i<nEntries; i++) {
-        t1->GetEntry(i);
-        if(m >= m_low && m <= m_high && met_pt < 50. && jet1_cmva < med_btag 
-                && jet2_cmva < med_btag){
-            n++;
-            h->Fill(xF, cost, gen_weight); 
-            h_count ->Fill(xF, cost, 1);
-            if(is_data){
-                nDataEvents++;
-                v_m.push_back(m);
-                v_xF.push_back(xF);
-                v_cost.push_back(cost);
-            }
-            nEvents++;
-        }
-    }
-    if(is_data) printf("Fit will be run on %i events in mass range [%1.0f, %1.0f] \n", 
-            nEvents, m_low, m_high);
-    h->Scale(1./h->Integral());
-    t1->ResetBranchAddresses();
-    return 0;
-}
-
-
-int gen_mc_template(TTree *t1, TH2F* h_sym, TH2F *h_asym, TH2F *h_count, bool print=false){
-    Long64_t nEntries  =  t1->GetEntries();
-    //printf("size is %i \n", nEntries);
-    Double_t m, xF, cost, gen_weight, reweight, jet1_cmva, jet2_cmva, cost_st;
-    Float_t met_pt;
-    t1->SetBranchAddress("m", &m);
-    t1->SetBranchAddress("xF", &xF);
-    t1->SetBranchAddress("cost", &cost);
-    t1->SetBranchAddress("cost_st", &cost_st);
-    t1->SetBranchAddress("jet1_CMVA", &jet1_cmva);
-    t1->SetBranchAddress("jet2_CMVA", &jet2_cmva);
-    t1->SetBranchAddress("met_pt", &met_pt);
-    t1->SetBranchAddress("gen_weight", &gen_weight);
-    int n = 0;
-    for (int i=0; i<nEntries; i++) {
-        t1->GetEntry(i);
-        if(m >= m_low && m <= m_high && met_pt < 50.
-                && jet1_cmva < med_btag && jet2_cmva < med_btag){
-            reweight = (4./3.)*cost_st*(2. + alpha)/
-                (1. + cost_st*cost_st + alpha*(1.- cost_st*cost_st));
-            n++;
-            h_sym->Fill(xF, cost, gen_weight); 
-            h_sym->Fill(xF, -cost, gen_weight); 
-            h_asym->Fill(xF, cost, reweight * gen_weight);
-            h_asym->Fill(xF, -cost, -reweight * gen_weight);
-            h_count->Fill(xF, cost, 1);
-        }
-    }
-    printf("N sym is %i \n", n);
-    float norm = h_sym -> Integral();
-    h_sym->Scale(1./norm);
-    h_asym->Scale(1./norm);
-    t1->ResetBranchAddresses();
-    return 0;
-}
-
-
-int gen_ttbar_template(TTree *t1, TH2F* h, TH2F* h_count,  bool is_data=false){
-    Long64_t nEntries  =  t1->GetEntries();
-    Double_t m, xF, cost, gen_weight, jet1_cmva, jet2_cmva;
-    Float_t met_pt;
-    t1->SetBranchAddress("m", &m);
-    t1->SetBranchAddress("xF", &xF);
-    t1->SetBranchAddress("cost", &cost);
-    t1->SetBranchAddress("jet1_CMVA", &jet1_cmva);
-    t1->SetBranchAddress("jet2_CMVA", &jet2_cmva);
-    t1->SetBranchAddress("met_pt", &met_pt);
-    if(!is_data) t1->SetBranchAddress("gen_weight", &gen_weight);
-    else{
-        gen_weight = 1.0;
-        printf("total sample size is %i \n", (int) nEntries);
-    }
-    int nEvents = 0;
-    for (int i=0; i<nEntries; i++) {
-        t1->GetEntry(i);
-        if(m >= m_low && m <= m_high && met_pt < 50. 
-                && jet1_cmva < med_btag && jet2_cmva < med_btag){
-            h->Fill(xF, cost, gen_weight); 
-            h_count ->Fill(xF, cost, 1);
-            nEvents++;
-        }
-    }
-    printf("N ttbar events %i \n", nEvents);
-    h->Scale(1./h->Integral());
-    t1->ResetBranchAddresses();
-    return 0;
-}
 
 void setup(){
     //setup global variables
@@ -231,8 +122,6 @@ void setup(){
     h_mc_count = new TH2F("h_mc_count", "Events in bins for MC templates",
             n_xf_bins, xf_bins, n_cost_bins, cost_bins);
     h_sym_count = new TH2F("h_sym_count", "Events in bins for MC templates",
-            n_xf_bins, xf_bins, n_cost_bins, cost_bins);
-    h_mc = new TH2F("h_mc", "MC DY distribution xF > 0.15",
             n_xf_bins, xf_bins, n_cost_bins, cost_bins);
     h_sym = new TH2F("h_sym", "Symmetric template of mc (xF, cost_r) xF>0.15",
             n_xf_bins, xf_bins, n_cost_bins, cost_bins);
@@ -249,14 +138,12 @@ void setup(){
 
     h_data = new TH2F("h_data", "Data template of (x_f, cost_r) xF > 0.15",
             n_xf_bins, xf_bins, n_cost_bins, cost_bins);
-    h_data_count = new TH2F("h_data_count", "Data template of (x_f,  c_r)",
-            n_xf_bins, xf_bins, n_cost_bins, cost_bins);
-    gen_mc_template(t_mc, h_sym, h_asym, h_sym_count);
-    gen_template(t_mc, h_mc, h_mc_count);
-    gen_template(t_nosig, h_nosig, h_nosig_count);
-    gen_ttbar_template(t_ttbar, h_ttbar, h_ttbar_count);
 
-    gen_template(t_data, h_data, h_data_count, true);
+    gen_mc_template(t_mc, h_sym, h_asym, h_sym_count, m_low, m_high);
+    gen_background_template(t_nosig, h_nosig, h_nosig_count, m_low, m_high);
+    gen_background_template(t_ttbar, h_ttbar, h_ttbar_count, m_low, m_high);
+
+    nDataEvents = gen_data_template(t_data, h_data, &v_m, &v_xF, &v_cost, m_low, m_high);
     printf("Finishing setup \n");
     return;
 }
@@ -270,7 +157,7 @@ void MuMu_fit_new(){
 
 
 
-    float AFB_start = 0.4;
+    float AFB_start = 0.6;
     float AFB_start_error = 0.1;
     float AFB_max = 0.75;
     float r_ttbar_start = 0.05;
@@ -304,7 +191,6 @@ void MuMu_fit_new(){
     fit_fcn->SetParameter(2, r_ttbar_start); //r_ttbar
     fit_fcn->SetParLimits(2, 0, r_ttbar_max);
     fit_fcn->SetParError(2, r_ttbar_start_error);
-    h_data->Sumw2();
     h_data->Fit(fit_fcn, "WL M N");
 
 
