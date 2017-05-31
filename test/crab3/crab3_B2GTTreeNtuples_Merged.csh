@@ -340,7 +340,8 @@ else if ( `echo $cmd | grep "get_datasets" | wc -l` ) then
     cat EdmNtuple_"$TASKNAME"_input.txt
 
 else if ( `echo $cmd | grep "get_lumi" | wc -l` ) then
-    set NORMTAG="/afs/cern.ch/user/l/lumipro/public/normtag_file/moriond16_normtag.json"
+    #set NORMTAG="/afs/cern.ch/user/l/lumipro/public/normtag_file/moriond16_normtag.json"
+    set NORMTAG="/afs/cern.ch/user/l/lumipro/public/Normtags/normtag_PHYSICS.json"
     mkdir -p $TASKDIR/data_lumi_summaries_$TASKNAME
     if ( -e $TASKDIR/get_luminosity_$TASKNAME.csh ) rm $TASKDIR/get_luminosity_$TASKNAME.csh
     set N=`cat $TASKDIR/input_datasets.txt | wc -l`
