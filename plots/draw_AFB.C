@@ -34,11 +34,11 @@ void draw_AFB(){
 
     const int n = 6;
     Double_t x[n] = {175,225,300,425,800,600};
-    Double_t y[n] = {0.613, 0.557,0.637,0.626,0.614,0.583};
+    Double_t y[n] = {0.658, 0.568,0.637,0.623,0.638,0.547};
     Double_t x_errs[n] = {25,25,50,75,100,100};
-    Double_t y_errs[n] = {0.021, 0.03,0.031,0.045,0.059,0.112};
+    Double_t y_errs[n] = {0.024, 0.03,0.03,0.042,0.065,0.106};
         
-    TCanvas *c1 = new TCanvas("c1", "AFB as function of mass", 200,10, 600,800);
+    TCanvas *c1 = new TCanvas("c1", "AFB as function of mass", 200,10, 800,600);
     TGraphErrors *g1 = new TGraphErrors(n,x,y,x_errs,y_errs);
     g1->SetMinimum(0);
     g1->GetYaxis()->SetTitle("AFB");
