@@ -27,12 +27,12 @@
 
 
 void draw_cmp(){
-    TFile *f_data = TFile::Open("../analyze/output_files/DYToLL_data_2016_may9.root");
+    TFile *f_data = TFile::Open("../analyze/output_files/DYToLL_data_2016_may31.root");
     TTree *t_data = (TTree *)f_data->Get("T_data");
     TFile *f_mc = TFile::Open("../analyze/output_files/DYToLL_mc_2016_may26.root");
     TTree *t_mc = (TTree *)f_mc->Get("T_data");
     TTree *t_mc_nosig = (TTree *)f_mc->Get("T_back");
-    TFile *f_back = TFile::Open("../analyze/output_files/ttbar_background_may26.root");
+    TFile *f_back = TFile::Open("../analyze/output_files/ttbar_background_may31.root");
     TTree *t_back = (TTree *)f_back->Get("T_data");
 
     TH1F *data_m = new TH1F("data_m", "Data Dimuon Mass Distribution", 30, 150, 1000);
@@ -137,7 +137,7 @@ void draw_cmp(){
     data_cost->SetMarkerStyle(kFullCircle);
     data_cost->SetMarkerColor(1);
     //cost_stack->SetMaximum(3000);
-    data_cost->Draw("P same");
+    data_cost->Draw("P E same");
     c_cost->Update();
     gPad->BuildLegend();
 
