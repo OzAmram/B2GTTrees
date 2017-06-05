@@ -55,14 +55,14 @@ void draw_ttbar_frac(){
         Double_t N_ttbar = back_m->GetBinContent(i);
         bin_center[i-1] = mc_m->GetBinCenter(i);
         printf("bin center %f \n", bin_center[i-1]);
-        Double_t scaling = 1.0;
+        Double_t scaling = 1.15;
         ttbar_frac[i-1] = scaling*N_ttbar/(N_m + N_ttbar);
     }
     bin_center[nBins-1] = 850;
     Double_t fit_res[] = {0.170, 0.148, 0.173, 0.157, 0.137, 0.096};
     Double_t fit_errs[] = {0.008, 0.012, 0.011, 0.015, 0.024, 0.032};
     TGraph *mc_frac = new TGraph(nBins, bin_center, ttbar_frac);
-    mc_frac->SetTitle("Fraction from MC");
+    mc_frac->SetTitle("Fraction from MC (Scaled with EMu ratio)");
     TGraphErrors *fit_frac = new TGraphErrors(nBins, bin_center, fit_res, 0, fit_errs);
     fit_frac->SetTitle("Fraction from fit results");
     fit_frac->SetMaximum(0.2);
