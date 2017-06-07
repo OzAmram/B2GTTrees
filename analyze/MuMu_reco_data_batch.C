@@ -9,8 +9,8 @@
 #define JET_SIZE 20
 
 const double root2 = sqrt(2);
-const char* filename("data_files_may9.txt");
-const TString fout_name("output_files/DYToLL_data_2016_may9.root");
+const char* filename("data_files_jun07.txt");
+const TString fout_name("output_files/DYToLL_data_2016_jun07.root");
 const double alpha = 0.05;
 
 const bool data_2016 = true;
@@ -31,8 +31,8 @@ void MuMu_reco_data_batch()
 
     TFile *fout = TFile::Open(fout_name, "RECREATE");
     TTree *tout= new TTree("T_data", "Tree with reco events");
-    Double_t cm_m, xF, cost_r, mu1_pt, mu2_pt, jet1_pt, jet2_pt,
-             jet1_cmva, jet1_csv, jet2_cmva, jet2_csv;
+    Double_t cm_m, xF, cost_r, mu1_pt, mu2_pt, mu1_eta, mu2_eta, jet1_pt, jet2_pt,
+             jet1_cmva, jet1_eta, jet2_cmva, jet2_eta;
     Int_t nJets;
     Float_t met_pt;
     tout->Branch("m", &cm_m, "m/D");
@@ -40,11 +40,13 @@ void MuMu_reco_data_batch()
     tout->Branch("cost", &cost_r, "cost/D");
     tout->Branch("mu1_pt", &mu1_pt, "mu1_pt/D");
     tout->Branch("mu2_pt", &mu2_pt, "mu2_pt/D");
+    tout->Branch("mu1_eta", &mu1_eta, "mu1_eta/D");
+    tout->Branch("mu2_eta", &mu2_eta, "mu2_eta/D");
     tout->Branch("jet1_pt", &jet1_pt, "jet1_pt/D");
-    tout->Branch("jet1_CSV", &jet1_csv, "jet1_csv/D");
+    tout->Branch("jet1_eta", &jet1_eta, "jet1_eta/D");
     tout->Branch("jet1_CMVA", &jet1_cmva, "jet1_CMVA/D");
     tout->Branch("jet2_pt", &jet2_pt, "jet2_pt/D");
-    tout->Branch("jet2_CSV", &jet2_csv, "jet2_csv/D");
+    tout->Branch("jet2_eta", &jet2_eta, "jet2_eta/D");
     tout->Branch("jet2_CMVA", &jet2_cmva, "jet2_CMVA/D");
     tout->Branch("met_pt", &met_pt, "met_Pt/F");
     tout->Branch("nJets", &nJets, "nJets/I");
@@ -181,16 +183,26 @@ void MuMu_reco_data_batch()
 
                     mu1_pt = mu_Pt[0];
                     mu2_pt = mu_Pt[1];
+                    mu1_eta = mu_Eta[0];
+                    mu2_eta = mu_Eta[1];
 
-                    if(jet_size >=2) nJets = 2;
-                    else nJets = jet_size;
-                    if(jet_size >=1){
-                        jet1_pt = jet_Pt[0];
-                        jet1_cmva = jet_CMVA[0];
-                    }
-                    if(jet_size >=2){
-                        jet2_pt = jet_Pt[1];
-                        jet2_cmva = jet_CMVA[1];
+                    nJets =0;
+                    for(int j=0; j < jet_size; j++){
+                        if(jet_Pt[j] > 20. && std::abs(jet_Eta[j]) < 2.4){
+                            if(nJets == 1){
+                                jet2_pt = jet_Pt[j];
+                                jet2_eta = jet_Eta[j];
+                                jet2_cmva = jet_CMVA[j];
+                                nJets =2;
+                                break;
+                            }
+                            else if(nJets ==0){
+                                jet1_pt = jet_Pt[j];
+                                jet1_eta = jet_Eta[j];
+                                jet1_cmva = jet_CMVA[j];
+                                nJets = 1;
+                            }
+                        }
                     }
                     tout->Fill();
 

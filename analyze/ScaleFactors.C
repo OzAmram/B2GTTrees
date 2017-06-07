@@ -30,6 +30,10 @@ typedef struct {
     TH2D *udsg_eff;
 } BTag_effs;
 
+typedef struct{
+    TH2D *h;
+} el_SFs;
+
 
 Double_t get_SF(Double_t pt, Double_t eta, TH2D *h){
     //stay in range of histogram
@@ -51,6 +55,18 @@ Double_t get_HLT_SF(Double_t pt, Double_t eta, TH2D *h){
     TAxis *y_ax =  h->GetYaxis();
     int xbin = x_ax->FindBin(pt);
     int ybin = y_ax->FindBin(std::abs(eta));
+
+    Double_t result = h->GetBinContent(xbin, ybin);
+    if(result < 0.01) printf("0 SF for Pt %.1f, Eta %1.2f \n", pt, eta);
+    return result;
+}
+Double_t get_el_SF(Double_t pt, Double_t eta, TH2D *h){
+    if (pt >= 150.) pt = 148.;
+    TAxis* x_ax =  h->GetXaxis();
+
+    TAxis *y_ax =  h->GetYaxis();
+    int xbin = x_ax->FindBin(eta);
+    int ybin = y_ax->FindBin(pt);
 
     Double_t result = h->GetBinContent(xbin, ybin);
     if(result < 0.01) printf("0 SF for Pt %.1f, Eta %1.2f \n", pt, eta);
@@ -104,6 +120,7 @@ Double_t get_btag_weight(Double_t pt, Double_t eta, Float_t flavour, BTag_effs b
 
 
 void setup_SFs(SFs *runs_BCDEF, SFs *runs_GH, BTag_readers *btag_r, BTag_effs *b_effs){
+    TH1::AddDirectory(kFALSE);
     BTagCalibration calib("csvv1", "SFs/cMVAv2_Moriond17_B_H.csv");
     btag_r->b_reader = BTagCalibrationReader(BTagEntry::OP_MEDIUM, "central");
     btag_r->b_reader.load(calib, BTagEntry::FLAV_B, "ttbar");
@@ -178,5 +195,15 @@ void setup_SFs(SFs *runs_BCDEF, SFs *runs_GH, BTag_readers *btag_r, BTag_effs *b
     ISO_2->SetDirectory(0);
     runs_GH->ISO_SF = ISO_2;
     f6->Close();
+}
+
+void setup_el_SF(el_SFs *sf){
+    TFile *f7 = TFile::Open("SFs/egammaEffi.txt_EGM2D.root");
+    TDirectory *subdir7 = gDirectory;
+    TH2D *h = (TH2D *) subdir7->Get("EGamma_SF2D")->Clone();
+    h->SetDirectory(0);
+    sf->h = h;
+    f7->Close();
+    //el_SF->Print();
 }
 

@@ -26,7 +26,9 @@
 #include "Math/Functor.h"
 
 Double_t bcdef_lumi = 5.746 + 2.572 + 4.242 + 4.024 + 3.104;
-Double_t gh_lumi =  7.573 + 0.215;
+//Double_t gh_lumi =  7.573 + 0.215;
+// adding new Hv2 data set to get full 2016 luminosity
+Double_t gh_lumi =  7.573 + 0.215 + 8.434;
 Double_t alpha = 0.05;
 
 bool has_no_bjets(Int_t nJets, Double_t jet1_pt, Double_t jet2_pt, 

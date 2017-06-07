@@ -5,12 +5,14 @@
 #include <cstring>
 #include <algorithm>
 #include "TFile.h"
+#include "ElectronID.C"
+
 #define MU_SIZE 200
 #define JET_SIZE 20
 
 const double root2 = sqrt(2);
-const char* filename("data_files_may9.txt");
-const TString fout_name("output_files/EMu_data_May18.root");
+const char* filename("data_files_jun07.txt");
+const TString fout_name("output_files/EMu_data_jun07.root");
 const double alpha = 0.05;
 
 const bool data_2016 = true;
@@ -31,20 +33,24 @@ void EMu_data_check()
 
     TFile *fout = TFile::Open(fout_name, "RECREATE");
     TTree *tout= new TTree("T_data", "Tree with reco events");
-    Double_t cm_m, xF, cost_r, mu1_pt, el1_pt, jet1_pt, jet2_pt,  gen_weight,
-             jet1_cmva, jet1_csv, jet2_cmva, jet2_csv;
+    Double_t cm_m, xF, cost_r, mu1_pt, el1_pt, jet1_pt, jet2_pt, gen_weight,
+             jet1_cmva, jet2_cmva, mu1_eta, el1_eta, jet1_eta, jet2_eta;
     Float_t met_pt;
+    Int_t nJets;
     TLorentzVector mu, el, cm, q1, q2;
     tout->Branch("mu1_pt", &mu1_pt, "mu1_pt/D");
+    tout->Branch("mu1_eta", &mu1_eta, "mu1_eta/D");
     tout->Branch("el1_pt", &el1_pt, "el1_pt/D");
+    tout->Branch("el1_eta", &el1_eta, "el1_eta/D");
     tout->Branch("el", &el);
     tout->Branch("mu", &mu);
     tout->Branch("jet1_pt", &jet1_pt, "jet1_pt/D");
-    tout->Branch("jet1_CSV", &jet1_csv, "jet1_csv/D");
+    tout->Branch("jet1_eta", &jet1_eta, "jet1_eta/D");
     tout->Branch("jet1_CMVA", &jet1_cmva, "jet1_CMVA/D");
     tout->Branch("jet2_pt", &jet2_pt, "jet2_pt/D");
-    tout->Branch("jet2_CSV", &jet2_csv, "jet2_csv/D");
+    tout->Branch("jet2_eta", &jet2_eta, "jet2_eta/D");
     tout->Branch("jet2_CMVA", &jet2_cmva, "jet2_CMVA/D");
+    tout->Branch("nJets", &nJets, "nJets/I");
     tout->Branch("met_pt", &met_pt, "met_Pt/F");
 
 
@@ -81,7 +87,12 @@ void EMu_data_check()
                 mu_IsTightMuon[MU_SIZE], mu_Charge[MU_SIZE];
 
         Float_t el_Pt[MU_SIZE], el_Eta[MU_SIZE], el_Phi[MU_SIZE], el_E[MU_SIZE],
-                el_Charge[MU_SIZE], el_Iso03db[MU_SIZE], el_MiniIso[MU_SIZE];
+                el_Charge[MU_SIZE], el_vidMedium[MU_SIZE];
+
+        Float_t el_rho[MU_SIZE], el_EA[MU_SIZE], el_sumChargedHadronPt[MU_SIZE], el_sumNeutralHadronEt[MU_SIZE], 
+                el_sumPhotonEt[MU_SIZE], el_sumPUPt[MU_SIZE], el_dEtaInSeed[MU_SIZE], el_dPhiIn[MU_SIZE], 
+                el_HoE[MU_SIZE], el_full5x5siee[MU_SIZE], el_ooEmooP[MU_SIZE], el_missHits[MU_SIZE], el_hasMatchedConVeto[MU_SIZE];
+
 
         Float_t mu_SumChargedHadronPt[MU_SIZE], mu_SumNeutralHadronPt[MU_SIZE], mu_SumPUPt[MU_SIZE], mu_SumPhotonPt[MU_SIZE];
 
@@ -97,12 +108,27 @@ void EMu_data_check()
         t1->SetBranchAddress("mu_E", &mu_E);
         t1->SetBranchAddress("mu_Charge", &mu_Charge);
 
-        t1->SetBranchAddress("el_size", &el_size); //number of elons in the event
+        t1->SetBranchAddress("el_size", &el_size); //number of els in the event
         t1->SetBranchAddress("el_Pt", &el_Pt);
         t1->SetBranchAddress("el_Eta", &el_Eta);
         t1->SetBranchAddress("el_Phi", &el_Phi);
         t1->SetBranchAddress("el_E", &el_E);
         t1->SetBranchAddress("el_Charge", &el_Charge);
+        t1->SetBranchAddress("el_vidMedium", &el_vidMedium);
+
+        t1->SetBranchAddress("el_rho", &el_rho);
+        t1->SetBranchAddress("el_EA", &el_EA);
+        t1->SetBranchAddress("el_sumChargedHadronPt", &el_sumChargedHadronPt);
+        t1->SetBranchAddress("el_sumNeutralHadronEt", &el_sumNeutralHadronEt);
+        t1->SetBranchAddress("el_sumPhotonEt", &el_sumPhotonEt);
+        t1->SetBranchAddress("el_sumPUPt", &el_sumPUPt);
+        t1->SetBranchAddress("el_dEtaInSeed", &el_dEtaInSeed);
+        t1->SetBranchAddress("el_dPhiIn", &el_dPhiIn);
+        t1->SetBranchAddress("el_HoE", &el_HoE);
+        t1->SetBranchAddress("el_full5x5siee", &el_full5x5siee);
+        t1->SetBranchAddress("el_ooEmooP", &el_ooEmooP);
+        t1->SetBranchAddress("el_missHits", &el_missHits);
+        t1->SetBranchAddress("el_hasMatchedConVeto", &el_hasMatchedConVeto);
 
         t1->SetBranchAddress("mu_IsTightMuon", &mu_IsTightMuon);
         t1->SetBranchAddress("mu_SumChargedHadronPt", &mu_SumChargedHadronPt);
@@ -111,31 +137,17 @@ void EMu_data_check()
         t1->SetBranchAddress("mu_SumPhotonPt", &mu_SumPhotonPt);
 
 
-        if(data_2016){
-            t1->SetBranchAddress("jetAK4CHS_size", &jet_size);
-            t1->SetBranchAddress("jetAK4CHS_Pt", &jet_Pt);
-            t1->SetBranchAddress("jetAK4CHS_Eta", &jet_Eta);
-            t1->SetBranchAddress("jetAK4CHS_Phi", &jet_Phi);
-            t1->SetBranchAddress("jetAK4CHS_E", &jet_E);
-            t1->SetBranchAddress("jetAK4CHS_CSVv2", &jet_CSV);
-            t1->SetBranchAddress("jetAK4CHS_CMVAv2", &jet_CMVA);
+        t1->SetBranchAddress("jetAK4CHS_size", &jet_size);
+        t1->SetBranchAddress("jetAK4CHS_Pt", &jet_Pt);
+        t1->SetBranchAddress("jetAK4CHS_Eta", &jet_Eta);
+        t1->SetBranchAddress("jetAK4CHS_Phi", &jet_Phi);
+        t1->SetBranchAddress("jetAK4CHS_E", &jet_E);
+        t1->SetBranchAddress("jetAK4CHS_CSVv2", &jet_CSV);
+        t1->SetBranchAddress("jetAK4CHS_CMVAv2", &jet_CMVA);
 
-            t1->SetBranchAddress("HLT_IsoMu24", &HLT_IsoMu);
-            t1->SetBranchAddress("HLT_IsoTkMu24", &HLT_IsoTkMu);
-        }
+        t1->SetBranchAddress("HLT_IsoMu24", &HLT_IsoMu);
+        t1->SetBranchAddress("HLT_IsoTkMu24", &HLT_IsoTkMu);
 
-        else{
-            t1->SetBranchAddress("jetAK4Puppi_size", &jet_size);
-            t1->SetBranchAddress("jetAK4Puppi_Pt", &jet_Pt);
-            t1->SetBranchAddress("jetAK4Puppi_Eta", &jet_Eta);
-            t1->SetBranchAddress("jetAK4Puppi_Phi", &jet_Phi);
-            t1->SetBranchAddress("jetAK4Puppi_E", &jet_E);
-            t1->SetBranchAddress("jetAK4Puppi_CSVv2", &jet_CSV);
-            t1->SetBranchAddress("jetAK4Puppi_CMVAv2", &jet_CMVA);
-
-            t1->SetBranchAddress("HLT_IsoMu20", &HLT_IsoMu);
-            t1->SetBranchAddress("HLT_IsoTkMu20", &HLT_IsoTkMu);
-        }
         t1->SetBranchAddress("met_size", &met_size);
         t1->SetBranchAddress("met_Pt", &met_pt);
 
@@ -149,10 +161,10 @@ void EMu_data_check()
             if(good_trigger &&
                     mu_size >= 1 && el_size >=1 && 
                     ((abs(mu_Charge[0] - el_Charge[0])) > 0.01) &&
-                    mu_IsTightMuon[0] && mu_IsTightMuon[1] &&
+                    mu_IsTightMuon[0] &&
                     mu_Pt[0] > 26. &&  el_Pt[0] > 10. &&
                     abs(mu_Eta[0]) < 2.4 && abs(el_Eta[0]) < 2.4){ 
-                
+
                 //See https://twiki.cern.ch/twiki/bin/viewauth/CMS/SWGuideMuonIdRun2 for iso cuts
                 float iso_0 = (mu_SumChargedHadronPt[0] + max(0., mu_SumNeutralHadronPt[0] + mu_SumPhotonPt[0] - 0.5 * mu_SumPUPt[0]))/mu_Pt[0];
                 const float tight_iso = 0.15;
@@ -160,18 +172,42 @@ void EMu_data_check()
 
                 mu.SetPtEtaPhiE(mu_Pt[0], mu_Eta[0], mu_Phi[0], mu_E[0]);
                 el.SetPtEtaPhiE(el_Pt[0], el_Eta[0], el_Phi[0], el_E[0]);
-                if (iso_0 < tight_iso ){
+
+
+                float el_iso = (el_sumChargedHadronPt[0] + 
+                        max(0., 1.0*el_sumNeutralHadronEt[0] + 
+                            el_sumPhotonEt[0] - el_rho[0]*el_EA[0]))/el_Pt[0];
+
+                bool el_mediumID = get_el_id(el_Eta[0], el_full5x5siee[0], 
+                        el_dEtaInSeed[0],el_dPhiIn[0], el_HoE[0], 
+                        el_iso, el_ooEmooP[0], el_missHits[0], el_hasMatchedConVeto[0]);
+
+                if (iso_0 < tight_iso && el_mediumID ){
 
 
                     //muon selection checks
-                    mu1_pt = mu_Pt[0];
+                    nJets =0;
+                    for(int j=0; j < jet_size; j++){
+                        if(jet_Pt[j] > 20. && std::abs(jet_Eta[j]) < 2.4){
+                            if(nJets == 1){
+                                jet2_pt = jet_Pt[j];
+                                jet2_eta = jet_Eta[j];
+                                jet2_cmva = jet_CMVA[j];
+                                nJets =2;
+                                break;
+                            }
+                            else if(nJets ==0){
+                                jet1_pt = jet_Pt[j];
+                                jet1_eta = jet_Eta[j];
+                                jet1_cmva = jet_CMVA[j];
+                                nJets = 1;
+                            }
+                        }
+                    }
                     el1_pt = el_Pt[0];
-                    jet1_pt = jet_Pt[0];
-                    jet1_csv = jet_CSV[0];
-                    jet1_cmva = jet_CMVA[0];
-                    jet2_pt = jet_Pt[1];
-                    jet2_csv = jet_CSV[1];
-                    jet2_cmva = jet_CMVA[1];
+                    el1_eta = el_Eta[0];
+                    mu1_pt = mu_Pt[0];
+                    mu1_eta = mu_Eta[0];
                     tout->Fill();
 
                     nEvents++;

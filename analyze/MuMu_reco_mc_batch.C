@@ -17,7 +17,7 @@ double Ebeam = 6500.;
 double Pbeam = sqrt(Ebeam*Ebeam - 0.938*0.938);
 
 char *filename("mc_files_may9.txt");
-const TString fout_name("output_files/DYToLL_mc_2016_may26.root");
+const TString fout_name("output_files/DYToLL_mc_2016_jun05.root");
 const double alpha = 0.05;
 const bool PRINT=false;
 const bool MUON_SELECTION_CHECK = false;
@@ -103,7 +103,7 @@ void MuMu_reco_mc_batch()
     SFs runs_bcdef, runs_gh;
     BTag_readers b_reader;
     BTag_effs btag_effs;
-    
+
     //separate SFs for runs BCDEF and GH
     setup_SFs(&runs_bcdef, &runs_gh, &b_reader, &btag_effs);
     printf("Retrieved Scale Factors \n\n");
@@ -605,19 +605,11 @@ void MuMu_reco_mc_batch()
                         mu2_pt = mu_Pt[1];
                         mu1_eta = mu_Eta[0];
                         mu2_eta = mu_Eta[1];
-                        
+
                         //pick out 2 highest pt jets with eta < 2.4
                         nJets =0;
                         for(int j=0; j < jet_size; j++){
                             if(jet_Pt[j] > 20. && std::abs(jet_Eta[j]) < 2.4){
-                                if(nJets ==0){
-                                    jet1_pt = jet_Pt[j];
-                                    jet1_eta = jet_Eta[j];
-                                    jet1_cmva = jet_CMVA[j];
-                                    jet1_flavour = jet_partonflavour[j];
-                                    jet1_b_weight = get_btag_weight(jet_Pt[j], jet_Eta[j],jet_partonflavour[j],btag_effs, b_reader);
-                                    nJets = 1;
-                                }
                                 if(nJets == 1){
                                     jet2_pt = jet_Pt[j];
                                     jet2_eta = jet_Eta[j];
@@ -627,24 +619,32 @@ void MuMu_reco_mc_batch()
                                     nJets =2;
                                     break;
                                 }
+                                else if(nJets ==0){
+                                    jet1_pt = jet_Pt[j];
+                                    jet1_eta = jet_Eta[j];
+                                    jet1_cmva = jet_CMVA[j];
+                                    jet1_flavour = jet_partonflavour[j];
+                                    jet1_b_weight = get_btag_weight(jet_Pt[j], jet_Eta[j],jet_partonflavour[j],btag_effs, b_reader);
+                                    nJets = 1;
+                                }
                             }
                         }
 
 
                         /*
-                        if(jet_size >=2) nJets = 2;
-                        else nJets = jet_size;
-                        if(jet_size >=1 && jet_Pt[0] > 20. && std::abs(jet_Eta[0]) < 2.4){
+                           if(jet_size >=2) nJets = 2;
+                           else nJets = jet_size;
+                           if(jet_size >=1 && jet_Pt[0] > 20. && std::abs(jet_Eta[0]) < 2.4){
 
 
-                        } 
-                        if(jet_size >=2 && jet_Pt[1] > 20. && std::abs(jet_Eta[1]) < 2.4){
-                            jet2_pt = jet_Pt[1];
-                            jet2_cmva = jet_CMVA[1];
-                            jet2_flavour = jet_partonflavour[1];
-                            jet2_b_weight = get_btag_weight(jet_Pt[1], jet_Eta[1],jet_partonflavour[1],btag_effs, b_reader);
-                        }
-                        */
+                           } 
+                           if(jet_size >=2 && jet_Pt[1] > 20. && std::abs(jet_Eta[1]) < 2.4){
+                           jet2_pt = jet_Pt[1];
+                           jet2_cmva = jet_CMVA[1];
+                           jet2_flavour = jet_partonflavour[1];
+                           jet2_b_weight = get_btag_weight(jet_Pt[1], jet_Eta[1],jet_partonflavour[1],btag_effs, b_reader);
+                           }
+                           */
 
 
                         //get muon cut SFs

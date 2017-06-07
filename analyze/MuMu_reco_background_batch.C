@@ -16,8 +16,8 @@ const double root2 = sqrt(2);
 double Ebeam = 6500.;
 double Pbeam = sqrt(Ebeam*Ebeam - 0.938*0.938);
 
-char *filename("ttbar_files_may9.txt");
-const TString fout_name("output_files/ttbar_background_may26.root");
+char *filename("ZZ_files_jun06.txt");
+const TString fout_name("output_files/ZZ_background_jun06.root");
 const double alpha = 0.05;
 const bool PRINT=false;
 const bool MUON_SELECTION_CHECK = false;
@@ -313,14 +313,6 @@ void MuMu_reco_background_batch()
                         nJets =0;
                         for(int j=0; j < jet_size; j++){
                             if(jet_Pt[j] > 20. && std::abs(jet_Eta[j]) < 2.4){
-                                if(nJets ==0){
-                                    jet1_pt = jet_Pt[j];
-                                    jet1_eta = jet_Eta[j];
-                                    jet1_cmva = jet_CMVA[j];
-                                    jet1_flavour = jet_partonflavour[j];
-                                    jet1_b_weight = get_btag_weight(jet_Pt[j], jet_Eta[j],jet_partonflavour[j],btag_effs, b_reader);
-                                    nJets = 1;
-                                }
                                 if(nJets == 1){
                                     jet2_pt = jet_Pt[j];
                                     jet2_eta = jet_Eta[j];
@@ -330,21 +322,29 @@ void MuMu_reco_background_batch()
                                     nJets =2;
                                     break;
                                 }
+                                else if(nJets ==0){
+                                    jet1_pt = jet_Pt[j];
+                                    jet1_eta = jet_Eta[j];
+                                    jet1_cmva = jet_CMVA[j];
+                                    jet1_flavour = jet_partonflavour[j];
+                                    jet1_b_weight = get_btag_weight(jet_Pt[j], jet_Eta[j],jet_partonflavour[j],btag_effs, b_reader);
+                                    nJets = 1;
+                                }
                             }
                         }
 
                         /*
-                        if(jet_size >=2) nJets = 2;
-                        else nJets = jet_size;
-                        if(jet_size >=1){
-                            jet1_pt = jet_Pt[0];
-                            jet1_cmva = jet_CMVA[0];
-                        }
-                        if(jet_size >=2){
-                            jet2_pt = jet_Pt[1];
-                            jet2_cmva = jet_CMVA[1];
-                        }
-                        */
+                           if(jet_size >=2) nJets = 2;
+                           else nJets = jet_size;
+                           if(jet_size >=1){
+                           jet1_pt = jet_Pt[0];
+                           jet1_cmva = jet_CMVA[0];
+                           }
+                           if(jet_size >=2){
+                           jet2_pt = jet_Pt[1];
+                           jet2_cmva = jet_CMVA[1];
+                           }
+                           */
 
 
 
