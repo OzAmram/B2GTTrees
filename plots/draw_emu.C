@@ -53,7 +53,7 @@ Double_t count_tree(TTree *t1,  bool is_data=false){
     Double_t med_btag = 0.4432;
     for (int i=0; i<size; i++) {
         t1->GetEntry(i);
-        if(jet1_cmva > med_btag || jet2_cmva > med_btag){
+        if(true || jet1_cmva > med_btag || jet2_cmva > med_btag){
             if(is_data){
                 count += 1;
             }
@@ -84,18 +84,18 @@ Double_t count_tree(TTree *t1,  bool is_data=false){
 
 
 void draw_emu(){
-    TFile *f_data = TFile::Open("../analyze/output_files/EMu_data_jun02.root");
+    TFile *f_data = TFile::Open("../analyze/output_files/EMu_data_jun05.root");
     TTree *t_data = (TTree *)f_data->Get("T_data");
 
                                 
-    TFile *f_back = TFile::Open("../analyze/output_files/EMu_ttbar_jun02.root");
+    TFile *f_back = TFile::Open("../analyze/output_files/EMu_ttbar_jun05.root");
     TTree *t_back = (TTree *)f_back->Get("T_data");
 
     Double_t data_count = count_tree(t_data, true);
     Double_t ttbar_count = count_tree(t_back);
 
-    printf("Data count %e \n", data_count);
-    printf("TTbar count %e \n", ttbar_count);
+    printf("Data count %.0f \n", data_count);
+    printf("TTbar count %.0f \n", ttbar_count);
     printf("Ratio is %1.2f \n", data_count/ttbar_count);
     return;
 }
