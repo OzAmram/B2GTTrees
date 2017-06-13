@@ -16,8 +16,8 @@ const double root2 = sqrt(2);
 double Ebeam = 6500.;
 double Pbeam = sqrt(Ebeam*Ebeam - 0.938*0.938);
 
-char *filename("mc_files_may9.txt");
-const TString fout_name("output_files/DYToLL_mc_2016_jun05.root");
+char *filename("mc_files_jun12.txt");
+const TString fout_name("output_files/DYToLL_mc_2016_jun12.root");
 const double alpha = 0.05;
 const bool PRINT=false;
 const bool MUON_SELECTION_CHECK = false;

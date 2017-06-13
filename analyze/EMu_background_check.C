@@ -18,8 +18,8 @@ const double root2 = sqrt(2);
 double Ebeam = 6500.;
 double Pbeam = sqrt(Ebeam*Ebeam - 0.938*0.938);
 
-char *filename("ttbar_files_may31.txt");
-const TString fout_name("output_files/EMu_ttbar_jun05.root");
+char *filename("diboson_files_jun06.txt");
+const TString fout_name("output_files/EMu_diboson_jun13.root");
 const double alpha = 0.05;
 const bool PRINT=false;
 const bool MUON_SELECTION_CHECK = false;
@@ -114,7 +114,7 @@ void EMu_background_check()
     Double_t cm_m, xF, cost_r, mu1_pt, el1_pt, jet1_pt, jet2_pt, gen_weight,
              jet1_cmva, jet2_cmva, mu1_eta, el1_eta, jet1_eta, jet2_eta;
     Double_t bcdef_HLT_SF, bcdef_iso_SF, bcdef_id_SF, gh_HLT_SF, gh_iso_SF, gh_id_SF,
-             el_id_SF;
+             el_id_SF, btag_weight;
     Float_t met_pt;
     Int_t nJets, jet1_flavour, jet2_flavour;
     TLorentzVector mu, el, cm, q1, q2;
@@ -142,6 +142,7 @@ void EMu_background_check()
     tout->Branch("gh_iso_SF", &gh_iso_SF);
     tout->Branch("gh_id_SF", &gh_id_SF);
     tout->Branch("el_id_SF", &el_id_SF);
+    tout->Branch("btag_weight", &btag_weight);
 
 
 
@@ -325,6 +326,8 @@ void EMu_background_check()
                         mu1_eta = mu_Eta[0];
 
 
+
+                        btag_weight = get_emu_btag_weight(jet1_pt, jet1_eta, jet1_flavour, jet2_pt, jet2_eta, jet2_flavour, btag_effs, b_reader);
                         bcdef_HLT_SF = get_HLT_SF(mu1_pt, mu1_eta, runs_bcdef.HLT_SF);
                         gh_HLT_SF = get_HLT_SF(mu1_pt, mu1_eta, runs_gh.HLT_SF);
 

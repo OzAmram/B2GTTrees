@@ -89,6 +89,19 @@ Double_t btag_weight_helper(Double_t pt, Double_t eta, Double_t SF, TH2D *mc_eff
 }
 
 
+Double_t btag_eff(Double_t pt, Double_t eta,TH2D *mc_eff){
+    if (pt >=500) pt = 450;
+
+    TAxis* x_ax =  mc_eff->GetXaxis();
+    TAxis *y_ax =  mc_eff->GetYaxis();
+    int xbin = x_ax->FindBin(pt);
+    int ybin = y_ax->FindBin(std::abs(eta));
+
+    Double_t eff = mc_eff->GetBinContent(xbin, ybin);
+    if(eff == 0) printf("Warning: 0 efficiency for pt %.0f, eta %1.1f \n!", pt, eta);
+    //printf("Efficiency is %f \n", eff);
+    return eff;
+}
 
 Double_t get_btag_weight(Double_t pt, Double_t eta, Float_t flavour, BTag_effs btag_effs, BTag_readers b_readers){
     //compute weighting from btagging scale factors
@@ -116,6 +129,51 @@ Double_t get_btag_weight(Double_t pt, Double_t eta, Float_t flavour, BTag_effs b
     return weight;
 }
 
+
+Double_t get_emu_btag_weight(Double_t pt1, Double_t eta1, Float_t flavour1, Double_t pt2, Double_t eta2, Float_t flavour2, BTag_effs btag_effs, BTag_readers b_readers){
+    //compute weighting from btagging scale factors
+
+    Double_t bjet1_SF, bjet1_eff, bjet2_SF, bjet2_eff;
+
+    if(std::abs(flavour1 - 5.) < 0.01){ //bjet
+        bjet1_SF = b_readers.b_reader.eval_auto_bounds("central", BTagEntry::FLAV_B, eta1, pt1);
+        bjet1_eff= btag_eff(pt1, eta1, btag_effs.b_eff);
+        //printf("B jet, SF is %0.3f, weight is %.4f \n", bjet_SF, weight);
+
+    }
+    else if (std::abs(flavour1 - 4.) < 0.01){ //cjet
+        bjet1_SF = b_readers.c_reader.eval_auto_bounds("central", BTagEntry::FLAV_C, eta1, pt1);
+        bjet1_eff= btag_eff(pt1, eta1, btag_effs.c_eff);
+        //printf("C jet, SF is %0.3f, weight is %.4f \n", bjet_SF, weight);
+    }
+    else{ //udsg jet
+        bjet1_SF = b_readers.udsg_reader.eval_auto_bounds("central", BTagEntry::FLAV_UDSG, eta1,pt1);
+        bjet1_eff= btag_eff(pt1, eta1, btag_effs.udsg_eff);
+        //printf("UDSG jet, SF is %0.3f, weight is %.4f \n", bjet_SF, weight);
+    }
+
+
+    if(std::abs(flavour2 - 5.) < 0.01){ //bjet
+        bjet2_SF = b_readers.b_reader.eval_auto_bounds("central", BTagEntry::FLAV_B, eta2, pt2);
+        bjet2_eff= btag_eff(pt2, eta2, btag_effs.b_eff);
+        //printf("B jet, SF is %0.3f, weight is %.4f \n", bjet_SF, weight);
+
+    }
+    else if (std::abs(flavour2 - 4.) < 0.01){ //cjet
+        bjet2_SF = b_readers.c_reader.eval_auto_bounds("central", BTagEntry::FLAV_C, eta2, pt2);
+        bjet2_eff= btag_eff(pt2, eta2, btag_effs.c_eff);
+        //printf("C jet, SF is %0.3f, weight is %.4f \n", bjet_SF, weight);
+    }
+    else{ //udsg jet
+        bjet2_SF = b_readers.udsg_reader.eval_auto_bounds("central", BTagEntry::FLAV_UDSG, eta2,pt2);
+        bjet2_eff= btag_eff(pt2, eta2, btag_effs.udsg_eff);
+        //printf("UDSG jet, SF is %0.3f, weight is %.4f \n", bjet_SF, weight);
+    }
+    
+    Double_t P_mc = bjet1_eff + bjet2_eff - bjet1_eff*bjet2_eff;
+    Double_t P_data = bjet1_SF*bjet1_eff + bjet2_SF*bjet2_eff - bjet1_SF*bjet2_SF*bjet1_eff*bjet2_eff;
+    return P_data/P_mc;
+}
 
 
 
@@ -198,6 +256,7 @@ void setup_SFs(SFs *runs_BCDEF, SFs *runs_GH, BTag_readers *btag_r, BTag_effs *b
 }
 
 void setup_el_SF(el_SFs *sf){
+    //Setup electron SF's
     TFile *f7 = TFile::Open("SFs/egammaEffi.txt_EGM2D.root");
     TDirectory *subdir7 = gDirectory;
     TH2D *h = (TH2D *) subdir7->Get("EGamma_SF2D")->Clone();
