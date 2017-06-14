@@ -27,9 +27,9 @@
 
 
 void draw_cmp(){
-    TFile *f_data = TFile::Open("../analyze/output_files/DYToLL_data_2016_jun05.root");
+    TFile *f_data = TFile::Open("../analyze/output_files/DYToLL_data_2016_jun07.root");
     TTree *t_data = (TTree *)f_data->Get("T_data");
-    TFile *f_mc = TFile::Open("../analyze/output_files/DYToLL_mc_2016_jun05.root");
+    TFile *f_mc = TFile::Open("../analyze/output_files/DYToLL_mc_2016_jun13.root");
     TTree *t_mc = (TTree *)f_mc->Get("T_data");
     TTree *t_mc_nosig = (TTree *)f_mc->Get("T_back");
     TFile *f_ttbar = TFile::Open("../analyze/output_files/ttbar_background_jun05.root");
@@ -87,8 +87,8 @@ void draw_cmp(){
     make_m_cost_hist(t_mc, mc_m, mc_cost, false);
     make_m_cost_hist(t_mc_nosig, mc_nosig_m, mc_nosig_cost, false);
     make_m_cost_hist(t_ttbar, ttbar_m, ttbar_cost, false);
-    ttbar_m->Scale(1.2);
-    ttbar_cost->Scale(1.2);
+    ttbar_m->Scale(1.24);
+    ttbar_cost->Scale(1.24);
 
     make_m_cost_hist(t_ww, ww_m, ww_cost, false);
     make_m_cost_hist(t_wz, wz_m, wz_cost, false);
