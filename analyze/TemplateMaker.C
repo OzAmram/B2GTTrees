@@ -234,6 +234,70 @@ int gen_background_template(TTree *t1, TH2F* h, TH2F* h_count, Double_t m_low, D
     return 0;
 }
 
+int gen_combined_background_template(int nTrees, TTree **ts, TH2F* h,  Double_t m_low, Double_t m_high){
+    h->Sumw2();
+    for(int i=0; i<nTrees; i++){
+        TTree *t1 = ts[i];
+        Long64_t nEntries  =  t1->GetEntries();
+        Double_t m, xF, cost, mu1_pt, mu2_pt, jet1_cmva, jet2_cmva, gen_weight;
+        Double_t bcdef_HLT_SF, bcdef_iso_SF, bcdef_id_SF;
+        Double_t gh_HLT_SF, gh_iso_SF, gh_id_SF;
+        Double_t jet1_pt, jet2_pt, jet1_b_weight, jet2_b_weight;
+        Float_t cost_pt, met_pt;
+        Int_t nJets;
+        t1->SetBranchAddress("m", &m);
+        t1->SetBranchAddress("xF", &xF);
+        t1->SetBranchAddress("cost", &cost);
+        t1->SetBranchAddress("jet1_CMVA", &jet1_cmva);
+        t1->SetBranchAddress("jet2_CMVA", &jet2_cmva);
+        t1->SetBranchAddress("jet1_pt", &jet1_pt);
+        t1->SetBranchAddress("jet2_pt", &jet2_pt);
+        t1->SetBranchAddress("met_pt", &met_pt);
+        t1->SetBranchAddress("nJets", &nJets);
+        t1->SetBranchAddress("gen_weight", &gen_weight);
+        t1->SetBranchAddress("bcdef_HLT_SF", &bcdef_HLT_SF);
+        t1->SetBranchAddress("bcdef_iso_SF", &bcdef_iso_SF);
+        t1->SetBranchAddress("bcdef_id_SF", &bcdef_id_SF);
+        t1->SetBranchAddress("gh_HLT_SF", &gh_HLT_SF);
+        t1->SetBranchAddress("gh_iso_SF", &gh_iso_SF);
+        t1->SetBranchAddress("gh_id_SF", &gh_id_SF);
+        t1->SetBranchAddress("jet1_b_weight", &jet1_b_weight);
+        t1->SetBranchAddress("jet2_b_weight", &jet2_b_weight);
+
+        TH2D *h_bcdef = (TH2D *)h->Clone("h_back_bcdef");
+        TH2D *h_gh = (TH2D *)h->Clone("h_back_gh");
+        int nEvents = 0;
+        for (int i=0; i<nEntries; i++) {
+            t1->GetEntry(i);
+            bool no_bjets = has_no_bjets(nJets, jet1_pt, jet2_pt, jet1_cmva, jet2_cmva);
+            if(m >= m_low && m <= m_high && met_pt < 50. 
+                    && no_bjets){
+
+                Double_t bcdef_weight = gen_weight * bcdef_HLT_SF * bcdef_iso_SF * bcdef_id_SF;
+                Double_t gh_weight = gen_weight * gh_HLT_SF * gh_iso_SF * gh_id_SF;
+                if (nJets >= 1){
+                    bcdef_weight *= jet1_b_weight;
+                    gh_weight *= jet1_b_weight;
+                }
+                if (nJets >= 2){
+                    bcdef_weight *= jet2_b_weight;
+                    gh_weight *= jet2_b_weight;
+                }
+                h_bcdef->Fill(xF, cost, bcdef_weight);
+                h_gh->Fill(xF, cost, gh_weight);
+                nEvents++;
+            }
+        }
+        h_bcdef->Scale(bcdef_lumi*1000);
+        h_gh->Scale(gh_lumi*1000);
+        h->Add(h_bcdef);
+        h->Add(h_gh);
+        t1->ResetBranchAddresses();
+    }
+    h->Scale(1./h->Integral());
+    return 0;
+}
+
 void make_m_cost_hist(TTree *t1, TH1F *h_m, TH1F *h_cost, bool is_data=false){
     //read event data
     Long64_t size  =  t1->GetEntries();

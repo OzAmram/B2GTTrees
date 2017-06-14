@@ -16,8 +16,8 @@ const double root2 = sqrt(2);
 double Ebeam = 6500.;
 double Pbeam = sqrt(Ebeam*Ebeam - 0.938*0.938);
 
-char *filename("ZZ_files_jun06.txt");
-const TString fout_name("output_files/ZZ_background_jun06.root");
+char *filename("background_files_jun13.txt");
+const TString fout_name("output_files/combined_background_jun13.root");
 const double alpha = 0.05;
 const bool PRINT=false;
 const bool MUON_SELECTION_CHECK = false;

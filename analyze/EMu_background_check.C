@@ -358,7 +358,7 @@ void EMu_background_check()
         }
     }
     fclose(root_files);
-    printf("There were %i ttbar events in %i files.\n",
+    printf("There were %i events in %i files.\n",
             nEvents, nFiles);
     fout->cd();
 

@@ -41,8 +41,8 @@ float m_high = 100000;
 
 Double_t med_btag = 0.4432;
 
-TH2F *h_asym, *h_sym, *h_nosig, *h_ttbar, *h_data, *h_mc;
-TH2F *h_mc_count, *h_nosig_count, *h_ttbar_count, *h_sym_count;
+TH2F *h_asym, *h_sym, *h_back,  *h_data, *h_mc;
+TH2F *h_mc_count, *h_sym_count;
 //void *x_axp, *y_axp, *z_axp;
 
 //define axis globally for convinience 
@@ -82,13 +82,11 @@ void fcn(int& npar, double* deriv, double& f, double par[], int flag){
     for (int i=0; i<nDataEvents; i++){
         Double_t p_sym = get_prob(v_xF[i], v_cost[i], h_sym);
         Double_t p_asym = get_prob(v_xF[i],  v_cost[i], h_asym);
-        Double_t p_nosig = get_prob(v_xF[i], v_cost[i], h_nosig);
-        Double_t p_ttbar = get_prob(v_xF[i], v_cost[i], h_ttbar);
+        Double_t p_back = get_prob(v_xF[i], v_cost[i], h_back);
 
         double AFB = par[0];
-        double r_nosig = par[1];
-        double r_ttbar = par[2];
-        double prob = r_nosig*p_nosig + r_ttbar*p_ttbar + (1 - r_nosig - r_ttbar) * (p_sym + AFB*p_asym);
+        double r_back = par[1];
+        double prob = r_back*p_back + (1 - r_back) * (p_sym + AFB*p_asym);
         if(prob > 1) printf("Warning prob is too big \n");
         prob = max(prob, 1e-20);
         if(prob >0.0) lnL += log(prob);
@@ -104,13 +102,11 @@ Double_t  template_fcn(Double_t *x, Double_t *par){
 
     Double_t p_sym = get_prob(xx, yy,  h_sym);
     Double_t p_asym = get_prob(xx, yy, h_asym);
-    Double_t p_nosig = get_prob(xx, yy,  h_nosig);
-    Double_t p_ttbar = get_prob(xx, yy,  h_ttbar);
+    Double_t p_back = get_prob(xx, yy,  h_back);
 
     Double_t AFB = par[0];
-    Double_t r_nosig = par[1];
-    Double_t r_ttbar = par[2];
-    Double_t prob = r_nosig*p_nosig + r_ttbar*p_ttbar + (1 - r_nosig - r_ttbar) * (p_sym + AFB*p_asym);
+    Double_t r_back = par[1];
+    Double_t prob = r_back*p_back + (1 - r_back) * (p_sym + AFB*p_asym);
     return prob;
 }
 
@@ -127,86 +123,70 @@ void setup(){
             n_xf_bins, xf_bins, n_cost_bins, cost_bins);
     h_asym = new TH2F("h_asym", "Asymmetric template of mc (xF cost_r) xF > 0.15",
             n_xf_bins, xf_bins, n_cost_bins, cost_bins);
-    h_ttbar = new TH2F("h_ttbar", "TTBar with met < 50 and CMVA < 0",
-            n_xf_bins, xf_bins, n_cost_bins, cost_bins);
-    h_ttbar_count = new TH2F("h_ttbar_count", "Events in bins for ttbar template",
-            n_xf_bins, xf_bins, n_cost_bins, cost_bins);
-    h_nosig_count = new TH2F("h_nosig_count", "Events in bins for nosig template",
-            n_xf_bins, xf_bins, n_cost_bins, cost_bins);
-    h_nosig = new TH2F("h_nosig", "Template of no asymetry drell-yan events from mc (xF, cost_r)",
+    h_back = new TH2F("h_ttbar", "Combined background template",
             n_xf_bins, xf_bins, n_cost_bins, cost_bins);
 
     h_data = new TH2F("h_data", "Data template of (x_f, cost_r) xF > 0.15",
             n_xf_bins, xf_bins, n_cost_bins, cost_bins);
 
     gen_mc_template(t_mc, h_sym, h_asym, h_sym_count, m_low, m_high);
-    gen_background_template(t_nosig, h_nosig, h_nosig_count, m_low, m_high);
-    gen_background_template(t_ttbar, h_ttbar, h_ttbar_count, m_low, m_high);
+    TTree *ts[2] = {t_ttbar, t_nosig};
+    gen_combined_background_template(2, ts, h_back, m_low, m_high);
 
     nDataEvents = gen_data_template(t_data, h_data, &v_m, &v_xF, &v_cost, m_low, m_high);
     printf("Finishing setup \n");
     return;
 }
 
-void MuMu_fit_new(){
+void MuMu_fit_combined_back(){
     setup();
 
-    printf("Integrals are %f %f %f %f %f \n", h_data->Integral(), h_sym->Integral(), 
-                                           h_asym->Integral(), h_ttbar->Integral(), 
-                                           h_nosig->Integral());
+    printf("Integrals are %f %f %f %f  \n", h_data->Integral(), h_sym->Integral(), 
+                                           h_asym->Integral(), h_back->Integral() );
 
 
 
     float AFB_start = 0.6;
     float AFB_start_error = 0.1;
     float AFB_max = 0.75;
-    float r_ttbar_start = 0.1;
-    float r_ttbar_start_error = 0.04;
-    float r_ttbar_max = 0.2;
-    float r_nosig_start = 0.005;
-    float r_nosig_start_error = 0.005;
-    float r_nosig_max = 0.02;
+    float r_back_start = 0.1;
+    float r_back_start_error = 0.04;
+    float r_back_max = 0.25;
 
-    TVirtualFitter * minuit = TVirtualFitter::Fitter(0,3);
+    TVirtualFitter * minuit = TVirtualFitter::Fitter(0,2);
     minuit->SetFCN(fcn);
     minuit->SetParameter(0,"AFB", AFB_start, AFB_start_error, -AFB_max, AFB_max);
-    minuit->SetParameter(1,"r_nosig", r_nosig_start, r_nosig_start_error, 0, r_nosig_max);
-    minuit->SetParameter(2,"r_ttbar", r_ttbar_start, r_ttbar_start_error, 0, r_ttbar_max);
+    minuit->SetParameter(1,"r_back", r_back_start, r_back_start_error, 0, r_back_max);
     Double_t arglist[100];
     arglist[0] = 10000.;
     minuit->ExecuteCommand("MIGRAD", arglist,0);
 
 
     printf("Trying template fit \n\n\n");
-    Int_t npar = 3;
+    Int_t npar = 2;
     Int_t ndim = 2;
     TF2 *fit_fcn = new TF2("F1", &template_fcn, 0., 1., -1.,1., npar, ndim);
-    fit_fcn->SetParNames("AFB", "r_nosig", "r_ttbar");
+    fit_fcn->SetParNames("AFB", "r_back");
     fit_fcn->SetParameter(0, AFB_start); //AFB
     fit_fcn->SetParLimits(0, -AFB_max, AFB_max);
     fit_fcn->SetParError(0, AFB_start_error);
-    fit_fcn->SetParameter(1, r_nosig_start); //r_nosig
-    fit_fcn->SetParLimits(1, 0, r_nosig_max);
-    fit_fcn->SetParError(1, r_nosig_start_error);
-    fit_fcn->SetParameter(2, r_ttbar_start); //r_ttbar
-    fit_fcn->SetParLimits(2, 0, r_ttbar_max);
-    fit_fcn->SetParError(2, r_ttbar_start_error);
+    fit_fcn->SetParameter(1, r_back_start); //r_back
+    fit_fcn->SetParLimits(1, 0, r_back_max);
+    fit_fcn->SetParError(1, r_back_start_error);
     h_data->Fit(fit_fcn, "WL M N");
 
 
-    Double_t AFB_fit, r_ttbar_fit, r_nosig_fit;
-    Double_t AFB_fit_error, r_ttbar_fit_error, r_nosig_fit_error;
+    Double_t AFB_fit, r_back_fit ;
+    Double_t AFB_fit_error, r_back_fit_error;
     AFB_fit = minuit->GetParameter(0); 
     AFB_fit_error = minuit->GetParError(0);
-    r_ttbar_fit = minuit->GetParameter(2); 
-    r_ttbar_fit_error = minuit->GetParError(2);
-    r_nosig_fit = minuit->GetParameter(1); 
-    r_nosig_fit_error = minuit->GetParError(1);
+    r_back_fit = minuit->GetParameter(1); 
+    r_back_fit_error = minuit->GetParError(1);
 
 
 
-    printf("\n\n\n Fit on M=[%.0f, %.0f], %i Events: AFB = %0.3f +/- %0.3f r_ttbar = %0.3f +/- %0.3f r_nosig = %0.4f +/- %0.4f \n", 
-                m_low, m_high, nDataEvents, AFB_fit, AFB_fit_error, r_ttbar_fit, r_ttbar_fit_error, r_nosig_fit, r_nosig_fit_error);
+    printf("\n\n\n Fit on M=[%.0f, %.0f], %i Events: AFB = %0.3f +/- %0.3f r_back = %0.3f +/- %0.3f \n", 
+                m_low, m_high, nDataEvents, AFB_fit, AFB_fit_error, r_back_fit, r_back_fit_error );
 
 
     /*

@@ -17,7 +17,7 @@ double Ebeam = 6500.;
 double Pbeam = sqrt(Ebeam*Ebeam - 0.938*0.938);
 
 char *filename("mc_files_jun12.txt");
-const TString fout_name("output_files/DYToLL_mc_2016_jun12.root");
+const TString fout_name("output_files/DYToLL_mc_2016_jun13.root");
 const double alpha = 0.05;
 const bool PRINT=false;
 const bool MUON_SELECTION_CHECK = false;
@@ -116,11 +116,12 @@ void MuMu_reco_mc_batch()
     Double_t bcdef_HLT_SF, bcdef_iso_SF, bcdef_id_SF, gh_HLT_SF, gh_iso_SF, gh_id_SF,
              jet1_b_weight, jet2_b_weight;
     Int_t nJets, jet1_flavour, jet2_flavour;
+    Bool_t is_tau_event;
     Float_t met_pt;
     t_signal->Branch("m", &cm_m, "m/D");
     t_signal->Branch("xF", &xF, "xF/D");
     t_signal->Branch("cost", &cost_r, "cost/D");
-    t_signal->Branch("cost_st", &cost_st, "cost/D");
+    t_signal->Branch("cost_st", &cost_st, "cost_st/D");
     t_signal->Branch("mu1_pt", &mu1_pt, "mu1_pt/D");
     t_signal->Branch("mu2_pt", &mu2_pt, "mu2_pt/D");
     t_signal->Branch("mu1_eta", &mu1_eta, "mu1_eta/D");
@@ -146,13 +147,14 @@ void MuMu_reco_mc_batch()
     t_signal->Branch("nJets", &nJets, "nJets/I");
     t_signal->Branch("jet1_flavour", &jet1_flavour, "jet1_flavour/I");
     t_signal->Branch("jet2_flavour", &jet2_flavour, "jet2_flavour/I");
+    t_signal->Branch("is_tau_event", &is_tau_event);
 
 
     TTree *t_back = new TTree("T_back", "Tree for events with no asym (qq, gg)");
     t_back->Branch("m", &cm_m, "m/D");
     t_back->Branch("xF", &xF, "xF/D");
     t_back->Branch("cost", &cost_r, "cost/D");
-    t_back->Branch("cost_st", &cost_st, "cost/D");
+    t_back->Branch("cost_st", &cost_st, "cost_st/D");
     t_back->Branch("mu1_pt", &mu1_pt, "mu1_pt/D");
     t_back->Branch("mu2_pt", &mu2_pt, "mu2_pt/D");
     t_back->Branch("mu1_eta", &mu1_pt, "mu1_eta/D");
@@ -191,7 +193,6 @@ void MuMu_reco_mc_batch()
     unsigned int nQGlu=0;
     unsigned int nGluGlu=0;
     unsigned int nTauTau=0;
-    unsigned int nElEl=0;
     unsigned int mismatch=0;
     unsigned int nNonIso = 0;
 
@@ -378,6 +379,8 @@ void MuMu_reco_mc_batch()
                         int inc_2 =-1;
                         int gen_mu_p=-1;
                         int gen_mu_m=-1;
+                        int gen_tau_p=-1;
+                        int gen_tau_m=-1;
                         int gen_e_p=-1;
                         int gen_e_m=-1;
                         int intermed=-1;
@@ -385,6 +388,8 @@ void MuMu_reco_mc_batch()
                         float quark_dir_eta;
 
                         bool signal_event = true;//whether it is an event with an asym or not
+
+                        is_tau_event = false;
 
                         for(int k=0; k<gen_size; k++){
                             if(gen_status[k] == INCIDENT_PARTICLE && 
@@ -415,6 +420,27 @@ void MuMu_reco_mc_batch()
                                     if(gen_mu_p == -1) gen_mu_p = k;
                                     else{
                                         if(abs(gen_Mom0ID[k]) != TAU) printf("WARNING: More than one mu_p\n\n");
+                                        if(PRINT) sprintf(out_buff + strlen(out_buff), "Extra mu_p detected\n");
+                                        //print_out = true;
+                                    }
+                                }
+                            }
+                            //record tau's
+                            if(abs(gen_id[k]) == TAU && 
+                                    ( (gen_Mom0ID[k] == Z || gen_Mom0ID[k] == PHOTON) || abs(gen_Mom0ID[k]) == ELECTRON ||
+                                      (gen_status[k] == OUTGOING)) ){
+                                if(gen_id[k] == TAU){
+                                    if(gen_tau_m == -1) gen_tau_m = k;
+                                    else{
+                                        printf("WARNING: More than one tau_m\n\n");
+                                        if(PRINT) sprintf(out_buff + strlen(out_buff), "Extra mu_m detected\n");
+                                        //print_out = true;
+                                    }
+                                }
+                                if(gen_id[k] == -TAU){
+                                    if(gen_tau_p == -1) gen_tau_p = k;
+                                    else{
+                                        printf("WARNING: More than one tau_p\n\n");
                                         if(PRINT) sprintf(out_buff + strlen(out_buff), "Extra mu_p detected\n");
                                         //print_out = true;
                                     }
@@ -500,12 +526,10 @@ void MuMu_reco_mc_batch()
                             int inc_id1 = gen_id[inc_1];
                             int inc_id2 = gen_id[inc_2];
                             if(abs(gen_Dau0ID[inc_1]) == TAU){
+                                signal_event = true;
+                                if(gen_tau_p == -1 || gen_tau_m == -1) printf("Didn't record tau's :( \n");
                                 nTauTau++;
-                                continue;
-                            }
-                            else if(abs(gen_Dau0ID[inc_1]) == ELECTRON){
-                                nElEl++;
-                                continue;
+                                is_tau_event = true;
                             }
                             else if((abs(inc_id1) <= 6 && abs(inc_id2) <= 6) && (inc_id1 * inc_id2 < 0)){ //a quark and anti quark
                                 //qq-bar
@@ -558,7 +582,24 @@ void MuMu_reco_mc_batch()
                         //quark direction)
                         double cost = 2*(mu_m_pls*mu_p_min - mu_m_min*mu_p_pls)/sqrt(cm_m2*(cm_m2 + qt2));
 
+                        double cost_tau; 
+                        //cos(theta) from generator level taus
+                        if(is_tau_event){
+                            TLorentzVector tau_p, tau_m, tau_cm;
+                            tau_p.SetPtEtaPhiE(gen_Pt[gen_tau_p], gen_Eta[gen_tau_p], gen_Phi[gen_tau_p], gen_E[gen_tau_p]);
+                            tau_m.SetPtEtaPhiE(gen_Pt[gen_tau_m], gen_Eta[gen_tau_m], gen_Phi[gen_tau_m], gen_E[gen_tau_m]);
+                            tau_cm = tau_p + tau_m;
+                            double tau_p_pls = (tau_p.E()+tau_p.Pz())/root2;
+                            double tau_p_min = (tau_p.E()-tau_p.Pz())/root2;
+                            double tau_m_pls = (tau_m.E()+tau_m.Pz())/root2;
+                            double tau_m_min = (tau_m.E()-tau_m.Pz())/root2;
+                            double tau_qt2 = tau_cm.Px()*tau_cm.Px()+tau_cm.Py()*tau_cm.Py();
+                            double tau_cm_m2 = tau_cm.M2();
+                            cost_tau = 2*(tau_m_pls*tau_p_min - tau_m_min*tau_p_pls)/sqrt(tau_cm_m2*(tau_cm_m2 + tau_qt2));
+                        }
 
+
+                        /*
                         TLorentzVector p1(0., 0., Pbeam, Ebeam);
                         TLorentzVector p2(0., 0., -Pbeam, Ebeam);
 
@@ -585,6 +626,7 @@ void MuMu_reco_mc_batch()
                         mu_m.RotateUz(pzu); 
                         double cost_r_b = mu_m.CosTheta();
                         deltaC = std::abs(cost_r_b) - std::abs(cost);
+                        */
                         //printf("cost_r, cost_r_b, cost_r_b2: %0.2f %0.2f %0.2f \n", cost_r, cost_r_b, cost_r_b2);
 
                         if(PRINT){
@@ -662,11 +704,21 @@ void MuMu_reco_mc_batch()
                         if(signal_event){
                             //cost_st = cos(theta)_* correct angle obtained from 'cheating' and
                             //looking at initial quark direction
-                            if(quark_dir_eta < 0){
-                                if(PRINT) sprintf(out_buff + strlen(out_buff), "Sign flip\n");
-                                cost_st = -cost;
+                            if(!is_tau_event){
+                                if(quark_dir_eta < 0){
+                                    if(PRINT) sprintf(out_buff + strlen(out_buff), "Sign flip\n");
+                                    cost_st = -cost;
+                                }
+                                else cost_st = cost;
                             }
-                            else cost_st = cost;
+                            else{
+                                if(quark_dir_eta < 0){
+                                    if(PRINT) sprintf(out_buff + strlen(out_buff), "Sign flip\n");
+                                    cost_st = -cost_tau;
+                                }
+                                else cost_st = cost_tau;
+                            }
+
 
                             //anti-symmetric template has computed weight and is 
                             //anti-symmetrized by flipping the sign of the weight and the bin
@@ -716,14 +768,14 @@ void MuMu_reco_mc_batch()
             }
 
             f1->Close();
-            printf("moving on to next file, currently %i events \n\n", nEvents);
+            printf("moving on to next file, currently %i events %i Taus \n\n", nEvents, nTauTau);
         }
     }
     fclose(root_files);
-    printf("There were %i qqbar, %i qGlu, in %i kept events in %i files."
+    printf("There were %i qqbar, %i qGlu, %i tautau in %i kept events in %i files."
             "There were also %i background events (%i qq and %i gg)"
-            "There were also %i TauTau, %i ElEl discarded events \n", 
-            nQQb, nQGlu, nSignal, nFiles, nQQ + nGluGlu, nQQ, nGluGlu, nTauTau, nElEl);
+            , 
+            nQQb, nQGlu, nTauTau, nSignal, nFiles, nQQ + nGluGlu, nQQ, nGluGlu);
     //printf("Ran on MC data and produced templates with %i events\n", nEvents);
     fout->cd();
 
