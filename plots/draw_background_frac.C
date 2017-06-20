@@ -28,7 +28,7 @@
 void draw_background_frac(){
     TFile *f_data = TFile::Open("../analyze/output_files/DYToLL_data_2016_jun07.root");
     TTree *t_data = (TTree *)f_data->Get("T_data");
-    TFile *f_mc = TFile::Open("../analyze/output_files/DYToLL_mc_2016_jun13.root");
+    TFile *f_mc = TFile::Open("../analyze/output_files/DYToLL_mc_2016_jun15.root");
     TTree *t_mc = (TTree *)f_mc->Get("T_data");
     TTree *t_mc_nosig = (TTree *)f_mc->Get("T_back");
     TFile *f_ttbar = TFile::Open("../analyze/output_files/ttbar_background_jun05.root");
@@ -41,6 +41,9 @@ void draw_background_frac(){
     TTree *t_wz = (TTree *)f_wz->Get("T_data");
     TFile *f_zz = TFile::Open("../analyze/output_files/ZZ_background_jun06.root");
     TTree *t_zz = (TTree *)f_zz->Get("T_data");
+
+    TFile *f_wt = TFile::Open("../analyze/output_files/WT_background_jun20.root");
+    TTree *t_wt = (TTree *)f_wt->Get("T_data");
 
     int nBins = 6;
 
@@ -60,6 +63,8 @@ void draw_background_frac(){
     TH1F *zz_m = new TH1F("zz_m", "MC Signal (qqbar, qglu, qbarglu)", nBins, m_bins);
     TH1F *zz_cost = new TH1F("zz_cost", "MC Signal (qqbar, qglu, qbarglu)", 40, -1,1);
 
+    TH1F *wt_m = new TH1F("wt_m", "W top", nBins, m_bins);
+    TH1F *wt_cost = new TH1F("wt_cost", "W top", 40, -1,1);
 
     make_m_cost_hist(t_mc, mc_m, mc_cost, false);
     make_m_cost_hist(t_mc_nosig, mc_nosig_m, mc_nosig_cost, false);
@@ -67,9 +72,11 @@ void draw_background_frac(){
     make_m_cost_hist(t_ww, ww_m, ww_cost, false);
     make_m_cost_hist(t_wz, wz_m, wz_cost, false);
     make_m_cost_hist(t_zz, zz_m, zz_cost, false);
+    make_m_cost_hist(t_wt, wt_m, wt_cost, false);
 
     Double_t ttbar_frac[nBins], ttbar_frac_unc[nBins], diboson_frac[nBins], diboson_frac_unc[nBins], bin_center[nBins];
     Double_t back_frac[nBins], back_frac_unc[nBins], nosig_frac[nBins], nosig_frac_unc[nBins];
+    Double_t wt_frac[nBins], wt_frac_unc[nBins];
     for (int i=1; i <= nBins; i++){
         Double_t N_mc = mc_m->GetBinContent(i);
         Double_t N_mc_nosig = mc_nosig_m->GetBinContent(i);
@@ -78,40 +85,56 @@ void draw_background_frac(){
         Double_t N_wz = wz_m->GetBinContent(i);
         Double_t N_zz = wz_m->GetBinContent(i);
         Double_t N_diboson = N_ww+ + N_wz+ N_zz;
-        Double_t N_back = N_ttbar + N_diboson;
-        Double_t denom = N_ttbar + N_diboson + N_mc + N_mc_nosig;
+        Double_t N_wt = wt_m->GetBinContent(i);
+        Double_t N_back = N_ttbar + N_diboson + N_wt;
+        Double_t denom = N_ttbar + N_diboson + N_mc + N_wt + N_mc_nosig;
         bin_center[i-1] = mc_m->GetBinCenter(i);
         printf("bin center %f \n", bin_center[i-1]);
         Double_t scaling = 1.24;
         nosig_frac[i-1] = N_mc_nosig/denom;
         nosig_frac_unc[i-1] = std::sqrt(  N_mc_nosig*pow((1/denom - N_mc_nosig/pow(denom,2)), 2) +
-                                          (N_mc + N_ttbar + N_diboson) * pow(1/denom, 4));
+                                          (N_mc + N_wt + N_ttbar + N_diboson) * pow(1/denom, 4));
         diboson_frac[i-1] = N_diboson/(denom);
         diboson_frac_unc[i-1] = std::sqrt(  N_diboson*pow((1/denom - N_diboson/pow(denom,2)), 2) +
-                                          (N_mc + N_ttbar + N_mc_nosig) * pow(1/denom, 4));
+                                          (N_mc + N_wt + N_ttbar + N_mc_nosig) * pow(1/denom, 4));
         ttbar_frac[i-1] =  scaling*(N_ttbar)/(denom);
         ttbar_frac_unc[i-1] = scaling*std::sqrt(  N_ttbar*pow((1/denom - N_ttbar/pow(denom,2)), 2) +
-                                          (N_mc + N_diboson + N_mc_nosig) * pow(1/denom, 4));
-        back_frac[i-1]  = diboson_frac[i-1] + ttbar_frac[i-1];
-        back_frac_unc[i-1] = std::sqrt(pow(ttbar_frac_unc[i-1],2) + pow(diboson_frac_unc[i-1], 2));
+                                          (N_mc + N_wt + N_diboson + N_mc_nosig) * pow(1/denom, 4));
+        wt_frac[i-1] =  (N_wt)/(denom);
+        wt_frac_unc[i-1] = std::sqrt(  N_wt*pow((1/denom - N_wt/pow(denom,2)), 2) +
+                                          (N_mc + N_ttbar + N_diboson + N_mc_nosig) * pow(1/denom, 4));
+        back_frac[i-1]  = diboson_frac[i-1] + ttbar_frac[i-1] + nosig_frac[i-1] + wt_frac[i-1];
+        back_frac_unc[i-1] = std::sqrt(pow(ttbar_frac_unc[i-1],2) + pow(diboson_frac_unc[i-1], 2) + 
+                                       pow(nosig_frac_unc[i-1],2) + pow(wt_frac_unc[i-1], 2));
     }
     bin_center[nBins-1] = 850;
-    Double_t fit_res[] = {0.192, 0.158, 0.195, 0.162, 0.152, 0.095};
-    Double_t fit_errs[] = {0.008, 0.011, 0.009, 0.013, 0.024, 0.029};
+    Double_t fit_res[] = {0.192, 0.159, 0.195, 0.163, 0.152, 0.095};
+    Double_t fit_errs[] = {0.008, 0.011, 0.011, 0.014, 0.024, 0.030};
+
     TGraphErrors *mc_nosig_frac = new TGraphErrors(nBins, bin_center, nosig_frac, 0, nosig_frac_unc);
     mc_nosig_frac->SetTitle("MC no asym events (qq, gluglu, qbarqbar)");
+
     TGraphErrors *ttbar_mc_frac = new TGraphErrors(nBins, bin_center, ttbar_frac, 0, ttbar_frac_unc);
-    ttbar_mc_frac->SetTitle("ttbar fraction from MC (scaled with EMu) ");
+    ttbar_mc_frac->SetTitle("ttbar fraction from MC (scaled with e#mu) ");
+
+    TGraphErrors *wt_mc_frac = new TGraphErrors(nBins, bin_center, wt_frac, 0, wt_frac_unc);
+    wt_mc_frac->SetTitle("W top fraction from MC");
+
     TGraphErrors *diboson_mc_frac = new TGraphErrors(nBins, bin_center, diboson_frac, 0, diboson_frac_unc);
     diboson_mc_frac->SetTitle("diboson fraction from MC ");
+
     TGraphErrors *back_mc_frac = new TGraphErrors(nBins, bin_center, back_frac, 0, back_frac_unc);
     back_mc_frac->SetTitle("Total background fraction from MC ");
+
     TGraphErrors *fit_frac = new TGraphErrors(nBins, bin_center, fit_res, 0, fit_errs);
     fit_frac->SetTitle("Fraction of background events from fit results");
+
     fit_frac->SetMaximum(0.2);
     fit_frac->SetMinimum(0.0);
     ttbar_mc_frac->SetMaximum(0.2);
     ttbar_mc_frac->SetMinimum(0.0);
+    wt_mc_frac->SetMaximum(0.2);
+    wt_mc_frac->SetMinimum(0.0);
     diboson_mc_frac->SetMaximum(0.2);
     diboson_mc_frac->SetMinimum(0.0);
     mc_nosig_frac->SetMaximum(0.2);
@@ -127,6 +150,11 @@ void draw_background_frac(){
     ttbar_mc_frac->SetLineWidth(3);
     ttbar_mc_frac->SetLineColor(kBlue);
 
+
+    wt_mc_frac->SetMarkerStyle(kFullSquare);
+    wt_mc_frac->SetMarkerColor(kOrange);
+    wt_mc_frac->SetLineWidth(3);
+    wt_mc_frac->SetLineColor(kOrange);
 
     diboson_mc_frac->SetMarkerStyle(kFullSquare);
     diboson_mc_frac->SetMarkerColor(kGreen);
@@ -144,12 +172,13 @@ void draw_background_frac(){
     mc_nosig_frac->SetLineColor(kYellow);
     TMultiGraph *mg = new TMultiGraph();
     mg->Add(ttbar_mc_frac);
+    mg->Add(wt_mc_frac);
     mg->Add(diboson_mc_frac);
     mg->Add(back_mc_frac);
     mg->Add(mc_nosig_frac);
     mg->Add(fit_frac);
 
-    mg->SetTitle("Fraction of background events");
+    mg->SetTitle("Fraction of background events (Nominal e#mu scaling)");
     
 
     mg->Draw("A C P");
