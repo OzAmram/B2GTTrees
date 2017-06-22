@@ -42,9 +42,10 @@ void make_tau_m_cost_hist(TTree *t1, TH1F *h_m, TH1F *h_cost, bool is_data=false
     TH2D *h_m_gh = (TH2D *)h_m->Clone("h_m_gh");
     TH2D *h_cost_bcdef = (TH2D *)h_cost->Clone("h_cost_bcdef");
     TH2D *h_cost_gh = (TH2D *)h_cost->Clone("h_cost_gh");
+    is_tau_event = false;
     t1->SetBranchAddress("m", &m);
     t1->SetBranchAddress("xF", &xF);
-    t1->SetBranchAddress("cost_st", &cost);
+    t1->SetBranchAddress("cost", &cost);
     t1->SetBranchAddress("met_pt", &met_pt);
     t1->SetBranchAddress("jet2_CMVA", &jet2_cmva);
     t1->SetBranchAddress("jet1_CMVA", &jet1_cmva);
@@ -68,7 +69,7 @@ void make_tau_m_cost_hist(TTree *t1, TH1F *h_m, TH1F *h_cost, bool is_data=false
         t1->GetEntry(i);
         bool no_bjets = has_no_bjets(nJets, jet1_pt, jet2_pt, jet1_cmva, jet2_cmva);
 
-        if(is_tau_event && m >= 150. && met_pt < 50. && no_bjets){
+        if(!is_tau_event && m >= 150. && met_pt < 50. && no_bjets){
             if(is_data){
                 h_m->Fill(m);
                 h_cost->Fill(cost);
@@ -106,34 +107,44 @@ void make_tau_m_cost_hist(TTree *t1, TH1F *h_m, TH1F *h_cost, bool is_data=false
 }
 
 void draw_m_cost(){
-    TFile *f = TFile::Open("../analyze/output_files/WT_background_jun20.root"); 
-    TTree *t = (TTree *)f->Get("T_data"); 
+    TFile *f_mc = TFile::Open("../analyze/output_files/DYToLL_mc_2016_jun15.root");
+    TTree *t_mc = (TTree *)f_mc->Get("T_data");
+    TTree *t_mc_nosig = (TTree *)f_mc->Get("T_back");
     int n_m_bins = 6; 
     Double_t m_bins[] = {150,200,250,350,500,700,1000}; 
-    TH1F *h_m = new TH1F("h_m", "DYtoTauTau, dimuon Mass distribution; M_{#mu#mu} (GeV)", n_m_bins, m_bins);
+    TH1F *h_m_mc = new TH1F("h_m_mc", "DYtoTauTau, dimuon Mass distribution; M_{#mu#mu} (GeV)", n_m_bins, m_bins);
 
-    TH1F *h_cost = new TH1F("h_cost", "DYtoTauTau, ditau angular distribution; c_{*}", n_cost_bins, cost_bins);
+    TH1F *h_cost_mc = new TH1F("h_cost_mc", "Colins-Soper Angular Distribution; c_{*}", n_cost_bins, cost_bins);
+
+
+    TH1F *h_m_mc_nosig = new TH1F("h_m_mcnosig", "DYtoTauTau, dimuon Mass distribution; M_{#mu#mu} (GeV)", n_m_bins, m_bins);
+
+    TH1F *h_cost_mc_nosig = new TH1F("h_cost_mcnosig", "DYtoTauTau, ditau angular distribution; c_{*}", n_cost_bins, cost_bins);
     //TH1F *h_cost = new TH1F("h_cost", "DYtoTauTau, dimuon angular distribution; Cos(#theta)", 20, -1, 1);
 
 
-    make_m_cost_hist(t, h_m, h_cost, false);
+    make_tau_m_cost_hist(t_mc, h_m_mc, h_cost_mc, false);
+    make_tau_m_cost_hist(t_mc_nosig, h_m_mc_nosig, h_cost_mc_nosig, false);
 
-    TCanvas *c1 = new TCanvas("c1", "ZZ back M", 100,200, 900, 700);
-    c1->cd();
-    h_m->Print();
-    h_m->Draw("hist");
-    h_m->SetFillColor(kBlue);
-    h_m->SetMarkerStyle(21);
-    h_m->SetMarkerColor(kBlue);
-    c1->Update();
+    h_cost_mc->Scale(1./h_cost_mc->Integral());
+    h_cost_mc_nosig->Scale(1./h_cost_mc_nosig->Integral());
+
 
     TCanvas *c2 = new TCanvas("c2", "ZZ back cost", 900, 700);
     c2->cd();
-    h_cost->Print();
-    h_cost->Draw("hist");
-    h_cost->SetFillColor(kBlue);
-    h_cost->SetMarkerStyle(21);
-    h_cost->SetMarkerColor(kBlue);
+    //h_cost_mc->Print();
+    h_cost_mc->Draw("hist");
+    h_cost_mc->SetMaximum(0.22);
+    h_cost_mc->SetStats(kFALSE);
+    h_cost_mc_nosig->SetMaximum(0.22);
+    h_cost_mc->SetLineColor(kBlue);
+    //h_cost_mc->SetMarkerStyle(21);
+    h_cost_mc->SetMarkerColor(kBlue);
+
+    h_cost_mc_nosig->Draw("hist same");
+    h_cost_mc_nosig->SetLineColor(kRed);
+    //h_cost_mc->SetMarkerStyle(21);
+    h_cost_mc_nosig->SetMarkerColor(kRed);
     c2->Update();
 
 }

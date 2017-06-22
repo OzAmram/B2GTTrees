@@ -21,12 +21,15 @@
 #include "TSystem.h"
 #include "Math/Functor.h"
 #include "../analyze/TemplateMaker.C"
+#include "tdrstyle.C"
+#include "CMS_lumi.C"
 
 
 
 
 
 void draw_cmp(){
+    setTDRStyle();
     TFile *f_data = TFile::Open("../analyze/output_files/DYToLL_data_2016_jun07.root");
     TTree *t_data = (TTree *)f_data->Get("T_data");
     TFile *f_mc = TFile::Open("../analyze/output_files/DYToLL_mc_2016_jun13.root");
@@ -151,20 +154,20 @@ void draw_cmp(){
 
     
 
-    THStack *m_stack = new THStack("m_stack", "MuMu Mass Distribution: Data vs MC (All SF's Applied, EMu weighted ttbar); (GeV)");
+    THStack *m_stack = new THStack("m_stack", "MuMu Mass Distribution: Data vs MC ; m_{#mu^{+}#mu^{-}} (GeV)");
     m_stack->Add(ttbar_m);
+    m_stack->Add(wt_m);
     m_stack->Add(diboson_m);
     m_stack->Add(mc_nosig_m);
     m_stack->Add(mc_m);
-    m_stack->Add(wt_m);
 
 
-    THStack *cost_stack = new THStack("cost_stack", "Cos(#theta) Distribution: Data vs MC (All SF's Applied, EMu weighted ttbar);Cos(#theta)");
+    THStack *cost_stack = new THStack("cost_stack", "Cos(#theta) Distribution: Data vs MC;Cos(#theta)_{r}");
     cost_stack->Add(ttbar_cost);
+    cost_stack->Add(wt_cost);
     cost_stack->Add(diboson_cost);
     cost_stack->Add(mc_nosig_cost);
     cost_stack->Add(mc_cost);
-    cost_stack->Add(wt_cost);
 
     TCanvas *c_m = new TCanvas("c_m", "Histograms", 200, 10, 900, 700);
     //c_m->SetLogy();

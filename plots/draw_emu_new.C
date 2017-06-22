@@ -1,3 +1,4 @@
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
@@ -23,17 +24,25 @@
 
 
 
-Double_t count_tree(TTree *t1,  bool is_data=false){
+Double_t count_tree(TTree *t1,  Double_t m_low, Double_t m_high, bool is_data=false){
     //count events in the tree
     Long64_t size  =  t1->GetEntries();
+    Int_t nJets;
     Double_t m, xF, cost, mu1_pt, mu2_pt, jet1_cmva, jet2_cmva, gen_weight;
+    Double_t jet1_pt, jet2_pt;
     Double_t bcdef_HLT_SF, bcdef_iso_SF, bcdef_id_SF;
     Double_t gh_HLT_SF, gh_iso_SF, gh_id_SF;
     Double_t el_id_SF, btag_weight;
     Float_t cost_pt, met_pt;
+    TLorentzVector *el, *mu, cm;
     t1->SetBranchAddress("met_pt", &met_pt);
+    t1->SetBranchAddress("nJets", &nJets);
     t1->SetBranchAddress("jet2_CMVA", &jet2_cmva);
     t1->SetBranchAddress("jet1_CMVA", &jet1_cmva);
+    t1->SetBranchAddress("jet1_pt", &jet1_pt);
+    t1->SetBranchAddress("jet2_pt", &jet2_pt);
+    t1->SetBranchAddress("el", el);
+    t1->SetBranchAddress("mu", mu);
     if(!is_data){
         t1->SetBranchAddress("gen_weight", &gen_weight);
         t1->SetBranchAddress("bcdef_HLT_SF", &bcdef_HLT_SF);
@@ -54,7 +63,10 @@ Double_t count_tree(TTree *t1,  bool is_data=false){
     Double_t med_btag = 0.4432;
     for (int i=0; i<size; i++) {
         t1->GetEntry(i);
-        if((jet1_cmva > med_btag || jet2_cmva > med_btag)){
+        cm = *el + *mu;
+        m = cm.M();
+        bool no_bjets = has_no_bjets(nJets, jet1_pt, jet2_pt, jet1_cmva, jet2_cmva);
+        if(m > m_low && m < m_high && no_bjets && met_pt < 50.){
             if(is_data){
                 count += 1;
             }
@@ -84,7 +96,7 @@ Double_t count_tree(TTree *t1,  bool is_data=false){
 }
 
 
-void draw_emu(){
+void draw_emu_new(){
     TFile *f_data = TFile::Open("../analyze/output_files/EMu_data_jun07.root");
     TTree *t_data = (TTree *)f_data->Get("T_data");
 
@@ -102,12 +114,13 @@ void draw_emu(){
     TTree *t_wt = (TTree *)f_wt->Get("T_data");
 
 
-
-    Double_t data_count = count_tree(t_data, true);
-    Double_t ttbar_count = count_tree(t_ttbar);
-    Double_t diboson_count = count_tree(t_diboson);
-    Double_t wt_count = count_tree(t_wt);
-    Double_t DYToLL_count = count_tree(t_DYToLL);
+    Double_t m_low = 150;
+    Double_t m_high = 200;
+    Double_t data_count = count_tree(t_data, m_low, m_high, true);
+    Double_t ttbar_count = count_tree(t_ttbar, m_low, m_high);
+    Double_t diboson_count = count_tree(t_diboson, m_low, m_high) ;
+    Double_t wt_count = count_tree(t_wt, m_low, m_high);
+    Double_t DYToLL_count = count_tree(t_DYToLL, m_low, m_high);
 
     printf("Data count %.0f \n", data_count);
     printf("TTbar count %.0f \n", ttbar_count);

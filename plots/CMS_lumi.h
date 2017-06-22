@@ -22,14 +22,14 @@ float lumiTextOffset   = 0.2;
 float cmsTextSize      = 0.75;
 float cmsTextOffset    = 0.1;  // only used in outOfFrame version
 
-float relPosX    = 0.045;
+float relPosX    = 0.085;
 float relPosY    = 0.035;
 float relExtraDY = 1.2;
 
 // ratio of "CMS" and extra text size
 float extraOverCmsTextSize  = 0.76;
 
-TString lumi_13TeV = "35.6 fb^{-1}";
+TString lumi_13TeV = "35.9 fb^{-1}";
 TString lumi_8TeV  = "19.7 fb^{-1}";
 TString lumi_7TeV  = "5.1 fb^{-1}";
 TString lumi_sqrtS = "35.9 fb^{-1}";

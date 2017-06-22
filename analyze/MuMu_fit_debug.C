@@ -354,7 +354,7 @@ void plot_things(Double_t AFB, Double_t r_ttbar, Double_t r_nosig){
     gPad->BuildLegend();
     
 
-    TCanvas *c5 = new TCanvas("c6", "data vs fit", 200, 10, 900,700);
+    TCanvas *c6 = new TCanvas("c6", "data vs fit", 200, 10, 900,700);
     c6->cd();
     h_fit->SetMaximum(0.25);
     h_fit->SetFillColor(kBlue);
@@ -377,12 +377,6 @@ void plot_things(Double_t AFB, Double_t r_ttbar, Double_t r_nosig){
 
 
 
-    /*
-    TCanvas *c3 = new TCanvas("c3", "canva", 100,100, 700,700);
-    TH1D *h_mc_cost = h_mc->ProjectionY("h_mc_cost");
-    //h_mc_cost->SetBit(TH1::kNoStats);
-    h_mc_cost->SetFillColor(kBlue);
-    h_mc_cost->Draw();
 
 
     TCanvas *c32 = new TCanvas("c32", "canva", 100,100, 700,700);
@@ -398,7 +392,6 @@ void plot_things(Double_t AFB, Double_t r_ttbar, Double_t r_nosig){
     TCanvas *c34 = new TCanvas("c34", "canva", 100,100, 700,700);
     //h_asym_cost->SetBit(TH1::kNoStats);
     h_sym_cost->Draw();
-    */
 
 
 }
