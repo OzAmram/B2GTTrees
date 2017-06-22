@@ -35,6 +35,7 @@ void MuMu_reco_data_batch()
              jet1_cmva, jet1_eta, jet2_cmva, jet2_eta;
     Int_t nJets;
     Float_t met_pt;
+    TLorentzVector mu_p, mu_m, cm, q1, q2;
     tout->Branch("m", &cm_m, "m/D");
     tout->Branch("xF", &xF, "xF/D");
     tout->Branch("cost", &cost_r, "cost/D");
@@ -42,6 +43,8 @@ void MuMu_reco_data_batch()
     tout->Branch("mu2_pt", &mu2_pt, "mu2_pt/D");
     tout->Branch("mu1_eta", &mu1_eta, "mu1_eta/D");
     tout->Branch("mu2_eta", &mu2_eta, "mu2_eta/D");
+    tout->Branch("mu_m", "TLorentzVector", &mu_m);
+    tout->Branch("mu_p", "TLorentzVector", &mu_p);
     tout->Branch("jet1_pt", &jet1_pt, "jet1_pt/D");
     tout->Branch("jet1_eta", &jet1_eta, "jet1_eta/D");
     tout->Branch("jet1_CMVA", &jet1_cmva, "jet1_CMVA/D");
@@ -91,7 +94,6 @@ void MuMu_reco_data_batch()
                 jet_CSV[JET_SIZE], jet_CMVA[JET_SIZE];
 
         Int_t HLT_IsoMu, HLT_IsoTkMu;
-        TLorentzVector mu_p, mu_m, cm, q1, q2;
         t1->SetBranchAddress("mu_size", &mu_size); //number of muons in the event
         t1->SetBranchAddress("mu_Pt", &mu_Pt);
         t1->SetBranchAddress("mu_Eta", &mu_Eta);

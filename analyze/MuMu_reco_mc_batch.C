@@ -10,14 +10,14 @@
 #define GEN_SIZE 300
 #define MU_SIZE 100
 #define JET_SIZE 20
-#define MAX_SAMPLES 10
+#define MAX_SAMPLES 20
 
 const double root2 = sqrt(2);
 double Ebeam = 6500.;
 double Pbeam = sqrt(Ebeam*Ebeam - 0.938*0.938);
 
 char *filename("mc_files_jun12.txt");
-const TString fout_name("output_files/DYToLL_mc_2016_jun13.root");
+const TString fout_name("output_files/DYToLL_mc_2016_jun21.root");
 const double alpha = 0.05;
 const bool PRINT=false;
 const bool MUON_SELECTION_CHECK = false;
@@ -126,6 +126,8 @@ void MuMu_reco_mc_batch()
     t_signal->Branch("mu2_pt", &mu2_pt, "mu2_pt/D");
     t_signal->Branch("mu1_eta", &mu1_eta, "mu1_eta/D");
     t_signal->Branch("mu2_eta", &mu2_eta, "mu2_eta/D");
+    t_signal->Branch("mu_m", "TLorentzVector", &mu_m);
+    t_singal->Branch("mu_p", "TLorentzVector", &mu_p);
     t_signal->Branch("jet1_pt", &jet1_pt, "jet1_pt/D");
     t_signal->Branch("jet1_eta", &jet1_eta, "jet1_eta/D");
     t_signal->Branch("jet1_CMVA", &jet1_cmva, "jet1_CMVA/D");
@@ -159,6 +161,8 @@ void MuMu_reco_mc_batch()
     t_back->Branch("mu2_pt", &mu2_pt, "mu2_pt/D");
     t_back->Branch("mu1_eta", &mu1_pt, "mu1_eta/D");
     t_back->Branch("mu2_eta", &mu2_pt, "mu2_eta/D");
+    t_back->Branch("mu_m", "TLorentzVector", &mu_m);
+    t_back->Branch("mu_p", "TLorentzVector", &mu_p);
     t_back->Branch("jet1_pt", &jet1_pt, "jet1_pt/D");
     t_back->Branch("jet1_eta", &jet1_eta, "jet1_eta/D");
     t_back->Branch("jet1_CMVA", &jet1_cmva, "jet1_CMVA/D");
@@ -180,6 +184,7 @@ void MuMu_reco_mc_batch()
     t_back->Branch("nJets", &nJets, "nJets/I");
     t_back->Branch("jet1_flavour", &jet1_flavour, "jet1_flavour/I");
     t_back->Branch("jet2_flavour", &jet2_flavour, "jet2_flavour/I");
+    t_back->Branch("is_tau_event", &is_tau_event);
 
 
 
@@ -193,6 +198,7 @@ void MuMu_reco_mc_batch()
     unsigned int nQGlu=0;
     unsigned int nGluGlu=0;
     unsigned int nTauTau=0;
+    unsigned int nFailedID=0;
     unsigned int mismatch=0;
     unsigned int nNonIso = 0;
 
@@ -512,11 +518,13 @@ void MuMu_reco_mc_batch()
                         }
                         else {
                             printf("WARNING: Unable to identify MuMu pair in event %i, skipping \n", i);
+                            nFailedID ++;
                             print_out = true;
                             continue;
                         }
                         if((inc_1 == -1) || (inc_2 == -1)){
                             printf("WARNING: Unable to identify initial state particles in event %i, skipping \n", i);
+                            nFailedID ++;
                             print_out = true;
                             continue;
                         }
@@ -526,12 +534,15 @@ void MuMu_reco_mc_batch()
                             int inc_id1 = gen_id[inc_1];
                             int inc_id2 = gen_id[inc_2];
                             if(abs(gen_Dau0ID[inc_1]) == TAU){
-                                signal_event = true;
-                                if(gen_tau_p == -1 || gen_tau_m == -1) printf("Didn't record tau's :( \n");
+                                if(gen_tau_p == -1 || gen_tau_m == -1){
+                                    printf("Didn't record tau's :( \n");
+                                    nFailedID ++;
+                                    continue;
+                                }
                                 nTauTau++;
                                 is_tau_event = true;
                             }
-                            else if((abs(inc_id1) <= 6 && abs(inc_id2) <= 6) && (inc_id1 * inc_id2 < 0)){ //a quark and anti quark
+                            if((abs(inc_id1) <= 6 && abs(inc_id2) <= 6) && (inc_id1 * inc_id2 < 0)){ //a quark and anti quark
                                 //qq-bar
                                 signal_event = true;
                                 nQQb++;
@@ -565,6 +576,7 @@ void MuMu_reco_mc_batch()
                             else {
                                 printf("WARNING: not qqbar, qq, qg, or gg event");
                                 printf("First particle was %i second particle was %i \n \n ", inc_id1, inc_id2);
+                                nFailedID ++;
                             }
                         }
                         //RECO LEVEL
@@ -729,6 +741,7 @@ void MuMu_reco_mc_batch()
                             t_signal->Fill();
                         }
                         else{
+                            cost_st = cost_r;
                             t_back->Fill();
                         }
 
@@ -772,10 +785,10 @@ void MuMu_reco_mc_batch()
         }
     }
     fclose(root_files);
-    printf("There were %i qqbar, %i qGlu, %i tautau in %i kept events in %i files."
+    printf("There were %i qqbar, %i qGlu (%i of them tautau) in %i kept events in %i files."
             "There were also %i background events (%i qq and %i gg)"
-            , 
-            nQQb, nQGlu, nTauTau, nSignal, nFiles, nQQ + nGluGlu, nQQ, nGluGlu);
+            "There were %i Failed ID's \n" , 
+            nQQb, nQGlu, nTauTau, nSignal, nFiles, nQQ + nGluGlu, nQQ, nGluGlu, nFailedID);
     //printf("Ran on MC data and produced templates with %i events\n", nEvents);
     fout->cd();
 

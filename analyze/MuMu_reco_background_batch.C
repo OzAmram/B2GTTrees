@@ -10,14 +10,14 @@
 #define GEN_SIZE 300
 #define MU_SIZE 100
 #define JET_SIZE 20
-#define MAX_SAMPLES 10
+#define MAX_SAMPLES 20
 
 const double root2 = sqrt(2);
 double Ebeam = 6500.;
 double Pbeam = sqrt(Ebeam*Ebeam - 0.938*0.938);
 
-char *filename("background_files_jun13.txt");
-const TString fout_name("output_files/combined_background_jun13.root");
+char *filename("QCD_files.txt");
+const TString fout_name("output_files/QCD_background_jun20.root");
 const double alpha = 0.05;
 const bool PRINT=false;
 const bool MUON_SELECTION_CHECK = false;
@@ -112,6 +112,7 @@ void MuMu_reco_background_batch()
              jet1_b_weight, jet2_b_weight;
     Int_t nJets, jet1_flavour, jet2_flavour;
     Float_t met_pt;
+    TLorentzVector mu_p, mu_m, cm, q1, q2;
     tout->Branch("m", &cm_m, "m/D");
     tout->Branch("xF", &xF, "xF/D");
     tout->Branch("cost", &cost_r, "cost/D");
@@ -119,6 +120,8 @@ void MuMu_reco_background_batch()
     tout->Branch("mu2_pt", &mu2_pt, "mu2_pt/D");
     tout->Branch("mu1_eta", &mu1_eta, "mu1_eta/D");
     tout->Branch("mu2_eta", &mu2_eta, "mu2_eta/D");
+    tout->Branch("mu_m", "TLorentzVector", &mu_m);
+    tout->Branch("mu_p", "TLorentzVector", &mu_p);
     tout->Branch("jet1_pt", &jet1_pt, "jet1_pt/D");
     tout->Branch("jet1_eta", &jet1_eta, "jet1_eta/D");
     tout->Branch("jet1_CMVA", &jet1_cmva, "jet1_CMVA/D");
@@ -192,7 +195,6 @@ void MuMu_reco_background_batch()
             Float_t evt_Gen_Weight;
 
             Int_t HLT_IsoMu, HLT_IsoTkMu;
-            TLorentzVector mu_p, mu_m, cm, q1, q2;
             t1->SetBranchAddress("mu_size", &mu_size); //number of muons in the event
             t1->SetBranchAddress("mu_Pt", &mu_Pt);
             t1->SetBranchAddress("mu_Eta", &mu_Eta);

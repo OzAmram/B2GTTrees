@@ -33,10 +33,19 @@ float m_max = 1000.;
 int n_cost_bins = 10;
 Float_t cost_bins[] = {-1.0, -.8, -.6, -.4, -.2, 0., 0.2, 0.4, 0.6, 0.8, 1.0};
 
+//int n_xf_bins = 4;
+//float xf_max = 1.0;
+//Float_t xf_bins[] = {0., 0.04, 0.08, 0.14, 1.0};
+//int n_m_bins = 1;
+//float m_max = 1000.;
+//int n_cost_bins = 8;
+//Float_t cost_bins[] = {-1.0, -.75, -.5, -.25, 0., 0.25, 0.5, 0.75, 1.0};
 
 
 float m_low = 700;
 float m_high = 100000;
+
+bool print = true;
 
 
 Double_t med_btag = 0.4432;
@@ -49,10 +58,10 @@ TH2F *h_mc_count, *h_sym_count;
 TAxis *x_ax, *y_ax, *z_ax;
 
 //MC templates
-TFile* f_mc = (TFile*) TFile::Open("output_files/DYToLL_mc_2016_jun13.root");
+TFile* f_mc = (TFile*) TFile::Open("output_files/DYToLL_mc_2016_jun21.root");
 TTree *t_mc = (TTree *) f_mc ->Get("T_data");
 TTree *t_nosig = (TTree *) f_mc ->Get("T_back");
-TFile* f_ttbar = (TFile*) TFile::Open("output_files/combined_background_jun13.root");
+TFile* f_ttbar = (TFile*) TFile::Open("output_files/combined_background_jun20.root");
 TTree *t_ttbar = (TTree *) f_ttbar ->Get("T_data");
 
 TFile *f_data = TFile::Open("output_files/DYToLL_data_2016_jun07.root");
@@ -78,21 +87,36 @@ Double_t get_prob(Double_t xF, Double_t cost, TH2F *h){
 // fcn passes back f = - 2*ln(L), (where L is the likelihood of the event)
 void fcn(int& npar, double* deriv, double& f, double par[], int flag){
     double lnL = 0.0;
+    int misses = 0;
+    if(print) printf("\n \n \n ");
 
     for (int i=0; i<nDataEvents; i++){
         Double_t p_sym = get_prob(v_xF[i], v_cost[i], h_sym);
         Double_t p_asym = get_prob(v_xF[i],  v_cost[i], h_asym);
         Double_t p_back = get_prob(v_xF[i], v_cost[i], h_back);
 
+
+
         double AFB = par[0];
         double r_back = par[1];
         double prob = r_back*p_back + (1 - r_back) * (p_sym + AFB*p_asym);
         if(prob > 1) printf("Warning prob is too big \n");
+        if(print && p_sym < 1e-20){
+            misses++;
+            printf(" Warning p_sym is 0 or negative! for bin xf: %0.2f cost: %1.2f \n", v_xF[i], v_cost[i]);
+            if(p_back < 1e-20) printf("p_back Is also 0 or negative! \n");
+            if(prob < 1e-20) printf("Warning prob is also 0 or negative! \n");
+            p_sym = 1e-20;
+        }
+        //if(prob < 1e-20) printf(" Warning prob is 0 or negative! for bin xf: %0.2f cost: %1.2f \n", v_xF[i], v_cost[i]);
         prob = max(prob, 1e-20);
         if(prob >0.0) lnL += log(prob);
-        else printf("Warning, prob is negative \n");
     }
     f = -2.0 * lnL;
+    if(print) {
+        printf("%i misses out of %i events \n\n\n", misses, nDataEvents);
+        print = false;
+    }
 
 }
 
@@ -129,6 +153,7 @@ void setup(){
     h_data = new TH2F("h_data", "Data template of (x_f, cost_r) xF > 0.15",
             n_xf_bins, xf_bins, n_cost_bins, cost_bins);
 
+
     gen_mc_template(t_mc, h_sym, h_asym, h_sym_count, m_low, m_high);
     TTree *ts[2] = {t_ttbar, t_nosig};
     gen_combined_background_template(2, ts, h_back, m_low, m_high);
@@ -143,6 +168,7 @@ void MuMu_fit_combined_back(){
 
     printf("Integrals are %f %f %f %f  \n", h_data->Integral(), h_sym->Integral(), 
                                            h_asym->Integral(), h_back->Integral() );
+    h_sym->Print();
 
 
 
@@ -150,7 +176,7 @@ void MuMu_fit_combined_back(){
     float AFB_start_error = 0.1;
     float AFB_max = 0.75;
     float r_back_start = 0.1;
-    float r_back_start_error = 0.04;
+    float r_back_start_error = 0.02;
     float r_back_max = 0.25;
 
     TVirtualFitter * minuit = TVirtualFitter::Fitter(0,2);
@@ -162,6 +188,7 @@ void MuMu_fit_combined_back(){
     minuit->ExecuteCommand("MIGRAD", arglist,0);
 
 
+    /*
     printf("Trying template fit \n\n\n");
     Int_t npar = 2;
     Int_t ndim = 2;
@@ -173,7 +200,9 @@ void MuMu_fit_combined_back(){
     fit_fcn->SetParameter(1, r_back_start); //r_back
     fit_fcn->SetParLimits(1, 0, r_back_max);
     fit_fcn->SetParError(1, r_back_start_error);
+    h_data->Sumw2();
     h_data->Fit(fit_fcn, "WL M N");
+    */
 
 
     Double_t AFB_fit, r_back_fit ;

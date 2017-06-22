@@ -12,7 +12,7 @@
 
 const double root2 = sqrt(2);
 const char* filename("data_files_jun07.txt");
-const TString fout_name("output_files/EMu_data_jun07.root");
+const TString fout_name("output_files/EMu_data_jun21.root");
 const double alpha = 0.05;
 
 const bool data_2016 = true;
@@ -42,8 +42,8 @@ void EMu_data_check()
     tout->Branch("mu1_eta", &mu1_eta, "mu1_eta/D");
     tout->Branch("el1_pt", &el1_pt, "el1_pt/D");
     tout->Branch("el1_eta", &el1_eta, "el1_eta/D");
-    tout->Branch("el", &el);
-    tout->Branch("mu", &mu);
+    tout->Branch("el", "TLorentzVector", &el);
+    tout->Branch("mu", "TLorentzVector", &mu);
     tout->Branch("jet1_pt", &jet1_pt, "jet1_pt/D");
     tout->Branch("jet1_eta", &jet1_eta, "jet1_eta/D");
     tout->Branch("jet1_CMVA", &jet1_cmva, "jet1_CMVA/D");

@@ -153,6 +153,7 @@ int gen_mc_template(TTree *t1, TH2F* h_sym, TH2F *h_asym, TH2F *h_count, Double_
             h_asym_gh->Fill(xF, -cost, -reweight * gh_weight);
 
             h_count->Fill(xF, cost, 1);
+            h_count->Fill(xF, -cost, 1);
         }
     }
 
