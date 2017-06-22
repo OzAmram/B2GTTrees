@@ -41,6 +41,9 @@ void draw_cmp(){
     TTree *t_wz = (TTree *)f_wz->Get("T_data");
     TFile *f_zz = TFile::Open("../analyze/output_files/ZZ_background_jun06.root");
     TTree *t_zz = (TTree *)f_zz->Get("T_data");
+
+    TFile *f_wt = TFile::Open("../analyze/output_files/WT_background_jun20.root");
+    TTree *t_wt = (TTree *)f_wt->Get("T_data");
     TH1F *data_m = new TH1F("data_m", "Data Dimuon Mass Distribution", 30, 150, 1000);
 
     TH1F *mc_m = new TH1F("mc_m", "MC Signal (qqbar, qglu, qbarglu)", 30, 150, 1000);
@@ -80,8 +83,14 @@ void draw_cmp(){
     TH1F *zz_m = new TH1F("zz_m", "MC Signal (qqbar, qglu, qbarglu)", 30, 150, 1000);
     TH1F *zz_cost = new TH1F("zz_cost", "MC Signal (qqbar, qglu, qbarglu)", 40, -1,1);
 
+    TH1F *wt_m = new TH1F("wt_m", "MC Signal (qqbar, qglu, qbarglu)", 30, 150, 1000);
+    TH1F *wt_cost = new TH1F("wt_cost", "MC Signal (qqbar, qglu, qbarglu)", 40, -1,1);
+
     TH1F *diboson_m = new TH1F("diboson_m", "DiBoson (WW, WZ, ZZ)", 30, 150, 1000);
     TH1F *diboson_cost = new TH1F("diboson_cost", "DiBoson (WW, WZ,ZZ)", 40, -1,1);
+
+    wt_m->SetFillColor(kOrange); 
+    wt_cost->SetFillColor(kOrange); 
 
     make_m_cost_hist(t_data, data_m, data_cost, true);
     make_m_cost_hist(t_mc, mc_m, mc_cost, false);
@@ -93,6 +102,7 @@ void draw_cmp(){
     make_m_cost_hist(t_ww, ww_m, ww_cost, false);
     make_m_cost_hist(t_wz, wz_m, wz_cost, false);
     make_m_cost_hist(t_zz, zz_m, zz_cost, false);
+    make_m_cost_hist(t_wt, wt_m, wt_cost, false);
 
     diboson_m->Add(ww_m);
     diboson_m->Add(wz_m);
@@ -146,6 +156,7 @@ void draw_cmp(){
     m_stack->Add(diboson_m);
     m_stack->Add(mc_nosig_m);
     m_stack->Add(mc_m);
+    m_stack->Add(wt_m);
 
 
     THStack *cost_stack = new THStack("cost_stack", "Cos(#theta) Distribution: Data vs MC (All SF's Applied, EMu weighted ttbar);Cos(#theta)");
@@ -153,15 +164,17 @@ void draw_cmp(){
     cost_stack->Add(diboson_cost);
     cost_stack->Add(mc_nosig_cost);
     cost_stack->Add(mc_cost);
+    cost_stack->Add(wt_cost);
 
     TCanvas *c_m = new TCanvas("c_m", "Histograms", 200, 10, 900, 700);
     //c_m->SetLogy();
     c_m->cd();
     m_stack->Draw("hist");
+    m_stack->SetMaximum(65000);
     gStyle->SetEndErrorSize(4);
     data_m->SetMarkerStyle(kFullCircle);
     data_m->SetMarkerColor(1);
-    data_m->Draw("E1 same");
+    data_m->Draw("P E same");
     c_m->Update();
     gPad->BuildLegend();
 

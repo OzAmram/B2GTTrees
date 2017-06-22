@@ -44,7 +44,7 @@ void make_tau_m_cost_hist(TTree *t1, TH1F *h_m, TH1F *h_cost, bool is_data=false
     TH2D *h_cost_gh = (TH2D *)h_cost->Clone("h_cost_gh");
     t1->SetBranchAddress("m", &m);
     t1->SetBranchAddress("xF", &xF);
-    t1->SetBranchAddress("cost", &cost);
+    t1->SetBranchAddress("cost_st", &cost);
     t1->SetBranchAddress("met_pt", &met_pt);
     t1->SetBranchAddress("jet2_CMVA", &jet2_cmva);
     t1->SetBranchAddress("jet1_CMVA", &jet1_cmva);
@@ -106,19 +106,17 @@ void make_tau_m_cost_hist(TTree *t1, TH1F *h_m, TH1F *h_cost, bool is_data=false
 }
 
 void draw_m_cost(){
-    TFile *f = TFile::Open("../analyze/output_files/DYToLL_mc_2016_jun13.root");
-    TTree *t = (TTree *)f->Get("T_data");
-
-    int n_m_bins = 6;
-    Double_t m_bins[] = {150,200,250,350,500,700,1000};
-
+    TFile *f = TFile::Open("../analyze/output_files/WT_background_jun20.root"); 
+    TTree *t = (TTree *)f->Get("T_data"); 
+    int n_m_bins = 6; 
+    Double_t m_bins[] = {150,200,250,350,500,700,1000}; 
     TH1F *h_m = new TH1F("h_m", "DYtoTauTau, dimuon Mass distribution; M_{#mu#mu} (GeV)", n_m_bins, m_bins);
 
-    TH1F *h_cost = new TH1F("h_cost", "DYtoTauTau, dimuon angular distribution (parton level); c_{r}", n_cost_bins, cost_bins);
+    TH1F *h_cost = new TH1F("h_cost", "DYtoTauTau, ditau angular distribution; c_{*}", n_cost_bins, cost_bins);
     //TH1F *h_cost = new TH1F("h_cost", "DYtoTauTau, dimuon angular distribution; Cos(#theta)", 20, -1, 1);
 
 
-    make_tau_m_cost_hist(t, h_m, h_cost, false);
+    make_m_cost_hist(t, h_m, h_cost, false);
 
     TCanvas *c1 = new TCanvas("c1", "ZZ back M", 100,200, 900, 700);
     c1->cd();

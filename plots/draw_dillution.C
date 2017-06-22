@@ -28,12 +28,12 @@
 void draw_dillution(){
     const int nBins = 10;
     TH1F *h_xF = new TH1F("h_xf", "xF distribution, M>150", nBins, 0, 0.4);
-    TH1F *h_Nc = new TH1F("h_Nc", "Number Correct", nBins, 0, 0.4);
+    TH1F *h_Nc = new TH1F("h_Nc", "Number Correct; xF", nBins, 0, 0.4);
     TH1F *h_Ni = new TH1F("h_Ni", "Number Incorrect", nBins, 0, 0.4);
 
 
     //read event data
-    TFile* f_mc = (TFile*) TFile::Open("../analyze/output_files/DYToLL_mc_2016_apr10.root");
+    TFile* f_mc = (TFile*) TFile::Open("../analyze/output_files/DYToLL_mc_2016_jun13.root");
     TTree *t1 = (TTree *) f_mc ->Get("T_data");
     Long64_t size  =  t1->GetEntries();
     Double_t m, xF, cost, cost_st, mu1_pt, mu2_pt, jet1_pt, jet2_pt, gen_weight;
@@ -52,7 +52,7 @@ void draw_dillution(){
 
     for (int i=0; i<size; i++) {
         t1->GetEntry(i);
-        if(m >= 150. && m < 300.){
+        if(m >= 150. ){
             //printf("%0.2f \n", xF);
             h_xF->Fill(xF, gen_weight);
             Double_t ratio = cost_st/cost;
@@ -67,9 +67,9 @@ void draw_dillution(){
     h_xF->Draw();
     c1->Update();
 
-
     TCanvas *c2 = new TCanvas("c2", "canva", 100,100, 700,700);
     h_Nc ->SetLineColor(kBlue);
+    h_Nc->SetStats(kFALSE);
     h_Nc ->SetLineWidth(2);
     h_Ni ->SetLineColor(kRed);
     h_Ni ->SetLineWidth(2);
