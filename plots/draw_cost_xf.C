@@ -74,7 +74,7 @@ void make_m_cost_xf_hist(TTree *t1, TH1F *h_cost_st, TH1F *h_cost, TH1F *h_xF, b
         t1->GetEntry(i);
         bool no_bjets = has_no_bjets(nJets, jet1_pt, jet2_pt, jet1_cmva, jet2_cmva);
 
-        if(!is_tau_event && m >= 400. && met_pt < 50. && no_bjets){
+        if(is_tau_event && m >= 150 && met_pt < 50. && no_bjets){
             if(is_data){
                 h_cost_st->Fill(cost_st);
                 h_cost->Fill(cost);
@@ -153,7 +153,7 @@ void draw_cost_xf(){
     c2->cd();
     //h_cost_mc->Print();
     h_cost_mc->Draw("hist");
-    h_cost_mc->GetXaxis()->SetTitle("Colins-Soper Cos(#theta)");
+    h_cost_mc->GetXaxis()->SetTitle("DY to #tau#tau Colins-Soper Cos(#theta)");
     h_cost_mc->SetLineWidth(3);
     h_cost_mc->SetMaximum(0.22);
     h_cost_mc->SetStats(kFALSE);
@@ -170,8 +170,12 @@ void draw_cost_xf(){
 
     gStyle->SetLegendBorderSize(0);
     TLegend *leg1 = new TLegend(0.5, 0.65, 0.75, 0.8);
-    leg1->AddEntry(h_cost_mc, "Reconstructed Angle #scale[1.5]{#font[22]{(c_{r})}}   ", "f");
-    leg1->AddEntry(h_cost_st_mc, "Correct Angle #scale[1.5]{#font[22]{(c_{*})}} ", "f");
+    leg1->AddEntry(h_cost_mc, 
+            //"#mu^{+}#mu^{-} Reconstructed Angle #scale[1.5]{#font[22]{(c_{r})}}   ", "f");
+            "#mu#mu Reconstructed Angle #scale[1.5]{#font[22]{(c_{r})}}   ", "f");
+    leg1->AddEntry(h_cost_st_mc, 
+            //"#tau^{+}#tau^{-} Correct Angle #scale[1.5]{#font[22]{(c_{*})}} ", "f");
+            "#tau#tau Correct Angle #scale[1.5]{#font[22]{(c_{*})}} ", "f");
     leg1->Draw();
     c2->Update();
 

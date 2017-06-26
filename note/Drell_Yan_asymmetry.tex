@@ -33,7 +33,7 @@ BCOR5mm, % Binding correction
 
 \date{} % An optional date to appear under the author(s)
 
-%----------------------------------------------------------------------------------------
+R%----------------------------------------------------------------------------------------
 
 \begin{document}
 
@@ -74,7 +74,11 @@ Placeholder
 
 \section{Introduction}
 
-Placeholder
+The forward-backward asymmetry, A$_{FB}$, in Drell-Yan processes arises from the presence of both vector 
+and axial vector couplings of gauge bosons to leptons. Prior to data collection, CMS studied its ability to
+make a measurement of A$_{FB}$ and its ability to serve as an indication of physics beyond the Standard 
+Model(INSERT REF HERE). It has also been measured by CMS from run-I data (INSERT REF HERE). The start of
+run-II and the magnitude of data deliever in 2016 
 
  
 %----------------------------------------------------------------------------------------
@@ -84,23 +88,54 @@ Placeholder
 \section{Data and MC Samples}
 
 Our measurements of the forward-backward asymmetry are based on data recorded in 2016 from the CMS detector, at $\sqrt{s} =$ 13 TeV
-corresponding to 35.87 fb$^{-1}$. Data corresponds to ``23SepReReco`` reprocessing and uses the
+corresponding to 35.87 fb$^{-1}$. Data corresponds to ``03Feb2017ReReco`` reprocessing and uses the
 {\small Cert\_271036-284044\_13TeV\_23Sep2016ReReco\_Collisions16\_JSON.txt} file to select the luminosity sections.
 Table \ref{tab:datasets} summarizes the data samples used in this analysis.\\
 
-Monte Carlo samples used in this analysis have all been generated with PYTHIA8 and processed with the full CMS detector simulation.
+Monte Carlo samples used in this analysis have been created from a variety of generators and processed with Pythia8 and the full CMS detector simulation.
+The Drell-Yan samples have been generated at NLO with aMC@NLO. Powheg has been used for the $t \bar{t}$, $tW$ and $\bar{t}W$ samples. 
+
 Table \ref{tab:mcsets} summarizes the Monte Carlo Samples used in this anaysis.\\
 
+\begin{table}[htp]
+    \centering
+    \label{tab:datasets}
+
+    \caption{ Datasets used in this analysis. Data corresponds to Feb 3 ``Re-MiniAOD'' and uses 
+            {\small Cert\_271036-284044\_13TeV\_23Sep2016ReReco\_Collisions16\_JSON.txt} 
+            file to select the luminosity sections.
+            Corresponding to a total integrated luminosity of 35.9 fb$^{-1}$}
+\begin{tabular}{|| l c ||}
+    \hline
+    \textbf{Singe Muon DataSet}  & \textbf{Luminosity (fb$^{-1}$)}\\
+ \hline \hline
+
+%
+ SingleMuon\_Run2016B\_03Feb2017\_v2 &   5.75  \\
+ SingleMuon\_Run2016C\_03Feb2017   &  2.57 \\
+ SingleMuon\_Run2016D\_03Feb2017   & 4.24 \\
+ SingleMuon\_Run2016E\_03Feb2017   & 4.02 \\
+ SingleMuon\_Run2016F\_03Feb2017   & 3.10 \\
+ SingleMuon\_Run2016G\_03Feb2017   & 7.58 \\
+ SingleMuon\_Run2016H\_03Feb2017\_v2 & 8.43 \\
+ SingleMuon\_Run2016H\_03Feb2017\_v3&  0.22 \\
+
+
+
+ \hline
+
+ \end{tabular}
+
+\end{table}
 
 \begin{table}[htp]
 \centering
-\label{tab:datasets}
-    \caption{ Datasets used in this analysis. Data corresponds to ``23SepReReco'' reprocessing and uses 
-{\small Cert\_271036-284044\_13TeV\_23Sep2016ReReco\_Collisions16\_JSON.txt} file to select the luminosity sections.}
+\label{tab:mcsets}
+ \caption{ Monte Carlo Samples used in this analyis. }
 \begin{adjustbox}{width=1\textwidth}
- \begin{tabular}{||c c c ||} 
+ \begin{tabular}{||l l l ||} 
  \hline
- \textbf{Process} & \textbf{MC Dataset} & \textbf{Cross Section (pb)} \\ [0.5ex] 
+ \textbf{Process} & \textbf{MCs Dataset} & \textbf{Cross Section (pb)} \\ [0.5ex] 
  \hline\hline
  $DY \rightarrow l^+ l^-$ & {\small DYJetsToLL\_M-100to200\_TuneCUETP8M1\_13TeV-amcatnloFXFX-pythia8} & 226 \\ 
                           & {\small DYJetsToLL\_M-200to400\_TuneCUETP8M1\_13TeV-amcatnloFXFX-pythia8}   &   7.67   \\  
@@ -112,46 +147,21 @@ Table \ref{tab:mcsets} summarizes the Monte Carlo Samples used in this anaysis.\
                           & {\small DYJetsToLL\_M-1500to2000\_TuneCUETP8M1\_13TeV-amcatnloFXFX-pythia8}  &   0.002 \\ 
                           & {\small DYJetsToLL\_M-2000to3000\_TuneCUETP8M1\_13TeV-amcatnloFXFX-pythia8}  &   0.00054\\
  \hline
- $t \bar{t}$ & TT\_TuneCUETP8M2T4\_13TeV-powheg-pythia8  & 831.76\\ [1ex] 
+ $t \bar{t}$              & TT\_TuneCUETP8M2T4\_13TeV-powheg-pythia8  & 831.76\\ 
+ \hline
+ $tW$                     & ST\_tW\_antitop\_5f\_inclusiveDecays\_13TeV-powheg-pythia8\_TuneCUETP8M1   & 35.85\\
+ $\bar{t}W$               & ST\_tW\_antitop\_5f\_inclusiveDecays\_13TeV-powheg-pythia8\_TuneCUETP8M1   & 35.85\\
+ \hline
+ $WW$                     & WW\_TuneCUETP8M1\_13TeV-pythia8 & 63.21 \\
+ $WZ$                     & WZ\_TuneCUETP8M1\_13TeV-pythia8 & 47.13 \\
+ $ZZ$                     & ZZ\_TuneCUETP8M1\_13TeV-pythia8 & 16.523 \\ [1ex]
+
  \hline \hline
 \end{tabular}
 \end{adjustbox}
 \end{table}
 
 
-\begin{table}[htp]
-    \centering
-    \label{tab:mcsets}
-
- \caption{ Monte Carlo Samples used in this analyis.}
-\begin{tabular}{|| c c ||}
-    \hline
-    \textbf{Singe Muon DataSet}  & \textbf{Luminosity (fb$^{-1}$)}\\
- \hline \hline
-
-%  /SingleMuon/Run2016B-23Sep2016-v3/MINIAOD   &   {\small 5.8}  \\
-%  /SingleMuon/Run2016C-23Sep2016-v1/MINIAOD    &  {\small 2.5}  \\
-%  /SingleMuon/Run2016D-23Sep2016-v1/MINIAOD    &  {\small 4.3}  \\ 
-%  /SingleMuon/Run2016E-23Sep2016-v1/MINIAOD    &  {\small 4.1}  \\
-%  /SingleMuon/Run2016F-23Sep2016-v1/MINIAOD    &  {\small 3.1}  \\
-%  /SingleMuon/Run2016G-23Sep2016-v1/MINIAOD    &  {\small 7.5}  \\
-%  /SingleMuon/Run2016H-PromptReco-v3/MINIAOD   &  {\small 8.5}  \\  
-%
- SingleMuon\_Run2016B\_03Feb2017\_v2 &   5.75  \\
- SingleMuon\_Run2016C\_03Feb2017   &  2.57 \\
- SingleMuon\_Run2016D\_03Feb2017   & 4.24 \\
- SingleMuon\_Run2016E\_03Feb2017   & 4.02 \\
- SingleMuon\_Run2016F\_03Feb2017   & 3.10 \\
- SingleMuon\_Run2016G\_03Feb2017   & 7.58 \\
- SingleMuon\_Run2016H\_03Feb2017\_v3&  0.22 \\
-
-
-
- \hline
-
- \end{tabular}
-
-\end{table}
 
 %-------------------------------------------------------------------------------------
 %------- EVENT SELECTION
@@ -161,19 +171,34 @@ Table \ref{tab:mcsets} summarizes the Monte Carlo Samples used in this anaysis.\
 This analysis is based on particle flow objects. All data events are subject to the following criteria.
 
 The first step in event selection is the trigger. The trigger used is an OR of two single muon triggers, HLT\_IsoMu24 and HLT\_IsoTkMu24. 
-Events are required to have a leading muon with $p_T > 26 GeV$ and a subleading muon with $p_T > 10 GeV$. The muons are both required 
-to have $|\eta| < 2.4$ and must be oppositely charged. 
-Muons are also required to pass the additional muon-quality requirements of the ''tight'' selection 
-criteria set forth by the Muon POG (INSERT REF HERE). \\
+Events are required to have a leading muon with $p_t > 26$ GeV and a subleading muon with $p_t > 10$ GeV. The muons are both required 
+to have $|\eta| < 2.4$ and must be oppositely charged. \\
 
-An additional isolation requirement is applied to muons. It is a tight Particle-Flow based combined relative isolation requirement with $\Delta \beta$ corrections. \\
+Muons are also required to pass the additional muon-quality requirements of the ''tight'' selection 
+criteria set forth by the Muon POG (INSERT REF HERE). These requirements include, among others: \\
+
+\begin{itemize}
+    \item The candidate is reconstructed as a Global Muon. 
+    \item Its tracker track has transverse impact parameter $d_{xy} < 2 $ mm . 
+        This is done in order to reduce background from cosmics and decays in flight. 
+    \item The longitudinal distance of the tracker track wrt. the primary vertex is $d_{z} < 5 $ mm.
+        Done in order to further reduce background from cosmics and decays in flight.
+    \item Number of tracker layers with hits $> 5$. This is done to guarantee a good p$_{t}$ measurement.
+\end{itemize}
+
+An additional isolation requirement is applied to muons, based on the muon POG's recommendation. 
+It is a tight Particle-Flow based combined relative isolation requirement with $\Delta \beta$ corrections.
+Muons are required to be isolated from tracks within a cone size of $\Delta R = 0.4$, with 
+$\Delta R = \sqrt{(\Delta \eta)^{2} + (\Delta \phi)^2}$\\
 
 In order to surpress $t \bar{t}$ backgrounds additional selection criteria are applied. 
-Events are required to have missing transverse momentum (MET) $ < 50 GeV$.
-There is an anti-b tag requirement based on jets from the Anti-kT 
-Pileup Per Particle Idenitification (PUPPI) algorithm with a cone size of 0.4 (INSERT REF HERE). 
-The requirement is based on the Combined MultiVAriate Algorithm (CMVA) (INSERT REF HERE) and requires that the CMVA discriminator variable for each jet 
-be less than 0. \\
+Events are required to have missing transverse momentum (MET) $ < 50 $ GeV.
+There is an anti-B-tag requirement based on jets from the Anti-kT 
+algorithm with a cone size of 0.4 (INSERT REF HERE). 
+The selection requirement is that the two leading jets in the event must fail a B-tag. 
+Going through the list of jets, ordered by P$_t$, the first 2 jets with $|\eta| < 2.4$ are selected and required to fail a B-tag. 
+The failing B-tag is based on the Combined MultiVAriate Algorithm (CMVA) (INSERT REF HERE) and requires that the CMVA discriminator variable for each jet 
+be less than the B-tag POG's medium working point of 0.4432 (FIX AWK WORDING). \\
 
 The selection criteria are summarized in Table \ref{tab:cuts}. \\
 
@@ -184,7 +209,7 @@ The selection criteria are summarized in Table \ref{tab:cuts}. \\
 
  \caption{ Selection criteria used in this analysis.}
 \begin{adjustbox}{width=1\textwidth}
-\begin{tabular}{|| c | c ||}
+\begin{tabular}{|| c | l ||}
     \hline
     \textbf{Selection Cut}  & \textbf{Cut Threshold}\\
  \hline \hline
@@ -192,20 +217,21 @@ The selection criteria are summarized in Table \ref{tab:cuts}. \\
 
  \hline
 
- Kinematic Acceptance & A leading muon with $p_T > 26 GeV$ and sublead muon with $p_T > 10 GeV$.\\
+ Kinematic Acceptance & A leading muon with $p_T > 26 $ GeV and sublead muon with $p_T > 10 $ GeV.\\
                       & Both muons with $|\eta| < 2.4$ and opposite charge. \\
   \hline
   Muon Identification & Tight Muon \\
 
   \hline
 
-  Isolation & $\sum p_T (\text{Charged Hadrons}) +$  \\
-            & $max(0, \sum E_T (\text{Neutral Hadrons}) + \sum E_T (\text{photons}) - 
-              0.5 * \sum p_T (\text{Charged hadrons from Pileup}))/p_T (\mu) < 0.15$ \\
+  Muon Isolation & $\sum p_t (\text{Charged Hadrons}) +$  \\
+                 & $max(0, \sum E_t (\text{Neutral Hadrons}) + \sum E_t (\text{photons}) - $ \\ 
+                 &  $0.5 * \sum p_t (\text{Charged hadrons from Pileup}))\; /p_t (\mu) \; < 0.15$ \\
 
   \hline
 
-  $t\bar{t}$ Background Rejection & $MET < 50 GeV$ and $CMVA < 0$ for both jets. \\
+  $t\bar{t}$ Background Rejection & $MET < 50$ GeV \\
+                                  & $CMVA < 0.4432$ for two highest p$_t$ jets with $|\eta| < 2.4$.  \\
 
 
 
@@ -223,28 +249,27 @@ The selection criteria are summarized in Table \ref{tab:cuts}. \\
 
 \section{Results}
 
-The results for the fits in different mass bins are presented in Table \ref{tab:results}.
+The results for the fits in different mass bins are presented in Table \ref{tab:results} and shown
+graphically in \ref{fig:AFB}.
 
 
 \begin{table}[htp]
     \centering
     \label{tab:results}
 
- \caption{ Results of fit in different mass bins. AFB is the forward-backward asymmetry.
- $R_{t\bar{t}}$ is the fraction of $t\bar{t}$ events in the sample.
- $R_{\text{noasym}}$ is the fraction of Drell-Yan events coming from production processes with no asymmetry 
- ($gg, qq, \bar{q}\bar{q}$).}
+    \caption{ Results of fit in different mass bins. A$_{FB}$ is the forward-backward asymmetry.
+ $R_{back}$ is the fraction of background events in the sample. }
 \begin{tabular}{|| c | c | c | c | c ||}
     \hline
     Mass Bin (GeV)  & Number of Events &  
-    AFB & $R_{t \bar{t}}$ & $R_{\text{noasym}}$  \\
+    A$_{FB}$ & $R_{back}$\\
  \hline \hline
- 150-200 & 56390 & $0.61 \pm 0.02$ & $0.122 \pm 0.007$ & $0.0000 \pm 0.0008$  \\
- 200-250 & 18616 & $0.56 \pm 0.03$ & $0.125 \pm 0.011$ & $0.0085 \pm 0.0053$ \\
- 250-350 & 11884 & $0.64 \pm 0.03$ & $0.158 \pm 0.011$ & $0.0032 \pm 0.0041$ \\
- 350-500 & 4196 & $0.63 \pm 0.05$ & $0.154 \pm 0.015$  & $0.0059 \pm 0.0130$ \\
- 500-700 & 1121 & $0.61 \pm 0.06$ & $0.142 \pm 0.024$  & $0.0000 \pm 0.0130$ \\
- $\geq$ 700 & 329 & $0.58 \pm 0.11$ & $0.099 \pm 0.034$ & $0.0000 \pm 0.0151$ \\
+ 150-200 & 77937 & $0.653 \pm 0.02$ & $0.195 \pm 0.007$    \\
+ 200-250 & 25572 & $0.56 \pm 0.03$ & $0.163 \pm 0.011$   \\
+ 250-350 & 16269 & $0.62 \pm 0.03$ & $0.198 \pm 0.011$   \\
+ 350-500 & 5698 & $0.63 \pm 0.04$ & $0.168 \pm 0.014$    \\
+ 500-700 & 1557 & $0.58 \pm 0.06$ & $0.152 \pm 0.025$    \\
+ $\geq$ 700 & 471 & $0.59 \pm 0.09$ & $0.100 \pm 0.030$   \\
 
 
 
@@ -254,10 +279,11 @@ The results for the fits in different mass bins are presented in Table \ref{tab:
 
 \end{table}
 
-%\begin{figure}[tb]
-%    \includegraphics{Afb_vs_mass}
-%    \caption{Assymmetry as a function of mass}
-%\end{figure}
+\begin{figure}[tb]
+    \label{fig:AFB}
+    \includegraphics{figures/AFB.pdf}
+    \caption{Drell-Yan forward-backward asymmetry as a function of mass}
+\end{figure}
     
 
 

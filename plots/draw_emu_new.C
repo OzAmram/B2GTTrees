@@ -34,15 +34,17 @@ Double_t count_tree(TTree *t1,  Double_t m_low, Double_t m_high, bool is_data=fa
     Double_t gh_HLT_SF, gh_iso_SF, gh_id_SF;
     Double_t el_id_SF, btag_weight;
     Float_t cost_pt, met_pt;
-    TLorentzVector *el, *mu, cm;
+    TLorentzVector *el=0; 
+    TLorentzVector *mu=0;
+    TLorentzVector cm;
     t1->SetBranchAddress("met_pt", &met_pt);
     t1->SetBranchAddress("nJets", &nJets);
     t1->SetBranchAddress("jet2_CMVA", &jet2_cmva);
     t1->SetBranchAddress("jet1_CMVA", &jet1_cmva);
     t1->SetBranchAddress("jet1_pt", &jet1_pt);
     t1->SetBranchAddress("jet2_pt", &jet2_pt);
-    t1->SetBranchAddress("el", el);
-    t1->SetBranchAddress("mu", mu);
+    t1->SetBranchAddress("el", &el);
+    t1->SetBranchAddress("mu", &mu);
     if(!is_data){
         t1->SetBranchAddress("gen_weight", &gen_weight);
         t1->SetBranchAddress("bcdef_HLT_SF", &bcdef_HLT_SF);
@@ -97,17 +99,17 @@ Double_t count_tree(TTree *t1,  Double_t m_low, Double_t m_high, bool is_data=fa
 
 
 void draw_emu_new(){
-    TFile *f_data = TFile::Open("../analyze/output_files/EMu_data_jun07.root");
+    TFile *f_data = TFile::Open("../analyze/output_files/EMu_data_jun21.root");
     TTree *t_data = (TTree *)f_data->Get("T_data");
 
                                 
-    TFile *f_ttbar = TFile::Open("../analyze/output_files/EMu_ttbar_jun12.root");
+    TFile *f_ttbar = TFile::Open("../analyze/output_files/EMu_ttbar_jun22.root");
     TTree *t_ttbar = (TTree *)f_ttbar->Get("T_data");
 
-    TFile *f_DYToLL = TFile::Open("../analyze/output_files/EMu_DYToLL_jun12.root");
+    TFile *f_DYToLL = TFile::Open("../analyze/output_files/EMu_DY_jun22.root");
     TTree *t_DYToLL = (TTree *)f_DYToLL->Get("T_data");
 
-    TFile *f_diboson = TFile::Open("../analyze/output_files/EMu_diboson_jun13.root");
+    TFile *f_diboson = TFile::Open("../analyze/output_files/EMu_diboson_jun22.root");
     TTree *t_diboson = (TTree *)f_diboson->Get("T_data");
 
     TFile *f_wt = TFile::Open("../analyze/output_files/EMu_WT_jun21.root");
