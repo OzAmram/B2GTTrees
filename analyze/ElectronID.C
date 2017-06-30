@@ -8,6 +8,7 @@ bool get_el_id(Float_t eta, Float_t full5x5, Float_t dEtaInSeed, Float_t dPhiIn,
     //https://twiki.cern.ch/twiki/bin/view/CMS/CutBasedElectronIdentificationRun2
     //using medium ID criteria
     Float_t full5x5_med, dEtaInSeed_med, dPhiIn_med, HoE_med, iso_med, ooEmooP_med, missHits_med;
+    eta = std::abs(eta);
 
     Float_t eta_barrel = 1.479;
     if(eta < eta_barrel){
@@ -35,7 +36,7 @@ bool get_el_id(Float_t eta, Float_t full5x5, Float_t dEtaInSeed, Float_t dPhiIn,
         iso < iso_med &&
         ooEmooP < ooEmooP_med &&
         missHits <= missHits_med &&
-        matchConVeto == 1;
+        matchConVeto > 0.1;
 }
                
 

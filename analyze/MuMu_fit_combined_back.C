@@ -43,7 +43,7 @@ Float_t cost_bins[] = {-1.0, -.8, -.6, -.4, -.2, 0., 0.2, 0.4, 0.6, 0.8, 1.0};
 
 
 float m_low = 700;
-float m_high = 100000;
+float m_high = 1000000;
 
 bool print = true;
 
@@ -107,6 +107,7 @@ void fcn(int& npar, double* deriv, double& f, double par[], int flag){
             if(p_back < 1e-20) printf("p_back Is also 0 or negative! \n");
             if(prob < 1e-20) printf("Warning prob is also 0 or negative! \n");
             p_sym = 1e-20;
+            prob = r_back*p_back + (1 - r_back) * (p_sym + AFB*p_asym);
         }
         //if(prob < 1e-20) printf(" Warning prob is 0 or negative! for bin xf: %0.2f cost: %1.2f \n", v_xF[i], v_cost[i]);
         prob = max(prob, 1e-20);

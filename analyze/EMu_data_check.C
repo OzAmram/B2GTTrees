@@ -89,9 +89,9 @@ void EMu_data_check()
         Float_t el_Pt[MU_SIZE], el_Eta[MU_SIZE], el_Phi[MU_SIZE], el_E[MU_SIZE],
                 el_Charge[MU_SIZE], el_vidMedium[MU_SIZE];
 
-        Float_t el_rho[MU_SIZE], el_EA[MU_SIZE], el_sumChargedHadronPt[MU_SIZE], el_sumNeutralHadronEt[MU_SIZE], 
-                el_sumPhotonEt[MU_SIZE], el_sumPUPt[MU_SIZE], el_dEtaInSeed[MU_SIZE], el_dPhiIn[MU_SIZE], 
-                el_HoE[MU_SIZE], el_full5x5siee[MU_SIZE], el_ooEmooP[MU_SIZE], el_missHits[MU_SIZE], el_hasMatchedConVeto[MU_SIZE];
+            Float_t el_rho[MU_SIZE], el_EA[MU_SIZE], el_sumChargedHadronPt[MU_SIZE], el_sumNeutralHadronEt[MU_SIZE], 
+                    el_sumPhotonEt[MU_SIZE], el_sumPUPt[MU_SIZE], el_dEtaInSeed[MU_SIZE], el_dPhiIn[MU_SIZE], 
+                    el_HoE[MU_SIZE], el_full5x5siee[MU_SIZE], el_ooEmooP[MU_SIZE], el_missHits[MU_SIZE], el_hasMatchedConVeto[MU_SIZE];
 
 
         Float_t mu_SumChargedHadronPt[MU_SIZE], mu_SumNeutralHadronPt[MU_SIZE], mu_SumPUPt[MU_SIZE], mu_SumPhotonPt[MU_SIZE];
@@ -100,7 +100,7 @@ void EMu_data_check()
         Float_t jet_Pt[JET_SIZE], jet_Eta[JET_SIZE], jet_Phi[JET_SIZE], jet_E[JET_SIZE],
                 jet_CSV[JET_SIZE], jet_CMVA[JET_SIZE];
 
-        Int_t HLT_IsoMu, HLT_IsoTkMu;
+        Int_t HLT_IsoMu, HLT_IsoTkMu, HLT_Ele23_WPLoose_Gsf;
         t1->SetBranchAddress("mu_size", &mu_size); //number of muons in the event
         t1->SetBranchAddress("mu_Pt", &mu_Pt);
         t1->SetBranchAddress("mu_Eta", &mu_Eta);
@@ -129,6 +129,7 @@ void EMu_data_check()
         t1->SetBranchAddress("el_ooEmooP", &el_ooEmooP);
         t1->SetBranchAddress("el_missHits", &el_missHits);
         t1->SetBranchAddress("el_hasMatchedConVeto", &el_hasMatchedConVeto);
+        t1->SetBranchAddress("el_vidMedium", &el_vidMedium);
 
         t1->SetBranchAddress("mu_IsTightMuon", &mu_IsTightMuon);
         t1->SetBranchAddress("mu_SumChargedHadronPt", &mu_SumChargedHadronPt);
@@ -147,6 +148,7 @@ void EMu_data_check()
 
         t1->SetBranchAddress("HLT_IsoMu24", &HLT_IsoMu);
         t1->SetBranchAddress("HLT_IsoTkMu24", &HLT_IsoTkMu);
+        t1->SetBranchAddress("HLT_Ele23_WPLoose_Gsf", &HLT_Ele23_WPLoose_Gsf);
 
         t1->SetBranchAddress("met_size", &met_size);
         t1->SetBranchAddress("met_Pt", &met_pt);
@@ -157,13 +159,14 @@ void EMu_data_check()
             t1->GetEntry(i);
             if(met_size != 1) printf("WARNING: Met size not equal to 1\n");
             if(mu_size > MU_SIZE) printf("Warning: too many muons\n");
-            bool good_trigger = HLT_IsoMu || HLT_IsoTkMu;
+            bool good_trigger = HLT_IsoMu || HLT_IsoTkMu || HLT_Ele23_WPLoose_Gsf;
             if(good_trigger &&
-                    mu_size >= 1 && el_size >=1 && 
-                    ((abs(mu_Charge[0] - el_Charge[0])) > 0.01) &&
-                    mu_IsTightMuon[0] &&
-                    mu_Pt[0] > 26. &&  el_Pt[0] > 10. &&
-                    abs(mu_Eta[0]) < 2.4 && abs(el_Eta[0]) < 2.4){ 
+                        mu_size >= 1 && el_size >=1 && 
+                        ((abs(mu_Charge[0] - el_Charge[0])) > 0.01) &&
+                        mu_IsTightMuon[0] &&
+                        el_Pt[0] > 10. && mu_Pt[0] > 10. &&
+                        ((HLT_Ele23_WPLoose_Gsf && el_Pt[0] > 26.) || mu_Pt[0] > 26) &&
+                        abs(mu_Eta[0]) < 2.4 && abs(el_Eta[0]) < 2.4){ 
 
                 //See https://twiki.cern.ch/twiki/bin/viewauth/CMS/SWGuideMuonIdRun2 for iso cuts
                 float iso_0 = (mu_SumChargedHadronPt[0] + max(0., mu_SumNeutralHadronPt[0] + mu_SumPhotonPt[0] - 0.5 * mu_SumPUPt[0]))/mu_Pt[0];
@@ -174,6 +177,7 @@ void EMu_data_check()
                 el.SetPtEtaPhiE(el_Pt[0], el_Eta[0], el_Phi[0], el_E[0]);
 
 
+                /*
                 float el_iso = (el_sumChargedHadronPt[0] + 
                         max(0., 1.0*el_sumNeutralHadronEt[0] + 
                             el_sumPhotonEt[0] - el_rho[0]*el_EA[0]))/el_Pt[0];
@@ -181,8 +185,9 @@ void EMu_data_check()
                 bool el_mediumID = get_el_id(el_Eta[0], el_full5x5siee[0], 
                         el_dEtaInSeed[0],el_dPhiIn[0], el_HoE[0], 
                         el_iso, el_ooEmooP[0], el_missHits[0], el_hasMatchedConVeto[0]);
+                 */
 
-                if (iso_0 < tight_iso && el_mediumID ){
+                if (iso_0 < tight_iso && (el_vidMedium[0]) ){
 
 
                     //muon selection checks

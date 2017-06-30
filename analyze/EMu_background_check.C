@@ -18,8 +18,8 @@ const double root2 = sqrt(2);
 double Ebeam = 6500.;
 double Pbeam = sqrt(Ebeam*Ebeam - 0.938*0.938);
 
-char *filename("mc_files_jun12.txt");
-const TString fout_name("output_files/EMu_DY_jun22.root");
+char *filename("WT_files.txt");
+const TString fout_name("output_files/EMu_WT_jun26.root");
 const double alpha = 0.05;
 const bool PRINT=false;
 const bool MUON_SELECTION_CHECK = false;
@@ -205,7 +205,7 @@ void EMu_background_check()
 
             Float_t evt_Gen_Weight;
 
-            Int_t HLT_IsoMu, HLT_IsoTkMu;
+            Int_t HLT_IsoMu, HLT_IsoTkMu, HLT_Ele23_WPLoose_Gsf;
             t1->SetBranchAddress("mu_size", &mu_size); //number of muons in the event
             t1->SetBranchAddress("mu_Pt", &mu_Pt);
             t1->SetBranchAddress("mu_Eta", &mu_Eta);
@@ -234,6 +234,7 @@ void EMu_background_check()
             t1->SetBranchAddress("el_ooEmooP", &el_ooEmooP);
             t1->SetBranchAddress("el_missHits", &el_missHits);
             t1->SetBranchAddress("el_hasMatchedConVeto", &el_hasMatchedConVeto);
+            t1->SetBranchAddress("el_vidMedium", &el_vidMedium);
 
 
             t1->SetBranchAddress("mu_IsTightMuon", &mu_IsTightMuon);
@@ -252,6 +253,7 @@ void EMu_background_check()
 
             t1->SetBranchAddress("HLT_IsoMu24", &HLT_IsoMu);
             t1->SetBranchAddress("HLT_IsoTkMu24", &HLT_IsoTkMu);
+            t1->SetBranchAddress("HLT_Ele23_WPLoose_Gsf", &HLT_Ele23_WPLoose_Gsf);
 
             t1->SetBranchAddress("evt_Gen_Weight", &evt_Gen_Weight);
 
@@ -269,12 +271,15 @@ void EMu_background_check()
                 t1->GetEntry(i);
                 if(mu_size > MU_SIZE) printf("WARNING: MU_SIZE TOO LARGE \n");
                 if(met_size != 1) printf("WARNING: Met size not equal to 1\n");
-                bool good_trigger = HLT_IsoMu || HLT_IsoTkMu;
+                bool good_trigger = HLT_IsoMu || HLT_IsoTkMu || HLT_Ele23_WPLoose_Gsf;
+                bool mu_trigger = HLT_IsoMu || HLT_IsoTkMu;
                 if(good_trigger &&
                         mu_size >= 1 && el_size >=1 && 
                         ((abs(mu_Charge[0] - el_Charge[0])) > 0.01) &&
                         mu_IsTightMuon[0] &&
-                        mu_Pt[0] > 26. &&  el_Pt[0] > 10. &&
+                        el_Pt[0] > 10. && mu_Pt[0] > 10. &&
+                        ((HLT_Ele23_WPLoose_Gsf && el_Pt[0] > 26.) || 
+                         (mu_trigger && mu_Pt[0] > 26)) &&
                         abs(mu_Eta[0]) < 2.4 && abs(el_Eta[0]) < 2.4){ 
 
                     //See https://twiki.cern.ch/twiki/bin/viewauth/CMS/SWGuideMuonIdRun2 for iso cuts
@@ -290,15 +295,17 @@ void EMu_background_check()
                     //see
                     //https://github.com/ikrav/cmssw/blob/egm_id_80X_v1/RecoEgamma/ElectronIdentification/plugins/cuts/GsfEleEffAreaPFIsoCut.cc#L83-L94
 
+                    /*
                     float el_iso = (el_sumChargedHadronPt[0] + 
                             max(0., 1.0*el_sumNeutralHadronEt[0] + 
                                 el_sumPhotonEt[0] - el_rho[0]*el_EA[0]))/el_Pt[0];
 
-                    bool el_mediumID = get_el_id(el_Eta[0], el_full5x5siee[0], 
+                    bool el_mediumID = get_el_id(std::abs(el_Eta[0]), el_full5x5siee[0], 
                             el_dEtaInSeed[0],el_dPhiIn[0], el_HoE[0], 
                             el_iso, el_ooEmooP[0], el_missHits[0], el_hasMatchedConVeto[0]);
+                            */
 
-                    if (mu_iso_0 < tight_iso && el_mediumID){
+                    if (mu_iso_0 < tight_iso && (el_vidMedium[0])){
                         if(PRINT) sprintf(out_buff + strlen(out_buff),"Event %i \n", i);
 
                         nJets =0;
@@ -332,8 +339,14 @@ void EMu_background_check()
 
 
                         btag_weight = get_emu_btag_weight(jet1_pt, jet1_eta, jet1_flavour, jet2_pt, jet2_eta, jet2_flavour, btag_effs, b_reader);
-                        bcdef_HLT_SF = get_HLT_SF(mu1_pt, mu1_eta, runs_bcdef.HLT_SF);
-                        gh_HLT_SF = get_HLT_SF(mu1_pt, mu1_eta, runs_gh.HLT_SF);
+                        if(mu_trigger && mu1_pt > 26){
+                            bcdef_HLT_SF = get_HLT_SF(mu1_pt, mu1_eta, runs_bcdef.HLT_SF);
+                            gh_HLT_SF = get_HLT_SF(mu1_pt, mu1_eta, runs_gh.HLT_SF);
+                        }
+                        else {
+                            bcdef_HLT_SF = 1;
+                            gh_HLT_SF = 1;
+                        }
 
                         bcdef_iso_SF = get_SF(mu1_pt, mu1_eta, runs_bcdef.ISO_SF);
                         bcdef_id_SF = get_SF(mu1_pt, mu1_eta, runs_bcdef.ID_SF);

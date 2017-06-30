@@ -7,7 +7,7 @@
 #include "TFile.h"
 #include "ScaleFactors.C"
 
-#define GEN_SIZE 300
+#define GEN_SIZE 4000
 #define MU_SIZE 100
 #define JET_SIZE 20
 #define MAX_SAMPLES 20
@@ -16,8 +16,8 @@ const double root2 = sqrt(2);
 double Ebeam = 6500.;
 double Pbeam = sqrt(Ebeam*Ebeam - 0.938*0.938);
 
-char *filename("mc_files_jun12.txt");
-const TString fout_name("output_files/DYToLL_mc_2016_jun21.root");
+char *filename("mc_files_m50_jun30.txt");
+const TString fout_name("output_files/DYToLL_mc_m50_jun30.root");
 const double alpha = 0.05;
 const bool PRINT=false;
 const bool MUON_SELECTION_CHECK = false;
@@ -118,6 +118,8 @@ void MuMu_reco_mc_batch()
     Int_t nJets, jet1_flavour, jet2_flavour;
     Bool_t is_tau_event;
     Float_t met_pt;
+    TLorentzVector mu_p, mu_m, cm, q1, q2;
+
     t_signal->Branch("m", &cm_m, "m/D");
     t_signal->Branch("xF", &xF, "xF/D");
     t_signal->Branch("cost", &cost_r, "cost/D");
@@ -127,7 +129,7 @@ void MuMu_reco_mc_batch()
     t_signal->Branch("mu1_eta", &mu1_eta, "mu1_eta/D");
     t_signal->Branch("mu2_eta", &mu2_eta, "mu2_eta/D");
     t_signal->Branch("mu_m", "TLorentzVector", &mu_m);
-    t_singal->Branch("mu_p", "TLorentzVector", &mu_p);
+    t_signal->Branch("mu_p", "TLorentzVector", &mu_p);
     t_signal->Branch("jet1_pt", &jet1_pt, "jet1_pt/D");
     t_signal->Branch("jet1_eta", &jet1_eta, "jet1_eta/D");
     t_signal->Branch("jet1_CMVA", &jet1_cmva, "jet1_CMVA/D");
@@ -254,7 +256,6 @@ void MuMu_reco_mc_batch()
             Float_t evt_Gen_Weight;
 
             Int_t HLT_IsoMu, HLT_IsoTkMu;
-            TLorentzVector mu_p, mu_m, cm, q1, q2;
             t1->SetBranchAddress("mu_size", &mu_size); //number of muons in the event
             t1->SetBranchAddress("mu_Pt", &mu_Pt);
             t1->SetBranchAddress("mu_Eta", &mu_Eta);
@@ -322,7 +323,7 @@ void MuMu_reco_mc_batch()
             Long64_t nEntries =  t1->GetEntries();
 
             char out_buff[10000];
-            bool print_out = false;
+            bool print_out = true;
 
             for (int i=0; i<nEntries; i++) {
                 t1->GetEntry(i);
@@ -359,7 +360,7 @@ void MuMu_reco_mc_batch()
                     cm = mu_p + mu_m;
                     cm_m = cm.M();
                     //met and cmva cuts to reduce ttbar background
-                    if (iso_0 < tight_iso && iso_1 < tight_iso && cm_m >= 150.){
+                    if (iso_0 < tight_iso && iso_1 < tight_iso && cm_m >= 100.){
                         if(PRINT) sprintf(out_buff + strlen(out_buff),"Event %i \n", i);
 
                         //GEN LEVEL
@@ -781,7 +782,7 @@ void MuMu_reco_mc_batch()
             }
 
             f1->Close();
-            printf("moving on to next file, currently %i events %i Taus \n\n", nEvents, nTauTau);
+            printf("moving on to next file, currently %i events %i Taus %i fails \n\n", nEvents, nTauTau, nFailedID);
         }
     }
     fclose(root_files);

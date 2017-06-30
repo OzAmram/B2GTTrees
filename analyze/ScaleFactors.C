@@ -39,29 +39,32 @@ Double_t get_SF(Double_t pt, Double_t eta, TH2D *h){
     //stay in range of histogram
     if (pt >= 100) pt = 100.;
     if (pt <= 20) pt = 20.;
+    eta = abs(eta);
     TAxis* x_ax =  h->GetXaxis();
     TAxis *y_ax =  h->GetYaxis();
     int xbin = x_ax->FindBin(pt);
     int ybin = y_ax->FindBin(std::abs(eta));
 
     Double_t result = h->GetBinContent(xbin, ybin);
-    if(result < 0.01) printf("0 SF for Pt %.1f, Eta %1.2f \n", pt, eta);
+    if(result < 0.01) printf("0 muon id SF for Pt %.1f, Eta %1.2f \n", pt, eta);
     return result;
 }
 Double_t get_HLT_SF(Double_t pt, Double_t eta, TH2D *h){
     //stay in range of histogram
     if (pt >= 350.) pt = 350.;
+    eta = abs(eta);
     TAxis* x_ax =  h->GetXaxis();
     TAxis *y_ax =  h->GetYaxis();
     int xbin = x_ax->FindBin(pt);
     int ybin = y_ax->FindBin(std::abs(eta));
 
     Double_t result = h->GetBinContent(xbin, ybin);
-    if(result < 0.01) printf("0 SF for Pt %.1f, Eta %1.2f \n", pt, eta);
+    if(result < 0.01) printf("0 HLT SF for Pt %.1f, Eta %1.2f \n", pt, eta);
     return result;
 }
 Double_t get_el_SF(Double_t pt, Double_t eta, TH2D *h){
-    if (pt >= 150.) pt = 148.;
+    if( pt <= 25.) pt = 25;
+    if (pt >= 500.) pt = 480.;
     TAxis* x_ax =  h->GetXaxis();
 
     TAxis *y_ax =  h->GetYaxis();
@@ -69,7 +72,10 @@ Double_t get_el_SF(Double_t pt, Double_t eta, TH2D *h){
     int ybin = y_ax->FindBin(pt);
 
     Double_t result = h->GetBinContent(xbin, ybin);
-    if(result < 0.01) printf("0 SF for Pt %.1f, Eta %1.2f \n", pt, eta);
+    if(result < 0.01){
+        printf("0 el SF for Pt %.1f, Eta %1.2f \n", pt, eta);
+        result = 1;
+    }
     return result;
 }
 
@@ -257,7 +263,7 @@ void setup_SFs(SFs *runs_BCDEF, SFs *runs_GH, BTag_readers *btag_r, BTag_effs *b
 
 void setup_el_SF(el_SFs *sf){
     //Setup electron SF's
-    TFile *f7 = TFile::Open("SFs/egammaEffi.txt_EGM2D.root");
+    TFile *f7 = TFile::Open("SFs/egammaEffi_vid.root");
     TDirectory *subdir7 = gDirectory;
     TH2D *h = (TH2D *) subdir7->Get("EGamma_SF2D")->Clone();
     h->SetDirectory(0);

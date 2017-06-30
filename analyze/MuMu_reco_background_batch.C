@@ -16,8 +16,8 @@ const double root2 = sqrt(2);
 double Ebeam = 6500.;
 double Pbeam = sqrt(Ebeam*Ebeam - 0.938*0.938);
 
-char *filename("QCD_files.txt");
-const TString fout_name("output_files/QCD_background_jun20.root");
+char *filename("wjets_files.txt");
+const TString fout_name("output_files/wjets_background_jun22.root");
 const double alpha = 0.05;
 const bool PRINT=false;
 const bool MUON_SELECTION_CHECK = false;
