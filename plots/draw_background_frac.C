@@ -22,10 +22,13 @@
 #include "TSystem.h"
 #include "Math/Functor.h"
 #include "../analyze/TemplateMaker.C"
+#include "tdrstyle.C"
+#include "CMS_lumi.C"
 
 
 
 void draw_background_frac(){
+    setTDRStyle();
     TFile *f_data = TFile::Open("../analyze/output_files/DYToLL_data_2016_jun07.root");
     TTree *t_data = (TTree *)f_data->Get("T_data");
     TFile *f_mc = TFile::Open("../analyze/output_files/DYToLL_mc_2016_jun15.root");
@@ -73,6 +76,9 @@ void draw_background_frac(){
     make_m_cost_hist(t_wz, wz_m, wz_cost, false);
     make_m_cost_hist(t_zz, zz_m, zz_cost, false);
     make_m_cost_hist(t_wt, wt_m, wt_cost, false);
+        
+    
+    Double_t emu_scaling = 1.05;
 
     Double_t ttbar_frac[nBins], ttbar_frac_unc[nBins], diboson_frac[nBins], diboson_frac_unc[nBins], bin_center[nBins];
     Double_t back_frac[nBins], back_frac_unc[nBins], nosig_frac[nBins], nosig_frac_unc[nBins];
@@ -80,25 +86,24 @@ void draw_background_frac(){
     for (int i=1; i <= nBins; i++){
         Double_t N_mc = mc_m->GetBinContent(i);
         Double_t N_mc_nosig = mc_nosig_m->GetBinContent(i);
-        Double_t N_ttbar = ttbar_m->GetBinContent(i);
+        Double_t N_ttbar = emu_scaling * ttbar_m->GetBinContent(i);
         Double_t N_ww = ww_m->GetBinContent(i);
         Double_t N_wz = wz_m->GetBinContent(i);
         Double_t N_zz = wz_m->GetBinContent(i);
-        Double_t N_diboson = N_ww+ + N_wz+ N_zz;
-        Double_t N_wt = wt_m->GetBinContent(i);
+        Double_t N_diboson = emu_scaling* (N_ww+ + N_wz+ N_zz);
+        Double_t N_wt = emu_scaling *wt_m->GetBinContent(i);
         Double_t N_back = N_ttbar + N_diboson + N_wt;
         Double_t denom = N_ttbar + N_diboson + N_mc + N_wt + N_mc_nosig;
         bin_center[i-1] = mc_m->GetBinCenter(i);
         printf("bin center %f \n", bin_center[i-1]);
-        Double_t scaling = 1.24;
         nosig_frac[i-1] = N_mc_nosig/denom;
         nosig_frac_unc[i-1] = std::sqrt(  N_mc_nosig*pow((1/denom - N_mc_nosig/pow(denom,2)), 2) +
                                           (N_mc + N_wt + N_ttbar + N_diboson) * pow(1/denom, 4));
         diboson_frac[i-1] = N_diboson/(denom);
         diboson_frac_unc[i-1] = std::sqrt(  N_diboson*pow((1/denom - N_diboson/pow(denom,2)), 2) +
                                           (N_mc + N_wt + N_ttbar + N_mc_nosig) * pow(1/denom, 4));
-        ttbar_frac[i-1] =  scaling*(N_ttbar)/(denom);
-        ttbar_frac_unc[i-1] = scaling*std::sqrt(  N_ttbar*pow((1/denom - N_ttbar/pow(denom,2)), 2) +
+        ttbar_frac[i-1] =  (N_ttbar)/(denom);
+        ttbar_frac_unc[i-1] = std::sqrt(  N_ttbar*pow((1/denom - N_ttbar/pow(denom,2)), 2) +
                                           (N_mc + N_wt + N_diboson + N_mc_nosig) * pow(1/denom, 4));
         wt_frac[i-1] =  (N_wt)/(denom);
         wt_frac_unc[i-1] = std::sqrt(  N_wt*pow((1/denom - N_wt/pow(denom,2)), 2) +
@@ -129,17 +134,17 @@ void draw_background_frac(){
     TGraphErrors *fit_frac = new TGraphErrors(nBins, bin_center, fit_res, 0, fit_errs);
     fit_frac->SetTitle("Fraction of background events from fit results");
 
-    fit_frac->SetMaximum(0.2);
+    fit_frac->SetMaximum(0.3);
     fit_frac->SetMinimum(0.0);
-    ttbar_mc_frac->SetMaximum(0.2);
+    ttbar_mc_frac->SetMaximum(0.3);
     ttbar_mc_frac->SetMinimum(0.0);
-    wt_mc_frac->SetMaximum(0.2);
+    wt_mc_frac->SetMaximum(0.3);
     wt_mc_frac->SetMinimum(0.0);
-    diboson_mc_frac->SetMaximum(0.2);
+    diboson_mc_frac->SetMaximum(0.3);
     diboson_mc_frac->SetMinimum(0.0);
-    mc_nosig_frac->SetMaximum(0.2);
+    mc_nosig_frac->SetMaximum(0.3);
     mc_nosig_frac->SetMinimum(0.0);
-    back_mc_frac->SetMaximum(0.2);
+    back_mc_frac->SetMaximum(0.3);
     back_mc_frac->SetMinimum(0.0);
     TCanvas *c3 = new TCanvas("c3", "canvas", 200,10, 900,700);
     fit_frac->SetMarkerStyle(kFullSquare);
@@ -152,24 +157,24 @@ void draw_background_frac(){
 
 
     wt_mc_frac->SetMarkerStyle(kFullSquare);
-    wt_mc_frac->SetMarkerColor(kOrange);
+    wt_mc_frac->SetMarkerColor(kOrange+7);
     wt_mc_frac->SetLineWidth(3);
-    wt_mc_frac->SetLineColor(kOrange);
+    wt_mc_frac->SetLineColor(kOrange+7);
 
     diboson_mc_frac->SetMarkerStyle(kFullSquare);
-    diboson_mc_frac->SetMarkerColor(kGreen);
+    diboson_mc_frac->SetMarkerColor(kGreen +3);
     diboson_mc_frac->SetLineWidth(3);
-    diboson_mc_frac->SetLineColor(kGreen);
+    diboson_mc_frac->SetLineColor(kGreen +3);
 
     back_mc_frac->SetMarkerStyle(kFullSquare);
-    back_mc_frac->SetMarkerColor(kRed);
+    back_mc_frac->SetMarkerColor(kMagenta +3);
     back_mc_frac->SetLineWidth(3);
-    back_mc_frac->SetLineColor(kRed);
+    back_mc_frac->SetLineColor(kMagenta +3);
 
     mc_nosig_frac->SetMarkerStyle(kFullSquare);
-    mc_nosig_frac->SetMarkerColor(kYellow);
+    mc_nosig_frac->SetMarkerColor(kMagenta);
     mc_nosig_frac->SetLineWidth(3);
-    mc_nosig_frac->SetLineColor(kYellow);
+    mc_nosig_frac->SetLineColor(kMagenta);
     TMultiGraph *mg = new TMultiGraph();
     mg->Add(ttbar_mc_frac);
     mg->Add(wt_mc_frac);
@@ -183,15 +188,28 @@ void draw_background_frac(){
 
     mg->Draw("A C P");
 
-    mg->GetXaxis()->SetTitle("M (GeV)");
-    mg->GetXaxis()->CenterTitle();
-    mg->GetYaxis()->SetTitle("R_{ttbar}");
-    mg->GetYaxis()->CenterTitle();
+    mg->GetXaxis()->SetTitle("M_{#mu#mu} (GeV)");
+    mg->GetYaxis()->SetTitle("Fraction of selected events");
+    mg->GetYaxis()->SetRangeUser(0, 0.3);
 
+    gStyle->SetLegendBorderSize(0);
+    TLegend *leg2 = new TLegend(0.5, 0.65, 0.75, 0.8);
+    leg2->AddEntry(fit_frac, "R_{bk} value from fit", "l");
+    leg2->AddEntry(back_mc_frac, "Total background fraction from MC", "l");
+    leg2->AddEntry(ttbar_mc_frac, "t#bar{t}", "l");
+    leg2->AddEntry(mc_nosig_frac, "DY no asymmety(gg, qq, #bar{q}#bar{q})", "l");
+    leg2->AddEntry(diboson_mc_frac, "WW + WZ + ZZ", "l");
+    leg2->AddEntry(wt_mc_frac, "tW + #bar{t}W", "l");
+    leg2->Draw();
 
+    writeExtraText = true;
+    extraText = "Preliminary";
+    //lumi_sqrtS = "";       // used with iPeriod = 0, e.g. for simulation-only plots (default is an empty string)
+    int iPeriod = 4; 
+    CMS_lumi(c3, iPeriod, 33 );
     c3->Update();
 
-    gPad->BuildLegend();
+    //gPad->BuildLegend();
     
 
     return;

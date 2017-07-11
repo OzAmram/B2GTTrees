@@ -8,3 +8,6 @@
 
 *FileDump.py
 *.db
+*.aux
+*.dvi
+*.swp
