@@ -187,6 +187,10 @@ void MuMu_fit_combined_back(){
     Double_t arglist[100];
     arglist[0] = 10000.;
     minuit->ExecuteCommand("MIGRAD", arglist,0);
+	up = 1.0;
+	minuit->SetErrorDef(up);
+	arglist[0] = 0.;
+	minuit->ExecuteCommand("MINOS", arglist, 0);
 
 
     /*
