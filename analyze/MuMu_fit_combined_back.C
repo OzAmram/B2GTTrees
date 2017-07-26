@@ -43,7 +43,8 @@ Float_t cost_bins[] = {-1.0, -.8, -.6, -.4, -.2, 0., 0.2, 0.4, 0.6, 0.8, 1.0};
 
 
 float m_low = 700;
-float m_high = 1000000;
+float m_high = 100000;
+//alpha = 0.0981;
 
 bool print = true;
 
@@ -187,7 +188,7 @@ void MuMu_fit_combined_back(){
     Double_t arglist[100];
     arglist[0] = 10000.;
     minuit->ExecuteCommand("MIGRAD", arglist,0);
-	up = 1.0;
+	Double_t up = 1.0;
 	minuit->SetErrorDef(up);
 	arglist[0] = 0.;
 	minuit->ExecuteCommand("MINOS", arglist, 0);

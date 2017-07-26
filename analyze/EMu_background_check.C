@@ -117,6 +117,7 @@ void EMu_background_check()
              el_id_SF, btag_weight, jet1_b_weight, jet2_b_weight;
     Float_t met_pt;
     Int_t nJets, jet1_flavour, jet2_flavour;
+    Bool_t mu_trigger;
     TLorentzVector mu, el, cm, q1, q2;
     tout->Branch("mu1_pt", &mu1_pt, "mu1_pt/D");
     tout->Branch("mu1_eta", &mu1_eta, "mu1_eta/D");
@@ -145,6 +146,7 @@ void EMu_background_check()
     tout->Branch("jet1_b_weight", &jet1_b_weight);
     tout->Branch("jet2_b_weight", &jet2_b_weight);
     tout->Branch("btag_weight", &btag_weight);
+    tout->Branch("mu_trigger", &mu_trigger);
 
 
 
@@ -272,7 +274,7 @@ void EMu_background_check()
                 if(mu_size > MU_SIZE) printf("WARNING: MU_SIZE TOO LARGE \n");
                 if(met_size != 1) printf("WARNING: Met size not equal to 1\n");
                 bool good_trigger = HLT_IsoMu || HLT_IsoTkMu || HLT_Ele23_WPLoose_Gsf;
-                bool mu_trigger = HLT_IsoMu || HLT_IsoTkMu;
+                mu_trigger = HLT_IsoMu || HLT_IsoTkMu;
                 if(good_trigger &&
                         mu_size >= 1 && el_size >=1 && 
                         ((abs(mu_Charge[0] - el_Charge[0])) > 0.01) &&

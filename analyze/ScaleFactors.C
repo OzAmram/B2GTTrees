@@ -64,7 +64,7 @@ Double_t get_HLT_SF(Double_t pt, Double_t eta, TH2D *h){
 }
 Double_t get_el_SF(Double_t pt, Double_t eta, TH2D *h){
     if( pt <= 25.) pt = 25;
-    if (pt >= 500.) pt = 480.;
+    if (pt >= 150.) pt = 149.;
     TAxis* x_ax =  h->GetXaxis();
 
     TAxis *y_ax =  h->GetYaxis();

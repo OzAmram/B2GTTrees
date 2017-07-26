@@ -38,6 +38,7 @@ void EMu_data_check()
     Float_t met_pt;
     Int_t nJets;
     TLorentzVector mu, el, cm, q1, q2;
+    Bool_t mu_trigger;
     tout->Branch("mu1_pt", &mu1_pt, "mu1_pt/D");
     tout->Branch("mu1_eta", &mu1_eta, "mu1_eta/D");
     tout->Branch("el1_pt", &el1_pt, "el1_pt/D");
@@ -52,6 +53,7 @@ void EMu_data_check()
     tout->Branch("jet2_CMVA", &jet2_cmva, "jet2_CMVA/D");
     tout->Branch("nJets", &nJets, "nJets/I");
     tout->Branch("met_pt", &met_pt, "met_Pt/F");
+    tout->Branch("mu_trigger", &mu_trigger);
 
 
 
@@ -160,6 +162,7 @@ void EMu_data_check()
             if(met_size != 1) printf("WARNING: Met size not equal to 1\n");
             if(mu_size > MU_SIZE) printf("Warning: too many muons\n");
             bool good_trigger = HLT_IsoMu || HLT_IsoTkMu || HLT_Ele23_WPLoose_Gsf;
+            mu_trigger = HLT_IsoMu || HLT_IsoTKMu;
             if(good_trigger &&
                         mu_size >= 1 && el_size >=1 && 
                         ((abs(mu_Charge[0] - el_Charge[0])) > 0.01) &&

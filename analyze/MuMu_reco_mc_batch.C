@@ -19,10 +19,11 @@ double Pbeam = sqrt(Ebeam*Ebeam - 0.938*0.938);
 char *filename("mc_files_m50_jun30.txt");
 const TString fout_name("output_files/DYToLL_mc_m50_jun30.root");
 const double alpha = 0.05;
-const bool PRINT=false;
+const bool PRINT=true;
 const bool MUON_SELECTION_CHECK = false;
 
 const bool data_2016 = true;
+const bool madgraph_sample = true;
 
 
 
@@ -369,6 +370,7 @@ void MuMu_reco_mc_batch()
                         //see:
                         //http://home.thep.lu.se/~torbjorn/pythia81html/EventRecord.html
                         int FINAL_STATE = 1;
+                        int EVENT_PARTICLE = 11;
                         int BEAM_PARTICLE=4;
                         int INCIDENT_PARTICLE = 21;
                         int INTERMED_PARTICLE = 22;
@@ -399,9 +401,16 @@ void MuMu_reco_mc_batch()
                         is_tau_event = false;
 
                         for(int k=0; k<gen_size; k++){
-                            if(gen_status[k] == INCIDENT_PARTICLE && 
+                            if( (!madgraph_sample && gen_status[k] == INCIDENT_PARTICLE && 
                                     (abs(gen_id[k]) <=6  || gen_id[k] == GLUON) && 
-                                    (abs(gen_Dau0ID[k]) == MUON || gen_Dau0ID[k] == Z || gen_Dau0ID[k] == PHOTON || abs(gen_Dau0ID[k]) == TAU) ){
+                                    (abs(gen_Dau0ID[k]) == MUON || gen_Dau0ID[k] == Z || 
+                                     gen_Dau0ID[k] == PHOTON || abs(gen_Dau0ID[k]) == TAU)
+                                 )  ||
+                                 (madgraph_sample && gen_status[k] == EVENT_PARTICLE && 
+                                    (abs(gen_id[k]) <=6  || gen_id[k] == GLUON) && 
+                                     (gen_Dau0ID[k] == Z || abs(gen_Dau0ID[k]) == MUON)
+                                 )
+                               ){
                                 //record index of 2 initial state particles
                                 if(inc_1 == -1) inc_1 = k;
                                 else if(inc_2 == -1) inc_2 = k;
@@ -413,14 +422,16 @@ void MuMu_reco_mc_batch()
                             }
                             //record 2 scattered muons
                             if(abs(gen_id[k]) == MUON && 
-                                    ( (gen_Mom0ID[k] == Z || gen_Mom0ID[k] == PHOTON || abs(gen_Mom0ID[k]) == TAU) || abs(gen_Mom0ID[k]) == ELECTRON ||
-                                      (gen_status[k] == OUTGOING)) ){
+                                    ((!madgraph_sample && (gen_Mom0ID[k] == Z || gen_Mom0ID[k] == PHOTON || abs(gen_Mom0ID[k]) == TAU) 
+                                      || abs(gen_Mom0ID[k]) == ELECTRON || (gen_status[k] == OUTGOING)) || 
+                                      (madgraph_sample && gen_status[k] == FINAL_STATE ) 
+                                    )){
                                 if(gen_id[k] == MUON){
                                     if(gen_mu_m == -1) gen_mu_m = k;
                                     else{
                                         if(abs(gen_Mom0ID[k]) != TAU) printf("WARNING: More than one mu_m\n\n");
                                         if(PRINT) sprintf(out_buff + strlen(out_buff), "Extra mu_m detected\n");
-                                        //print_out = true;
+                                        print_out = true;
                                     }
                                 }
                                 if(gen_id[k] == -MUON){
@@ -428,7 +439,7 @@ void MuMu_reco_mc_batch()
                                     else{
                                         if(abs(gen_Mom0ID[k]) != TAU) printf("WARNING: More than one mu_p\n\n");
                                         if(PRINT) sprintf(out_buff + strlen(out_buff), "Extra mu_p detected\n");
-                                        //print_out = true;
+                                        print_out = true;
                                     }
                                 }
                             }
@@ -454,8 +465,10 @@ void MuMu_reco_mc_batch()
                                 }
                             }
                             if(PRINT){
-                                if( (abs(gen_id[k]) <=6 || gen_id[k] == GLUON) && 
-                                        (gen_Dau0ID[k] == Z || abs(gen_Dau0ID[k]) == MUON || abs(gen_Dau0ID[k]) == TAU)){
+                                if( (abs(gen_id[k]) <=6 || gen_id[k] == GLUON)){
+                            //    if( (abs(gen_id[k]) <=6 || gen_id[k] == GLUON) && 
+                            //            (gen_Dau0ID[k] == PHOTON &&
+                            //             gen_Dau0ID[k] == Z || abs(gen_Dau0ID[k]) == MUON || abs(gen_Dau0ID[k]) == TAU)){
                                     if(PRINT) sprintf(out_buff + strlen(out_buff),"Parton (ID = %i stat = %i): \n"
                                             "    Mom1 ID: %i Mom1 Stat: %i Mom2 ID: %i Mom2 Stat %i \n"
                                             "    Dau1 ID: %i Dau1 Stat: %i Dau2 ID: %i Dau2 Stat %i \n",
