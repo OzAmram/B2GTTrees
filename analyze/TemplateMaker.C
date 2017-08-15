@@ -169,6 +169,7 @@ int gen_mc_template(TTree *t1, TH2F* h_sym, TH2F *h_asym, TH2F *h_count, Double_
     h_sym->Scale(1./norm);
     h_asym->Scale(1./norm);
     t1->ResetBranchAddresses();
+    printf("MC templates generated from %i events \n \n", n);
     return 0;
 }
 

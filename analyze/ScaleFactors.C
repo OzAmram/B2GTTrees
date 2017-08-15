@@ -14,6 +14,7 @@
 
 typedef struct {
     TH2D *HLT_SF;
+    TH2D *HLT_MC_EFF;
     TH2D *ISO_SF;
     TH2D *ID_SF;
 } SFs;
@@ -49,19 +50,43 @@ Double_t get_SF(Double_t pt, Double_t eta, TH2D *h){
     if(result < 0.01) printf("0 muon id SF for Pt %.1f, Eta %1.2f \n", pt, eta);
     return result;
 }
-Double_t get_HLT_SF(Double_t pt, Double_t eta, TH2D *h){
-    //stay in range of histogram
-    if (pt >= 350.) pt = 350.;
-    eta = abs(eta);
-    TAxis* x_ax =  h->GetXaxis();
-    TAxis *y_ax =  h->GetYaxis();
-    int xbin = x_ax->FindBin(pt);
-    int ybin = y_ax->FindBin(std::abs(eta));
 
-    Double_t result = h->GetBinContent(xbin, ybin);
-    if(result < 0.01) printf("0 HLT SF for Pt %.1f, Eta %1.2f \n", pt, eta);
-    return result;
+
+Double_t get_HLT_SF(Double_t mu1_pt, Double_t mu1_eta, Double_t mu2_pt, Double_t mu2_eta, TH2D *h_SF, TH2D *h_MC_EFF){
+    //stay in range of histogram
+    if (mu1_pt >= 350.) mu1_pt = 350.;
+    if (mu2_pt >= 350.) mu2_pt = 350.;
+    mu1_eta = abs(mu1_eta);
+    mu2_eta = abs(mu2_eta);
+    TAxis *x_ax_SF =  h_SF->GetXaxis();
+    TAxis *y_ax_SF =  h_SF->GetYaxis();
+    int xbin1_SF = x_ax_SF->FindBin(mu1_pt);
+    int ybin1_SF = y_ax_SF->FindBin(std::abs(mu1_eta));
+
+    int xbin2_SF = x_ax_SF->FindBin(mu2_pt);
+    int ybin2_SF = y_ax_SF->FindBin(std::abs(mu2_eta));
+
+    Double_t SF1 = h_SF->GetBinContent(xbin1_SF, ybin1_SF);
+    Double_t SF2 = h_SF->GetBinContent(xbin2_SF, ybin2_SF);
+
+
+    TAxis *x_ax_MC_EFF =  h_MC_EFF->GetXaxis();
+    TAxis *y_ax_MC_EFF =  h_MC_EFF->GetYaxis();
+    int xbin1_MC_EFF = x_ax_MC_EFF->FindBin(mu1_pt);
+    int ybin1_MC_EFF = y_ax_MC_EFF->FindBin(std::abs(mu1_eta));
+
+    int xbin2_MC_EFF = x_ax_MC_EFF->FindBin(mu2_pt);
+    int ybin2_MC_EFF = y_ax_MC_EFF->FindBin(std::abs(mu2_eta));
+
+    Double_t MC_EFF1 = h_MC_EFF->GetBinContent(xbin1_MC_EFF, ybin1_MC_EFF);
+    Double_t MC_EFF2 = h_MC_EFF->GetBinContent(xbin2_MC_EFF, ybin2_MC_EFF);
+    Double_t result = 1 - (1-MC_EFF1*SF1)*(1-MC_EFF2*SF2);
+    if(result < 0.01) printf("0 HLT SF for Pt %.1f, Eta %1.2f \n", mu1_pt, mu1_eta);
+    //printf("Result, SF1 = (%0.3f, %0.3f) \n", result, SF1);
+    return SF1;
 }
+
+
 Double_t get_el_SF(Double_t pt, Double_t eta, TH2D *h){
     if( pt <= 25.) pt = 25;
     if (pt >= 150.) pt = 149.;
@@ -213,6 +238,12 @@ void setup_SFs(SFs *runs_BCDEF, SFs *runs_GH, BTag_readers *btag_r, BTag_effs *b
     TH2D *HLT_1 = (TH2D *) subdir1->Get("pt_abseta_ratio")->Clone();
     HLT_1->SetDirectory(0);
     runs_BCDEF->HLT_SF = HLT_1;
+    printf("got 1\n");
+    subdir1->cd("efficienciesMC");
+    TDirectory *subdir12 = gDirectory;
+    TH2D *MC_EFF1 = (TH2D *) subdir12->Get("pt_abseta_MC")->Clone();
+    MC_EFF1->SetDirectory(0);
+    runs_BCDEF->HLT_MC_EFF = MC_EFF1;
     f1->Close();
 
 
@@ -240,6 +271,10 @@ void setup_SFs(SFs *runs_BCDEF, SFs *runs_GH, BTag_readers *btag_r, BTag_effs *b
     TH2D *HLT_2 = (TH2D *) subdir4->Get("pt_abseta_ratio")->Clone();
     HLT_2->SetDirectory(0);
     runs_GH->HLT_SF = HLT_2;
+    subdir4->cd("efficienciesMC");
+    TDirectory *subdir42 = gDirectory;
+    runs_GH->HLT_MC_EFF = (TH2D *) subdir42->Get("pt_abseta_MC")->Clone();
+    runs_GH->HLT_MC_EFF ->SetDirectory(0);
     f4->Close();
 
 

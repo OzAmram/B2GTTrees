@@ -16,14 +16,12 @@ const double root2 = sqrt(2);
 double Ebeam = 6500.;
 double Pbeam = sqrt(Ebeam*Ebeam - 0.938*0.938);
 
-char *filename("mc_files_m50_jun30.txt");
-const TString fout_name("output_files/DYToLL_mc_m50_jun30.root");
+char *filename("mc_files_test.txt");
+const TString fout_name("output_files/DYToLL_mc_testA.root");
 const double alpha = 0.05;
-const bool PRINT=true;
-const bool MUON_SELECTION_CHECK = false;
+const bool PRINT=false;
 
 const bool data_2016 = true;
-const bool madgraph_sample = true;
 
 
 
@@ -401,16 +399,11 @@ void MuMu_reco_mc_batch()
                         is_tau_event = false;
 
                         for(int k=0; k<gen_size; k++){
-                            if( (!madgraph_sample && gen_status[k] == INCIDENT_PARTICLE && 
+                            if(gen_status[k] == INCIDENT_PARTICLE && 
                                     (abs(gen_id[k]) <=6  || gen_id[k] == GLUON) && 
                                     (abs(gen_Dau0ID[k]) == MUON || gen_Dau0ID[k] == Z || 
                                      gen_Dau0ID[k] == PHOTON || abs(gen_Dau0ID[k]) == TAU)
-                                 )  ||
-                                 (madgraph_sample && gen_status[k] == EVENT_PARTICLE && 
-                                    (abs(gen_id[k]) <=6  || gen_id[k] == GLUON) && 
-                                     (gen_Dau0ID[k] == Z || abs(gen_Dau0ID[k]) == MUON)
-                                 )
-                               ){
+                              ){
                                 //record index of 2 initial state particles
                                 if(inc_1 == -1) inc_1 = k;
                                 else if(inc_2 == -1) inc_2 = k;
@@ -422,10 +415,8 @@ void MuMu_reco_mc_batch()
                             }
                             //record 2 scattered muons
                             if(abs(gen_id[k]) == MUON && 
-                                    ((!madgraph_sample && (gen_Mom0ID[k] == Z || gen_Mom0ID[k] == PHOTON || abs(gen_Mom0ID[k]) == TAU) 
-                                      || abs(gen_Mom0ID[k]) == ELECTRON || (gen_status[k] == OUTGOING)) || 
-                                      (madgraph_sample && gen_status[k] == FINAL_STATE ) 
-                                    )){
+                                    (gen_Mom0ID[k] == Z || gen_Mom0ID[k] == PHOTON || abs(gen_Mom0ID[k]) == TAU 
+                                      || abs(gen_Mom0ID[k]) == ELECTRON || gen_status[k] == OUTGOING)) {
                                 if(gen_id[k] == MUON){
                                     if(gen_mu_m == -1) gen_mu_m = k;
                                     else{
@@ -445,8 +436,8 @@ void MuMu_reco_mc_batch()
                             }
                             //record tau's
                             if(abs(gen_id[k]) == TAU && 
-                                    ( (gen_Mom0ID[k] == Z || gen_Mom0ID[k] == PHOTON) || abs(gen_Mom0ID[k]) == ELECTRON ||
-                                      (gen_status[k] == OUTGOING)) ){
+                                    ( (gen_Mom0ID[k] == Z || gen_Mom0ID[k] == PHOTON || abs(gen_Mom0ID[k]) == ELECTRON ||
+                                      gen_status[k] == OUTGOING)) ){
                                 if(gen_id[k] == TAU){
                                     if(gen_tau_m == -1) gen_tau_m = k;
                                     else{
@@ -717,8 +708,8 @@ void MuMu_reco_mc_batch()
 
                         //get muon cut SFs
 
-                        bcdef_HLT_SF = get_HLT_SF(mu1_pt, mu1_eta, runs_bcdef.HLT_SF);
-                        gh_HLT_SF = get_HLT_SF(mu1_pt, mu1_eta, runs_gh.HLT_SF);
+                        bcdef_HLT_SF = get_HLT_SF(mu1_pt, mu1_eta, mu2_pt, mu2_eta, runs_bcdef.HLT_SF, runs_bcdef.HLT_MC_EFF);
+                        gh_HLT_SF = get_HLT_SF(mu1_pt, mu1_eta, mu2_pt, mu2_eta, runs_gh.HLT_SF, runs_gh.HLT_MC_EFF);
 
                         bcdef_iso_SF = get_SF(mu1_pt, mu1_eta, runs_bcdef.ISO_SF) * get_SF(mu2_pt, mu2_eta, runs_bcdef.ISO_SF);
                         bcdef_id_SF = get_SF(mu1_pt, mu1_eta, runs_bcdef.ID_SF) * get_SF(mu2_pt, mu2_eta, runs_bcdef.ID_SF);
@@ -767,29 +758,6 @@ void MuMu_reco_mc_batch()
                         }
                         if(PRINT) memset(out_buff, 0, 10000);
 
-                        if(MUON_SELECTION_CHECK){
-                            //muon selection checks
-                            TLorentzVector gen_mu_p_vec, gen_mu_m_vec;
-                            gen_mu_p_vec.SetPtEtaPhiE(gen_Pt[gen_mu_p], gen_Eta[gen_mu_p], gen_Phi[gen_mu_p], gen_E[gen_mu_p]);
-                            gen_mu_m_vec.SetPtEtaPhiE(gen_Pt[gen_mu_m], gen_Eta[gen_mu_m], gen_Phi[gen_mu_m], gen_E[gen_mu_m]);
-                            float dr_p = gen_mu_p_vec.DeltaR(mu_p);
-                            float dr_m = gen_mu_m_vec.DeltaR(mu_m);
-                            mu_p_dr->Fill(dr_p);
-                            mu_m_dr->Fill(dr_m);
-                            if(mu_size >=3) {
-                                TLorentzVector mu3;
-                                mu3.SetPtEtaPhiE(mu_Pt[2], mu_Eta[2], mu_Phi[2], mu_E[2]);
-                                float dr_3;
-                                if(mu_Charge[2] <0){
-                                    dr_3 = gen_mu_m_vec.DeltaR(mu3);
-                                    if (dr_3 < dr_p) mismatch++;
-                                }
-                                else{
-                                    dr_3 = gen_mu_p_vec.DeltaR(mu3);
-                                    if(dr_3 < dr_m) mismatch++;
-                                }
-                            }
-                        }
                     }
                 } 
             }
@@ -813,13 +781,6 @@ void MuMu_reco_mc_batch()
     t_back->Write();
 
 
-
-    if(MUON_SELECTION_CHECK){
-        printf("%i mismatched muons in %i events (%2.1f %%) \n", 
-                mismatch, nEvents, 100*(float(mismatch))/(float(nEvents)));
-        mu_p_dr->Write();
-        mu_m_dr->Write();
-    }
     printf("Writing output to file at %s \n", fout_name.Data());
 
     fout->Close();

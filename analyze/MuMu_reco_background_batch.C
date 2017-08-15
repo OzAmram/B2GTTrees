@@ -20,7 +20,6 @@ char *filename("wjets_files.txt");
 const TString fout_name("output_files/wjets_background_jun22.root");
 const double alpha = 0.05;
 const bool PRINT=false;
-const bool MUON_SELECTION_CHECK = false;
 
 const bool data_2016 = true;
 
@@ -352,8 +351,8 @@ void MuMu_reco_background_batch()
 
                         //get muon cut SFs
 
-                        bcdef_HLT_SF = get_HLT_SF(mu1_pt, mu1_eta, runs_bcdef.HLT_SF);
-                        gh_HLT_SF = get_HLT_SF(mu1_pt, mu1_eta, runs_gh.HLT_SF);
+                        bcdef_HLT_SF = get_HLT_SF(mu1_pt, mu1_eta, mu2_pt, mu2_eta, runs_bcdef.HLT_SF, runs_bcdef.HLT_MC_EFF);
+                        gh_HLT_SF = get_HLT_SF(mu1_pt, mu1_eta, mu2_pt, mu2_eta, runs_gh.HLT_SF, runs_gh.HLT_MC_EFF);
 
                         bcdef_iso_SF = get_SF(mu1_pt, mu1_eta, runs_bcdef.ISO_SF) * get_SF(mu2_pt, mu2_eta, runs_bcdef.ISO_SF);
                         bcdef_id_SF = get_SF(mu1_pt, mu1_eta, runs_bcdef.ID_SF) * get_SF(mu2_pt, mu2_eta, runs_bcdef.ID_SF);
