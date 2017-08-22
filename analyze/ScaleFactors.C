@@ -51,8 +51,27 @@ Double_t get_SF(Double_t pt, Double_t eta, TH2D *h){
     return result;
 }
 
+Double_t get_HLT_SF_1mu(Double_t mu1_pt, Double_t mu1_eta, TH2D *h_SF, TH2D *h_MC_EFF){
+    //get HLT SF for event with just 1 muon
+    //stay in range of histogram
+    if (mu1_pt >= 350.) mu1_pt = 350.;
+    mu1_eta = abs(mu1_eta);
+    TAxis *x_ax_SF =  h_SF->GetXaxis();
+    TAxis *y_ax_SF =  h_SF->GetYaxis();
+    int xbin1_SF = x_ax_SF->FindBin(mu1_pt);
+    int ybin1_SF = y_ax_SF->FindBin(std::abs(mu1_eta));
+
+
+    Double_t SF1 = h_SF->GetBinContent(xbin1_SF, ybin1_SF);
+
+    result = SF1;
+    if(result < 0.01) printf("0 HLT SF for Pt %.1f, Eta %1.2f \n", mu1_pt, mu1_eta);
+    //printf("Result, SF1 = (%0.3f, %0.3f) \n", result, SF1);
+    return SF1;
+}
 
 Double_t get_HLT_SF(Double_t mu1_pt, Double_t mu1_eta, Double_t mu2_pt, Double_t mu2_eta, TH2D *h_SF, TH2D *h_MC_EFF){
+    //Get HLT SF for event with 2 Muons
     //stay in range of histogram
     if (mu1_pt >= 350.) mu1_pt = 350.;
     if (mu2_pt >= 350.) mu2_pt = 350.;
@@ -80,10 +99,11 @@ Double_t get_HLT_SF(Double_t mu1_pt, Double_t mu1_eta, Double_t mu2_pt, Double_t
 
     Double_t MC_EFF1 = h_MC_EFF->GetBinContent(xbin1_MC_EFF, ybin1_MC_EFF);
     Double_t MC_EFF2 = h_MC_EFF->GetBinContent(xbin2_MC_EFF, ybin2_MC_EFF);
-    Double_t result = 1 - (1-MC_EFF1*SF1)*(1-MC_EFF2*SF2);
+    Double_t result = (1 - (1-MC_EFF1*SF1)*(1-MC_EFF2*SF2))/
+                      (1 - (1-MC_EFF1)*(1-MC_EFF2));
     if(result < 0.01) printf("0 HLT SF for Pt %.1f, Eta %1.2f \n", mu1_pt, mu1_eta);
     //printf("Result, SF1 = (%0.3f, %0.3f) \n", result, SF1);
-    return SF1;
+    return result;
 }
 
 
