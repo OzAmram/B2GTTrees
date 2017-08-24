@@ -32,6 +32,8 @@ int n_m_bins = 1;
 int n_cost_bins = 10;
 Float_t cost_bins[] = {-1.0, -.8, -.6, -.4, -.2, 0., 0.2, 0.4, 0.6, 0.8, 1.0};
 
+int FLAG = FLAG_ELECTRONS;
+
 //int n_xf_bins = 4;
 //float xf_max = 1.0;
 //Float_t xf_bins[] = {0., 0.04, 0.08, 0.14, 1.0};
@@ -42,7 +44,7 @@ Float_t cost_bins[] = {-1.0, -.8, -.6, -.4, -.2, 0., 0.2, 0.4, 0.6, 0.8, 1.0};
 
 
 float m_low = 150;
-float m_high = 200;
+float m_high = 400;
 //alpha = 0.0981;
 
 bool print = true;
@@ -58,13 +60,13 @@ TH2F *h_mc_count, *h_sym_count;
 TAxis *x_ax, *y_ax, *z_ax;
 
 //MC templates
-TFile* f_mc = (TFile*) TFile::Open("output_files/DYToLL_mc_2016_jun21.root");
+TFile* f_mc = (TFile*) TFile::Open("output_files/ElEl_DY_aug24.root");
 TTree *t_mc = (TTree *) f_mc ->Get("T_data");
 TTree *t_nosig = (TTree *) f_mc ->Get("T_back");
-TFile* f_ttbar = (TFile*) TFile::Open("output_files/combined_background_jun20.root");
-TTree *t_ttbar = (TTree *) f_ttbar ->Get("T_data");
+TFile* f_back = (TFile*) TFile::Open("output_files/ElEl_combined_background_aug23.root");
+TTree *t_back = (TTree *) f_back ->Get("T_data");
 
-TFile *f_data = TFile::Open("output_files/DYToLL_data_2016_jun07.root");
+TFile *f_data = TFile::Open("output_files/SingleElectron_data_aug22.root");
 TTree *t_data = (TTree *)f_data->Get("T_data"); 
 
 
@@ -148,23 +150,23 @@ void setup(){
             n_xf_bins, xf_bins, n_cost_bins, cost_bins);
     h_asym = new TH2F("h_asym", "Asymmetric template of mc (xF cost_r) xF > 0.15",
             n_xf_bins, xf_bins, n_cost_bins, cost_bins);
-    h_back = new TH2F("h_ttbar", "Combined background template",
+    h_back = new TH2F("h_back", "Combined background template",
             n_xf_bins, xf_bins, n_cost_bins, cost_bins);
 
     h_data = new TH2F("h_data", "Data template of (x_f, cost_r) xF > 0.15",
             n_xf_bins, xf_bins, n_cost_bins, cost_bins);
 
 
-    gen_mc_template(t_mc, h_sym, h_asym, h_sym_count, m_low, m_high);
-    TTree *ts[2] = {t_ttbar, t_nosig};
-    gen_combined_background_template(2, ts, h_back, m_low, m_high);
+    gen_mc_template(t_mc, h_sym, h_asym, h_sym_count, m_low, m_high, FLAG);
+    TTree *ts[2] = {t_back, t_nosig};
+    gen_combined_background_template(2, ts, h_back, m_low, m_high, FLAG);
 
     nDataEvents = gen_data_template(t_data, h_data, &v_m, &v_xF, &v_cost, m_low, m_high);
     printf("Finishing setup \n");
     return;
 }
 
-void MuMu_fit_combined_back(){
+void AFB_fit(){
     setup();
 
     printf("Integrals are %f %f %f %f  \n", h_data->Integral(), h_sym->Integral(), 
@@ -176,9 +178,9 @@ void MuMu_fit_combined_back(){
     float AFB_start = 0.6;
     float AFB_start_error = 0.1;
     float AFB_max = 0.75;
-    float r_back_start = 0.1;
-    float r_back_start_error = 0.02;
-    float r_back_max = 0.25;
+    float r_back_start = 0.12;
+    float r_back_start_error = 0.04;
+    float r_back_max = 0.35;
 
     TVirtualFitter * minuit = TVirtualFitter::Fitter(0,2);
     minuit->SetFCN(fcn);
@@ -225,7 +227,7 @@ void MuMu_fit_combined_back(){
 
     /*
     f_data->Close();
-    f_ttbar->Close();
+    f_back->Close();
     f_mc->Close();
     */
 

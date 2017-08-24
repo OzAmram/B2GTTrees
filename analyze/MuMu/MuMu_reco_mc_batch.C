@@ -5,7 +5,7 @@
 #include <cstring>
 #include <algorithm>
 #include "TFile.h"
-#include "ScaleFactors.C"
+#include "../ScaleFactors.C"
 
 #define GEN_SIZE 4000
 #define MU_SIZE 100

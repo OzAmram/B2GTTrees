@@ -258,7 +258,6 @@ void setup_SFs(SFs *runs_BCDEF, SFs *runs_GH, BTag_readers *btag_r, BTag_effs *b
     TH2D *HLT_1 = (TH2D *) subdir1->Get("pt_abseta_ratio")->Clone();
     HLT_1->SetDirectory(0);
     runs_BCDEF->HLT_SF = HLT_1;
-    printf("got 1\n");
     subdir1->cd("efficienciesMC");
     TDirectory *subdir12 = gDirectory;
     TH2D *MC_EFF1 = (TH2D *) subdir12->Get("pt_abseta_MC")->Clone();
