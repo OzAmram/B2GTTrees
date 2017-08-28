@@ -30,7 +30,6 @@
 #define FLAG_ELECTRONS  1
 
 Double_t bcdef_lumi = 5.746 + 2.572 + 4.242 + 4.024 + 3.104;
-//Double_t gh_lumi =  7.573 + 0.215;
 // adding new Hv2 data set to get full 2016 luminosity
 Double_t gh_lumi =  7.573 + 0.215 + 8.434;
 Double_t alpha = 0.0180;
@@ -408,12 +407,12 @@ int gen_combined_background_template(int nTrees, TTree **ts, TH2F* h,
 }
 
 
-void make_m_cost_hist(TTree *t1, TH1F *h_m, TH1F *h_cost, bool is_data=false){
+void make_m_cost_hist(TTree *t1, TH1F *h_m, TH1F *h_cost, bool is_data=false, int flag = FLAG_MUONS){
     //read event data
     Long64_t size  =  t1->GetEntries();
     Double_t m, xF, cost, mu1_pt, mu2_pt, jet1_cmva, jet2_cmva, gen_weight;
     Double_t bcdef_HLT_SF, bcdef_iso_SF, bcdef_id_SF;
-    Double_t gh_HLT_SF, gh_iso_SF, gh_id_SF;
+    Double_t gh_HLT_SF, gh_iso_SF, gh_id_SF, el_id_SF;
     Double_t jet1_pt, jet2_pt, jet1_b_weight, jet2_b_weight;
     Float_t met_pt;
     Int_t nJets;
@@ -433,54 +432,88 @@ void make_m_cost_hist(TTree *t1, TH1F *h_m, TH1F *h_cost, bool is_data=false){
     if(!is_data){
         t1->SetBranchAddress("nJets", &nJets);
         t1->SetBranchAddress("gen_weight", &gen_weight);
-        t1->SetBranchAddress("bcdef_HLT_SF", &bcdef_HLT_SF);
-        t1->SetBranchAddress("bcdef_iso_SF", &bcdef_iso_SF);
-        t1->SetBranchAddress("bcdef_id_SF", &bcdef_id_SF);
-        t1->SetBranchAddress("gh_HLT_SF", &gh_HLT_SF);
-        t1->SetBranchAddress("gh_iso_SF", &gh_iso_SF);
-        t1->SetBranchAddress("gh_id_SF", &gh_id_SF);
         t1->SetBranchAddress("jet1_b_weight", &jet1_b_weight);
         t1->SetBranchAddress("jet2_b_weight", &jet2_b_weight);
     }
+    if(flag == FLAG_MUONS){
+        if(!is_data){
+            t1->SetBranchAddress("bcdef_HLT_SF", &bcdef_HLT_SF);
+            t1->SetBranchAddress("bcdef_iso_SF", &bcdef_iso_SF);
+            t1->SetBranchAddress("bcdef_id_SF", &bcdef_id_SF);
+            t1->SetBranchAddress("gh_HLT_SF", &gh_HLT_SF);
+            t1->SetBranchAddress("gh_iso_SF", &gh_iso_SF);
+            t1->SetBranchAddress("gh_id_SF", &gh_id_SF);
+        }
+        for (int i=0; i<size; i++) {
+            t1->GetEntry(i);
+            bool no_bjets = has_no_bjets(nJets, jet1_pt, jet2_pt, jet1_cmva, jet2_cmva);
 
-    for (int i=0; i<size; i++) {
-        t1->GetEntry(i);
-        bool no_bjets = has_no_bjets(nJets, jet1_pt, jet2_pt, jet1_cmva, jet2_cmva);
-
-        if(m >= 150. && met_pt < 50. && no_bjets){
-            if(is_data){
-                h_m->Fill(m);
-                h_cost->Fill(cost);
-            }
-            else{
-                Double_t bcdef_weight = gen_weight * bcdef_HLT_SF * bcdef_iso_SF * bcdef_id_SF;
-                Double_t gh_weight = gen_weight * gh_HLT_SF * gh_iso_SF * gh_id_SF;
-                if (nJets >= 1){
-                    bcdef_weight *= jet1_b_weight;
-                    gh_weight *= jet1_b_weight;
+            if(m >= 150. && met_pt < 50. && no_bjets){
+                if(is_data){
+                    h_m->Fill(m);
+                    h_cost->Fill(cost);
                 }
-                if (nJets >= 2){
-                    bcdef_weight *= jet2_b_weight;
-                    gh_weight *= jet2_b_weight;
+                else{
+                    Double_t bcdef_weight = gen_weight * bcdef_HLT_SF * bcdef_iso_SF * bcdef_id_SF;
+                    Double_t gh_weight = gen_weight * gh_HLT_SF * gh_iso_SF * gh_id_SF;
+                    if (nJets >= 1){
+                        bcdef_weight *= jet1_b_weight;
+                        gh_weight *= jet1_b_weight;
+                    }
+                    if (nJets >= 2){
+                        bcdef_weight *= jet2_b_weight;
+                        gh_weight *= jet2_b_weight;
+                    }
+                    //Double_t weight = gen_weight;
+                    h_m_bcdef->Fill(m,bcdef_weight);
+                    h_m_gh->Fill(m,gh_weight);
+                    h_cost_bcdef->Fill(cost,bcdef_weight);
+                    h_cost_gh->Fill(cost,gh_weight);
                 }
-                //Double_t weight = gen_weight;
-                h_m_bcdef->Fill(m,bcdef_weight);
-                h_m_gh->Fill(m,gh_weight);
-                h_cost_bcdef->Fill(cost,bcdef_weight);
-                h_cost_gh->Fill(cost,gh_weight);
+
+
             }
-
-
+        }
+        if(!is_data){
+            h_m_bcdef ->Scale(bcdef_lumi * 1000);
+            h_cost_bcdef ->Scale(bcdef_lumi * 1000);
+            h_m_gh ->Scale(gh_lumi * 1000);
+            h_cost_gh ->Scale(gh_lumi * 1000);
+            h_m->Add(h_m_bcdef, h_m_gh);
+            h_cost->Add(h_cost_bcdef, h_cost_gh);
         }
     }
-    if(!is_data){
-        h_m_bcdef ->Scale(bcdef_lumi * 1000);
-        h_cost_bcdef ->Scale(bcdef_lumi * 1000);
-        h_m_gh ->Scale(gh_lumi * 1000);
-        h_cost_gh ->Scale(gh_lumi * 1000);
-        h_m->Add(h_m_bcdef, h_m_gh);
-        h_cost->Add(h_cost_bcdef, h_cost_gh);
+    else{
+        if(!is_data) t1->SetBranchAddress("el_id_SF", &el_id_SF);
+        for (int i=0; i<size; i++) {
+            t1->GetEntry(i);
+            bool no_bjets = has_no_bjets(nJets, jet1_pt, jet2_pt, jet1_cmva, jet2_cmva);
+            if(m >= 150 && met_pt < 50.  && no_bjets){
+                if(is_data){
+                    h_m->Fill(m);
+                    h_cost->Fill(cost);
+                }
+                else{
+
+                    Double_t evt_weight = gen_weight * el_id_SF;
+                    if (nJets >= 1){
+                        evt_weight *= jet1_b_weight;
+                    }
+                    if (nJets >= 2){
+                        evt_weight *= jet2_b_weight;
+                    }
+                    h_m->Fill(m, evt_weight);
+                    h_cost->Fill(cost, evt_weight);
+                }
+            }
+        }
+        if(!is_data){
+            Double_t tot_lumi = 1000*(bcdef_lumi + gh_lumi);
+            h_m->Scale(tot_lumi);
+            h_cost->Scale(tot_lumi);
+        }
     }
+
     t1->ResetBranchAddresses();
 }
 

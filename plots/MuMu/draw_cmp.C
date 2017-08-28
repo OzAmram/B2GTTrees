@@ -21,9 +21,9 @@
 #include "TFitter.h"
 #include "TSystem.h"
 #include "Math/Functor.h"
-#include "../analyze/TemplateMaker.C"
-#include "tdrstyle.C"
-#include "CMS_lumi.C"
+#include "../../analyze/TemplateMaker.C"
+#include "../tdrstyle.C"
+#include "../CMS_lumi.C"
 
 
 
@@ -48,17 +48,17 @@ void draw_cmp(){
 
     TFile *f_wt = TFile::Open("../analyze/output_files/WT_background_jun20.root");
     TTree *t_wt = (TTree *)f_wt->Get("T_data");
-    TH1F *data_m = new TH1F("data_m", "Data Dimuon Mass Distribution", 30, 150, 1000);
+    TH1F *data_m = new TH1F("data_m", "Data Dimuon Mass Distribution", 30, 150, 2000);
 
-    TH1F *mc_m = new TH1F("mc_m", "MC Signal (qqbar, qglu, qbarglu)", 30, 150, 1000);
+    TH1F *mc_m = new TH1F("mc_m", "MC Signal (qqbar, qglu, qbarglu)", 30, 150, 2000);
     mc_m->SetFillColor(kRed+1);
     mc_m->SetMarkerStyle(21);
     mc_m->SetMarkerColor(kRed+1);
-    TH1F *mc_nosig_m = new TH1F("mc_nosig_m", "MC no signal (qq, gluglu qbarqbar)", 30, 150, 1000);
+    TH1F *mc_nosig_m = new TH1F("mc_nosig_m", "MC no signal (qq, gluglu qbarqbar)", 30, 150, 2000);
     mc_nosig_m->SetFillColor(kMagenta);
     mc_nosig_m->SetMarkerStyle(21);
     mc_nosig_m->SetMarkerColor(kMagenta);
-    TH1F *ttbar_m = new TH1F("ttbar_m", "TTBar Background", 30, 150, 1000);
+    TH1F *ttbar_m = new TH1F("ttbar_m", "TTBar Background", 30, 150, 2000);
     ttbar_m->SetFillColor(kBlue);
     ttbar_m->SetMarkerStyle(21);
     ttbar_m->SetMarkerColor(kBlue);
@@ -80,17 +80,17 @@ void draw_cmp(){
 
 
 
-    TH1F *ww_m = new TH1F("ww_m", "MC Signal (qqbar, qglu, qbarglu)", 30, 150, 1000);
+    TH1F *ww_m = new TH1F("ww_m", "MC Signal (qqbar, qglu, qbarglu)", 30, 150, 2000);
     TH1F *ww_cost = new TH1F("ww_cost", "MC Signal (qqbar, qglu, qbarglu)", 40, -1,1);
-    TH1F *wz_m = new TH1F("wz_m", "MC Signal (qqbar, qglu, qbarglu)", 30, 150, 1000);
+    TH1F *wz_m = new TH1F("wz_m", "MC Signal (qqbar, qglu, qbarglu)", 30, 150, 2000);
     TH1F *wz_cost = new TH1F("wz_cost", "MC Signal (qqbar, qglu, qbarglu)", 40, -1,1);
-    TH1F *zz_m = new TH1F("zz_m", "MC Signal (qqbar, qglu, qbarglu)", 30, 150, 1000);
+    TH1F *zz_m = new TH1F("zz_m", "MC Signal (qqbar, qglu, qbarglu)", 30, 150, 2000);
     TH1F *zz_cost = new TH1F("zz_cost", "MC Signal (qqbar, qglu, qbarglu)", 40, -1,1);
 
-    TH1F *wt_m = new TH1F("wt_m", "tw + #bar{t}w", 30, 150, 1000);
+    TH1F *wt_m = new TH1F("wt_m", "tw + #bar{t}w", 30, 150, 2000);
     TH1F *wt_cost = new TH1F("wt_cost", "tw + #bar{t}w", 40, -1,1);
 
-    TH1F *diboson_m = new TH1F("diboson_m", "DiBoson (WW, WZ, ZZ)", 30, 150, 1000);
+    TH1F *diboson_m = new TH1F("diboson_m", "DiBoson (WW, WZ, ZZ)", 30, 150, 2000);
     TH1F *diboson_cost = new TH1F("diboson_cost", "DiBoson (WW, WZ,ZZ)", 40, -1,1);
 
     wt_m->SetFillColor(kOrange+7); 
@@ -226,7 +226,7 @@ void draw_cmp(){
     ratio->Divide(m_mc_sum);
     ratio->SetMarkerStyle(21);
     ratio->Draw("ep");
-    TLine *l1 = new TLine(150,1,1000,1);
+    TLine *l1 = new TLine(150,1,2000,1);
     l1->SetLineStyle(2);
     l1->Draw();
     c_m->cd();
