@@ -17,7 +17,7 @@ typedef struct {
     TH2D *HLT_MC_EFF;
     TH2D *ISO_SF;
     TH2D *ID_SF;
-} SFs;
+} mu_SFs;
 
 typedef struct {
     BTagCalibrationReader b_reader;
@@ -31,9 +31,25 @@ typedef struct {
     TH2D *udsg_eff;
 } BTag_effs;
 
+typedef struct {
+    TH1D *data_pileup;
+    TH1D *pileup_ratio;
+} pileup_SFs;
+
 typedef struct{
     TH2D *h;
 } el_SFs;
+
+
+Double_t get_pileup_SF(Int_t n_int, TH1D *h){
+
+    TAxis* x_ax =  h->GetXaxis();
+    int xbin = x_ax->FindBin(n_int);
+
+    Double_t result = h->GetBinContent(xbin);
+    if(result < 0.01) printf("0 pileup SF for %i vertices\n", n_int);
+    return result;
+}
 
 
 Double_t get_SF(Double_t pt, Double_t eta, TH2D *h){
@@ -228,7 +244,7 @@ Double_t get_emu_btag_weight(Double_t pt1, Double_t eta1, Float_t flavour1, Doub
 
 
 
-void setup_SFs(SFs *runs_BCDEF, SFs *runs_GH, BTag_readers *btag_r, BTag_effs *b_effs){
+void setup_SFs(mu_SFs *runs_BCDEF, mu_SFs *runs_GH, BTag_readers *btag_r, BTag_effs *b_effs, pileup_SFs *pu_SF){
     TH1::AddDirectory(kFALSE);
     BTagCalibration calib("csvv1", "SFs/cMVAv2_Moriond17_B_H.csv");
     btag_r->b_reader = BTagCalibrationReader(BTagEntry::OP_MEDIUM, "central");
@@ -313,6 +329,17 @@ void setup_SFs(SFs *runs_BCDEF, SFs *runs_GH, BTag_readers *btag_r, BTag_effs *b
     ISO_2->SetDirectory(0);
     runs_GH->ISO_SF = ISO_2;
     f6->Close();
+
+
+
+
+    TFile *f7 = TFile::Open("SFs/DataPileupHistogram_69200.root");
+    TH1D *data_pileup = (TH1D *) f7->Get("pileup")->Clone();
+    data_pileup->Scale(1./data_pileup->Integral());
+    data_pileup->SetDirectory(0);
+    pu_SF->data_pileup = data_pileup;
+    pu_SF->pileup_ratio = (TH1D *) data_pileup->Clone("pileup_ratio");
+    f7->Close();
 }
 
 void setup_el_SF(el_SFs *sf){

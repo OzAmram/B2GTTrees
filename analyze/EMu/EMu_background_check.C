@@ -100,7 +100,7 @@ void EMu_background_check()
     printf("Done with normalizations \n\n\n");
 
     printf("getting SFs \n");
-    SFs runs_bcdef, runs_gh;
+    mu_SFs runs_bcdef, runs_gh;
     BTag_readers b_reader;
     BTag_effs btag_effs;
     el_SFs el_SF;

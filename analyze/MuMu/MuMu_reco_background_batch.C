@@ -16,8 +16,8 @@ const double root2 = sqrt(2);
 double Ebeam = 6500.;
 double Pbeam = sqrt(Ebeam*Ebeam - 0.938*0.938);
 
-char *filename("WT_files_aug17.txt");
-const TString fout_name("output_files/MuMu_WT_aug28.root");
+char *filename("DY_files_test.txt");
+const TString fout_name("output_files/MuMu_DY_test.root");
 const double alpha = 0.05;
 const bool PRINT=false;
 
@@ -96,12 +96,13 @@ void MuMu_reco_background_batch()
     compute_norms(norms, &nFiles);
     printf("Done with normalizations \n\n\n");
 
-    SFs runs_bcdef, runs_gh;
+    mu_SFs runs_bcdef, runs_gh;
+    pileup_SFs pu_SFs;
     BTag_readers b_reader;
     BTag_effs btag_effs;
     el_SFs el_SF;
     //separate SFs for runs BCDEF and GH
-    setup_SFs(&runs_bcdef, &runs_gh, &b_reader, &btag_effs);
+    setup_SFs(&runs_bcdef, &runs_gh, &b_reader, &btag_effs, &pu_SFs);
     printf("Retrieved Scale Factors \n\n");
 
     TTree *tout= new TTree("T_data", "Tree with reco events");
@@ -109,7 +110,7 @@ void MuMu_reco_background_batch()
     Double_t cm_m, xF, cost_r, mu1_pt, mu2_pt, mu1_eta, mu2_eta, jet1_pt, jet2_pt, deltaC, jet1_eta, jet2_eta, gen_weight,
              jet1_cmva, jet1_csv, jet2_cmva, jet2_csv;
     Double_t bcdef_HLT_SF, bcdef_iso_SF, bcdef_id_SF, gh_HLT_SF, gh_iso_SF, gh_id_SF,
-             jet1_b_weight, jet2_b_weight;
+             jet1_b_weight, jet2_b_weight, pu_SF;
     Int_t nJets, jet1_flavour, jet2_flavour;
     Float_t met_pt;
     TLorentzVector mu_p, mu_m, cm, q1, q2;
@@ -131,6 +132,7 @@ void MuMu_reco_background_batch()
     tout->Branch("met_pt", &met_pt, "met_Pt/F");
     tout->Branch("deltaC", &deltaC, "deltaC/D");
     tout->Branch("gen_weight", &gen_weight, "gen_weight/D");
+    tout->Branch("pu_SF", &pu_SF);
     tout->Branch("bcdef_HLT_SF", &bcdef_HLT_SF);
     tout->Branch("bcdef_iso_SF", &bcdef_iso_SF);
     tout->Branch("bcdef_id_SF", &bcdef_id_SF);
@@ -177,9 +179,15 @@ void MuMu_reco_background_batch()
 
             printf("Opening file: %s \n", lines);
             TFile *f1=  TFile::Open(lines);
-            f1->cd("B2GTTreeMaker");
+
+            f1->cd("EventCounter");
             TDirectory *subdir = gDirectory;
-            TTree *t1 = (TTree *)subdir->Get("B2GTree");
+            TH1D *mc_pileup = (TH1D *)subdir->Get("pileup");
+            mc_pileup->Scale(1./mc_pileup->Integral());
+            pu_SFs.pileup_ratio->Divide(pu_SFs.data_pileup, mc_pileup);
+
+            f1->cd("B2GTTreeMaker");
+            TTree *t1 = (TTree *)gDirectory->Get("B2GTree");
 
 
             UInt_t mu_size, jet_size, met_size;
@@ -194,7 +202,7 @@ void MuMu_reco_background_batch()
 
             Float_t evt_Gen_Weight;
 
-            Int_t HLT_IsoMu, HLT_IsoTkMu;
+            Int_t HLT_IsoMu, HLT_IsoTkMu, pu_NtrueInt;
             t1->SetBranchAddress("mu_size", &mu_size); //number of muons in the event
             t1->SetBranchAddress("mu_Pt", &mu_Pt);
             t1->SetBranchAddress("mu_Eta", &mu_Eta);
@@ -236,6 +244,7 @@ void MuMu_reco_background_batch()
             }
             t1->SetBranchAddress("evt_Gen_Weight", &evt_Gen_Weight);
 
+            t1->SetBranchAddress("pu_NtrueInt",&pu_NtrueInt);
 
             t1->SetBranchAddress("met_size", &met_size);
             t1->SetBranchAddress("met_Pt", &met_pt);
@@ -360,6 +369,8 @@ void MuMu_reco_background_batch()
 
                         gh_iso_SF = get_SF(mu1_pt, mu1_eta, runs_gh.ISO_SF) * get_SF(mu2_pt, mu2_eta, runs_gh.ISO_SF);
                         gh_id_SF = get_SF(mu1_pt, mu1_eta, runs_gh.ID_SF) * get_SF(mu2_pt, mu2_eta, runs_gh.ID_SF);
+
+                        pu_SF = get_pileup_SF(pu_NtrueInt, pu_SFs.pileup_ratio);
 
 
                         tout->Fill();

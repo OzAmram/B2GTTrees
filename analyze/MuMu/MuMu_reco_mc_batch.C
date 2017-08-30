@@ -99,7 +99,7 @@ void MuMu_reco_mc_batch()
     compute_norms(norms, &nFiles);
     printf("Done with normalizations \n\n\n");
 
-    SFs runs_bcdef, runs_gh;
+    mu_SFs runs_bcdef, runs_gh;
     BTag_readers b_reader;
     BTag_effs btag_effs;
 
