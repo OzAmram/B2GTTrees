@@ -19,11 +19,11 @@ if useMINIAOD:
     from Analysis.B2GTTrees.b2gedmntuples_cfg import *
     process.endPath = cms.EndPath()
     process.skimmedPatElectrons.cut = "pt >= 5 && abs(eta) < 2.5"
-    process.electronUserData.eleVetoIdFullInfoMap   = cms.InputTag("egmGsfElectronIDs:cutBasedElectronID-Spring15-25ns-V1-standalone-veto")
-    process.electronUserData.eleLooseIdFullInfoMap  = cms.InputTag("egmGsfElectronIDs:cutBasedElectronID-Spring15-25ns-V1-standalone-loose")
-    process.electronUserData.eleMediumIdFullInfoMap = cms.InputTag("egmGsfElectronIDs:cutBasedElectronID-Spring15-25ns-V1-standalone-medium")
-    process.electronUserData.eleTightIdFullInfoMap  = cms.InputTag("egmGsfElectronIDs:cutBasedElectronID-Spring15-25ns-V1-standalone-tight")
-    setupAllVIDIdsInModule(process,'RecoEgamma.ElectronIdentification.Identification.cutBasedElectronID_Spring15_25ns_V1_cff',setupVIDElectronSelection)
+    #process.electronUserData.eleVetoIdFullInfoMap   = cms.InputTag("egmGsfElectronIDs:cutBasedElectronID-Spring15-25ns-V1-standalone-veto")
+    #process.electronUserData.eleLooseIdFullInfoMap  = cms.InputTag("egmGsfElectronIDs:cutBasedElectronID-Spring15-25ns-V1-standalone-loose")
+    #process.electronUserData.eleMediumIdFullInfoMap = cms.InputTag("egmGsfElectronIDs:cutBasedElectronID-Spring15-25ns-V1-standalone-medium")
+    #process.electronUserData.eleTightIdFullInfoMap  = cms.InputTag("egmGsfElectronIDs:cutBasedElectronID-Spring15-25ns-V1-standalone-tight")
+    #setupAllVIDIdsInModule(process,'RecoEgamma.ElectronIdentification.Identification.cutBasedElectronID_Spring15_25ns_V1_cff',setupVIDElectronSelection)
 else:
     process = cms.Process("b2gAnalysisTTrees")
     
@@ -459,18 +459,18 @@ process.extraVar = cms.EDProducer("B2GEdmExtraVarProducer",
         #"mu_IsPartOfNearAK8Jet",
         #"mu_IsPartOfNearSubjet",
         #"el_mvaIDvalueHZZ",
-        #"el_IDVeto_NoIso",
-        #"el_IDLoose_NoIso",
-        #"el_IDMedium_NoIso",
-        #"el_IDTight_NoIso",
-        #"el_IsoVeto",
-        #"el_IsoLoose",
-        #"el_IsoMedium",
-        #"el_IsoTight",
-        #"el_IDVeto",
-        #"el_IDLoose",
-        #"el_IDMedium",
-        #"el_IDTight",
+        "el_IDVeto_NoIso",
+        "el_IDLoose_NoIso",
+        "el_IDMedium_NoIso",
+        "el_IDTight_NoIso",
+        "el_IsoVeto",
+        "el_IsoLoose",
+        "el_IsoMedium",
+        "el_IsoTight",
+        "el_IDVeto",
+        "el_IDLoose",
+        "el_IDMedium",
+        "el_IDTight",
     ),
     vectorF = cms.untracked.vstring(
         "scale_Weights",

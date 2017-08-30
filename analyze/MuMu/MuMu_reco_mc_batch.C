@@ -16,8 +16,8 @@ const double root2 = sqrt(2);
 double Ebeam = 6500.;
 double Pbeam = sqrt(Ebeam*Ebeam - 0.938*0.938);
 
-char *filename("mc_files_test.txt");
-const TString fout_name("output_files/DYToLL_mc_testA.root");
+char *filename("DY_files_aug17.txt");
+const TString fout_name("output_files/MuMu_DY_aug28.root");
 const double alpha = 0.05;
 const bool PRINT=false;
 
@@ -108,8 +108,8 @@ void MuMu_reco_mc_batch()
     printf("Retrieved Scale Factors \n\n");
 
 
-    TFile *fout = TFile::Open(fout_name, "RECREATE");
     TTree *t_signal= new TTree("T_data", "Tree with asym events (qq bar, qg)");
+    t_signal->SetDirectory(0);
     Double_t cm_m, xF, cost_r, cost_st, mu1_pt, mu2_pt, mu1_eta, mu2_eta, jet1_pt, jet2_pt, jet1_eta, jet2_eta, deltaC, 
              gen_weight, reweight, jet1_csv, jet1_cmva, jet2_csv, jet2_cmva;
     Double_t bcdef_HLT_SF, bcdef_iso_SF, bcdef_id_SF, gh_HLT_SF, gh_iso_SF, gh_id_SF,
@@ -154,6 +154,7 @@ void MuMu_reco_mc_batch()
 
 
     TTree *t_back = new TTree("T_back", "Tree for events with no asym (qq, gg)");
+    t_back->SetDirectory(0);
     t_back->Branch("m", &cm_m, "m/D");
     t_back->Branch("xF", &xF, "xF/D");
     t_back->Branch("cost", &cost_r, "cost/D");
@@ -416,7 +417,7 @@ void MuMu_reco_mc_batch()
                             //record 2 scattered muons
                             if(abs(gen_id[k]) == MUON && 
                                     (gen_Mom0ID[k] == Z || gen_Mom0ID[k] == PHOTON || abs(gen_Mom0ID[k]) == TAU 
-                                      || abs(gen_Mom0ID[k]) == ELECTRON || gen_status[k] == OUTGOING)) {
+                                      || abs(gen_Mom0ID[k]) == ELECTRON || (gen_status[k] == OUTGOING && gen_Mom0ID[k] != PROTON))) {
                                 if(gen_id[k] == MUON){
                                     if(gen_mu_m == -1) gen_mu_m = k;
                                     else{
@@ -772,6 +773,8 @@ void MuMu_reco_mc_batch()
             "There were %i Failed ID's \n" , 
             nQQb, nQGlu, nTauTau, nSignal, nFiles, nQQ + nGluGlu, nQQ, nGluGlu, nFailedID);
     //printf("Ran on MC data and produced templates with %i events\n", nEvents);
+
+    TFile *fout = TFile::Open(fout_name, "RECREATE");
     fout->cd();
 
 

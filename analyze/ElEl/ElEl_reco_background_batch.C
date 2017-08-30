@@ -16,8 +16,8 @@ const double root2 = sqrt(2);
 double Ebeam = 6500.;
 double Pbeam = sqrt(Ebeam*Ebeam - 0.938*0.938);
 
-char *filename("combined_back_files_aug17.txt");
-const TString fout_name("output_files/ElEl_combined_background_aug23.root");
+char *filename("DY_files_test.txt");
+const TString fout_name("output_files/ElEl_background_DY_test.root");
 const double alpha = 0.05;
 const bool PRINT=false;
 
@@ -105,8 +105,8 @@ void ElEl_reco_background_batch()
     setup_el_SF(&el_SF);
     printf("Retrieved Scale Factors \n\n");
 
-    TFile *fout = TFile::Open(fout_name, "RECREATE");
     TTree *tout= new TTree("T_data", "Tree with reco events");
+    tout->SetDirectory(0);
     Double_t cm_m, xF, cost_r, el1_pt, el2_pt, el1_eta, el2_eta, jet1_pt, jet2_pt, deltaC, jet1_eta, jet2_eta, gen_weight,
              jet1_cmva, jet1_csv, jet2_cmva, jet2_csv;
     Double_t el_id_SF, jet1_b_weight, jet2_b_weight;
@@ -359,6 +359,7 @@ void ElEl_reco_background_batch()
     fclose(root_files);
     printf("There were %i ttbar events in %i files.\n",
             nEvents, nFiles);
+    TFile *fout = TFile::Open(fout_name, "RECREATE");
     fout->cd();
 
 

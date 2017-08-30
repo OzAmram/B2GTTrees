@@ -16,10 +16,10 @@ const double root2 = sqrt(2);
 double Ebeam = 6500.;
 double Pbeam = sqrt(Ebeam*Ebeam - 0.938*0.938);
 
-char *filename("DY_files_aug17.txt");
-const TString fout_name("output_files/ElEl_DY_aug24.root");
+char *filename("DY_files_test.txt");
+const TString fout_name("output_files/ElEl_DY_test_aug25.root");
 const double alpha = 0.05;
-const bool PRINT=false;
+const bool PRINT=true;
 
 
 
@@ -182,6 +182,7 @@ void ElEl_reco_mc_batch()
 
     unsigned int nEvents=0;
     unsigned int nSignal = 0;
+    unsigned int nPileUp = 0;
     unsigned int nQQ=0;
     unsigned int nQQb=0;
     unsigned int nQGlu=0;
@@ -290,8 +291,8 @@ void ElEl_reco_mc_batch()
 
             Long64_t nEntries =  t1->GetEntries();
 
-            char out_buff[10000];
-            bool print_out = true;
+            char out_buff[30000];
+            bool print_out = false;
 
             for (int i=0; i<nEntries; i++) {
                 t1->GetEntry(i);
@@ -317,7 +318,7 @@ void ElEl_reco_mc_batch()
                     cm = el_p + el_m;
                     cm_m = cm.M();
                     if (cm_m >= 150.){
-                        if(PRINT) sprintf(out_buff + strlen(out_buff),"Event %i \n", i);
+                        if(PRINT) sprintf(out_buff + strlen(out_buff),"\n \n Event %i \n", i);
 
                         //GEN LEVEL
                         //
@@ -343,6 +344,8 @@ void ElEl_reco_mc_batch()
                         int inc_2 =-1;
                         int gen_el_p=-1;
                         int gen_el_m=-1;
+                        int gen_pileup_el_p=-1;
+                        int gen_pileup_el_m=-1;
                         int gen_tau_p=-1;
                         int gen_tau_m=-1;
                         int gen_e_p=-1;
@@ -352,13 +355,14 @@ void ElEl_reco_mc_batch()
                         float quark_dir_eta;
 
                         bool signal_event = true;//whether it is an event with an asym or not
+                        bool pileup_event = true; //whether it is an event with electrons coming from pileup, not real DY
 
                         is_tau_event = false;
 
                         for(int k=0; k<gen_size; k++){
                             if(gen_status[k] == INCIDENT_PARTICLE && 
                                     (abs(gen_id[k]) <=6  || gen_id[k] == GLUON) && 
-                                    (abs(gen_Dau0ID[k]) == ELECTRON || gen_Dau0ID[k] == Z || 
+                                    (abs(gen_Dau0ID[k]) == ELECTRON || gen_Dau0ID[k] == MUON || gen_Dau0ID[k] == Z || 
                                      gen_Dau0ID[k] == PHOTON || abs(gen_Dau0ID[k]) == TAU)
                               ){
                                 //record index of 2 initial state particles
@@ -370,10 +374,11 @@ void ElEl_reco_mc_batch()
                                 }
 
                             }
+
                             //record 2 scattered electrons
                             if(abs(gen_id[k]) == ELECTRON && 
                                     (gen_Mom0ID[k] == Z || gen_Mom0ID[k] == PHOTON || abs(gen_Mom0ID[k]) == TAU 
-                                     || abs(gen_Mom0ID[k]) == MUON || gen_status[k] == OUTGOING)) {
+                                     || abs(gen_Mom0ID[k]) == MUON || (gen_status[k] == OUTGOING && gen_Mom0ID[k] != PROTON))) {
                                 if(gen_id[k] == ELECTRON){
                                     if(gen_el_m == -1) gen_el_m = k;
                                     else{
@@ -390,6 +395,10 @@ void ElEl_reco_mc_batch()
                                         print_out = true;
                                     }
                                 }
+                            }
+                            if(abs(gen_id[k]) == ELECTRON && gen_Mom0ID[k] == PROTON){
+                                if(gen_id[k] == ELECTRON) gen_pileup_el_m = k;
+                                if(gen_id[k] == -ELECTRON) gen_pileup_el_p = k;
                             }
                             //record tau's
                             if(abs(gen_id[k]) == TAU && 
@@ -413,6 +422,7 @@ void ElEl_reco_mc_batch()
                                 }
                             }
                             if(PRINT){
+                                /*
                                 if( (abs(gen_id[k]) <=6 || gen_id[k] == GLUON)){
                                     //    if( (abs(gen_id[k]) <=6 || gen_id[k] == GLUON) && 
                                     //            (gen_Dau0ID[k] == PHOTON &&
@@ -424,9 +434,10 @@ void ElEl_reco_mc_batch()
                                             gen_Mom0ID[k], gen_Mom0Status[k], gen_Mom1ID[k], gen_Mom1Status[k],
                                             gen_Dau0ID[k], gen_Dau0Status[k], gen_Dau1ID[k], gen_Dau1Status[k]);
                                 }
+                                */
 
 
-                                if(gen_id[k] == -13){
+                                if(gen_id[k] == -ELECTRON){
                                     if(PRINT) sprintf(out_buff + strlen(out_buff),"el_p(stat = %i): \n"
                                             "   Mom1 ID: %i Mom1 Stat: %i Mom2 ID: %i Mom2 Stat %i \n"
                                             "   Dau1 ID: %i Dau1 Stat: %i Dau2 ID: %i Dau2 Stat %i \n",
@@ -436,7 +447,7 @@ void ElEl_reco_mc_batch()
                                     if(PRINT) sprintf(out_buff + strlen(out_buff),"(pt, eta, phi,E) = %4.2f %4.2f %4.2f %4.2f \n", 
                                             gen_Pt[k], gen_Eta[k], gen_Phi[k], gen_E[k]);
                                 }
-                                if(gen_id[k] == 13){
+                                if(gen_id[k] == ELECTRON){
 
                                     if(PRINT) sprintf(out_buff + strlen(out_buff),"el_m (stat = %i): \n"
                                             "   Mom1 ID: %i Mom1 Stat: %i Mom2 ID: %i Mom2 Stat %i \n"
@@ -448,7 +459,8 @@ void ElEl_reco_mc_batch()
                                             gen_Pt[k], gen_Eta[k], gen_Phi[k], gen_E[k]);
 
                                 }
-                                if(gen_id[k] == 23){
+                                /*
+                                if(gen_id[k] == Z){
                                     if(PRINT) sprintf(out_buff + strlen(out_buff),"Z (ID = %i, status = %i): \n"
                                             "   Mom1 ID: %i Mom1 Stat: %i Mom2 ID: %i Mom2 Stat %i \n"
                                             "   Dau1 ID: %i Dau1 Stat: %i Dau2 ID: %i Dau2 Stat %i \n",
@@ -456,288 +468,313 @@ void ElEl_reco_mc_batch()
                                             gen_Mom0ID[k], gen_Mom0Status[k], gen_Mom1ID[k], gen_Mom1Status[k],
                                             gen_Dau0ID[k], gen_Dau0Status[k], gen_Dau1ID[k], gen_Dau1Status[k]);
                                 }
-                                }
+                                */
                             }
+                        }
 
 
-                            if(gen_el_p != -1 && gen_el_m != -1) {
-                                if(PRINT) sprintf(out_buff + strlen(out_buff),"el_p: \n"
-                                        "   Mom1 ID: %i Mom1 Stat: %i Mom2 ID: %i Mom2 Stat %i \n"
-                                        "   Dau1 ID: %i Dau1 Stat: %i Dau2 ID: %i Dau2 Stat %i \n",
-                                        gen_Mom0ID[gen_el_p], gen_Mom0Status[gen_el_p], gen_Mom1ID[gen_el_p], 
-                                        gen_Mom1Status[gen_el_p],
-                                        gen_Dau0ID[gen_el_p], gen_Dau0Status[gen_el_p], gen_Dau1ID[gen_el_p], 
-                                        gen_Dau1Status[gen_el_p]);
+                        if(gen_el_p != -1 && gen_el_m != -1) {
+                            if(PRINT) sprintf(out_buff + strlen(out_buff),"el_p(stat = %i): \n"
+                                    "   Mom1 ID: %i Mom1 Stat: %i Mom2 ID: %i Mom2 Stat %i \n"
+                                    "   Dau1 ID: %i Dau1 Stat: %i Dau2 ID: %i Dau2 Stat %i \n",
+                                    gen_status[gen_el_p],
+                                    gen_Mom0ID[gen_el_p], gen_Mom0Status[gen_el_p], gen_Mom1ID[gen_el_p], 
+                                    gen_Mom1Status[gen_el_p],
+                                    gen_Dau0ID[gen_el_p], gen_Dau0Status[gen_el_p], gen_Dau1ID[gen_el_p], 
+                                    gen_Dau1Status[gen_el_p]);
 
-                                if(PRINT) sprintf(out_buff + strlen(out_buff),"el_m: \n"
-                                        "   Mom1 ID: %i Mom1 Stat: %i Mom2 ID: %i Mom2 Stat %i \n"
-                                        "   Dau1 ID: %i Dau1 Stat: %i Dau2 ID: %i Dau2 Stat %i \n",
-                                        gen_Mom0ID[gen_el_m], gen_Mom0Status[gen_el_m], gen_Mom1ID[gen_el_m], 
-                                        gen_Mom1Status[gen_el_m],
-                                        gen_Dau0ID[gen_el_m], gen_Dau0Status[gen_el_m], gen_Dau1ID[gen_el_m], 
-                                        gen_Dau1Status[gen_el_m]);
-
-                            }
-                            else {
-                                printf("WARNING: Unable to identify ElEl pair in event %i, skipping \n", i);
-                                nFailedID ++;
-                                print_out = true;
-                                continue;
-                            }
-                            if((inc_1 == -1) || (inc_2 == -1)){
-                                printf("WARNING: Unable to identify initial state particles in event %i, skipping \n", i);
-                                nFailedID ++;
-                                print_out = true;
-                                continue;
-                            }
-
-                            else{ 
-                                //printf("%i %i \n", inc_1, inc_2);
-                                int inc_id1 = gen_id[inc_1];
-                                int inc_id2 = gen_id[inc_2];
-                                if(abs(gen_Dau0ID[inc_1]) == TAU){
-                                    if(gen_tau_p == -1 || gen_tau_m == -1){
-                                        printf("Didn't record tau's :( \n");
-                                        nFailedID ++;
-                                        continue;
-                                    }
-                                    nTauTau++;
-                                    is_tau_event = true;
-                                }
-                                if(abs(gen_Dau0ID[inc_1]) == MUON){
-                                    nMuMu++;
-                                    is_tau_event = true;
-                                }
-                                if((abs(inc_id1) <= 6 && abs(inc_id2) <= 6) && (inc_id1 * inc_id2 < 0)){ //a quark and anti quark
-                                    //qq-bar
-                                    signal_event = true;
-                                    nQQb++;
-                                    if(inc_id1>0) quark_dir_eta = gen_Eta[inc_1];
-                                    else if(inc_id2>0) quark_dir_eta = gen_Eta[inc_2];
-                                }
-                                else if(((abs(inc_id1) <= 6) && (inc_id2 == 21)) ||
-                                        ((abs(inc_id2) <= 6) && (inc_id1 == 21))){ //qglu
-                                    signal_event = true;
-                                    int q_dir;
-                                    if(inc_id1 == 21){
-                                        if(inc_id2 <0) quark_dir_eta = gen_Eta[inc_1];//qbar-glu, want glu dir
-                                        else quark_dir_eta= gen_Eta[inc_2];//q-glu ,want q dir
-                                    }
-                                    else if(inc_id2 == 21) {
-                                        if(inc_id1 <0) quark_dir_eta = gen_Eta[inc_2];//qbar-glu, want glu dir
-                                        else quark_dir_eta= gen_Eta[inc_1];//q-glu ,want q dir
-                                    }
-                                    nQGlu++;
-                                }
-                                else if((abs(inc_id1) <= 6) && (abs(inc_id2) <= 6) && (inc_id1 * inc_id2 >0)){ //2 quarks
-                                    if(PRINT) sprintf(out_buff + strlen(out_buff),"QQ Event \n");
-                                    signal_event = false;
-                                    nQQ++;
-                                }
-                                else if((inc_id1 == 21) && (inc_id2 == 21)){ //gluglu
-                                    signal_event = false;
-                                    nGluGlu++;
-                                    if(PRINT) sprintf(out_buff + strlen(out_buff), "Glu Glu event \n");
-                                }
-                                else {
-                                    printf("WARNING: not qqbar, qq, qg, or gg event");
-                                    printf("First particle was %i second particle was %i \n \n ", inc_id1, inc_id2);
-                                    nFailedID ++;
-                                }
-                            }
-                            //RECO LEVEL
-                            xF = abs(2.*cm.Pz()/13000.); 
-
-                            // compute Colins soper angle with formula
-                            double el_p_pls = (el_p.E()+el_p.Pz())/root2;
-                            double el_p_min = (el_p.E()-el_p.Pz())/root2;
-                            double el_m_pls = (el_m.E()+el_m.Pz())/root2;
-                            double el_m_min = (el_m.E()-el_m.Pz())/root2;
-                            double qt2 = cm.Px()*cm.Px()+cm.Py()*cm.Py();
-                            double cm_m2 = cm.M2();
-                            //cost_p = cos(theta)_r (reconstructed collins soper angle, sign
-                            //may be 'wrong' if lepton pair direction is not the same as inital
-                            //quark direction)
-                            double cost = 2*(el_m_pls*el_p_min - el_m_min*el_p_pls)/sqrt(cm_m2*(cm_m2 + qt2));
-
-                            double cost_tau; 
-                            //cos(theta) from generator level taus
-                            if(is_tau_event){
-                                TLorentzVector tau_p, tau_m, tau_cm;
-                                tau_p.SetPtEtaPhiE(gen_Pt[gen_tau_p], gen_Eta[gen_tau_p], gen_Phi[gen_tau_p], gen_E[gen_tau_p]);
-                                tau_m.SetPtEtaPhiE(gen_Pt[gen_tau_m], gen_Eta[gen_tau_m], gen_Phi[gen_tau_m], gen_E[gen_tau_m]);
-                                tau_cm = tau_p + tau_m;
-                                double tau_p_pls = (tau_p.E()+tau_p.Pz())/root2;
-                                double tau_p_min = (tau_p.E()-tau_p.Pz())/root2;
-                                double tau_m_pls = (tau_m.E()+tau_m.Pz())/root2;
-                                double tau_m_min = (tau_m.E()-tau_m.Pz())/root2;
-                                double tau_qt2 = tau_cm.Px()*tau_cm.Px()+tau_cm.Py()*tau_cm.Py();
-                                double tau_cm_m2 = tau_cm.M2();
-                                cost_tau = 2*(tau_m_pls*tau_p_min - tau_m_min*tau_p_pls)/sqrt(tau_cm_m2*(tau_cm_m2 + tau_qt2));
-                            }
-
-
-                            /*
-                               TLorentzVector p1(0., 0., Pbeam, Ebeam);
-                               TLorentzVector p2(0., 0., -Pbeam, Ebeam);
-
-                               if(cm.Pz() < 0. ){
-                               TLorentzVector p = p1;
-                               p1 = p2;
-                               p2 = p;
-                               }
-
-                               TVector3 beta = -cm.BoostVector();
-                               el_m.Boost(beta);
-                               el_p.Boost(beta);
-                               p1.Boost(beta);
-                               p2.Boost(beta);
-
-                            // Now calculate the direction of the new z azis
-
-                            TVector3 p1u = p1.Vect();
-                            p1u.SetMag(1.0);
-                            TVector3 p2u = p2.Vect();
-                            p2u.SetMag(1.0);
-                            TVector3 pzu = p1u - p2u;
-                            pzu.SetMag(1.0);
-                            el_m.RotateUz(pzu); 
-                            double cost_r_b = el_m.CosTheta();
-                            deltaC = std::abs(cost_r_b) - std::abs(cost);
-                            */
-                            //printf("cost_r, cost_r_b, cost_r_b2: %0.2f %0.2f %0.2f \n", cost_r, cost_r_b, cost_r_b2);
-
-                            if(PRINT){
-                                sprintf(out_buff + strlen(out_buff),  "1st Particle %i:(pt, eta, phi,E) = %4.2f %4.2f %4.2f %4.2f \n", 
-                                        gen_id[inc_1], gen_Pt[inc_1], gen_Eta[inc_1], gen_Phi[inc_1], gen_E[inc_1]);
-                                sprintf(out_buff + strlen(out_buff),"2nd Particle %i:(pt, eta, phi,E) = %4.2f %4.2f %4.2f %4.2f \n", 
-                                        gen_id[inc_2], gen_Pt[inc_2], gen_Eta[inc_2], gen_Phi[inc_2], gen_E[inc_2]);
-                            }
-
-
-                            //reconstruction sign flip
-                            if(cm.Pz() < 0.) cost_r = -cost;
-                            else cost_r = cost;
-
-
-                            gen_weight = evt_Gen_Weight * normalization;
-                            el1_pt = el_Pt[0];
-                            el2_pt = el_Pt[1];
-                            el1_eta = el_Eta[0];
-                            el2_eta = el_Eta[1];
-
-                            //pick out 2 highest pt jets with eta < 2.4
-                            nJets =0;
-                            for(int j=0; j < jet_size; j++){
-                                if(jet_Pt[j] > 20. && std::abs(jet_Eta[j]) < 2.4){
-                                    if(nJets == 1){
-                                        jet2_pt = jet_Pt[j];
-                                        jet2_eta = jet_Eta[j];
-                                        jet2_cmva = jet_CMVA[j];
-                                        jet2_flavour = jet_partonflavour[j];
-                                        jet2_b_weight = get_btag_weight(jet_Pt[j], jet_Eta[j],jet_partonflavour[j],btag_effs, b_reader);
-                                        nJets =2;
-                                        break;
-                                    }
-                                    else if(nJets ==0){
-                                        jet1_pt = jet_Pt[j];
-                                        jet1_eta = jet_Eta[j];
-                                        jet1_cmva = jet_CMVA[j];
-                                        jet1_flavour = jet_partonflavour[j];
-                                        jet1_b_weight = get_btag_weight(jet_Pt[j], jet_Eta[j],jet_partonflavour[j],btag_effs, b_reader);
-                                        nJets = 1;
-                                    }
-                                }
-                            }
-
-
-                            /*
-                               if(jet_size >=2) nJets = 2;
-                               else nJets = jet_size;
-                               if(jet_size >=1 && jet_Pt[0] > 20. && std::abs(jet_Eta[0]) < 2.4){
-
-
-                               } 
-                               if(jet_size >=2 && jet_Pt[1] > 20. && std::abs(jet_Eta[1]) < 2.4){
-                               jet2_pt = jet_Pt[1];
-                               jet2_cmva = jet_CMVA[1];
-                               jet2_flavour = jet_partonflavour[1];
-                               jet2_b_weight = get_btag_weight(jet_Pt[1], jet_Eta[1],jet_partonflavour[1],btag_effs, b_reader);
-                               }
-                               */
-
-
-                            //get el cut SFs
-
-                            el_id_SF = get_el_SF(el1_pt, el1_eta, el_SF.h) * get_el_SF(el2_pt, el2_eta, el_SF.h);
-
-
-                            if(signal_event){
-                                //cost_st = cos(theta)_* correct angle obtained from 'cheating' and
-                                //looking at initial quark direction
-                                if(!is_tau_event){
-                                    if(quark_dir_eta < 0){
-                                        if(PRINT) sprintf(out_buff + strlen(out_buff), "Sign flip\n");
-                                        cost_st = -cost;
-                                    }
-                                    else cost_st = cost;
-                                }
-                                else{
-                                    if(quark_dir_eta < 0){
-                                        if(PRINT) sprintf(out_buff + strlen(out_buff), "Sign flip\n");
-                                        cost_st = -cost_tau;
-                                    }
-                                    else cost_st = cost_tau;
-                                }
-
-
-                                //anti-symmetric template has computed weight and is 
-                                //anti-symmetrized by flipping the sign of the weight and the bin
-                                //in c_r
-                                reweight = (4./3.)*cost_st*(2. + alpha)/
-                                    (1. + cost_st*cost_st + alpha*(1.- cost_st*cost_st));
-                                nSignal++;
-                                t_signal->Fill();
-                            }
-                            else{
-                                cost_st = cost_r;
-                                t_back->Fill();
-                            }
-
-                            nEvents++;
-                            if(PRINT && print_out){
-                                sprintf(out_buff + strlen(out_buff), "\n\n");
-                                fputs(out_buff, stdout);
-                                print_out = false;
-                            }
-                            if(PRINT) memset(out_buff, strlen(out_buff), 10000);
+                            if(PRINT) sprintf(out_buff + strlen(out_buff),"el_m (stat = %i): \n"
+                                    "   Mom1 ID: %i Mom1 Stat: %i Mom2 ID: %i Mom2 Stat %i \n"
+                                    "   Dau1 ID: %i Dau1 Stat: %i Dau2 ID: %i Dau2 Stat %i \n",
+                                    gen_status[gen_el_m],
+                                    gen_Mom0ID[gen_el_m], gen_Mom0Status[gen_el_m], gen_Mom1ID[gen_el_m], 
+                                    gen_Mom1Status[gen_el_m],
+                                    gen_Dau0ID[gen_el_m], gen_Dau0Status[gen_el_m], gen_Dau1ID[gen_el_m], 
+                                    gen_Dau1Status[gen_el_m]);
 
                         }
-                    } 
-                }
+                        else if(gen_pileup_el_p != -1 && gen_pileup_el_m != -1){
+                            pileup_event = true;
+                            nPileUp++;
+                            print_out = true;
+                        }
+                        else {
+                            printf("WARNING: Unable to identify ElEl pair in event %i, skipping \n", i);
+                            nFailedID ++;
+                            print_out = true;
+                            continue;
+                        }
+                        if((inc_1 == -1) || (inc_2 == -1)){
+                            printf("WARNING: Unable to identify initial state particles in event %i, skipping \n", i);
+                            nFailedID ++;
+                            print_out = true;
+                            continue;
+                        }
 
-                f1->Close();
-                printf("moving on to next file, currently %i events %i Taus %i fails \n\n", nEvents, nTauTau, nFailedID);
+                        else{ 
+                            if(PRINT) sprintf(out_buff + strlen(out_buff),"inc1 (id %i stat = %i): \n"
+                                    "   Mom1 ID: %i Mom1 Stat: %i Mom2 ID: %i Mom2 Stat %i \n"
+                                    "   Dau1 ID: %i Dau1 Stat: %i Dau2 ID: %i Dau2 Stat %i \n",
+                                    gen_id[inc_1], gen_status[inc_1],
+                                    gen_Mom0ID[inc_1], gen_Mom0Status[inc_1], gen_Mom1ID[inc_1], 
+                                    gen_Mom1Status[inc_1],
+                                    gen_Dau0ID[inc_1], gen_Dau0Status[inc_1], gen_Dau1ID[inc_1], 
+                                    gen_Dau1Status[inc_1]);
+                            if(PRINT) sprintf(out_buff + strlen(out_buff),"inc2 (id %i, stat = %i): \n"
+                                    "   Mom1 ID: %i Mom1 Stat: %i Mom2 ID: %i Mom2 Stat %i \n"
+                                    "   Dau1 ID: %i Dau1 Stat: %i Dau2 ID: %i Dau2 Stat %i \n",
+                                    gen_id[inc_2], gen_status[inc_2],
+                                    gen_Mom0ID[inc_2], gen_Mom0Status[inc_2], gen_Mom1ID[inc_2], 
+                                    gen_Mom1Status[inc_2],
+                                    gen_Dau0ID[inc_2], gen_Dau0Status[inc_2], gen_Dau1ID[inc_2], 
+                                    gen_Dau1Status[inc_2]);
+                            //printf("%i %i \n", inc_1, inc_2);
+                            int inc_id1 = gen_id[inc_1];
+                            int inc_id2 = gen_id[inc_2];
+                            if(abs(gen_Dau0ID[inc_1]) == TAU){
+                                if(gen_tau_p == -1 || gen_tau_m == -1){
+                                    printf("Didn't record tau's :( \n");
+                                    nFailedID ++;
+                                    continue;
+                                }
+                                nTauTau++;
+                                is_tau_event = true;
+                            }
+                            if(abs(gen_Dau0ID[inc_1]) == MUON){
+                                nMuMu++;
+                                is_tau_event = true;
+                            }
+                            if((abs(inc_id1) <= 6 && abs(inc_id2) <= 6) && (inc_id1 * inc_id2 < 0)){ //a quark and anti quark
+                                //qq-bar
+                                signal_event = true;
+                                nQQb++;
+                                if(inc_id1>0) quark_dir_eta = gen_Eta[inc_1];
+                                else if(inc_id2>0) quark_dir_eta = gen_Eta[inc_2];
+                            }
+                            else if(((abs(inc_id1) <= 6) && (inc_id2 == 21)) ||
+                                    ((abs(inc_id2) <= 6) && (inc_id1 == 21))){ //qglu
+                                signal_event = true;
+                                int q_dir;
+                                if(inc_id1 == 21){
+                                    if(inc_id2 <0) quark_dir_eta = gen_Eta[inc_1];//qbar-glu, want glu dir
+                                    else quark_dir_eta= gen_Eta[inc_2];//q-glu ,want q dir
+                                }
+                                else if(inc_id2 == 21) {
+                                    if(inc_id1 <0) quark_dir_eta = gen_Eta[inc_2];//qbar-glu, want glu dir
+                                    else quark_dir_eta= gen_Eta[inc_1];//q-glu ,want q dir
+                                }
+                                nQGlu++;
+                            }
+                            else if((abs(inc_id1) <= 6) && (abs(inc_id2) <= 6) && (inc_id1 * inc_id2 >0)){ //2 quarks
+                                if(PRINT) sprintf(out_buff + strlen(out_buff),"QQ Event \n");
+                                signal_event = false;
+                                nQQ++;
+                            }
+                            else if((inc_id1 == 21) && (inc_id2 == 21)){ //gluglu
+                                signal_event = false;
+                                nGluGlu++;
+                                if(PRINT) sprintf(out_buff + strlen(out_buff), "Glu Glu event \n");
+                            }
+                            else {
+                                printf("WARNING: not qqbar, qq, qg, or gg event");
+                                printf("First particle was %i second particle was %i \n \n ", inc_id1, inc_id2);
+                                nFailedID ++;
+                            }
+                        }
+                        //RECO LEVEL
+                        xF = abs(2.*cm.Pz()/13000.); 
+
+                        // compute Colins soper angle with formula
+                        double el_p_pls = (el_p.E()+el_p.Pz())/root2;
+                        double el_p_min = (el_p.E()-el_p.Pz())/root2;
+                        double el_m_pls = (el_m.E()+el_m.Pz())/root2;
+                        double el_m_min = (el_m.E()-el_m.Pz())/root2;
+                        double qt2 = cm.Px()*cm.Px()+cm.Py()*cm.Py();
+                        double cm_m2 = cm.M2();
+                        //cost_p = cos(theta)_r (reconstructed collins soper angle, sign
+                        //may be 'wrong' if lepton pair direction is not the same as inital
+                        //quark direction)
+                        double cost = 2*(el_m_pls*el_p_min - el_m_min*el_p_pls)/sqrt(cm_m2*(cm_m2 + qt2));
+
+                        double cost_tau; 
+                        //cos(theta) from generator level taus
+                        if(is_tau_event){
+                            TLorentzVector tau_p, tau_m, tau_cm;
+                            tau_p.SetPtEtaPhiE(gen_Pt[gen_tau_p], gen_Eta[gen_tau_p], gen_Phi[gen_tau_p], gen_E[gen_tau_p]);
+                            tau_m.SetPtEtaPhiE(gen_Pt[gen_tau_m], gen_Eta[gen_tau_m], gen_Phi[gen_tau_m], gen_E[gen_tau_m]);
+                            tau_cm = tau_p + tau_m;
+                            double tau_p_pls = (tau_p.E()+tau_p.Pz())/root2;
+                            double tau_p_min = (tau_p.E()-tau_p.Pz())/root2;
+                            double tau_m_pls = (tau_m.E()+tau_m.Pz())/root2;
+                            double tau_m_min = (tau_m.E()-tau_m.Pz())/root2;
+                            double tau_qt2 = tau_cm.Px()*tau_cm.Px()+tau_cm.Py()*tau_cm.Py();
+                            double tau_cm_m2 = tau_cm.M2();
+                            cost_tau = 2*(tau_m_pls*tau_p_min - tau_m_min*tau_p_pls)/sqrt(tau_cm_m2*(tau_cm_m2 + tau_qt2));
+                        }
+
+
+                        /*
+                           TLorentzVector p1(0., 0., Pbeam, Ebeam);
+                           TLorentzVector p2(0., 0., -Pbeam, Ebeam);
+
+                           if(cm.Pz() < 0. ){
+                           TLorentzVector p = p1;
+                           p1 = p2;
+                           p2 = p;
+                           }
+
+                           TVector3 beta = -cm.BoostVector();
+                           el_m.Boost(beta);
+                           el_p.Boost(beta);
+                           p1.Boost(beta);
+                           p2.Boost(beta);
+
+                        // Now calculate the direction of the new z azis
+
+                        TVector3 p1u = p1.Vect();
+                        p1u.SetMag(1.0);
+                        TVector3 p2u = p2.Vect();
+                        p2u.SetMag(1.0);
+                        TVector3 pzu = p1u - p2u;
+                        pzu.SetMag(1.0);
+                        el_m.RotateUz(pzu); 
+                        double cost_r_b = el_m.CosTheta();
+                        deltaC = std::abs(cost_r_b) - std::abs(cost);
+                        */
+                        //printf("cost_r, cost_r_b, cost_r_b2: %0.2f %0.2f %0.2f \n", cost_r, cost_r_b, cost_r_b2);
+
+                        if(PRINT){
+                            sprintf(out_buff + strlen(out_buff),  "1st Particle %i:(pt, eta, phi,E) = %4.2f %4.2f %4.2f %4.2f \n", 
+                                    gen_id[inc_1], gen_Pt[inc_1], gen_Eta[inc_1], gen_Phi[inc_1], gen_E[inc_1]);
+                            sprintf(out_buff + strlen(out_buff),"2nd Particle %i:(pt, eta, phi,E) = %4.2f %4.2f %4.2f %4.2f \n", 
+                                    gen_id[inc_2], gen_Pt[inc_2], gen_Eta[inc_2], gen_Phi[inc_2], gen_E[inc_2]);
+                        }
+
+
+                        //reconstruction sign flip
+                        if(cm.Pz() < 0.) cost_r = -cost;
+                        else cost_r = cost;
+
+
+                        gen_weight = evt_Gen_Weight * normalization;
+                        el1_pt = el_Pt[0];
+                        el2_pt = el_Pt[1];
+                        el1_eta = el_Eta[0];
+                        el2_eta = el_Eta[1];
+
+                        //pick out 2 highest pt jets with eta < 2.4
+                        nJets =0;
+                        for(int j=0; j < jet_size; j++){
+                            if(jet_Pt[j] > 20. && std::abs(jet_Eta[j]) < 2.4){
+                                if(nJets == 1){
+                                    jet2_pt = jet_Pt[j];
+                                    jet2_eta = jet_Eta[j];
+                                    jet2_cmva = jet_CMVA[j];
+                                    jet2_flavour = jet_partonflavour[j];
+                                    jet2_b_weight = get_btag_weight(jet_Pt[j], jet_Eta[j],jet_partonflavour[j],btag_effs, b_reader);
+                                    nJets =2;
+                                    break;
+                                }
+                                else if(nJets ==0){
+                                    jet1_pt = jet_Pt[j];
+                                    jet1_eta = jet_Eta[j];
+                                    jet1_cmva = jet_CMVA[j];
+                                    jet1_flavour = jet_partonflavour[j];
+                                    jet1_b_weight = get_btag_weight(jet_Pt[j], jet_Eta[j],jet_partonflavour[j],btag_effs, b_reader);
+                                    nJets = 1;
+                                }
+                            }
+                        }
+
+
+                        /*
+                           if(jet_size >=2) nJets = 2;
+                           else nJets = jet_size;
+                           if(jet_size >=1 && jet_Pt[0] > 20. && std::abs(jet_Eta[0]) < 2.4){
+
+
+                           } 
+                           if(jet_size >=2 && jet_Pt[1] > 20. && std::abs(jet_Eta[1]) < 2.4){
+                           jet2_pt = jet_Pt[1];
+                           jet2_cmva = jet_CMVA[1];
+                           jet2_flavour = jet_partonflavour[1];
+                           jet2_b_weight = get_btag_weight(jet_Pt[1], jet_Eta[1],jet_partonflavour[1],btag_effs, b_reader);
+                           }
+                           */
+
+
+                        //get el cut SFs
+
+                        el_id_SF = get_el_SF(el1_pt, el1_eta, el_SF.h) * get_el_SF(el2_pt, el2_eta, el_SF.h);
+
+
+                        if(signal_event && !pileup_event){
+                            //cost_st = cos(theta)_* correct angle obtained from 'cheating' and
+                            //looking at initial quark direction
+                            if(!is_tau_event){
+                                if(quark_dir_eta < 0){
+                                    if(PRINT) sprintf(out_buff + strlen(out_buff), "Sign flip\n");
+                                    cost_st = -cost;
+                                }
+                                else cost_st = cost;
+                            }
+                            else{
+                                if(quark_dir_eta < 0){
+                                    if(PRINT) sprintf(out_buff + strlen(out_buff), "Sign flip\n");
+                                    cost_st = -cost_tau;
+                                }
+                                else cost_st = cost_tau;
+                            }
+
+
+                            //anti-symmetric template has computed weight and is 
+                            //anti-symmetrized by flipping the sign of the weight and the bin
+                            //in c_r
+                            reweight = (4./3.)*cost_st*(2. + alpha)/
+                                (1. + cost_st*cost_st + alpha*(1.- cost_st*cost_st));
+                            nSignal++;
+                            t_signal->Fill();
+                        }
+                        else{
+                            cost_st = cost_r;
+                            t_back->Fill();
+                        }
+
+                        nEvents++;
+                        if(PRINT && print_out){
+                            sprintf(out_buff + strlen(out_buff), "\n\n");
+                            fputs(out_buff, stdout);
+                            print_out = false;
+                        }
+                        if(PRINT) memset(out_buff, 0, strlen(out_buff));
+
+                    }
+                } 
             }
+
+            f1->Close();
+            printf("moving on to next file, currently %i events %i Taus %i fails \n\n", nEvents, nTauTau, nFailedID);
         }
-        fclose(root_files);
-        printf("There were %i qqbar, %i qGlu (%i of them tautau, %i mumu) in %i kept events in %i files. "
-                "There were also %i background events (%i qq and %i gg) "
-                "There were %i Failed ID's \n" , 
-                nQQb, nQGlu, nTauTau, nMuMu, nSignal, nFiles, nQQ + nGluGlu, nQQ, nGluGlu, nFailedID);
-        //printf("Ran on MC data and produced templates with %i events\n", nEvents);
-        fout->cd();
-
-
-
-
-        t_signal->Write();
-        t_back->Write();
-
-
-        printf("Writing output to file at %s \n", fout_name.Data());
-
-        fout->Close();
-
-        return;
     }
+    fclose(root_files);
+    printf("There were %i qqbar, %i qGlu (%i of them tautau, %i mumu) in %i kept events in %i files. "
+            "There were also %i background events (%i qq and %i gg) "
+            "There were also %i pileup events \n"
+            "There were %i Failed ID's \n" , 
+            nQQb, nQGlu, nTauTau, nMuMu, nSignal, nFiles, nQQ + nGluGlu, nQQ, nGluGlu, nPileUp, nFailedID);
+    //printf("Ran on MC data and produced templates with %i events\n", nEvents);
+    fout->cd();
+
+
+
+
+    t_signal->Write();
+    t_back->Write();
+
+
+    printf("Writing output to file at %s \n", fout_name.Data());
+
+    fout->Close();
+
+    return;
+}

@@ -11,7 +11,7 @@
 
 const double root2 = sqrt(2);
 const char* filename("SingleMuon_files_aug17.txt");
-const TString fout_name("output_files/SingleMuon_data_fake_rate_aug22.root");
+const TString fout_name("FakeRate/SingleMuon_data_fake_rate_aug22.root");
 const double alpha = 0.05;
 
 const bool data_2016 = true;
@@ -43,8 +43,8 @@ void SingleMuon_data_fake_rate()
 
 
 
-    TFile *fout = TFile::Open(fout_name, "RECREATE");
     TTree *tout= new TTree("T_data", "Tree with reco events");
+    tout->SetDirectory(0);
     Double_t cm_m, xF, cost_r, mu1_pt, mu2_pt, mu1_eta, mu2_eta, jet1_pt, jet2_pt,
              jet1_cmva, jet1_eta, jet2_cmva, jet2_eta;
     Int_t nJets;
@@ -216,6 +216,8 @@ void SingleMuon_data_fake_rate()
     h_rate_HLT->Divide(h_total_HLT);
     TH2D* h_rate_noHLT = (TH2D *) h_pass_noHLT->Clone("h_rate_noHLT");
     h_rate_noHLT->Divide(h_total_noHLT);
+
+    TFile *fout = TFile::Open(fout_name, "RECREATE");
     fout->cd();
 
     h_rate_HLT->Write();

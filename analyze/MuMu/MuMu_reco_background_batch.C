@@ -16,8 +16,8 @@ const double root2 = sqrt(2);
 double Ebeam = 6500.;
 double Pbeam = sqrt(Ebeam*Ebeam - 0.938*0.938);
 
-char *filename("wjets_files.txt");
-const TString fout_name("output_files/wjets_background_jun22.root");
+char *filename("WT_files_aug17.txt");
+const TString fout_name("output_files/MuMu_WT_aug28.root");
 const double alpha = 0.05;
 const bool PRINT=false;
 
@@ -104,8 +104,8 @@ void MuMu_reco_background_batch()
     setup_SFs(&runs_bcdef, &runs_gh, &b_reader, &btag_effs);
     printf("Retrieved Scale Factors \n\n");
 
-    TFile *fout = TFile::Open(fout_name, "RECREATE");
     TTree *tout= new TTree("T_data", "Tree with reco events");
+    tout->SetDirectory(0);
     Double_t cm_m, xF, cost_r, mu1_pt, mu2_pt, mu1_eta, mu2_eta, jet1_pt, jet2_pt, deltaC, jet1_eta, jet2_eta, gen_weight,
              jet1_cmva, jet1_csv, jet2_cmva, jet2_csv;
     Double_t bcdef_HLT_SF, bcdef_iso_SF, bcdef_id_SF, gh_HLT_SF, gh_iso_SF, gh_id_SF,
@@ -383,6 +383,8 @@ void MuMu_reco_background_batch()
     fclose(root_files);
     printf("There were %i ttbar events in %i files.\n",
             nEvents, nFiles);
+
+    TFile *fout = TFile::Open(fout_name, "RECREATE");
     fout->cd();
 
 

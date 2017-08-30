@@ -9,8 +9,8 @@
 #define JET_SIZE 20
 
 const double root2 = sqrt(2);
-const char* filename("data_files_jun07.txt");
-const TString fout_name("output_files/DYToLL_data_2016_jun07.root");
+const char* filename("SingleMuon_files_aug17.txt");
+const TString fout_name("output_files/SingleMuon_data_aug28.root");
 const double alpha = 0.05;
 
 const bool data_2016 = true;
@@ -29,8 +29,8 @@ void MuMu_reco_data_batch()
 
 
 
-    TFile *fout = TFile::Open(fout_name, "RECREATE");
     TTree *tout= new TTree("T_data", "Tree with reco events");
+    tout->SetDirectory(0);
     Double_t cm_m, xF, cost_r, mu1_pt, mu2_pt, mu1_eta, mu2_eta, jet1_pt, jet2_pt,
              jet1_cmva, jet1_eta, jet2_cmva, jet2_eta;
     Int_t nJets;
@@ -220,6 +220,8 @@ void MuMu_reco_data_batch()
     printf("Ran on data from %i Files and produced template with %i Events \n", 
             nFiles, nEvents );
     printf("Writing out put to %s \n", fout_name.Data());
+
+    TFile *fout = TFile::Open(fout_name, "RECREATE");
     fout->cd();
     tout->Write();
 

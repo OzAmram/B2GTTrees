@@ -1337,18 +1337,18 @@ void B2GEdmExtraVarProducer::calculate_variables(edm::Event const& iEvent, edm::
     //                            Electron IDs
     
     float abs_eta                  = std::abs(h_floats_["ele_SCEta"]->at(iEle));
-    //float full5x5_sigmaIetaIeta    = h_floats_["ele_full5x5siee"]->at(iEle);
-    //float abs_dEtaInSeed           = std::abs(h_floats_["ele_dEtaInSeed"]->at(iEle));
-    //float abs_dPhiIn               = std::abs(h_floats_["ele_dPhiIn"]->at(iEle));		
-    //float hOverE                   = h_floats_["ele_HoE"]->at(iEle);                
-    //float ooEmooP                  = h_floats_["ele_ooEmooP"]->at(iEle);
-    //float expectedMissingInnerHits = h_floats_["ele_missHits"]->at(iEle);
-    //float pass_conversion_veto     = (h_floats_["ele_hasMatchedConVeto"]->at(iEle)==0.);
-    //
-    //bool el_IDVeto_NoIso   = pass_ele_ID_ (0, abs_eta, full5x5_sigmaIetaIeta, abs_dEtaInSeed, abs_dPhiIn, hOverE, ooEmooP, expectedMissingInnerHits, pass_conversion_veto, 0);
-    //bool el_IDLoose_NoIso  = pass_ele_ID_ (1, abs_eta, full5x5_sigmaIetaIeta, abs_dEtaInSeed, abs_dPhiIn, hOverE, ooEmooP, expectedMissingInnerHits, pass_conversion_veto, 0);
-    //bool el_IDMedium_NoIso = pass_ele_ID_ (2, abs_eta, full5x5_sigmaIetaIeta, abs_dEtaInSeed, abs_dPhiIn, hOverE, ooEmooP, expectedMissingInnerHits, pass_conversion_veto, 0);
-    //bool el_IDTight_NoIso  = pass_ele_ID_ (3, abs_eta, full5x5_sigmaIetaIeta, abs_dEtaInSeed, abs_dPhiIn, hOverE, ooEmooP, expectedMissingInnerHits, pass_conversion_veto, 0);
+    float full5x5_sigmaIetaIeta    = h_floats_["ele_full5x5siee"]->at(iEle);
+    float abs_dEtaInSeed           = std::abs(h_floats_["ele_dEtaInSeed"]->at(iEle));
+    float abs_dPhiIn               = std::abs(h_floats_["ele_dPhiIn"]->at(iEle));		
+    float hOverE                   = h_floats_["ele_HoE"]->at(iEle);                
+    float ooEmooP                  = h_floats_["ele_ooEmooP"]->at(iEle);
+    float expectedMissingInnerHits = h_floats_["ele_missHits"]->at(iEle);
+    float pass_conversion_veto     = (h_floats_["ele_hasMatchedConVeto"]->at(iEle)==0.);
+    
+    bool el_IDVeto_NoIso   = pass_ele_ID_ (0, abs_eta, full5x5_sigmaIetaIeta, abs_dEtaInSeed, abs_dPhiIn, hOverE, ooEmooP, expectedMissingInnerHits, pass_conversion_veto, 0);
+    bool el_IDLoose_NoIso  = pass_ele_ID_ (1, abs_eta, full5x5_sigmaIetaIeta, abs_dEtaInSeed, abs_dPhiIn, hOverE, ooEmooP, expectedMissingInnerHits, pass_conversion_veto, 0);
+    bool el_IDMedium_NoIso = pass_ele_ID_ (2, abs_eta, full5x5_sigmaIetaIeta, abs_dEtaInSeed, abs_dPhiIn, hOverE, ooEmooP, expectedMissingInnerHits, pass_conversion_veto, 0);
+    bool el_IDTight_NoIso  = pass_ele_ID_ (3, abs_eta, full5x5_sigmaIetaIeta, abs_dEtaInSeed, abs_dPhiIn, hOverE, ooEmooP, expectedMissingInnerHits, pass_conversion_veto, 0);
     
     float relIsoWithEA             = h_floats_["ele_Iso03"]->at(iEle);
     
@@ -1357,23 +1357,23 @@ void B2GEdmExtraVarProducer::calculate_variables(edm::Event const& iEvent, edm::
     bool el_IsoMedium = pass_ele_ISO_(2, abs_eta, relIsoWithEA, 0);
     bool el_IsoTight  = pass_ele_ISO_(3, abs_eta, relIsoWithEA, 0);
     
-    //bool el_IDVeto    = el_IDVeto_NoIso   && el_IsoVeto;
-    //bool el_IDLoose   = el_IDLoose_NoIso  && el_IsoLoose;
-    //bool el_IDMedium  = el_IDMedium_NoIso && el_IsoMedium;
-    //bool el_IDTight   = el_IDTight_NoIso  && el_IsoTight;
+    bool el_IDVeto    = el_IDVeto_NoIso   && el_IsoVeto;
+    bool el_IDLoose   = el_IDLoose_NoIso  && el_IsoLoose;
+    bool el_IDMedium  = el_IDMedium_NoIso && el_IsoMedium;
+    bool el_IDTight   = el_IDTight_NoIso  && el_IsoTight;
     
-    //vector_int_["el_IDVeto_NoIso"]  .push_back(el_IDVeto_NoIso);                            /* el_IDVeto_NoIso   */
-    //vector_int_["el_IDLoose_NoIso"] .push_back(el_IDLoose_NoIso);                           /* el_IDLoose_NoIso  */
-    //vector_int_["el_IDMedium_NoIso"].push_back(el_IDMedium_NoIso);                          /* el_IDMedium_NoIso */
-    //vector_int_["el_IDTight_NoIso"] .push_back(el_IDTight_NoIso);                           /* el_IDTight_NoIso  */
+    vector_int_["el_IDVeto_NoIso"]  .push_back(el_IDVeto_NoIso);                            /* el_IDVeto_NoIso   */
+    vector_int_["el_IDLoose_NoIso"] .push_back(el_IDLoose_NoIso);                           /* el_IDLoose_NoIso  */
+    vector_int_["el_IDMedium_NoIso"].push_back(el_IDMedium_NoIso);                          /* el_IDMedium_NoIso */
+    vector_int_["el_IDTight_NoIso"] .push_back(el_IDTight_NoIso);                           /* el_IDTight_NoIso  */
     vector_int_["el_IsoVeto"]  .push_back(el_IsoVeto);                                      /* el_IsoVeto   */
     vector_int_["el_IsoLoose"] .push_back(el_IsoLoose);                                     /* el_IsoLoose  */
     vector_int_["el_IsoMedium"].push_back(el_IsoMedium);                                    /* el_IsoMedium */
     vector_int_["el_IsoTight"] .push_back(el_IsoTight);                                     /* el_IsoTight  */
-    //vector_int_["el_IDVeto"]   .push_back(el_IDVeto);                                       /* el_IDVeto    */
-    //vector_int_["el_IDLoose"]  .push_back(el_IDLoose);                                      /* el_IDLoose   */
-    //vector_int_["el_IDMedium"] .push_back(el_IDMedium);                                     /* el_IDMedium  */
-    //vector_int_["el_IDTight"]  .push_back(el_IDTight);                                      /* el_IDTight   */
+    vector_int_["el_IDVeto"]   .push_back(el_IDVeto);                                       /* el_IDVeto    */
+    vector_int_["el_IDLoose"]  .push_back(el_IDLoose);                                      /* el_IDLoose   */
+    vector_int_["el_IDMedium"] .push_back(el_IDMedium);                                     /* el_IDMedium  */
+    vector_int_["el_IDTight"]  .push_back(el_IDTight);                                      /* el_IDTight   */
     
     // Debug: Match with vid
     //bool vidLoosenoiso = h_floats_["ele_vidLoosenoiso"]->at(iEle)==1.0;

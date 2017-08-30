@@ -288,8 +288,7 @@ int gen_background_template(TTree *t1, TH2F* h, TH2F* h_count,
         for (int i=0; i<nEntries; i++) {
             t1->GetEntry(i);
             bool no_bjets = has_no_bjets(nJets, jet1_pt, jet2_pt, jet1_cmva, jet2_cmva);
-            if(m >= m_low && m <= m_high && met_pt < 50. 
-                    && no_bjets){
+            if(m >= m_low && m <= m_high && met_pt < 50.  && no_bjets){
 
 
                 Double_t evt_weight = gen_weight * el_id_SF;
@@ -304,9 +303,10 @@ int gen_background_template(TTree *t1, TH2F* h, TH2F* h_count,
                 nEvents++;
             }
         }
-        h->Scale(1000*(bcdef_lumi + gh_lumi));
+        //h->Scale(1000*(bcdef_lumi + gh_lumi));
     }
 
+    printf("back norm %f \n", h->Integral());
     h->Scale(1./h->Integral());
     t1->ResetBranchAddresses();
     return 0;
@@ -397,7 +397,7 @@ int gen_combined_background_template(int nTrees, TTree **ts, TH2F* h,
                     h->Fill(xF, cost, evt_weight);
                 }
             }
-            h->Scale(1000*(bcdef_lumi + gh_lumi));
+            //h->Scale(1000*(bcdef_lumi + gh_lumi));
         }
 
         t1->ResetBranchAddresses();

@@ -9,8 +9,8 @@
 #define JET_SIZE 20
 
 const double root2 = sqrt(2);
-const char* filename("SingleElectron_files_aug17_v1.txt");
-const TString fout_name("output_files/SingleElectron_data_aug22.root");
+const char* filename("DY_files_test.txt");
+const TString fout_name("output_files/SingleElectron_DY_test.root");
 
 const bool data_2016 = true;
 
@@ -28,8 +28,8 @@ void ElEl_reco_data_batch()
 
 
 
-    TFile *fout = TFile::Open(fout_name, "RECREATE");
     TTree *tout= new TTree("T_data", "Tree with reco events");
+    tout->SetDirectory(0);
     Double_t cm_m, xF, cost_r, el1_pt, el2_pt, el1_eta, el2_eta, jet1_pt, jet2_pt,
              jet1_cmva, jet1_eta, jet2_cmva, jet2_eta;
     Int_t nJets;
@@ -65,7 +65,7 @@ void ElEl_reco_data_batch()
     int nFiles =0;
     unsigned int nEvents=0;
     while(fgets(lines, 300, root_files)){
-        if(lines[0] == '#' || is_empty_line(lines)) continue; // comment line
+        if(lines[0] == '#' || lines[0] == '!' || is_empty_line(lines)) continue; // comment line
         nFiles++;
         char * cur_file;
 
@@ -194,6 +194,7 @@ void ElEl_reco_data_batch()
     printf("Ran on data from %i Files and produced template with %i Events \n", 
             nFiles, nEvents );
     printf("Writing out put to %s \n", fout_name.Data());
+    TFile *fout = TFile::Open(fout_name, "RECREATE");
     fout->cd();
     tout->Write();
 

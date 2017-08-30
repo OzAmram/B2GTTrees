@@ -31,7 +31,6 @@ void EMu_data_check()
 
 
 
-    TFile *fout = TFile::Open(fout_name, "RECREATE");
     TTree *tout= new TTree("T_data", "Tree with reco events");
     Double_t cm_m, xF, cost_r, mu1_pt, el1_pt, jet1_pt, jet2_pt, gen_weight,
              jet1_cmva, jet2_cmva, mu1_eta, el1_eta, jet1_eta, jet2_eta;
@@ -230,6 +229,8 @@ void EMu_data_check()
     printf("Ran on data from %i Files and produced template with %i Events \n", 
             nFiles, nEvents );
     printf("Writing out put to %s \n", fout_name.Data());
+
+    TFile *fout = TFile::Open(fout_name, "RECREATE");
     fout->cd();
     tout->Write();
 

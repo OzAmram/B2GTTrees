@@ -109,7 +109,6 @@ void EMu_background_check()
     setup_el_SF(&el_SF);
     printf("got Sfs\n");
 
-    TFile *fout = TFile::Open(fout_name, "RECREATE");
     TTree *tout= new TTree("T_data", "Tree with reco events");
     Double_t cm_m, xF, cost_r, mu1_pt, el1_pt, jet1_pt, jet2_pt, gen_weight,
              jet1_cmva, jet2_cmva, mu1_eta, el1_eta, jet1_eta, jet2_eta;
@@ -379,6 +378,8 @@ void EMu_background_check()
     fclose(root_files);
     printf("There were %i events in %i files.\n",
             nEvents, nFiles);
+
+    TFile *fout = TFile::Open(fout_name, "RECREATE");
     fout->cd();
 
 
