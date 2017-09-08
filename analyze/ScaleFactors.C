@@ -47,7 +47,7 @@ Double_t get_pileup_SF(Int_t n_int, TH1D *h){
     int xbin = x_ax->FindBin(n_int);
 
     Double_t result = h->GetBinContent(xbin);
-    if(result < 0.01) printf("0 pileup SF for %i vertices\n", n_int);
+    //if(result < 0.0001) printf("0 pileup SF for %i vertices\n", n_int);
     return result;
 }
 
@@ -63,7 +63,10 @@ Double_t get_SF(Double_t pt, Double_t eta, TH2D *h){
     int ybin = y_ax->FindBin(std::abs(eta));
 
     Double_t result = h->GetBinContent(xbin, ybin);
-    if(result < 0.01) printf("0 muon id SF for Pt %.1f, Eta %1.2f \n", pt, eta);
+    if(result < 0.001){ 
+        printf("0 muon id SF for Pt %.1f, Eta %1.2f \n", pt, eta);
+        result = 1;
+    }
     return result;
 }
 

@@ -9,8 +9,8 @@
 #define JET_SIZE 20
 
 const double root2 = sqrt(2);
-const char* filename("DY_files_test.txt");
-const TString fout_name("output_files/SingleElectron_DY_test.root");
+const char* filename("SingleElectron_files_aug29.txt");
+const TString fout_name("output_files/SingleElectron_data_sep7.root");
 
 const bool data_2016 = true;
 
@@ -85,8 +85,9 @@ void ElEl_reco_data_batch()
         UInt_t el_size, jet_size, met_size;
 
         Float_t el_Pt[EL_SIZE], el_Eta[EL_SIZE], el_Phi[EL_SIZE], el_E[EL_SIZE],
-                el_Charge[EL_SIZE], el_vidMedium[EL_SIZE];
+                el_Charge[EL_SIZE];
 
+        Int_t el_IDMedium[EL_SIZE];
 
         Float_t jet_Pt[JET_SIZE], jet_Eta[JET_SIZE], jet_Phi[JET_SIZE], jet_E[JET_SIZE],
                 jet_CSV[JET_SIZE], jet_CMVA[JET_SIZE], jet_partonflavour[JET_SIZE];
@@ -99,7 +100,7 @@ void ElEl_reco_data_batch()
         t1->SetBranchAddress("el_Phi", &el_Phi);
         t1->SetBranchAddress("el_E", &el_E);
         t1->SetBranchAddress("el_Charge", &el_Charge);
-        t1->SetBranchAddress("el_vidMedium", &el_vidMedium);
+        t1->SetBranchAddress("el_IDMedium", &el_IDMedium);
         t1->SetBranchAddress("HLT_Ele23_WPLoose_Gsf", &HLT_Ele23_WPLoose_Gsf);
 
 
@@ -123,9 +124,19 @@ void ElEl_reco_data_batch()
             bool good_trigger = HLT_Ele23_WPLoose_Gsf;
             if(good_trigger &&
                     el_size >= 2 && ((abs(el_Charge[0] - el_Charge[1])) > 0.01) &&
-                    el_vidMedium[0] && el_vidMedium[1] &&
+                    el_IDMedium[0] && el_IDMedium[1] &&
                     el_Pt[0] > 26. &&  el_Pt[1] > 10. &&
                     abs(el_Eta[0]) < 2.4 && abs(el_Eta[1]) < 2.4){ 
+            /*
+            if(good_trigger &&
+                    el_size >=2 && 
+                    (el_IDMedium[0] && el_Pt[0] > 26. && abs(el_Eta[0]) < 2.4) &&
+                    ( (el_IDMedium[1] && el_Pt[1] > 10. && abs(el_Eta[1]) < 2.4)  ||
+                      (el_size >=2 && el_IDMedium[2] && el_Pt[2] > 10. && abs(el_Eta[2]) < 2.4))){
+                      */
+
+
+
 
                 //only want events with 2 oppositely charged leptons
                 if(el_Charge[0] >0){

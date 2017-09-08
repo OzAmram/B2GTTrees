@@ -16,8 +16,8 @@ const double root2 = sqrt(2);
 double Ebeam = 6500.;
 double Pbeam = sqrt(Ebeam*Ebeam - 0.938*0.938);
 
-char *filename("DY_files_test.txt");
-const TString fout_name("output_files/ElEl_background_DY_test.root");
+char *filename("WT_files_aug29.txt");
+const TString fout_name("output_files/ElEl_WT_sep7.root");
 const double alpha = 0.05;
 const bool PRINT=false;
 
@@ -96,12 +96,13 @@ void ElEl_reco_background_batch()
     compute_norms(norms, &nFiles);
     printf("Done with normalizations \n\n\n");
 
-    SFs runs_bcdef, runs_gh;
+    mu_SFs runs_bcdef, runs_gh;
+    pileup_SFs pu_SFs;
     BTag_readers b_reader;
     BTag_effs btag_effs;
     el_SFs el_SF;
     //separate SFs for runs BCDEF and GH
-    setup_SFs(&runs_bcdef, &runs_gh, &b_reader, &btag_effs);
+    setup_SFs(&runs_bcdef, &runs_gh, &b_reader, &btag_effs, &pu_SFs);
     setup_el_SF(&el_SF);
     printf("Retrieved Scale Factors \n\n");
 
@@ -109,7 +110,7 @@ void ElEl_reco_background_batch()
     tout->SetDirectory(0);
     Double_t cm_m, xF, cost_r, el1_pt, el2_pt, el1_eta, el2_eta, jet1_pt, jet2_pt, deltaC, jet1_eta, jet2_eta, gen_weight,
              jet1_cmva, jet1_csv, jet2_cmva, jet2_csv;
-    Double_t el_id_SF, jet1_b_weight, jet2_b_weight;
+    Double_t el_id_SF, jet1_b_weight, jet2_b_weight, pu_SF;
     Int_t nJets, jet1_flavour, jet2_flavour;
     Float_t met_pt;
     TLorentzVector el_p, el_m, cm, q1, q2;
@@ -130,6 +131,7 @@ void ElEl_reco_background_batch()
     tout->Branch("jet2_CMVA", &jet2_cmva, "jet2_CMVA/D");
     tout->Branch("met_pt", &met_pt, "met_Pt/F");
     tout->Branch("deltaC", &deltaC, "deltaC/D");
+    tout->Branch("pu_SF", &pu_SF);
     tout->Branch("gen_weight", &gen_weight, "gen_weight/D");
     tout->Branch("el_id_SF", &el_id_SF);
     tout->Branch("jet1_b_weight", &jet1_b_weight);
@@ -172,14 +174,22 @@ void ElEl_reco_background_batch()
 
             printf("Opening file: %s \n", lines);
             TFile *f1=  TFile::Open(lines);
-            f1->cd("B2GTTreeMaker");
+
+            f1->cd("EventCounter");
             TDirectory *subdir = gDirectory;
-            TTree *t1 = (TTree *)subdir->Get("B2GTree");
+            TH1D *mc_pileup = (TH1D *)subdir->Get("pileup");
+            mc_pileup->Scale(1./mc_pileup->Integral());
+            pu_SFs.pileup_ratio->Divide(pu_SFs.data_pileup, mc_pileup);
+
+            f1->cd("B2GTTreeMaker");
+            TTree *t1 = (TTree *)gDirectory->Get("B2GTree");
 
             UInt_t el_size, jet_size, met_size;
 
             Float_t el_Pt[EL_SIZE], el_Eta[EL_SIZE], el_Phi[EL_SIZE], el_E[EL_SIZE],
-                    el_Charge[EL_SIZE], el_vidMedium[EL_SIZE];
+                    el_Charge[EL_SIZE];
+
+            Int_t el_IDMedium[EL_SIZE];
 
 
             Float_t jet_Pt[JET_SIZE], jet_Eta[JET_SIZE], jet_Phi[JET_SIZE], jet_E[JET_SIZE],
@@ -187,14 +197,14 @@ void ElEl_reco_background_batch()
 
             Float_t evt_Gen_Weight;
 
-            Int_t HLT_Ele23_WPLoose_Gsf;
+            Int_t HLT_Ele23_WPLoose_Gsf, pu_NtrueInt;
             t1->SetBranchAddress("el_size", &el_size); //number of els in the event
             t1->SetBranchAddress("el_Pt", &el_Pt);
             t1->SetBranchAddress("el_Eta", &el_Eta);
             t1->SetBranchAddress("el_Phi", &el_Phi);
             t1->SetBranchAddress("el_E", &el_E);
             t1->SetBranchAddress("el_Charge", &el_Charge);
-            t1->SetBranchAddress("el_vidMedium", &el_vidMedium);
+            t1->SetBranchAddress("el_IDMedium", &el_IDMedium);
             t1->SetBranchAddress("HLT_Ele23_WPLoose_Gsf", &HLT_Ele23_WPLoose_Gsf);
 
 
@@ -221,6 +231,7 @@ void ElEl_reco_background_batch()
 
             }
             t1->SetBranchAddress("evt_Gen_Weight", &evt_Gen_Weight);
+            t1->SetBranchAddress("pu_NtrueInt",&pu_NtrueInt);
 
 
             t1->SetBranchAddress("met_size", &met_size);
@@ -238,7 +249,7 @@ void ElEl_reco_background_batch()
                 bool good_trigger = HLT_Ele23_WPLoose_Gsf;
                 if(good_trigger &&
                         el_size >= 2 && ((abs(el_Charge[0] - el_Charge[1])) > 0.01) &&
-                        el_vidMedium[0] && el_vidMedium[1] &&
+                        el_IDMedium[0] && el_IDMedium[1] &&
                         el_Pt[0] > 26. &&  el_Pt[1] > 10. &&
                         abs(el_Eta[0]) < 2.4 && abs(el_Eta[1]) < 2.4){ 
 
@@ -337,6 +348,7 @@ void ElEl_reco_background_batch()
                         el_id_SF = get_el_SF(el1_pt, el1_eta, el_SF.h) * get_el_SF(el2_pt, el2_eta, el_SF.h);
 
 
+                        pu_SF = get_pileup_SF(pu_NtrueInt, pu_SFs.pileup_ratio);
 
                         tout->Fill();
                         nEvents++;
