@@ -21,31 +21,39 @@
 #include "TFitter.h"
 #include "TSystem.h"
 #include "Math/Functor.h"
-#include "../analyze/TemplateMaker.C"
-#include "tdrstyle.C"
-#include "CMS_lumi.C"
+#include "../../analyze/TemplateMaker.C"
+#include "../tdrstyle.C"
+#include "../CMS_lumi.C"
 
 
 
 void draw_background_frac(){
     setTDRStyle();
-    TFile *f_data = TFile::Open("../analyze/output_files/DYToLL_data_2016_jun07.root");
+
+    TFile *f_data = TFile::Open("../analyze/output_files/SingleMuon_data_aug28.root");
     TTree *t_data = (TTree *)f_data->Get("T_data");
-    TFile *f_mc = TFile::Open("../analyze/output_files/DYToLL_mc_2016_jun15.root");
+    TFile *f_mc = TFile::Open("../analyze/output_files/MuMu_DY_aug28.root");
     TTree *t_mc = (TTree *)f_mc->Get("T_data");
     TTree *t_mc_nosig = (TTree *)f_mc->Get("T_back");
-    TFile *f_ttbar = TFile::Open("../analyze/output_files/ttbar_background_jun05.root");
+    TFile *f_ttbar = TFile::Open("../analyze/output_files/MuMu_TTbar_aug28.root");
     TTree *t_ttbar = (TTree *)f_ttbar->Get("T_data");
 
+    TFile *f_QCD = TFile::Open("../analyze/output_files/MuMu_QCD_est_aug28.root");
+    TTree *t_QCD = (TTree *)f_QCD->Get("T_data");
 
+    /*
     TFile *f_ww = TFile::Open("../analyze/output_files/WW_background_jun06.root");
     TTree *t_ww = (TTree *)f_ww->Get("T_data");
     TFile *f_wz = TFile::Open("../analyze/output_files/WZ_background_jun06.root");
     TTree *t_wz = (TTree *)f_wz->Get("T_data");
     TFile *f_zz = TFile::Open("../analyze/output_files/ZZ_background_jun06.root");
     TTree *t_zz = (TTree *)f_zz->Get("T_data");
+    */
 
-    TFile *f_wt = TFile::Open("../analyze/output_files/WT_background_jun20.root");
+    TFile *f_diboson = TFile::Open("../analyze/output_files/MuMu_diboson_aug28.root");
+    TTree *t_diboson = (TTree *)f_diboson->Get("T_data");
+
+    TFile *f_wt = TFile::Open("../analyze/output_files/MuMu_WT_aug28.root");
     TTree *t_wt = (TTree *)f_wt->Get("T_data");
 
     int nBins = 6;
@@ -59,12 +67,19 @@ void draw_background_frac(){
     TH1F *ttbar_m = new TH1F("h_m", "TTBar Background", nBins, m_bins);
     TH1F *ttbar_cost = new TH1F("back_cost", "TTbar", 40, -1,1);
 
+    TH1F *diboson_m = new TH1F("diboson_m", "MC Signal (qqbar, qglu, qbarglu)", nBins, m_bins);
+    TH1F *QCD_m = new TH1F("QCD_m", "MC Signal (qqbar, qglu, qbarglu)", nBins, m_bins);
+    TH1F *diboson_cost = new TH1F("diboson_cost", "MC Signal (qqbar, qglu, qbarglu)", 40, -1,1);
+    TH1F *QCD_cost = new TH1F("QCD_cost", "MC Signal (qqbar, qglu, qbarglu)", 40, -1,1);
+    
+    /*
     TH1F *ww_m = new TH1F("ww_m", "MC Signal (qqbar, qglu, qbarglu)", nBins, m_bins);
     TH1F *ww_cost = new TH1F("ww_cost", "MC Signal (qqbar, qglu, qbarglu)", 40, -1,1);
     TH1F *wz_m = new TH1F("wz_m", "MC Signal (qqbar, qglu, qbarglu)", nBins, m_bins);
     TH1F *wz_cost = new TH1F("wz_cost", "MC Signal (qqbar, qglu, qbarglu)", 40, -1,1);
     TH1F *zz_m = new TH1F("zz_m", "MC Signal (qqbar, qglu, qbarglu)", nBins, m_bins);
     TH1F *zz_cost = new TH1F("zz_cost", "MC Signal (qqbar, qglu, qbarglu)", 40, -1,1);
+    */
 
     TH1F *wt_m = new TH1F("wt_m", "W top", nBins, m_bins);
     TH1F *wt_cost = new TH1F("wt_cost", "W top", 40, -1,1);
@@ -72,45 +87,52 @@ void draw_background_frac(){
     make_m_cost_hist(t_mc, mc_m, mc_cost, false);
     make_m_cost_hist(t_mc_nosig, mc_nosig_m, mc_nosig_cost, false);
     make_m_cost_hist(t_ttbar, ttbar_m, ttbar_cost, false);
+    make_m_cost_hist(t_diboson, diboson_m, diboson_cost, false);
+    make_m_cost_hist(t_QCD, QCD_m, QCD_cost, true, FLAG_QCD);
+
+    /*
+     
     make_m_cost_hist(t_ww, ww_m, ww_cost, false);
     make_m_cost_hist(t_wz, wz_m, wz_cost, false);
     make_m_cost_hist(t_zz, zz_m, zz_cost, false);
     make_m_cost_hist(t_wt, wt_m, wt_cost, false);
+    */
         
     
     Double_t emu_scaling = 1.05;
 
     Double_t ttbar_frac[nBins], ttbar_frac_unc[nBins], diboson_frac[nBins], diboson_frac_unc[nBins], bin_center[nBins];
     Double_t back_frac[nBins], back_frac_unc[nBins], nosig_frac[nBins], nosig_frac_unc[nBins];
-    Double_t wt_frac[nBins], wt_frac_unc[nBins];
+    Double_t wt_frac[nBins], wt_frac_unc[nBins], QCD_frac[nBins], QCD_frac_unc[nBins];
     for (int i=1; i <= nBins; i++){
         Double_t N_mc = mc_m->GetBinContent(i);
         Double_t N_mc_nosig = mc_nosig_m->GetBinContent(i);
         Double_t N_ttbar = emu_scaling * ttbar_m->GetBinContent(i);
-        Double_t N_ww = ww_m->GetBinContent(i);
-        Double_t N_wz = wz_m->GetBinContent(i);
-        Double_t N_zz = wz_m->GetBinContent(i);
-        Double_t N_diboson = emu_scaling* (N_ww+ + N_wz+ N_zz);
+        Double_t N_diboson = emu_scaling* diboson_m->GetBinContent(i);
+        Double_t N_QCD = QCD_m->GetBinContent(i);
         Double_t N_wt = emu_scaling *wt_m->GetBinContent(i);
-        Double_t N_back = N_ttbar + N_diboson + N_wt;
-        Double_t denom = N_ttbar + N_diboson + N_mc + N_wt + N_mc_nosig;
+        Double_t denom = N_ttbar + N_diboson + N_mc + N_wt + N_mc_nosig + N_QCD;
         bin_center[i-1] = mc_m->GetBinCenter(i);
         printf("bin center %f \n", bin_center[i-1]);
         nosig_frac[i-1] = N_mc_nosig/denom;
         nosig_frac_unc[i-1] = std::sqrt(  N_mc_nosig*pow((1/denom - N_mc_nosig/pow(denom,2)), 2) +
-                                          (N_mc + N_wt + N_ttbar + N_diboson) * pow(1/denom, 4));
+                                          (denom - N_mc_nosig) * pow(1/denom, 4));
         diboson_frac[i-1] = N_diboson/(denom);
         diboson_frac_unc[i-1] = std::sqrt(  N_diboson*pow((1/denom - N_diboson/pow(denom,2)), 2) +
-                                          (N_mc + N_wt + N_ttbar + N_mc_nosig) * pow(1/denom, 4));
+                                          (denom - N_diboson) * pow(1/denom, 4));
         ttbar_frac[i-1] =  (N_ttbar)/(denom);
         ttbar_frac_unc[i-1] = std::sqrt(  N_ttbar*pow((1/denom - N_ttbar/pow(denom,2)), 2) +
-                                          (N_mc + N_wt + N_diboson + N_mc_nosig) * pow(1/denom, 4));
+                                          (denom - N_ttbar) * pow(1/denom, 4));
         wt_frac[i-1] =  (N_wt)/(denom);
         wt_frac_unc[i-1] = std::sqrt(  N_wt*pow((1/denom - N_wt/pow(denom,2)), 2) +
-                                          (N_mc + N_ttbar + N_diboson + N_mc_nosig) * pow(1/denom, 4));
-        back_frac[i-1]  = diboson_frac[i-1] + ttbar_frac[i-1] + nosig_frac[i-1] + wt_frac[i-1];
+                                          (denom - N_wt) * pow(1/denom, 4));
+        QCD_frac[i-1] =  (N_QCD)/(denom);
+        QCD_frac_unc[i-1] = std::sqrt(  N_QCD*pow((1/denom - N_QCD/pow(denom,2)), 2) +
+                                          (denom - N_QCD) * pow(1/denom, 4));
+        back_frac[i-1]  = diboson_frac[i-1] + ttbar_frac[i-1] + nosig_frac[i-1] + wt_frac[i-1] + QCD_frac[i-1];
         back_frac_unc[i-1] = std::sqrt(pow(ttbar_frac_unc[i-1],2) + pow(diboson_frac_unc[i-1], 2) + 
-                                       pow(nosig_frac_unc[i-1],2) + pow(wt_frac_unc[i-1], 2));
+                                       pow(nosig_frac_unc[i-1],2) + pow(wt_frac_unc[i-1], 2) +
+                                       pow(QCD_frac_unc[i-1],2) );
     }
     bin_center[nBins-1] = 850;
     Double_t fit_res[] = {0.192, 0.159, 0.195, 0.163, 0.152, 0.095};
@@ -127,6 +149,9 @@ void draw_background_frac(){
 
     TGraphErrors *diboson_mc_frac = new TGraphErrors(nBins, bin_center, diboson_frac, 0, diboson_frac_unc);
     diboson_mc_frac->SetTitle("diboson fraction from MC ");
+
+    TGraphErrors *QCD_est_frac = new TGraphErrors(nBins, bin_center, QCD_frac, 0, QCD_frac_unc);
+    diboson_mc_frac->SetTitle("QCD fraction from Fakerate Est.");
 
     TGraphErrors *back_mc_frac = new TGraphErrors(nBins, bin_center, back_frac, 0, back_frac_unc);
     back_mc_frac->SetTitle("Total background fraction from MC ");
@@ -146,6 +171,10 @@ void draw_background_frac(){
     mc_nosig_frac->SetMinimum(0.0);
     back_mc_frac->SetMaximum(0.3);
     back_mc_frac->SetMinimum(0.0);
+
+    QCD_est_frac->SetMaximum(0.3);
+    QCD_est_frac->SetMinimum(0.0);
+
     TCanvas *c3 = new TCanvas("c3", "canvas", 200,10, 900,700);
     fit_frac->SetMarkerStyle(kFullSquare);
     fit_frac->SetLineWidth(2);
@@ -175,10 +204,17 @@ void draw_background_frac(){
     mc_nosig_frac->SetMarkerColor(kMagenta);
     mc_nosig_frac->SetLineWidth(3);
     mc_nosig_frac->SetLineColor(kMagenta);
+
+    QCD_est_frac->SetMarkerStyle(kFullSquare);
+    QCD_est_frac->SetMarkerColor(kRed - 7);
+    QCD_est_frac->SetLineWidth(3);
+    QCD_est_frac->SetLineColor(kRed -7);
+
     TMultiGraph *mg = new TMultiGraph();
     mg->Add(ttbar_mc_frac);
     mg->Add(wt_mc_frac);
     mg->Add(diboson_mc_frac);
+    mg->Add(QCD_est_frac);
     mg->Add(back_mc_frac);
     mg->Add(mc_nosig_frac);
     mg->Add(fit_frac);
@@ -200,6 +236,7 @@ void draw_background_frac(){
     leg2->AddEntry(mc_nosig_frac, "DY no asymmety(gg, qq, #bar{q}#bar{q})", "l");
     leg2->AddEntry(diboson_mc_frac, "WW + WZ + ZZ", "l");
     leg2->AddEntry(wt_mc_frac, "tW + #bar{t}W", "l");
+    leg2->AddEntry(QCD_est_frac, "QCD", "l");
     leg2->Draw();
 
     writeExtraText = true;

@@ -28,6 +28,7 @@
 
 #define FLAG_MUONS  0
 #define FLAG_ELECTRONS  1
+#define FLAG_QCD  2
 
 Double_t bcdef_lumi = 5.746 + 2.572 + 4.242 + 4.024 + 3.104;
 // adding new Hv2 data set to get full 2016 luminosity
@@ -482,6 +483,31 @@ void make_m_cost_hist(TTree *t1, TH1F *h_m, TH1F *h_cost, bool is_data=false, in
             h_m->Add(h_m_bcdef, h_m_gh);
             h_cost->Add(h_cost_bcdef, h_cost_gh);
         }
+    }
+    else if(flag == FLAG_QCD){
+        Double_t evt_fakerate, mu1_fakerate, mu2_fakerate;
+        Bool_t double_muon_trig;
+        //t1->SetBranchAddress("evt_fakerate", &evt_fakerate);
+        t1->SetBranchAddress("mu1_fakerate", &mu1_fakerate);
+        t1->SetBranchAddress("mu2_fakerate", &mu2_fakerate);
+        t1->SetBranchAddress("double_muon_tig", &double_muon_trig);
+        for (int i=0; i<size; i++) {
+            t1->GetEntry(i);
+            bool no_bjets = has_no_bjets(nJets, jet1_pt, jet2_pt, jet1_cmva, jet2_cmva);
+
+            if(m >= 150. && met_pt < 50. && no_bjets){
+                if(double_muon_trig){
+                    mu1_fakerate = 0.91;
+                    mu2_fakerate = 0.13;
+                }
+                //mu2_fakerate = std::min(mu2_fakerate, 0.9);
+                evt_fakerate = mu1_fakerate*mu2_fakerate/((1-mu1_fakerate)*(1-mu2_fakerate));
+                printf("Evt %.2f %.2f %.2f \n",mu1_fakerate, mu2_fakerate, evt_fakerate);
+                h_m->Fill(m, evt_fakerate);
+                h_cost->Fill(cost, evt_fakerate);
+            }
+        }
+        printf("Tot QCD is %.0f \n", h_m->Integral());
     }
     else{
         if(!is_data) t1->SetBranchAddress("el_id_SF", &el_id_SF);

@@ -20,7 +20,7 @@
 #include "TFitter.h"
 #include "TSystem.h"
 #include "Math/Functor.h"
-#include "../analyze/TemplateMaker.C"
+#include "../../analyze/TemplateMaker.C"
 
 
 
@@ -32,10 +32,10 @@ void make_tau_m_cost_hist(TTree *t1, TH1F *h_m, TH1F *h_cost, bool is_data=false
     Long64_t size  =  t1->GetEntries();
     Double_t m, xF, cost, mu1_pt, mu2_pt, jet1_cmva, jet2_cmva, gen_weight;
     Double_t bcdef_HLT_SF, bcdef_iso_SF, bcdef_id_SF;
-    Double_t gh_HLT_SF, gh_iso_SF, gh_id_SF;
+    Double_t gh_HLT_SF, gh_iso_SF, gh_id_SF, pu_SF;
     Double_t jet1_pt, jet2_pt, jet1_b_weight, jet2_b_weight;
     Float_t met_pt;
-    Bool_t is_tau_event;
+    Bool_t double_muon_trig;
     Int_t nJets;
     nJets = 2;
     TH2D *h_m_bcdef = (TH2D *)h_m->Clone("h_m_bcdef");
@@ -60,23 +60,24 @@ void make_tau_m_cost_hist(TTree *t1, TH1F *h_m, TH1F *h_cost, bool is_data=false
         t1->SetBranchAddress("gh_HLT_SF", &gh_HLT_SF);
         t1->SetBranchAddress("gh_iso_SF", &gh_iso_SF);
         t1->SetBranchAddress("gh_id_SF", &gh_id_SF);
+        t1->SetBranchAddress("pu_SF", &pu_SF);
         t1->SetBranchAddress("jet1_b_weight", &jet1_b_weight);
         t1->SetBranchAddress("jet2_b_weight", &jet2_b_weight);
+        t1->SetBranchAddress("double_muon_trig", &double_muon_trig);
     }
 
     for (int i=0; i<size; i++) {
         t1->GetEntry(i);
         bool no_bjets = has_no_bjets(nJets, jet1_pt, jet2_pt, jet1_cmva, jet2_cmva);
 
-        if(m >= 150. && met_pt < 50. && no_bjets){
-            printf("%.0f \n", m);
+        if(m >= 150. && met_pt < 50. && no_bjets && !double_muon_trig){
             if(is_data){
                 h_m->Fill(m);
                 h_cost->Fill(cost);
             }
             else{
-                Double_t bcdef_weight = gen_weight * bcdef_HLT_SF * bcdef_iso_SF * bcdef_id_SF;
-                Double_t gh_weight = gen_weight * gh_HLT_SF * gh_iso_SF * gh_id_SF;
+                Double_t bcdef_weight = gen_weight * bcdef_HLT_SF * bcdef_iso_SF * bcdef_id_SF * pu_SF;
+                Double_t gh_weight = gen_weight * gh_HLT_SF * gh_iso_SF * gh_id_SF* pu_SF;
                 if (nJets >= 1){
                     bcdef_weight *= jet1_b_weight;
                     gh_weight *= jet1_b_weight;
@@ -96,18 +97,21 @@ void make_tau_m_cost_hist(TTree *t1, TH1F *h_m, TH1F *h_cost, bool is_data=false
         }
     }
     if(!is_data){
+        /*
         h_m_bcdef ->Scale(bcdef_lumi * 1000);
         h_cost_bcdef ->Scale(bcdef_lumi * 1000);
         h_m_gh ->Scale(gh_lumi * 1000);
         h_cost_gh ->Scale(gh_lumi * 1000);
+        */
         h_m->Add(h_m_bcdef, h_m_gh);
         h_cost->Add(h_cost_bcdef, h_cost_gh);
     }
     t1->ResetBranchAddresses();
+    printf("Tot xsection %.2e \n", h_m->Integral());
 }
 
 void draw_m_cost(){
-    TFile *f = TFile::Open("../analyze/output_files/wjets_background_jun22.root");
+    TFile *f = TFile::Open("../analyze/output_files/MuMu_fakerate_non_Wjets_MC_sep5.root");
     TTree *t = (TTree *)f->Get("T_data");
     int n_m_bins = 6; 
     Double_t m_bins[] = {150,200,250,350,500,700,1000}; 

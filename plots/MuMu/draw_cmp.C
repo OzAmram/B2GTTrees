@@ -25,28 +25,36 @@
 #include "../tdrstyle.C"
 #include "../CMS_lumi.C"
 
-
+const int type = FLAG_MUONS;
 
 
 
 void draw_cmp(){
     setTDRStyle();
-    TFile *f_data = TFile::Open("../analyze/output_files/DYToLL_data_2016_jun07.root");
+    TFile *f_data = TFile::Open("../analyze/output_files/SingleMuon_data_aug28.root");
     TTree *t_data = (TTree *)f_data->Get("T_data");
-    TFile *f_mc = TFile::Open("../analyze/output_files/DYToLL_mc_2016_jun21.root");
+    TFile *f_mc = TFile::Open("../analyze/output_files/MuMu_DY_aug30.root");
     TTree *t_mc = (TTree *)f_mc->Get("T_data");
     TTree *t_mc_nosig = (TTree *)f_mc->Get("T_back");
-    TFile *f_ttbar = TFile::Open("../analyze/output_files/ttbar_background_jun05.root");
+    TFile *f_ttbar = TFile::Open("../analyze/output_files/MuMu_TTbar_aug30.root");
     TTree *t_ttbar = (TTree *)f_ttbar->Get("T_data");
 
+    TFile *f_QCD = TFile::Open("../analyze/output_files/MuMu_QCD_est_aug29.root");
+    TTree *t_QCD = (TTree *)f_QCD->Get("T_data");
+
+    /*
     TFile *f_ww = TFile::Open("../analyze/output_files/WW_background_jun06.root");
     TTree *t_ww = (TTree *)f_ww->Get("T_data");
     TFile *f_wz = TFile::Open("../analyze/output_files/WZ_background_jun06.root");
     TTree *t_wz = (TTree *)f_wz->Get("T_data");
     TFile *f_zz = TFile::Open("../analyze/output_files/ZZ_background_jun06.root");
     TTree *t_zz = (TTree *)f_zz->Get("T_data");
+    */
 
-    TFile *f_wt = TFile::Open("../analyze/output_files/WT_background_jun20.root");
+    TFile *f_diboson = TFile::Open("../analyze/output_files/MuMu_diboson_aug30.root");
+    TTree *t_diboson = (TTree *)f_diboson->Get("T_data");
+
+    TFile *f_wt = TFile::Open("../analyze/output_files/MuMu_WT_aug30.root");
     TTree *t_wt = (TTree *)f_wt->Get("T_data");
     TH1F *data_m = new TH1F("data_m", "Data Dimuon Mass Distribution", 30, 150, 2000);
 
@@ -80,18 +88,36 @@ void draw_cmp(){
 
 
 
+    /*
     TH1F *ww_m = new TH1F("ww_m", "MC Signal (qqbar, qglu, qbarglu)", 30, 150, 2000);
     TH1F *ww_cost = new TH1F("ww_cost", "MC Signal (qqbar, qglu, qbarglu)", 40, -1,1);
     TH1F *wz_m = new TH1F("wz_m", "MC Signal (qqbar, qglu, qbarglu)", 30, 150, 2000);
     TH1F *wz_cost = new TH1F("wz_cost", "MC Signal (qqbar, qglu, qbarglu)", 40, -1,1);
     TH1F *zz_m = new TH1F("zz_m", "MC Signal (qqbar, qglu, qbarglu)", 30, 150, 2000);
     TH1F *zz_cost = new TH1F("zz_cost", "MC Signal (qqbar, qglu, qbarglu)", 40, -1,1);
+    TH1F *diboson_m = new TH1F("diboson_m", "DiBoson (WW, WZ, ZZ)", 30, 150, 2000);
+    TH1F *diboson_cost = new TH1F("diboson_cost", "DiBoson (WW, WZ,ZZ)", 40, -1,1);
+    make_m_cost_hist(t_ww, ww_m, ww_cost, false);
+    make_m_cost_hist(t_wz, wz_m, wz_cost, false);
+    make_m_cost_hist(t_zz, zz_m, zz_cost, false);
+    diboson_m->Add(ww_m);
+    diboson_m->Add(wz_m);
+    diboson_m->Add(zz_m);
+
+    diboson_cost->Add(ww_cost);
+    diboson_cost->Add(wz_cost);
+    diboson_cost->Add(zz_cost);
+    */
+
+    TH1F *diboson_m = new TH1F("diboson_m", "DiBoson (WW, WZ, ZZ)", 30, 150, 2000);
+    TH1F *diboson_cost = new TH1F("diboson_cost", "DiBoson (WW, WZ,ZZ)", 40, -1,1);
+
+    TH1F *QCD_m = new TH1F("QCD_m", "QCD", 30, 150, 2000);
+    TH1F *QCD_cost = new TH1F("QCD_cost", "QCD", 40, -1,1);
 
     TH1F *wt_m = new TH1F("wt_m", "tw + #bar{t}w", 30, 150, 2000);
     TH1F *wt_cost = new TH1F("wt_cost", "tw + #bar{t}w", 40, -1,1);
 
-    TH1F *diboson_m = new TH1F("diboson_m", "DiBoson (WW, WZ, ZZ)", 30, 150, 2000);
-    TH1F *diboson_cost = new TH1F("diboson_cost", "DiBoson (WW, WZ,ZZ)", 40, -1,1);
 
     wt_m->SetFillColor(kOrange+7); 
     wt_cost->SetFillColor(kOrange+7); 
@@ -101,20 +127,13 @@ void draw_cmp(){
     make_m_cost_hist(t_mc_nosig, mc_nosig_m, mc_nosig_cost, false);
     make_m_cost_hist(t_ttbar, ttbar_m, ttbar_cost, false);
 
+    make_m_cost_hist(t_QCD, QCD_m, QCD_cost, true, FLAG_QCD);
 
 
-    make_m_cost_hist(t_ww, ww_m, ww_cost, false);
-    make_m_cost_hist(t_wz, wz_m, wz_cost, false);
-    make_m_cost_hist(t_zz, zz_m, zz_cost, false);
+    make_m_cost_hist(t_diboson, diboson_m, diboson_cost, false, FLAG_MUONS);
+
     make_m_cost_hist(t_wt, wt_m, wt_cost, false);
 
-    diboson_m->Add(ww_m);
-    diboson_m->Add(wz_m);
-    diboson_m->Add(zz_m);
-
-    diboson_cost->Add(ww_cost);
-    diboson_cost->Add(wz_cost);
-    diboson_cost->Add(zz_cost);
 
     ttbar_m->Scale(1.05);
     ttbar_cost->Scale(1.05);
@@ -126,6 +145,9 @@ void draw_cmp(){
     diboson_m->SetFillColor(kGreen+3);
     diboson_cost->SetFillColor(kGreen + 3);
     
+    QCD_m->SetFillColor(kRed -7);
+    QCD_cost->SetFillColor(kRed -7);
+
     //mc_m->Draw();
     
     //TCanvas *c1 = new TCanvas("c1", "Histograms", 200, 10, 900, 700);
@@ -164,6 +186,7 @@ void draw_cmp(){
 
     THStack *m_stack = new THStack("m_stack", "MuMu Mass Distribution: Data vs MC ; m_{#mu^{+}#mu^{-}} (GeV)");
     m_stack->Add(ttbar_m);
+    m_stack->Add(QCD_m);
     m_stack->Add(wt_m);
     m_stack->Add(diboson_m);
     m_stack->Add(mc_nosig_m);
@@ -172,6 +195,7 @@ void draw_cmp(){
 
     THStack *cost_stack = new THStack("cost_stack", "Cos(#theta) Distribution: Data vs MC;Cos(#theta)_{r}");
     cost_stack->Add(ttbar_cost);
+    cost_stack->Add(QCD_cost);
     cost_stack->Add(wt_cost);
     cost_stack->Add(diboson_cost);
     cost_stack->Add(mc_nosig_cost);
@@ -198,6 +222,7 @@ void draw_cmp(){
     leg1->AddEntry(mc_nosig_m, "DY no asymmety(gg, qq, #bar{q}#bar{q})", "f");
     leg1->AddEntry(diboson_m, "WW + WZ + ZZ", "f");
     leg1->AddEntry(wt_m, "tW + #bar{t}W", "f");
+    leg1->AddEntry(QCD_m, "QCD", "f");
     leg1->AddEntry(ttbar_m, "t#bar{t}", "f");
     leg1->Draw();
 
@@ -279,6 +304,7 @@ void draw_cmp(){
     leg2->AddEntry(mc_nosig_m, "DY no asymmety(gg, qq, #bar{q}#bar{q})", "f");
     leg2->AddEntry(diboson_m, "WW + WZ + ZZ", "f");
     leg2->AddEntry(wt_m, "tW + #bar{t}W", "f");
+    leg2->AddEntry(QCD_m, "QCD", "f");
     leg2->AddEntry(ttbar_m, "t#bar{t}", "f");
     leg2->Draw();
 
