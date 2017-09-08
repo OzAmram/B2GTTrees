@@ -1,3 +1,5 @@
+
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
@@ -5,7 +7,9 @@
 #include <cstring>
 #include <algorithm>
 #include "TFile.h"
+#include "TFile.h"
 #include "../ScaleFactors.C"
+#include "../TemplateMaker.C"
 
 #define GEN_SIZE 300
 #define MU_SIZE 100
@@ -13,15 +17,9 @@
 #define MAX_SAMPLES 20
 
 const double root2 = sqrt(2);
-double Ebeam = 6500.;
-double Pbeam = sqrt(Ebeam*Ebeam - 0.938*0.938);
+const char* filename("non_QCD_files.txt");
+const TString fout_name("output_files/MuMu_fakerate_non_Wjets_MC_sep6.root");
 
-char *filename("WT_files_aug17.txt");
-const TString fout_name("output_files/MuMu_WT_Aug30.root");
-const double alpha = 0.05;
-const bool PRINT=false;
-
-const bool data_2016 = true;
 
 bool is_empty_line(const char *s) {
     while (*s != '\0') {
@@ -31,6 +29,7 @@ bool is_empty_line(const char *s) {
     }
     return true;
 }
+
 
 void compute_norms(Double_t *norms, unsigned int *nFiles){
     Double_t sample_weight = 0;
@@ -84,10 +83,7 @@ void compute_norms(Double_t *norms, unsigned int *nFiles){
 
 }
 
-
-
-
-void MuMu_reco_background_batch()
+void MuMu_WJets_MC()
 {
 
     Double_t norms[MAX_SAMPLES]; // computed normalizations to apply to each event in a sample (based on xsection and total weight)
@@ -113,6 +109,7 @@ void MuMu_reco_background_batch()
              jet1_b_weight, jet2_b_weight, pu_SF;
     Int_t nJets, jet1_flavour, jet2_flavour;
     Float_t met_pt;
+    Bool_t double_muon_trig;
     TLorentzVector mu_p, mu_m, cm, q1, q2;
     tout->Branch("m", &cm_m, "m/D");
     tout->Branch("xF", &xF, "xF/D");
@@ -144,10 +141,13 @@ void MuMu_reco_background_batch()
     tout->Branch("nJets", &nJets, "nJets/I");
     tout->Branch("jet1_flavour", &jet1_flavour, "jet1_flavour/I");
     tout->Branch("jet2_flavour", &jet2_flavour, "jet2_flavour/I");
+    tout->Branch("double_muon_trig", &double_muon_trig);
 
 
 
     unsigned int nEvents=0;
+    Double_t tot_double_trig_weight=0;
+    Double_t tot_single_trig_weight=0;
 
     Double_t normalization = 1.0;
 
@@ -202,6 +202,9 @@ void MuMu_reco_background_batch()
 
             Float_t evt_Gen_Weight;
 
+            Int_t  HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL, HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL, 
+                HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ, HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ;
+
             Int_t HLT_IsoMu, HLT_IsoTkMu, pu_NtrueInt;
             t1->SetBranchAddress("mu_size", &mu_size); //number of muons in the event
             t1->SetBranchAddress("mu_Pt", &mu_Pt);
@@ -216,35 +219,25 @@ void MuMu_reco_background_batch()
             t1->SetBranchAddress("mu_SumPUPt", &mu_SumPUPt);
             t1->SetBranchAddress("mu_SumPhotonPt", &mu_SumPhotonPt);
 
-            if(data_2016){
-                t1->SetBranchAddress("jetAK4CHS_size", &jet_size);
-                t1->SetBranchAddress("jetAK4CHS_Pt", &jet_Pt);
-                t1->SetBranchAddress("jetAK4CHS_Eta", &jet_Eta);
-                t1->SetBranchAddress("jetAK4CHS_Phi", &jet_Phi);
-                t1->SetBranchAddress("jetAK4CHS_E", &jet_E);
-                t1->SetBranchAddress("jetAK4CHS_CSVv2", &jet_CSV);
-                t1->SetBranchAddress("jetAK4CHS_CMVAv2", &jet_CMVA);
-                t1->SetBranchAddress("jetAK4CHS_PartonFlavour", &jet_partonflavour);
+            t1->SetBranchAddress("jetAK4CHS_size", &jet_size);
+            t1->SetBranchAddress("jetAK4CHS_Pt", &jet_Pt);
+            t1->SetBranchAddress("jetAK4CHS_Eta", &jet_Eta);
+            t1->SetBranchAddress("jetAK4CHS_Phi", &jet_Phi);
+            t1->SetBranchAddress("jetAK4CHS_E", &jet_E);
+            t1->SetBranchAddress("jetAK4CHS_CSVv2", &jet_CSV);
+            t1->SetBranchAddress("jetAK4CHS_CMVAv2", &jet_CMVA);
+            t1->SetBranchAddress("jetAK4CHS_PartonFlavour", &jet_partonflavour);
 
-                t1->SetBranchAddress("HLT_IsoMu24", &HLT_IsoMu);
-                t1->SetBranchAddress("HLT_IsoTkMu24", &HLT_IsoTkMu);
-            }
+            t1->SetBranchAddress("HLT_IsoMu24", &HLT_IsoMu);
+            t1->SetBranchAddress("HLT_IsoTkMu24", &HLT_IsoTkMu);
+            t1->SetBranchAddress("HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ", &HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ);
+            t1->SetBranchAddress("HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL", &HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL);
+            t1->SetBranchAddress("HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ", &HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ);
+            t1->SetBranchAddress("HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL", &HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL);
 
-            else{
-                t1->SetBranchAddress("jetAK4Puppi_size", &jet_size);
-                t1->SetBranchAddress("jetAK4Puppi_Pt", &jet_Pt);
-                t1->SetBranchAddress("jetAK4Puppi_Eta", &jet_Eta);
-                t1->SetBranchAddress("jetAK4Puppi_Phi", &jet_Phi);
-                t1->SetBranchAddress("jetAK4Puppi_E", &jet_E);
-                t1->SetBranchAddress("jetAK4Puppi_CSVv2", &jet_CSV);
-                t1->SetBranchAddress("jetAK4Puppi_CMVAv2", &jet_CMVA);
-
-                t1->SetBranchAddress("HLT_IsoMu20", &HLT_IsoMu);
-                t1->SetBranchAddress("HLT_IsoTkMu20", &HLT_IsoTkMu);
-            }
             t1->SetBranchAddress("evt_Gen_Weight", &evt_Gen_Weight);
-
             t1->SetBranchAddress("pu_NtrueInt",&pu_NtrueInt);
+
 
             t1->SetBranchAddress("met_size", &met_size);
             t1->SetBranchAddress("met_Pt", &met_pt);
@@ -253,24 +246,25 @@ void MuMu_reco_background_batch()
 
             char out_buff[10000];
             bool print_out = false;
-
+            printf("there are %i entries in this tree\n", nEntries);
             for (int i=0; i<nEntries; i++) {
                 t1->GetEntry(i);
-                if(mu_size > MU_SIZE) printf("WARNING: MU_SIZE TOO LARGE \n");
                 if(met_size != 1) printf("WARNING: Met size not equal to 1\n");
+                if(mu_size > MU_SIZE) printf("Warning: too many muons\n");
                 bool good_trigger = HLT_IsoMu || HLT_IsoTkMu;
+                //bool good_trigger = true;
                 if(good_trigger &&
                         mu_size >= 2 && ((abs(mu_Charge[0] - mu_Charge[1])) > 0.01) &&
                         mu_IsTightMuon[0] && mu_IsTightMuon[1] &&
                         mu_Pt[0] > 26. &&  mu_Pt[1] > 10. &&
                         abs(mu_Eta[0]) < 2.4 && abs(mu_Eta[1]) < 2.4){ 
-
+                    //only want events with 2 oppositely charged muons
+                    //with pt above threshold
                     //See https://twiki.cern.ch/twiki/bin/viewauth/CMS/SWGuideMuonIdRun2 for iso cuts
                     float iso_0 = (mu_SumChargedHadronPt[0] + max(0., mu_SumNeutralHadronPt[0] + mu_SumPhotonPt[0] - 0.5 * mu_SumPUPt[0]))/mu_Pt[0];
                     float iso_1 = (mu_SumChargedHadronPt[1] + max(0., mu_SumNeutralHadronPt[1] + mu_SumPhotonPt[1] - 0.5 * mu_SumPUPt[1]))/mu_Pt[1];
-                    float tight_iso = 0.15;
-                    float loose_iso = 0.25;
-                    //only want events with 2 oppositely charged muons
+                    const float tight_iso = 0.15;
+                    const float loose_iso = 0.25;
                     if(mu_Charge[0] >0){
                         mu_p.SetPtEtaPhiE(mu_Pt[0], mu_Eta[0], mu_Phi[0], mu_E[0]);
                         mu_m.SetPtEtaPhiE(mu_Pt[1], mu_Eta[1], mu_Phi[1], mu_E[1]);
@@ -282,127 +276,80 @@ void MuMu_reco_background_batch()
 
                     cm = mu_p + mu_m;
                     cm_m = cm.M();
-                    //met and cmva cuts to reduce ttbar background
-                    if (iso_0 < tight_iso && iso_1 < tight_iso && cm_m >=150.){
-                        if(PRINT) sprintf(out_buff + strlen(out_buff),"Event %i \n", i);
 
-                        //RECO LEVEL
-                        xF = abs(2.*cm.Pz()/13000.); 
+                    nJets =0;
+                    for(int j=0; j < jet_size; j++){
+                        if(jet_Pt[j] > 20. && std::abs(jet_Eta[j]) < 2.4){
+                            if(nJets == 1){
+                                jet2_pt = jet_Pt[j];
+                                jet2_eta = jet_Eta[j];
+                                jet2_cmva = jet_CMVA[j];
+                                nJets =2;
+                                break;
+                            }
+                            else if(nJets ==0){
+                                jet1_pt = jet_Pt[j];
+                                jet1_eta = jet_Eta[j];
+                                jet1_cmva = jet_CMVA[j];
+                                nJets = 1;
+                            }
+                        }
+                    }
+                    bool no_bjets = has_no_bjets(nJets, jet1_pt, jet2_pt, jet1_cmva, jet2_cmva);
+                    bool one_iso = (iso_0 < tight_iso) ^ (iso_1 < tight_iso);
+                    if (one_iso && cm_m >=150. && no_bjets && met_pt < 50.){
 
-                        // compute Colins soper angle with formula
-                        double mu_p_pls = (mu_p.E()+mu_p.Pz())/root2;
-                        double mu_p_min = (mu_p.E()-mu_p.Pz())/root2;
-                        double mu_m_pls = (mu_m.E()+mu_m.Pz())/root2;
-                        double mu_m_min = (mu_m.E()-mu_m.Pz())/root2;
-                        double qt2 = cm.Px()*cm.Px()+cm.Py()*cm.Py();
-                        double cm_m2 = cm.M2();
-                        //cost_p = cos(theta)_r (reconstructed collins soper angle, sign
-                        //may be 'wrong' if lepton pair direction is not the same as inital
-                        //quark direction)
-                        double cost = 2*(mu_m_pls*mu_p_min - mu_m_min*mu_p_pls)/sqrt(cm_m2*(cm_m2 + qt2));
-
-
-                        TLorentzVector p1(0., 0., Pbeam, Ebeam);
-                        TLorentzVector p2(0., 0., -Pbeam, Ebeam);
-
-
-
-
-                        //reconstruction sign flip
-                        if(cm.Pz() < 0.) cost_r = -cost;
-                        else cost_r = cost;
-
-
-
-                        gen_weight = evt_Gen_Weight * normalization;
                         mu1_pt = mu_Pt[0];
                         mu2_pt = mu_Pt[1];
                         mu1_eta = mu_Eta[0];
                         mu2_eta = mu_Eta[1];
 
-                        //pick out 2 highest pt jets with eta < 2.4
-                        nJets =0;
-                        for(int j=0; j < jet_size; j++){
-                            if(jet_Pt[j] > 20. && std::abs(jet_Eta[j]) < 2.4){
-                                if(nJets == 1){
-                                    jet2_pt = jet_Pt[j];
-                                    jet2_eta = jet_Eta[j];
-                                    jet2_cmva = jet_CMVA[j];
-                                    jet2_flavour = jet_partonflavour[j];
-                                    jet2_b_weight = get_btag_weight(jet_Pt[j], jet_Eta[j],jet_partonflavour[j],btag_effs, b_reader);
-                                    nJets =2;
-                                    break;
-                                }
-                                else if(nJets ==0){
-                                    jet1_pt = jet_Pt[j];
-                                    jet1_eta = jet_Eta[j];
-                                    jet1_cmva = jet_CMVA[j];
-                                    jet1_flavour = jet_partonflavour[j];
-                                    jet1_b_weight = get_btag_weight(jet_Pt[j], jet_Eta[j],jet_partonflavour[j],btag_effs, b_reader);
-                                    nJets = 1;
-                                }
-                            }
-                        }
+                        int iso_muon = 0; //which muon is isolated
+                        if(iso_0 < tight_iso) iso_muon = 0;
+                        else if(iso_1 < tight_iso) iso_muon = 1;
+                        else printf("ERROR: Neither muon iso\n");
 
-                        /*
-                           if(jet_size >=2) nJets = 2;
-                           else nJets = jet_size;
-                           if(jet_size >=1){
-                           jet1_pt = jet_Pt[0];
-                           jet1_cmva = jet_CMVA[0];
-                           }
-                           if(jet_size >=2){
-                           jet2_pt = jet_Pt[1];
-                           jet2_cmva = jet_CMVA[1];
-                           }
-                           */
-
-
-
-                        //get muon cut SFs
+                        double_muon_trig = HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL || HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL || HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ || HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ;
 
                         bcdef_HLT_SF = get_HLT_SF(mu1_pt, mu1_eta, mu2_pt, mu2_eta, runs_bcdef.HLT_SF, runs_bcdef.HLT_MC_EFF);
                         gh_HLT_SF = get_HLT_SF(mu1_pt, mu1_eta, mu2_pt, mu2_eta, runs_gh.HLT_SF, runs_gh.HLT_MC_EFF);
 
-                        bcdef_iso_SF = get_SF(mu1_pt, mu1_eta, runs_bcdef.ISO_SF) * get_SF(mu2_pt, mu2_eta, runs_bcdef.ISO_SF);
+                        bcdef_iso_SF = get_SF(mu_Pt[iso_muon], mu_Eta[iso_muon], runs_bcdef.ISO_SF);
                         bcdef_id_SF = get_SF(mu1_pt, mu1_eta, runs_bcdef.ID_SF) * get_SF(mu2_pt, mu2_eta, runs_bcdef.ID_SF);
 
-                        gh_iso_SF = get_SF(mu1_pt, mu1_eta, runs_gh.ISO_SF) * get_SF(mu2_pt, mu2_eta, runs_gh.ISO_SF);
+                        gh_iso_SF = get_SF(mu_Pt[iso_muon], mu_Eta[iso_muon], runs_gh.ISO_SF);
                         gh_id_SF = get_SF(mu1_pt, mu1_eta, runs_gh.ID_SF) * get_SF(mu2_pt, mu2_eta, runs_gh.ID_SF);
 
                         pu_SF = get_pileup_SF(pu_NtrueInt, pu_SFs.pileup_ratio);
 
+                        gen_weight = evt_Gen_Weight * pu_SF * normalization;
+                        Double_t bcdef_weight = gen_weight * bcdef_HLT_SF *  bcdef_id_SF * bcdef_iso_SF;
+                        Double_t gh_weight = gen_weight * gh_HLT_SF * gh_id_SF * gh_iso_SF;
+                        Double_t final_weight = (bcdef_weight *bcdef_lumi + gh_weight * gh_lumi)/(bcdef_lumi + gh_lumi);
+                        //printf("Gen_weight, final_weight: %.2e, %.2e \n", gen_weight, final_weight);
 
-                        tout->Fill();
+                        if(double_muon_trig) tot_double_trig_weight += final_weight;
+                        else tot_single_trig_weight += final_weight;
+
+
                         nEvents++;
-
-                        if(PRINT && print_out){
-                            sprintf(out_buff + strlen(out_buff), "\n\n");
-                            fputs(out_buff, stdout);
-                            print_out = false;
-                        }
-                        if(PRINT) memset(out_buff, 0, 10000);
+                        tout->Fill();
 
                     }
-                } 
-            }
 
+                }
+            }
             f1->Close();
-            printf("moving on to next file, currently %i events \n\n", nEvents);
         }
+        printf("moving on to next file, currently %i events \n double trig xsection is %.3e, single trig xsection is %.3e \n\n", nEvents, tot_double_trig_weight, tot_single_trig_weight);
     }
-    fclose(root_files);
-    printf("There were %i ttbar events in %i files.\n",
-            nEvents, nFiles);
+    printf("Final output for %s file \n", filename);
+    printf("Total double trig xsection is %.3e, single trig xsection is %.3e \n\n", tot_double_trig_weight, tot_single_trig_weight);
 
     TFile *fout = TFile::Open(fout_name, "RECREATE");
     fout->cd();
-
-
     tout->Write();
-
     printf("Writing output to file at %s \n", fout_name.Data());
-
     fout->Close();
 
     return;

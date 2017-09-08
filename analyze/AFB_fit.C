@@ -32,7 +32,7 @@ int n_m_bins = 1;
 int n_cost_bins = 10;
 Float_t cost_bins[] = {-1.0, -.8, -.6, -.4, -.2, 0., 0.2, 0.4, 0.6, 0.8, 1.0};
 
-int FLAG = FLAG_MUONS;
+int FLAG = FLAG_ELECTRONS;
 
 //int n_xf_bins = 4;
 //float xf_max = 1.0;
@@ -60,13 +60,13 @@ TH2F *h_mc_count, *h_sym_count;
 TAxis *x_ax, *y_ax, *z_ax;
 
 //MC templates
-TFile* f_mc = (TFile*) TFile::Open("output_files/MuMu_DY_aug28.root");
+TFile* f_mc = (TFile*) TFile::Open("output_files/ElEl_DY_sep8.root");
 TTree *t_mc = (TTree *) f_mc ->Get("T_data");
 TTree *t_nosig = (TTree *) f_mc ->Get("T_back");
-TFile* f_back = (TFile*) TFile::Open("output_files/MuMu_combined_back_aug28.root");
+TFile* f_back = (TFile*) TFile::Open("output_files/ElEl_combined_back_sep5.root");
 TTree *t_back = (TTree *) f_back ->Get("T_data");
 
-TFile *f_data = TFile::Open("output_files/SingleMuon_data_aug28.root");
+TFile *f_data = TFile::Open("output_files/SingleElectron_data_sep7.root");
 TTree *t_data = (TTree *)f_data->Get("T_data"); 
 
 

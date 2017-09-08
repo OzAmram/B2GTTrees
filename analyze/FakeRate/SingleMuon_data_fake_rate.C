@@ -10,8 +10,8 @@
 #define JET_SIZE 20
 
 const double root2 = sqrt(2);
-const char* filename("SingleMuon_files_aug17.txt");
-const TString fout_name("FakeRate/SingleMuon_data_fake_rate_aug22.root");
+const char* filename("SingleMuon_files_test.txt");
+const TString fout_name("FakeRate/SingleMuon_data_fake_rate_sep1_test.root");
 const double alpha = 0.05;
 
 const bool data_2016 = true;
@@ -74,6 +74,7 @@ void SingleMuon_data_fake_rate()
     unsigned int nEvents=0;
     unsigned int nPass=0;
     unsigned int nTrkIso=0;
+    unsigned int nLoose=0;
     while(fgets(lines, 300, root_files)){
         if(lines[0] == '#' || is_empty_line(lines)) continue; // comment line
         nFiles++;
@@ -180,12 +181,16 @@ void SingleMuon_data_fake_rate()
                 bool no_bjets = has_no_bjets(nJets, jet1_pt, jet2_pt, jet1_cmva, jet2_cmva);
                 float iso_0 = (mu_SumChargedHadronPt[0] + max(0., mu_SumNeutralHadronPt[0] + mu_SumPhotonPt[0] - 0.5 * mu_SumPUPt[0]))/mu_Pt[0];
                 const float tight_iso = 0.15;
+                const float loose_iso = 0.25;
 
                 if(no_bjets && met_pt < 50){
                     if(good_trigger){
                         if(iso_0 < tight_iso){
                             nPass++;
                             h_pass_HLT->Fill(abs(mu_Eta[0]), mu_Pt[0], 1);
+                        }
+                        else if (iso_0 < loose_iso){
+                            nLoose++;
                         }
                         h_total_HLT->Fill(abs(mu_Eta[0]), mu_Pt[0], 1);
                     }
@@ -210,7 +215,8 @@ void SingleMuon_data_fake_rate()
             nFiles, nPass, nEvents, 100*((float) nPass)/ ((float) nEvents));
     Double_t HLT_pass = (h_pass_HLT->Integral()) / (h_total_HLT->Integral());
     Double_t noHLT_pass = (h_pass_noHLT->Integral()) / (h_total_noHLT->Integral());
-    printf("HLT rate: %.0f%%. noHLT rate: %.0f%% \n", 100*HLT_pass, 100*noHLT_pass);
+    Double_t loose_frac = nLoose/ (h_total_HLT->Integral() + nPass);
+    printf("Loose Frac: %.0f%% HLT rate: %.0f%%. noHLT rate: %.0f%% \n", 100*loose_frac,  100*HLT_pass, 100*noHLT_pass);
 
     TH2D* h_rate_HLT = (TH2D *) h_pass_HLT->Clone("h_rate_HLT");
     h_rate_HLT->Divide(h_total_HLT);

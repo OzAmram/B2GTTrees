@@ -100,12 +100,13 @@ void EMu_background_check()
     printf("Done with normalizations \n\n\n");
 
     printf("getting SFs \n");
+    pileup_SFs pu_SFs;
     mu_SFs runs_bcdef, runs_gh;
     BTag_readers b_reader;
     BTag_effs btag_effs;
     el_SFs el_SF;
     //separate SFs for runs BCDEF and GH
-    setup_SFs(&runs_bcdef, &runs_gh, &b_reader, &btag_effs);
+    setup_SFs(&runs_bcdef, &runs_gh, &b_reader, &btag_effs, &pu_SFs);
     setup_el_SF(&el_SF);
     printf("got Sfs\n");
 
@@ -113,7 +114,7 @@ void EMu_background_check()
     Double_t cm_m, xF, cost_r, mu1_pt, el1_pt, jet1_pt, jet2_pt, gen_weight,
              jet1_cmva, jet2_cmva, mu1_eta, el1_eta, jet1_eta, jet2_eta;
     Double_t bcdef_HLT_SF, bcdef_iso_SF, bcdef_id_SF, gh_HLT_SF, gh_iso_SF, gh_id_SF,
-             el_id_SF, btag_weight, jet1_b_weight, jet2_b_weight;
+             el_id_SF, btag_weight, jet1_b_weight, jet2_b_weight, pu_SFs;
     Float_t met_pt;
     Int_t nJets, jet1_flavour, jet2_flavour;
     Bool_t mu_trigger;
@@ -135,6 +136,7 @@ void EMu_background_check()
     tout->Branch("jet2_flavour", &jet2_flavour, "jet2_flavour/I");
     tout->Branch("met_pt", &met_pt, "met_Pt/F");
     tout->Branch("gen_weight", &gen_weight, "gen_weight/D");
+    tout->Branch("pu_SF", &pu_SF);
     tout->Branch("bcdef_HLT_SF", &bcdef_HLT_SF);
     tout->Branch("bcdef_iso_SF", &bcdef_iso_SF);
     tout->Branch("bcdef_id_SF", &bcdef_id_SF);
@@ -182,9 +184,15 @@ void EMu_background_check()
 
             printf("Opening file: %s \n", lines);
             TFile *f1=  TFile::Open(lines);
-            f1->cd("B2GTTreeMaker");
+
+            f1->cd("EventCounter");
             TDirectory *subdir = gDirectory;
-            TTree *t1 = (TTree *)subdir->Get("B2GTree");
+            TH1D *mc_pileup = (TH1D *)subdir->Get("pileup");
+            mc_pileup->Scale(1./mc_pileup->Integral());
+            pu_SFs.pileup_ratio->Divide(pu_SFs.data_pileup, mc_pileup);
+
+            f1->cd("B2GTTreeMaker");
+            TTree *t1 = (TTree *)gDirectory->Get("B2GTree");
 
 
             UInt_t mu_size, jet_size, el_size, met_size;
@@ -206,7 +214,7 @@ void EMu_background_check()
 
             Float_t evt_Gen_Weight;
 
-            Int_t HLT_IsoMu, HLT_IsoTkMu, HLT_Ele23_WPLoose_Gsf;
+            Int_t HLT_IsoMu, HLT_IsoTkMu, HLT_Ele23_WPLoose_Gsf, pu_NtrueInt;
             t1->SetBranchAddress("mu_size", &mu_size); //number of muons in the event
             t1->SetBranchAddress("mu_Pt", &mu_Pt);
             t1->SetBranchAddress("mu_Eta", &mu_Eta);
@@ -257,6 +265,7 @@ void EMu_background_check()
             t1->SetBranchAddress("HLT_Ele23_WPLoose_Gsf", &HLT_Ele23_WPLoose_Gsf);
 
             t1->SetBranchAddress("evt_Gen_Weight", &evt_Gen_Weight);
+            t1->SetBranchAddress("pu_NtrueInt",&pu_NtrueInt);
 
 
             t1->SetBranchAddress("met_size", &met_size);
@@ -356,6 +365,8 @@ void EMu_background_check()
                         gh_id_SF = get_SF(mu1_pt, mu1_eta, runs_gh.ID_SF);
 
                         el_id_SF = get_el_SF(el1_pt, el1_eta, el_SF.h);
+
+                        pu_SF = get_pileup_SF(pu_NtrueInt, pu_SFs.pileup_ratio);
 
                         tout->Fill();
                         nEvents++;

@@ -93,18 +93,20 @@ void SingleMuon_MC()
     compute_norms(norms, &nFiles);
     printf("Done with normalizations \n\n\n");
 
-    SFs runs_bcdef, runs_gh;
+    mu_SFs runs_bcdef, runs_gh;
+    pileup_SFs pu_SFs;
     BTag_readers b_reader;
     BTag_effs btag_effs;
+    el_SFs el_SF;
     //separate SFs for runs BCDEF and GH
-    setup_SFs(&runs_bcdef, &runs_gh, &b_reader, &btag_effs);
+    setup_SFs(&runs_bcdef, &runs_gh, &b_reader, &btag_effs, &pu_SFs);
     printf("Retrieved Scale Factors \n\n");
 
     //TFile *fout = TFile::Open(fout_name, "RECREATE");
     Double_t cm_m, xF, cost_r, mu1_pt, mu2_pt, mu1_eta, mu2_eta, jet1_pt, jet2_pt, deltaC, jet1_eta, jet2_eta, gen_weight,
              jet1_cmva, jet1_csv, jet2_cmva, jet2_csv;
     Double_t bcdef_HLT_SF, bcdef_iso_SF, bcdef_id_SF, gh_HLT_SF, gh_iso_SF, gh_id_SF,
-             jet1_b_weight, jet2_b_weight;
+             jet1_b_weight, jet2_b_weight, pu_SF;
     Int_t nJets, jet1_flavour, jet2_flavour;
     Float_t met_pt;
     TLorentzVector mu_p, mu_m, cm, q1, q2;
@@ -145,9 +147,15 @@ void SingleMuon_MC()
 
             printf("Opening file: %s \n", lines);
             TFile *f1=  TFile::Open(lines);
-            f1->cd("B2GTTreeMaker");
+
+            f1->cd("EventCounter");
             TDirectory *subdir = gDirectory;
-            TTree *t1 = (TTree *)subdir->Get("B2GTree");
+            TH1D *mc_pileup = (TH1D *)subdir->Get("pileup");
+            mc_pileup->Scale(1./mc_pileup->Integral());
+            pu_SFs.pileup_ratio->Divide(pu_SFs.data_pileup, mc_pileup);
+
+            f1->cd("B2GTTreeMaker");
+            TTree *t1 = (TTree *)gDirectory->Get("B2GTree");
 
 
             UInt_t mu_size, jet_size, met_size;
@@ -162,7 +170,7 @@ void SingleMuon_MC()
 
             Float_t evt_Gen_Weight;
 
-            Int_t HLT_IsoMu, HLT_IsoTkMu;
+            Int_t HLT_IsoMu, HLT_IsoTkMu, pu_NtrueInt;
             t1->SetBranchAddress("mu_size", &mu_size); //number of muons in the event
             t1->SetBranchAddress("mu_Pt", &mu_Pt);
             t1->SetBranchAddress("mu_Eta", &mu_Eta);
@@ -203,6 +211,7 @@ void SingleMuon_MC()
                 t1->SetBranchAddress("HLT_IsoTkMu20", &HLT_IsoTkMu);
             }
             t1->SetBranchAddress("evt_Gen_Weight", &evt_Gen_Weight);
+            t1->SetBranchAddress("pu_NtrueInt",&pu_NtrueInt);
 
 
             t1->SetBranchAddress("met_size", &met_size);
@@ -254,6 +263,7 @@ void SingleMuon_MC()
                     if(no_bjets && met_pt < 50){
                         mu1_pt = mu_Pt[0];
                         mu1_eta = abs(mu_Eta[0]);
+                        pu_SF = get_pileup_SF(pu_NtrueInt, pu_SFs.pileup_ratio);
                         bcdef_HLT_SF = get_HLT_SF_1mu(mu1_pt, mu1_eta, runs_bcdef.HLT_SF, runs_bcdef.HLT_MC_EFF);
                         gh_HLT_SF = get_HLT_SF_1mu(mu1_pt, mu1_eta, runs_gh.HLT_SF, runs_gh.HLT_MC_EFF);
 
