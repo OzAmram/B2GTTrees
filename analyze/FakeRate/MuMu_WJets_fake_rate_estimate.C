@@ -248,6 +248,7 @@ void MuMu_WJets_fake_rate_estimate()
                     else printf("ERROR: Neither muon iso\n");
 
                     double_muon_trig = HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL || HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL || HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ || HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ;
+                    /*
                     if(double_muon_trig){
                         for(int k =2; k < mu_size; k++){
                             if(mu_Pt[k] > 8.){
@@ -256,16 +257,9 @@ void MuMu_WJets_fake_rate_estimate()
                             }
                         }
                     }
+                        */
 
-                    Double_t p1, p2;
-                    if(double_muon_trig){
-                        mu_fakerate = get_fakerate_prob(mu_Pt[iso_muon], mu_Eta[iso_muon], FR.HLT);
-                        printf("Double trig ");
-                    }
-                    else{
-                        printf("Single Trig ");
-                        mu_fakerate = get_fakerate_prob(mu_Pt[iso_muon], mu_Eta[iso_muon], FR.noHLT);
-                    }
+                    mu_fakerate = get_fakerate_prob(mu_Pt[iso_muon], mu_Eta[iso_muon], FR.noHLT);
                     //Double_t prob_WJets = 7.39e-02 / (2.031e-1 + 7.39e-02);
                     //printf("prob %.3f \n", prob_WJets);
                     evt_fakerate = mu_fakerate / (1-mu_fakerate);

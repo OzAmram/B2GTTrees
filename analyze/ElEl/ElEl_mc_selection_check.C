@@ -1,3 +1,4 @@
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
@@ -17,7 +18,7 @@ double Ebeam = 6500.;
 double Pbeam = sqrt(Ebeam*Ebeam - 0.938*0.938);
 
 char *filename("DY_files_aug29.txt");
-const TString fout_name("output_files/ElEl_DY_sep25.root");
+const TString fout_name("output_files/ElEl_selection_check_sep13.root");
 const double alpha = 0.05;
 const bool PRINT=false;
 
@@ -89,7 +90,7 @@ void compute_norms(Double_t *norms, unsigned int *nFiles){
 
 
 
-void ElEl_reco_mc_batch()
+void ElEl_mc_selection_check()
 {
 
     Double_t norms[MAX_SAMPLES]; // computed normalizations to apply to each event in a sample (based on xsection and total weight)
@@ -180,6 +181,10 @@ void ElEl_reco_mc_batch()
     t_back->Branch("is_tau_event", &is_tau_event);
 
 
+    TH1F *el_p_dr = new TH1F("el_p_dr", "DeltaR, reco elon and gen elon", 20,0,1);
+    TH1F *el_m_dr = new TH1F("el_m_dr", "DeltaR, reco elon and gen elon", 20,0,1);
+    el_p_dr->SetDirectory(0);
+    el_m_dr->SetDirectory(0);
 
 
     unsigned int nEvents=0;
@@ -253,7 +258,7 @@ void ElEl_reco_mc_batch()
 
             Float_t evt_Gen_Weight;
 
-            Int_t HLT_El, pu_NtrueInt;
+            Int_t HLT_Ele23_WPLoose_Gsf, pu_NtrueInt;
             t1->SetBranchAddress("el_size", &el_size); //number of els in the event
             t1->SetBranchAddress("el_Pt", &el_Pt);
             t1->SetBranchAddress("el_Eta", &el_Eta);
@@ -261,7 +266,7 @@ void ElEl_reco_mc_batch()
             t1->SetBranchAddress("el_E", &el_E);
             t1->SetBranchAddress("el_Charge", &el_Charge);
             t1->SetBranchAddress("el_IDMedium", &el_IDMedium);
-            t1->SetBranchAddress("HLT_Ele27_WPTight_Gsf", &HLT_El);
+            t1->SetBranchAddress("HLT_Ele23_WPLoose_Gsf", &HLT_Ele23_WPLoose_Gsf);
 
 
             t1->SetBranchAddress("jetAK4CHS_size", &jet_size);
@@ -308,11 +313,11 @@ void ElEl_reco_mc_batch()
                 t1->GetEntry(i);
                 if(el_size > EL_SIZE || gen_size >GEN_SIZE) printf("WARNING: EL_SIZE OR GEN_SIZE TOO LARGE \n");
                 if(met_size != 1) printf("WARNING: Met size not equal to 1\n");
-                bool good_trigger = HLT_El;
+                bool good_trigger = HLT_Ele23_WPLoose_Gsf;
                 if(good_trigger &&
                         el_size >= 2 && ((abs(el_Charge[0] - el_Charge[1])) > 0.01) &&
                         el_IDMedium[0] && el_IDMedium[1] &&
-                        el_Pt[0] > 29. &&  el_Pt[1] > 10. &&
+                        el_Pt[0] > 26. &&  el_Pt[1] > 10. &&
                         abs(el_Eta[0]) < 2.4 && abs(el_Eta[1]) < 2.4){ 
 
                     //only want events with 2 oppositely charged leptons
@@ -741,8 +746,33 @@ void ElEl_reco_mc_batch()
                             //anti-symmetric template has computed weight and is 
                             //anti-symmetrized by flipping the sign of the weight and the bin
                             //in c_r
-                            reweight = (4./3.)*cost_st*(2. + alpha)/
-                                (1. + cost_st*cost_st + alpha*(1.- cost_st*cost_st));
+                            TLorentzVector gen_el_p_vec, gen_el_m_vec;
+                            gen_el_p_vec.SetPtEtaPhiE(gen_Pt[gen_el_p], gen_Eta[gen_el_p], gen_Phi[gen_el_p], gen_E[gen_el_p]);
+                            gen_el_m_vec.SetPtEtaPhiE(gen_Pt[gen_el_m], gen_Eta[gen_el_m], gen_Phi[gen_el_m], gen_E[gen_el_m]);
+                            float dr_p = gen_el_p_vec.DeltaR(el_p);
+                            float dr_m = gen_el_m_vec.DeltaR(el_m);
+                            el_p_dr->Fill(dr_p, gen_weight);
+                            el_m_dr->Fill(dr_m, gen_weight);
+                            bool evt_missmatched = false;
+                            for(int j=2; j < el_size; j++){
+                                TLorentzVector el_j;
+                                el_j.SetPtEtaPhiE(el_Pt[j], el_Eta[j], el_Phi[j], el_E[j]);
+                                float dr_j;
+                                if(el_Charge[j] <0){
+                                    dr_j = gen_el_m_vec.DeltaR(el_j);
+                                    if (dr_j < dr_m && !evt_missmatched){ 
+                                        evt_missmatched = true;
+                                        mismatch++;
+                                    }
+                                }
+                                else{
+                                    dr_j = gen_el_p_vec.DeltaR(el_j);
+                                    if(dr_j < dr_p && !evt_missmatched){
+                                        evt_missmatched= true;
+                                        mismatch++;
+                                    }
+                                } 
+                            }
                             nSignal++;
                             t_signal->Fill();
                         }
@@ -764,7 +794,7 @@ void ElEl_reco_mc_batch()
             }
 
             f1->Close();
-            printf("moving on to next file, currently %i events %i Taus %i fails \n\n", nEvents, nTauTau, nFailedID);
+            printf("moving on to next file, currently %i events %i Taus %i fails %i mismatch \n\n", nEvents, nTauTau, nFailedID, mismatch);
         }
     }
     fclose(root_files);
@@ -781,6 +811,8 @@ void ElEl_reco_mc_batch()
 
     t_signal->Write();
     t_back->Write();
+    el_p_dr->Write();
+    el_m_dr->Write();
 
 
     printf("Writing output to file at %s \n", fout_name.Data());

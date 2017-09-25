@@ -16,8 +16,8 @@ const double root2 = sqrt(2);
 double Ebeam = 6500.;
 double Pbeam = sqrt(Ebeam*Ebeam - 0.938*0.938);
 
-char *filename("WT_files_aug29.txt");
-const TString fout_name("output_files/ElEl_WT_sep7.root");
+char *filename("TTbar_files_aug29.txt");
+const TString fout_name("output_files/ElEl_TTbar_sep20.root");
 const double alpha = 0.05;
 const bool PRINT=false;
 
@@ -197,7 +197,7 @@ void ElEl_reco_background_batch()
 
             Float_t evt_Gen_Weight;
 
-            Int_t HLT_Ele23_WPLoose_Gsf, pu_NtrueInt;
+            Int_t HLT_El, pu_NtrueInt;
             t1->SetBranchAddress("el_size", &el_size); //number of els in the event
             t1->SetBranchAddress("el_Pt", &el_Pt);
             t1->SetBranchAddress("el_Eta", &el_Eta);
@@ -205,7 +205,7 @@ void ElEl_reco_background_batch()
             t1->SetBranchAddress("el_E", &el_E);
             t1->SetBranchAddress("el_Charge", &el_Charge);
             t1->SetBranchAddress("el_IDMedium", &el_IDMedium);
-            t1->SetBranchAddress("HLT_Ele23_WPLoose_Gsf", &HLT_Ele23_WPLoose_Gsf);
+            t1->SetBranchAddress("HLT_Ele27_WPTight_Gsf", &HLT_El);
 
 
             if(data_2016){
@@ -246,11 +246,11 @@ void ElEl_reco_background_batch()
                 t1->GetEntry(i);
                 if(el_size > EL_SIZE) printf("WARNING: MU_SIZE TOO LARGE \n");
                 if(met_size != 1) printf("WARNING: Met size not equal to 1\n");
-                bool good_trigger = HLT_Ele23_WPLoose_Gsf;
+                bool good_trigger = HLT_El;
                 if(good_trigger &&
                         el_size >= 2 && ((abs(el_Charge[0] - el_Charge[1])) > 0.01) &&
                         el_IDMedium[0] && el_IDMedium[1] &&
-                        el_Pt[0] > 26. &&  el_Pt[1] > 10. &&
+                        el_Pt[0] > 29. &&  el_Pt[1] > 10. &&
                         abs(el_Eta[0]) < 2.4 && abs(el_Eta[1]) < 2.4){ 
 
                     //only want events with 2 oppositely charged leptons

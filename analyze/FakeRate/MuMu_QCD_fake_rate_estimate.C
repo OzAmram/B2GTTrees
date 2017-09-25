@@ -59,7 +59,7 @@ Double_t get_fakerate_prob(Double_t pt, Double_t eta, TH2D *h){
     return prob;
 }
 
-void MuMu_fake_rate_estimate()
+void MuMu_QCD_fake_rate_estimate()
 {
     FakeRate FR;
     setup_fakerate(&FR);
@@ -243,6 +243,7 @@ void MuMu_fake_rate_estimate()
 
 
                     double_muon_trig = HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL || HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL || HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ || HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ;
+                    /*
                     if(double_muon_trig){
                         for(int k =2; k < mu_size; k++){
                             if(mu_Pt[k] > 8.){
@@ -251,15 +252,15 @@ void MuMu_fake_rate_estimate()
                             }
                         }
                     }
+                    */
 
                     Double_t p1, p2;
-                    if(double_muon_trig){
-                        mu1_fakerate = get_fakerate_prob(mu1_pt, mu1_eta, FR.HLT);
-                        mu2_fakerate = get_fakerate_prob(mu2_pt, mu2_eta, FR.HLT);
-                        printf("Double trig ");
+                    if(mu2_pt < 25){
+                        //mu1 definitely set off trigger
+                        mu1_fakerate = std::min(get_fakerate_prob(mu1_pt, mu1_eta, FR.HLT), 0.97);
+                        mu2_fakerate = get_fakerate_prob(mu2_pt, mu2_eta, FR.noHLT);
                     }
                     else{
-                        printf("Single Trig ");
                        mu1_fakerate = FR.HLT_avg;
                        mu2_fakerate = FR.noHLT_avg;
                     }
