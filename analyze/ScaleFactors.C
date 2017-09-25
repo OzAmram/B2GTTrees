@@ -37,7 +37,8 @@ typedef struct {
 } pileup_SFs;
 
 typedef struct{
-    TH2D *h;
+    TH2D *ID_SF;
+    TH2D *RECO_SF;
 } el_SFs;
 
 
@@ -347,12 +348,20 @@ void setup_SFs(mu_SFs *runs_BCDEF, mu_SFs *runs_GH, BTag_readers *btag_r, BTag_e
 
 void setup_el_SF(el_SFs *sf){
     //Setup electron SF's
-    TFile *f7 = TFile::Open("SFs/egammaEffi_vid.root");
+    TFile *f7 = TFile::Open("SFs/egammaEffi_cutbasedID.root");
     TDirectory *subdir7 = gDirectory;
-    TH2D *h = (TH2D *) subdir7->Get("EGamma_SF2D")->Clone();
-    h->SetDirectory(0);
-    sf->h = h;
+    TH2D *h1 = (TH2D *) subdir7->Get("EGamma_SF2D")->Clone();
+    h1->SetDirectory(0);
+    sf->ID_SF = h1;
     f7->Close();
     //el_SF->Print();
+    //
+
+    TFile *f8 = TFile::Open("SFs/egammaEffi_Reconstruction.root");
+    TDirectory *subdir8 = gDirectory;
+    TH2D *h2 = (TH2D *) subdir8->Get("EGamma_SF2D")->Clone();
+    h2->SetDirectory(0);
+    sf->RECO_SF = h2;
+    f8->Close();
 }
 

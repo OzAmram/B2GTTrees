@@ -39,17 +39,11 @@ void draw_cmp(){
     TFile *f_ttbar = TFile::Open("../analyze/output_files/MuMu_TTbar_aug30.root");
     TTree *t_ttbar = (TTree *)f_ttbar->Get("T_data");
 
-    TFile *f_QCD = TFile::Open("../analyze/output_files/MuMu_QCD_est_aug29.root");
+    TFile *f_QCD = TFile::Open("../analyze/output_files/MuMu_QCD_est_sep20.root");
     TTree *t_QCD = (TTree *)f_QCD->Get("T_data");
 
-    /*
-    TFile *f_ww = TFile::Open("../analyze/output_files/WW_background_jun06.root");
-    TTree *t_ww = (TTree *)f_ww->Get("T_data");
-    TFile *f_wz = TFile::Open("../analyze/output_files/WZ_background_jun06.root");
-    TTree *t_wz = (TTree *)f_wz->Get("T_data");
-    TFile *f_zz = TFile::Open("../analyze/output_files/ZZ_background_jun06.root");
-    TTree *t_zz = (TTree *)f_zz->Get("T_data");
-    */
+    TFile *f_WJets = TFile::Open("../analyze/output_files/MuMu_Wjets_est_sep20.root");
+    TTree *t_WJets = (TTree *)f_WJets->Get("T_data");
 
     TFile *f_diboson = TFile::Open("../analyze/output_files/MuMu_diboson_aug30.root");
     TTree *t_diboson = (TTree *)f_diboson->Get("T_data");
@@ -115,6 +109,9 @@ void draw_cmp(){
     TH1F *QCD_m = new TH1F("QCD_m", "QCD", 30, 150, 2000);
     TH1F *QCD_cost = new TH1F("QCD_cost", "QCD", 40, -1,1);
 
+    TH1F *WJets_m = new TH1F("WJets_m", "WJets", 30, 150, 2000);
+    TH1F *WJets_cost = new TH1F("WJets_cost", "WJets", 40, -1,1);
+
     TH1F *wt_m = new TH1F("wt_m", "tw + #bar{t}w", 30, 150, 2000);
     TH1F *wt_cost = new TH1F("wt_cost", "tw + #bar{t}w", 40, -1,1);
 
@@ -128,6 +125,8 @@ void draw_cmp(){
     make_m_cost_hist(t_ttbar, ttbar_m, ttbar_cost, false);
 
     make_m_cost_hist(t_QCD, QCD_m, QCD_cost, true, FLAG_QCD);
+    
+    make_m_cost_hist(t_WJets, WJets_m, WJets_cost, true, FLAG_WJETS);
 
 
     make_m_cost_hist(t_diboson, diboson_m, diboson_cost, false, FLAG_MUONS);
@@ -147,6 +146,9 @@ void draw_cmp(){
     
     QCD_m->SetFillColor(kRed -7);
     QCD_cost->SetFillColor(kRed -7);
+
+    QCD_m->Add(WJets_m);
+    QCD_cost->Add(WJets_cost);
 
     //mc_m->Draw();
     
@@ -222,7 +224,7 @@ void draw_cmp(){
     leg1->AddEntry(mc_nosig_m, "DY no asymmety(gg, qq, #bar{q}#bar{q})", "f");
     leg1->AddEntry(diboson_m, "WW + WZ + ZZ", "f");
     leg1->AddEntry(wt_m, "tW + #bar{t}W", "f");
-    leg1->AddEntry(QCD_m, "QCD", "f");
+    leg1->AddEntry(QCD_m, "QCD + WJets", "f");
     leg1->AddEntry(ttbar_m, "t#bar{t}", "f");
     leg1->Draw();
 
@@ -304,7 +306,7 @@ void draw_cmp(){
     leg2->AddEntry(mc_nosig_m, "DY no asymmety(gg, qq, #bar{q}#bar{q})", "f");
     leg2->AddEntry(diboson_m, "WW + WZ + ZZ", "f");
     leg2->AddEntry(wt_m, "tW + #bar{t}W", "f");
-    leg2->AddEntry(QCD_m, "QCD", "f");
+    leg2->AddEntry(QCD_m, "QCD + WJets", "f");
     leg2->AddEntry(ttbar_m, "t#bar{t}", "f");
     leg2->Draw();
 

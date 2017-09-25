@@ -113,7 +113,7 @@ void ElEl_reco_mc_batch()
     TTree *t_signal= new TTree("T_data", "Tree with asym events (qq bar, qg)");
     Double_t cm_m, xF, cost_r, cost_st, el1_pt, el2_pt, el1_eta, el2_eta, jet1_pt, jet2_pt, jet1_eta, jet2_eta, deltaC, 
              gen_weight, reweight, jet1_csv, jet1_cmva, jet2_csv, jet2_cmva;
-    Double_t el_id_SF, jet1_b_weight, jet2_b_weight, pu_SF;
+    Double_t el_id_SF, el_reco_SF, jet1_b_weight, jet2_b_weight, pu_SF;
     Int_t nJets, jet1_flavour, jet2_flavour;
     Bool_t is_tau_event;
     Float_t met_pt;
@@ -143,6 +143,7 @@ void ElEl_reco_mc_batch()
     t_signal->Branch("jet1_b_weight", &jet1_b_weight);
     t_signal->Branch("jet2_b_weight", &jet2_b_weight);
     t_signal->Branch("el_id_SF", &el_id_SF);
+    t_signal->Branch("el_reco_SF", &el_reco_SF);
     t_signal->Branch("nJets", &nJets, "nJets/I");
     t_signal->Branch("jet1_flavour", &jet1_flavour, "jet1_flavour/I");
     t_signal->Branch("jet2_flavour", &jet2_flavour, "jet2_flavour/I");
@@ -172,6 +173,7 @@ void ElEl_reco_mc_batch()
     t_back->Branch("pu_SF", &pu_SF);
     t_back->Branch("reweight", &reweight, "reweight/D");
     t_back->Branch("el_id_SF", &el_id_SF);
+    t_back->Branch("el_reco_SF", &el_reco_SF);
     t_back->Branch("jet1_b_weight", &jet1_b_weight);
     t_back->Branch("jet2_b_weight", &jet2_b_weight);
     t_back->Branch("nJets", &nJets, "nJets/I");
@@ -715,7 +717,8 @@ void ElEl_reco_mc_batch()
 
                         //get el cut SFs
 
-                        el_id_SF = get_el_SF(el1_pt, el1_eta, el_SF.h) * get_el_SF(el2_pt, el2_eta, el_SF.h);
+                        el_id_SF = get_el_SF(el1_pt, el1_eta, el_SF.ID_SF) * get_el_SF(el2_pt, el2_eta, el_SF.ID_SF);
+                        el_reco_SF = get_el_SF(el1_pt, el1_eta, el_SF.RECO_SF) * get_el_SF(el2_pt, el2_eta, el_SF.RECO_SF);
                         pu_SF = get_pileup_SF(pu_NtrueInt, pu_SFs.pileup_ratio);
 
 

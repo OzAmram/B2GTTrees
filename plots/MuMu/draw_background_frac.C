@@ -87,6 +87,7 @@ void draw_background_frac(){
     make_m_cost_hist(t_mc, mc_m, mc_cost, false);
     make_m_cost_hist(t_mc_nosig, mc_nosig_m, mc_nosig_cost, false);
     make_m_cost_hist(t_ttbar, ttbar_m, ttbar_cost, false);
+    make_m_cost_hist(t_wt, wt_m, wt_cost, false);
     make_m_cost_hist(t_diboson, diboson_m, diboson_cost, false);
     make_m_cost_hist(t_QCD, QCD_m, QCD_cost, true, FLAG_QCD);
 
