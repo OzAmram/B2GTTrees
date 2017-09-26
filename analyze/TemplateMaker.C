@@ -328,7 +328,7 @@ int gen_combined_background_template(int nTrees, TTree **ts, TH2F* h,
 
         Double_t m, xF, cost, mu1_pt, mu2_pt, jet1_cmva, jet2_cmva, gen_weight;
         Double_t bcdef_HLT_SF, bcdef_iso_SF, bcdef_id_SF;
-        Double_t gh_HLT_SF, gh_iso_SF, gh_id_SF, el_id_S, el_reco_SF;
+        Double_t gh_HLT_SF, gh_iso_SF, gh_id_SF, el_id_SF, el_reco_SF;
         Double_t jet1_pt, jet2_pt, jet1_b_weight, jet2_b_weight, pu_SF;
         Float_t cost_pt, met_pt;
         Int_t nJets;
