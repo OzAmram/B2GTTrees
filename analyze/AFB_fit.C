@@ -32,7 +32,7 @@ int n_m_bins = 1;
 int n_cost_bins = 10;
 Float_t cost_bins[] = {-1.0, -.8, -.6, -.4, -.2, 0., 0.2, 0.4, 0.6, 0.8, 1.0};
 
-int FLAG = FLAG_MUONS;
+int FLAG = FLAG_ELECTRONS;
 
 //int n_xf_bins = 4;
 //float xf_max = 1.0;
@@ -43,8 +43,8 @@ int FLAG = FLAG_MUONS;
 //Float_t cost_bins[] = {-1.0, -.75, -.5, -.25, 0., 0.25, 0.5, 0.75, 1.0};
 
 
-float m_low = 950;
-float m_high = 10000;
+float m_low = 700;
+float m_high = 1000000;
 //alpha = 0.0981;
 
 bool print = true;
@@ -60,16 +60,15 @@ TH2F *h_mc_count, *h_sym_count;
 TAxis *x_ax, *y_ax, *z_ax;
 
 //MC templates
-/*
-TFile* f_mc = (TFile*) TFile::Open("output_files/ElEl_DY_sep8.root");
+TFile* f_mc = (TFile*) TFile::Open("output_files/ElEl_DY_sep25.root");
 TTree *t_mc = (TTree *) f_mc ->Get("T_data");
 TTree *t_nosig = (TTree *) f_mc ->Get("T_back");
-TFile* f_back = (TFile*) TFile::Open("output_files/ElEl_combined_back_sep5.root");
+TFile* f_back = (TFile*) TFile::Open("output_files/ElEl_combined_back_sep25.root");
 TTree *t_back = (TTree *) f_back ->Get("T_data");
 
-TFile *f_data = TFile::Open("output_files/SingleElectron_data_sep7.root");
+TFile *f_data = TFile::Open("output_files/SingleElectron_data_sep22.root");
 TTree *t_data = (TTree *)f_data->Get("T_data"); 
-*/
+/*
 TFile* f_mc = (TFile*) TFile::Open("output_files/MuMu_DY_sep8.root");
 TTree *t_mc = (TTree *) f_mc ->Get("T_data");
 TTree *t_nosig = (TTree *) f_mc ->Get("T_back");
@@ -78,6 +77,7 @@ TTree *t_back = (TTree *) f_back ->Get("T_data");
 
 TFile *f_data = TFile::Open("output_files/SingleMuon_data_aug28.root");
 TTree *t_data = (TTree *)f_data->Get("T_data"); 
+*/
 
 
 vector<double> v_xF;

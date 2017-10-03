@@ -114,7 +114,7 @@ void EMu_background_check()
     Double_t cm_m, xF, cost_r, mu1_pt, el1_pt, jet1_pt, jet2_pt, gen_weight,
              jet1_cmva, jet2_cmva, mu1_eta, el1_eta, jet1_eta, jet2_eta;
     Double_t bcdef_HLT_SF, bcdef_iso_SF, bcdef_id_SF, gh_HLT_SF, gh_iso_SF, gh_id_SF,
-             el_id_SF, btag_weight, jet1_b_weight, jet2_b_weight, pu_SFs;
+             el_id_SF, el_reco_SF, btag_weight, jet1_b_weight, jet2_b_weight, pu_SFs;
     Float_t met_pt;
     Int_t nJets, jet1_flavour, jet2_flavour;
     Bool_t mu_trigger;
@@ -144,6 +144,7 @@ void EMu_background_check()
     tout->Branch("gh_iso_SF", &gh_iso_SF);
     tout->Branch("gh_id_SF", &gh_id_SF);
     tout->Branch("el_id_SF", &el_id_SF);
+    tout->Branch("el_reco_SF", &el_reco_SF);
     tout->Branch("jet1_b_weight", &jet1_b_weight);
     tout->Branch("jet2_b_weight", &jet2_b_weight);
     tout->Branch("btag_weight", &btag_weight);
@@ -214,7 +215,7 @@ void EMu_background_check()
 
             Float_t evt_Gen_Weight;
 
-            Int_t HLT_IsoMu, HLT_IsoTkMu, HLT_Ele23_WPLoose_Gsf, pu_NtrueInt;
+            Int_t HLT_IsoMu, HLT_IsoTkMu, HLT_El, pu_NtrueInt;
             t1->SetBranchAddress("mu_size", &mu_size); //number of muons in the event
             t1->SetBranchAddress("mu_Pt", &mu_Pt);
             t1->SetBranchAddress("mu_Eta", &mu_Eta);
@@ -262,7 +263,7 @@ void EMu_background_check()
 
             t1->SetBranchAddress("HLT_IsoMu24", &HLT_IsoMu);
             t1->SetBranchAddress("HLT_IsoTkMu24", &HLT_IsoTkMu);
-            t1->SetBranchAddress("HLT_Ele23_WPLoose_Gsf", &HLT_Ele23_WPLoose_Gsf);
+            t1->SetBranchAddress("HLT_Ele27_WPTight_Gsf", &HLT_El);
 
             t1->SetBranchAddress("evt_Gen_Weight", &evt_Gen_Weight);
             t1->SetBranchAddress("pu_NtrueInt",&pu_NtrueInt);
@@ -281,14 +282,14 @@ void EMu_background_check()
                 t1->GetEntry(i);
                 if(mu_size > MU_SIZE) printf("WARNING: MU_SIZE TOO LARGE \n");
                 if(met_size != 1) printf("WARNING: Met size not equal to 1\n");
-                bool good_trigger = HLT_IsoMu || HLT_IsoTkMu || HLT_Ele23_WPLoose_Gsf;
+                bool good_trigger = HLT_IsoMu || HLT_IsoTkMu || HLT_El;
                 mu_trigger = HLT_IsoMu || HLT_IsoTkMu;
                 if(good_trigger &&
                         mu_size >= 1 && el_size >=1 && 
                         ((abs(mu_Charge[0] - el_Charge[0])) > 0.01) &&
                         mu_IsTightMuon[0] &&
                         el_Pt[0] > 10. && mu_Pt[0] > 10. &&
-                        ((HLT_Ele23_WPLoose_Gsf && el_Pt[0] > 26.) || 
+                        ((HLT_El && el_Pt[0] > 29.) || 
                          (mu_trigger && mu_Pt[0] > 26)) &&
                         abs(mu_Eta[0]) < 2.4 && abs(el_Eta[0]) < 2.4){ 
 
@@ -364,7 +365,8 @@ void EMu_background_check()
                         gh_iso_SF = get_SF(mu1_pt, mu1_eta, runs_gh.ISO_SF);
                         gh_id_SF = get_SF(mu1_pt, mu1_eta, runs_gh.ID_SF);
 
-                        el_id_SF = get_el_SF(el1_pt, el1_eta, el_SF.h);
+                        el_id_SF = get_el_SF(el1_pt, el1_eta, el_SF.ID_SF);
+                        el_reco_SF = get_el_SF(el1_pt, el1_eta, el_SF.RECO_SF);
 
                         pu_SF = get_pileup_SF(pu_NtrueInt, pu_SFs.pileup_ratio);
 

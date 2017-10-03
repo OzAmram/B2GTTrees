@@ -259,7 +259,7 @@ void MuMu_WJets_fake_rate_estimate()
                     }
                         */
 
-                    mu_fakerate = get_fakerate_prob(mu_Pt[iso_muon], mu_Eta[iso_muon], FR.noHLT);
+                    mu_fakerate = get_fakerate_prob(mu_Pt[1 - iso_muon], mu_Eta[1-iso_muon], FR.noHLT);
                     //Double_t prob_WJets = 7.39e-02 / (2.031e-1 + 7.39e-02);
                     //printf("prob %.3f \n", prob_WJets);
                     evt_fakerate = mu_fakerate / (1-mu_fakerate);

@@ -101,7 +101,7 @@ void EMu_data_check()
         Float_t jet_Pt[JET_SIZE], jet_Eta[JET_SIZE], jet_Phi[JET_SIZE], jet_E[JET_SIZE],
                 jet_CSV[JET_SIZE], jet_CMVA[JET_SIZE];
 
-        Int_t HLT_IsoMu, HLT_IsoTkMu, HLT_Ele23_WPLoose_Gsf;
+        Int_t HLT_IsoMu, HLT_IsoTkMu, HLT_El;
         t1->SetBranchAddress("mu_size", &mu_size); //number of muons in the event
         t1->SetBranchAddress("mu_Pt", &mu_Pt);
         t1->SetBranchAddress("mu_Eta", &mu_Eta);
@@ -149,7 +149,7 @@ void EMu_data_check()
 
         t1->SetBranchAddress("HLT_IsoMu24", &HLT_IsoMu);
         t1->SetBranchAddress("HLT_IsoTkMu24", &HLT_IsoTkMu);
-        t1->SetBranchAddress("HLT_Ele23_WPLoose_Gsf", &HLT_Ele23_WPLoose_Gsf);
+        t1->SetBranchAddress("HLT_Ele27_WPTight_Gsf", &HLT_El);
 
         t1->SetBranchAddress("met_size", &met_size);
         t1->SetBranchAddress("met_Pt", &met_pt);
@@ -160,14 +160,14 @@ void EMu_data_check()
             t1->GetEntry(i);
             if(met_size != 1) printf("WARNING: Met size not equal to 1\n");
             if(mu_size > MU_SIZE) printf("Warning: too many muons\n");
-            bool good_trigger = HLT_IsoMu || HLT_IsoTkMu || HLT_Ele23_WPLoose_Gsf;
+            bool good_trigger = HLT_IsoMu || HLT_IsoTkMu || HLT_El;
             mu_trigger = HLT_IsoMu || HLT_IsoTKMu;
             if(good_trigger &&
                         mu_size >= 1 && el_size >=1 && 
                         ((abs(mu_Charge[0] - el_Charge[0])) > 0.01) &&
                         mu_IsTightMuon[0] &&
                         el_Pt[0] > 10. && mu_Pt[0] > 10. &&
-                        ((HLT_Ele23_WPLoose_Gsf && el_Pt[0] > 26.) || mu_Pt[0] > 26) &&
+                        ((HLT_El && el_Pt[0] > 29.) || mu_Pt[0] > 26) &&
                         abs(mu_Eta[0]) < 2.4 && abs(el_Eta[0]) < 2.4){ 
 
                 //See https://twiki.cern.ch/twiki/bin/viewauth/CMS/SWGuideMuonIdRun2 for iso cuts
