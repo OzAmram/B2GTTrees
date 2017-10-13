@@ -12,7 +12,7 @@
 
 const double root2 = sqrt(2);
 const char* filename("SingleElectron_files_aug29.txt");
-const TString fout_name("FakeRate/SingleElectron_data_fake_rate_sep26.root");
+const TString fout_name("FakeRate/SingleElectron_data_fake_rate_oct12.root");
 const double alpha = 0.05;
 
 
@@ -134,9 +134,8 @@ void SingleElectron_data_fake_rate()
             if(met_size != 1) printf("WARNING: Met size not equal to 1\n");
             bool good_trigger = HLT_El;
             if( el_size >= 1 && el_IDMedium_NoIso[0] && el_Pt[0] > 29. && abs(el_Eta[0]) < 2.4 &&
-                 (el_size == 1 || !el_IDMedium_NoIso[1] || abs(el_Eta[0]) > 2.4)){ 
+                 (el_size == 1 || (el_size >= 2  && !el_IDMedium_NoIso[1])) ){ 
                 //Want events with only 1 electron
-                //See https://twiki.cern.ch/twiki/bin/viewauth/CMS/SWGuideMuonIdRun2 for iso cuts
 
                 //get jets
                 nJets =0;

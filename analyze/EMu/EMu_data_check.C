@@ -5,15 +5,15 @@
 #include <cstring>
 #include <algorithm>
 #include "TFile.h"
-#include "ElectronID.C"
+#include "../TemplateMaker.C"
 
 #define MU_SIZE 200
+#define EL_SIZE 200
 #define JET_SIZE 20
 
 const double root2 = sqrt(2);
-const char* filename("data_files_jun07.txt");
-const TString fout_name("output_files/EMu_data_jun21.root");
-const double alpha = 0.05;
+const char* filename("SingleElectron_files_aug29.txt");
+const TString fout_name("output_files/EMu_SingleMuon_data_oct9.root");
 
 const bool data_2016 = true;
 
@@ -32,6 +32,7 @@ void EMu_data_check()
 
 
     TTree *tout= new TTree("T_data", "Tree with reco events");
+    tout->SetDirectory(0);
     Double_t cm_m, xF, cost_r, mu1_pt, el1_pt, jet1_pt, jet2_pt, gen_weight,
              jet1_cmva, jet2_cmva, mu1_eta, el1_eta, jet1_eta, jet2_eta;
     Float_t met_pt;
@@ -87,12 +88,10 @@ void EMu_data_check()
         Float_t mu_Pt[MU_SIZE], mu_Eta[MU_SIZE], mu_Phi[MU_SIZE], mu_E[MU_SIZE], 
                 mu_IsTightMuon[MU_SIZE], mu_Charge[MU_SIZE];
 
-        Float_t el_Pt[MU_SIZE], el_Eta[MU_SIZE], el_Phi[MU_SIZE], el_E[MU_SIZE],
-                el_Charge[MU_SIZE], el_vidMedium[MU_SIZE];
+        Float_t el_Pt[EL_SIZE], el_Eta[EL_SIZE], el_Phi[EL_SIZE], el_E[EL_SIZE],
+                el_Charge[EL_SIZE];
 
-            Float_t el_rho[MU_SIZE], el_EA[MU_SIZE], el_sumChargedHadronPt[MU_SIZE], el_sumNeutralHadronEt[MU_SIZE], 
-                    el_sumPhotonEt[MU_SIZE], el_sumPUPt[MU_SIZE], el_dEtaInSeed[MU_SIZE], el_dPhiIn[MU_SIZE], 
-                    el_HoE[MU_SIZE], el_full5x5siee[MU_SIZE], el_ooEmooP[MU_SIZE], el_missHits[MU_SIZE], el_hasMatchedConVeto[MU_SIZE];
+        Int_t el_IDMedium[EL_SIZE];
 
 
         Float_t mu_SumChargedHadronPt[MU_SIZE], mu_SumNeutralHadronPt[MU_SIZE], mu_SumPUPt[MU_SIZE], mu_SumPhotonPt[MU_SIZE];
@@ -115,22 +114,8 @@ void EMu_data_check()
         t1->SetBranchAddress("el_Phi", &el_Phi);
         t1->SetBranchAddress("el_E", &el_E);
         t1->SetBranchAddress("el_Charge", &el_Charge);
-        t1->SetBranchAddress("el_vidMedium", &el_vidMedium);
-
-        t1->SetBranchAddress("el_rho", &el_rho);
-        t1->SetBranchAddress("el_EA", &el_EA);
-        t1->SetBranchAddress("el_sumChargedHadronPt", &el_sumChargedHadronPt);
-        t1->SetBranchAddress("el_sumNeutralHadronEt", &el_sumNeutralHadronEt);
-        t1->SetBranchAddress("el_sumPhotonEt", &el_sumPhotonEt);
-        t1->SetBranchAddress("el_sumPUPt", &el_sumPUPt);
-        t1->SetBranchAddress("el_dEtaInSeed", &el_dEtaInSeed);
-        t1->SetBranchAddress("el_dPhiIn", &el_dPhiIn);
-        t1->SetBranchAddress("el_HoE", &el_HoE);
-        t1->SetBranchAddress("el_full5x5siee", &el_full5x5siee);
-        t1->SetBranchAddress("el_ooEmooP", &el_ooEmooP);
-        t1->SetBranchAddress("el_missHits", &el_missHits);
-        t1->SetBranchAddress("el_hasMatchedConVeto", &el_hasMatchedConVeto);
-        t1->SetBranchAddress("el_vidMedium", &el_vidMedium);
+        t1->SetBranchAddress("el_IDMedium", &el_IDMedium);
+        t1->SetBranchAddress("HLT_Ele27_WPTight_Gsf", &HLT_El);
 
         t1->SetBranchAddress("mu_IsTightMuon", &mu_IsTightMuon);
         t1->SetBranchAddress("mu_SumChargedHadronPt", &mu_SumChargedHadronPt);
@@ -149,7 +134,6 @@ void EMu_data_check()
 
         t1->SetBranchAddress("HLT_IsoMu24", &HLT_IsoMu);
         t1->SetBranchAddress("HLT_IsoTkMu24", &HLT_IsoTkMu);
-        t1->SetBranchAddress("HLT_Ele27_WPTight_Gsf", &HLT_El);
 
         t1->SetBranchAddress("met_size", &met_size);
         t1->SetBranchAddress("met_Pt", &met_pt);
@@ -161,11 +145,11 @@ void EMu_data_check()
             if(met_size != 1) printf("WARNING: Met size not equal to 1\n");
             if(mu_size > MU_SIZE) printf("Warning: too many muons\n");
             bool good_trigger = HLT_IsoMu || HLT_IsoTkMu || HLT_El;
-            mu_trigger = HLT_IsoMu || HLT_IsoTKMu;
+            mu_trigger = HLT_IsoMu || HLT_IsoTkMu;
             if(good_trigger &&
                         mu_size >= 1 && el_size >=1 && 
                         ((abs(mu_Charge[0] - el_Charge[0])) > 0.01) &&
-                        mu_IsTightMuon[0] &&
+                        mu_IsTightMuon[0] && el_IDMedium[0] && 
                         el_Pt[0] > 10. && mu_Pt[0] > 10. &&
                         ((HLT_El && el_Pt[0] > 29.) || mu_Pt[0] > 26) &&
                         abs(mu_Eta[0]) < 2.4 && abs(el_Eta[0]) < 2.4){ 
@@ -179,20 +163,32 @@ void EMu_data_check()
                 el.SetPtEtaPhiE(el_Pt[0], el_Eta[0], el_Phi[0], el_E[0]);
 
 
-                /*
-                float el_iso = (el_sumChargedHadronPt[0] + 
-                        max(0., 1.0*el_sumNeutralHadronEt[0] + 
-                            el_sumPhotonEt[0] - el_rho[0]*el_EA[0]))/el_Pt[0];
+                cm = el + mu;
+                cm_m = cm.M();
 
-                bool el_mediumID = get_el_id(el_Eta[0], el_full5x5siee[0], 
-                        el_dEtaInSeed[0],el_dPhiIn[0], el_HoE[0], 
-                        el_iso, el_ooEmooP[0], el_missHits[0], el_hasMatchedConVeto[0]);
-                 */
+                nJets =0;
+                for(int j=0; j < jet_size; j++){
+                    if(jet_Pt[j] > 20. && std::abs(jet_Eta[j]) < 2.4){
+                        if(nJets == 1){
+                            jet2_pt = jet_Pt[j];
+                            jet2_eta = jet_Eta[j];
+                            jet2_cmva = jet_CMVA[j];
+                            nJets =2;
+                            break;
+                        }
+                        else if(nJets ==0){
+                            jet1_pt = jet_Pt[j];
+                            jet1_eta = jet_Eta[j];
+                            jet1_cmva = jet_CMVA[j];
+                            nJets = 1;
+                        }
+                    }
+                }
+                bool no_bjets = has_no_bjets(nJets, jet1_pt, jet2_pt, jet1_cmva, jet2_cmva);
 
-                if (iso_0 < tight_iso && (el_vidMedium[0]) ){
+                if (no_bjets && (met_pt < 50) && (cm_m >=150.) && iso_0 < tight_iso){
 
 
-                    //muon selection checks
                     nJets =0;
                     for(int j=0; j < jet_size; j++){
                         if(jet_Pt[j] > 20. && std::abs(jet_Eta[j]) < 2.4){

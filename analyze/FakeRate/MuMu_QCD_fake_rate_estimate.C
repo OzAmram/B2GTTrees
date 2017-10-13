@@ -10,8 +10,8 @@
 #define JET_SIZE 20
 
 const double root2 = sqrt(2);
-const char* filename("SingleMuon_files_aug17.txt");
-const TString fout_name("output_files/MuMu_QCD_est_aug29.root");
+const char* filename("SingleMuon_files_sep25.txt");
+const TString fout_name("output_files/MuMu_QCD_est_oct9.root");
 
 const bool data_2016 = true;
 
@@ -255,7 +255,7 @@ void MuMu_QCD_fake_rate_estimate()
                     */
 
                     Double_t p1, p2;
-                    if(mu2_pt < 25){
+                    if(mu2_pt < 20){
                         //mu1 definitely set off trigger
                         mu1_fakerate = std::min(get_fakerate_prob(mu1_pt, mu1_eta, FR.HLT), 0.97);
                         mu2_fakerate = get_fakerate_prob(mu2_pt, mu2_eta, FR.noHLT);

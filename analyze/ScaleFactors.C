@@ -71,7 +71,7 @@ Double_t get_SF(Double_t pt, Double_t eta, TH2D *h){
     return result;
 }
 
-Double_t get_HLT_SF_1mu(Double_t mu1_pt, Double_t mu1_eta, TH2D *h_SF, TH2D *h_MC_EFF){
+Double_t get_HLT_SF_1mu(Double_t mu1_pt, Double_t mu1_eta, TH2D *h_SF){
     //get HLT SF for event with just 1 muon
     //stay in range of histogram
     if (mu1_pt >= 350.) mu1_pt = 350.;

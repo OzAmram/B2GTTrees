@@ -18,8 +18,8 @@ const double root2 = sqrt(2);
 double Ebeam = 6500.;
 double Pbeam = sqrt(Ebeam*Ebeam - 0.938*0.938);
 
-char *filename("WJets_files_test.txt");
-const TString fout_name("output_files/ElEl_QCD_est_Oct2_test.root");
+char *filename("WJets_files_aug29.txt");
+const TString fout_name("output_files/ElEl_QCD_est_Oct9_test.root");
 const bool PRINT=false;
 
 const bool data_2016 = true;
