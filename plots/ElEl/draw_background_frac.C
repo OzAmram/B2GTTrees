@@ -29,33 +29,24 @@
 
 void draw_background_frac(){
     setTDRStyle();
-
-    TFile *f_data = TFile::Open("../analyze/output_files/SingleMuon_data_aug28.root");
+    TFile *f_data = TFile::Open("../analyze/output_files/SingleElectron_data_sep22.root");
     TTree *t_data = (TTree *)f_data->Get("T_data");
-    TFile *f_mc = TFile::Open("../analyze/output_files/MuMu_DY_aug30.root");
+    TFile *f_mc = TFile::Open("../analyze/output_files/ElEl_DY_sep25.root");
     TTree *t_mc = (TTree *)f_mc->Get("T_data");
     TTree *t_mc_nosig = (TTree *)f_mc->Get("T_back");
-    TFile *f_ttbar = TFile::Open("../analyze/output_files/MuMu_TTbar_aug30.root");
+    TFile *f_ttbar = TFile::Open("../analyze/output_files/ElEl_TTbar_sep25.root");
     TTree *t_ttbar = (TTree *)f_ttbar->Get("T_data");
 
-    TFile *f_QCD = TFile::Open("../analyze/output_files/MuMu_QCD_est_oct9.root");
+    TFile *f_QCD = TFile::Open("../analyze/output_files/ElEl_QCD_est_sep29.root");
     TTree *t_QCD = (TTree *)f_QCD->Get("T_data");
 
-    TFile *f_WJets = TFile::Open("../analyze/output_files/MuMu_WJets_est_oct5.root");
+    TFile *f_WJets = TFile::Open("../analyze/output_files/ElEl_WJets_est_sep29.root");
     TTree *t_WJets = (TTree *)f_WJets->Get("T_data");
-    /*
-    TFile *f_ww = TFile::Open("../analyze/output_files/WW_background_jun06.root");
-    TTree *t_ww = (TTree *)f_ww->Get("T_data");
-    TFile *f_wz = TFile::Open("../analyze/output_files/WZ_background_jun06.root");
-    TTree *t_wz = (TTree *)f_wz->Get("T_data");
-    TFile *f_zz = TFile::Open("../analyze/output_files/ZZ_background_jun06.root");
-    TTree *t_zz = (TTree *)f_zz->Get("T_data");
-    */
 
-    TFile *f_diboson = TFile::Open("../analyze/output_files/MuMu_diboson_aug30.root");
+    TFile *f_diboson = TFile::Open("../analyze/output_files/ElEl_diboson_sep25.root");
     TTree *t_diboson = (TTree *)f_diboson->Get("T_data");
 
-    TFile *f_wt = TFile::Open("../analyze/output_files/MuMu_WT_aug30.root");
+    TFile *f_wt = TFile::Open("../analyze/output_files/ElEl_WT_sep25.root");
     TTree *t_wt = (TTree *)f_wt->Get("T_data");
 
     int nBins = 6;
@@ -88,13 +79,13 @@ void draw_background_frac(){
     TH1F *wt_m = new TH1F("wt_m", "W top", nBins, m_bins);
     TH1F *wt_cost = new TH1F("wt_cost", "W top", 40, -1,1);
 
-    make_m_cost_hist(t_mc, mc_m, mc_cost, false, FLAG_MUONS);
-    make_m_cost_hist(t_mc_nosig, mc_nosig_m, mc_nosig_cost, false, FLAG_MUONS);
-    make_m_cost_hist(t_ttbar, ttbar_m, ttbar_cost, false, FLAG_MUONS);
-    make_m_cost_hist(t_wt, wt_m, wt_cost, false, FLAG_MUONS);
-    make_m_cost_hist(t_diboson, diboson_m, diboson_cost, false, FLAG_MUONS);
-    make_m_cost_hist(t_QCD, QCD_m, QCD_cost, true, FLAG_MUONS, FLAG_QCD);
-    make_m_cost_hist(t_WJets, WJets_m, WJets_cost, true, FLAG_MUONS, FLAG_WJETS);
+    make_m_cost_hist(t_mc, mc_m, mc_cost, false, FLAG_ELECTRONS);
+    make_m_cost_hist(t_mc_nosig, mc_nosig_m, mc_nosig_cost, false, FLAG_ELECTRONS);
+    make_m_cost_hist(t_ttbar, ttbar_m, ttbar_cost, false, FLAG_ELECTRONS);
+    make_m_cost_hist(t_wt, wt_m, wt_cost, false, FLAG_ELECTRONS);
+    make_m_cost_hist(t_diboson, diboson_m, diboson_cost, false, FLAG_ELECTRONS);
+    make_m_cost_hist(t_QCD, QCD_m, QCD_cost, true, FLAG_ELECTRONS, FLAG_QCD);
+    make_m_cost_hist(t_WJets, WJets_m, WJets_cost, true, FLAG_ELECTRONS, FLAG_WJETS);
     QCD_m->Add(WJets_m);
     QCD_cost->Add(WJets_cost);
 
@@ -107,7 +98,7 @@ void draw_background_frac(){
     */
         
     
-    Double_t emu_scaling = 1.05;
+    Double_t emu_scaling = 1.00;
 
     Double_t ttbar_frac[nBins], ttbar_frac_unc[nBins], diboson_frac[nBins], diboson_frac_unc[nBins], bin_center[nBins];
     Double_t back_frac[nBins], back_frac_unc[nBins], nosig_frac[nBins], nosig_frac_unc[nBins];
@@ -143,8 +134,8 @@ void draw_background_frac(){
                                        pow(QCD_frac_unc[i-1],2) );
     }
     bin_center[nBins-1] = 850;
-    Double_t fit_res[] = {0.192, 0.159, 0.195, 0.163, 0.152, 0.095};
-    Double_t fit_errs[] = {0.008, 0.011, 0.011, 0.014, 0.024, 0.030};
+    Double_t fit_res[] = {0.244, 0.262, 0.319, 0.209, 0.177, 0.159};
+    Double_t fit_errs[] = {0.010, 0.014, 0.013, 0.017, 0.025, 0.037};
 
     TGraphErrors *mc_nosig_frac = new TGraphErrors(nBins, bin_center, nosig_frac, 0, nosig_frac_unc);
     mc_nosig_frac->SetTitle("MC no asym events (qq, gluglu, qbarqbar)");
@@ -167,20 +158,20 @@ void draw_background_frac(){
     TGraphErrors *fit_frac = new TGraphErrors(nBins, bin_center, fit_res, 0, fit_errs);
     fit_frac->SetTitle("Fraction of background events from fit results");
 
-    fit_frac->SetMaximum(0.3);
+    fit_frac->SetMaximum(0.4);
     fit_frac->SetMinimum(0.0);
-    ttbar_mc_frac->SetMaximum(0.3);
+    ttbar_mc_frac->SetMaximum(0.4);
     ttbar_mc_frac->SetMinimum(0.0);
-    wt_mc_frac->SetMaximum(0.3);
+    wt_mc_frac->SetMaximum(0.4);
     wt_mc_frac->SetMinimum(0.0);
-    diboson_mc_frac->SetMaximum(0.3);
+    diboson_mc_frac->SetMaximum(0.4);
     diboson_mc_frac->SetMinimum(0.0);
-    mc_nosig_frac->SetMaximum(0.3);
+    mc_nosig_frac->SetMaximum(0.4);
     mc_nosig_frac->SetMinimum(0.0);
-    back_mc_frac->SetMaximum(0.3);
+    back_mc_frac->SetMaximum(0.4);
     back_mc_frac->SetMinimum(0.0);
 
-    QCD_est_frac->SetMaximum(0.3);
+    QCD_est_frac->SetMaximum(0.4);
     QCD_est_frac->SetMinimum(0.0);
 
     TCanvas *c3 = new TCanvas("c3", "canvas", 200,10, 900,700);
@@ -232,9 +223,9 @@ void draw_background_frac(){
 
     mg->Draw("A C P");
 
-    mg->GetXaxis()->SetTitle("M_{#mu#mu} (GeV)");
+    mg->GetXaxis()->SetTitle("M_{ee} (GeV)");
     mg->GetYaxis()->SetTitle("Fraction of selected events");
-    mg->GetYaxis()->SetRangeUser(0, 0.3);
+    mg->GetYaxis()->SetRangeUser(0, 0.4);
 
     gStyle->SetLegendBorderSize(0);
     TLegend *leg2 = new TLegend(0.5, 0.65, 0.75, 0.8);
@@ -244,7 +235,7 @@ void draw_background_frac(){
     leg2->AddEntry(mc_nosig_frac, "DY no asymmety(gg, qq, #bar{q}#bar{q})", "l");
     leg2->AddEntry(diboson_mc_frac, "WW + WZ + ZZ", "l");
     leg2->AddEntry(wt_mc_frac, "tW + #bar{t}W", "l");
-    leg2->AddEntry(QCD_est_frac, "QCD", "l");
+    leg2->AddEntry(QCD_est_frac, "QCD + WJets", "l");
     leg2->Draw();
 
     writeExtraText = true;
