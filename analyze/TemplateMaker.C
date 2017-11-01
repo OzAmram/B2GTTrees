@@ -30,6 +30,7 @@
 #define FLAG_ELECTRONS  1
 #define FLAG_QCD  2
 #define FLAG_WJETS  3
+#define FLAG_NORMAL 4
 
 Double_t bcdef_lumi = 5.746 + 2.572 + 4.242 + 4.024 + 3.104;
 // adding new Hv2 data set to get full 2016 luminosity
@@ -415,7 +416,7 @@ int gen_combined_background_template(int nTrees, TTree **ts, TH2F* h,
 }
 
 
-void make_m_cost_hist(TTree *t1, TH1F *h_m, TH1F *h_cost, bool is_data=false, int flag = FLAG_MUONS){
+void make_m_cost_hist(TTree *t1, TH1F *h_m, TH1F *h_cost, bool is_data=false, int flag1 = FLAG_MUONS, int flag2 = FLAG_NORMAL){
     //read event data
     Long64_t size  =  t1->GetEntries();
     Double_t m, xF, cost, mu1_pt, mu2_pt, jet1_cmva, jet2_cmva, gen_weight;
@@ -445,146 +446,194 @@ void make_m_cost_hist(TTree *t1, TH1F *h_m, TH1F *h_cost, bool is_data=false, in
         t1->SetBranchAddress("jet2_b_weight", &jet2_b_weight);
         t1->SetBranchAddress("pu_SF", &pu_SF);
     }
-    if(flag == FLAG_MUONS){
-        if(!is_data){
-            t1->SetBranchAddress("bcdef_HLT_SF", &bcdef_HLT_SF);
-            t1->SetBranchAddress("bcdef_iso_SF", &bcdef_iso_SF);
-            t1->SetBranchAddress("bcdef_id_SF", &bcdef_id_SF);
-            t1->SetBranchAddress("gh_HLT_SF", &gh_HLT_SF);
-            t1->SetBranchAddress("gh_iso_SF", &gh_iso_SF);
-            t1->SetBranchAddress("gh_id_SF", &gh_id_SF);
-        }
-        for (int i=0; i<size; i++) {
-            t1->GetEntry(i);
-            bool no_bjets = has_no_bjets(nJets, jet1_pt, jet2_pt, jet1_cmva, jet2_cmva);
+    if(flag1 == FLAG_MUONS){
+        if(flag2 == FLAG_NORMAL){
+            if(!is_data){
+                t1->SetBranchAddress("bcdef_HLT_SF", &bcdef_HLT_SF);
+                t1->SetBranchAddress("bcdef_iso_SF", &bcdef_iso_SF);
+                t1->SetBranchAddress("bcdef_id_SF", &bcdef_id_SF);
+                t1->SetBranchAddress("gh_HLT_SF", &gh_HLT_SF);
+                t1->SetBranchAddress("gh_iso_SF", &gh_iso_SF);
+                t1->SetBranchAddress("gh_id_SF", &gh_id_SF);
+            }
+            for (int i=0; i<size; i++) {
+                t1->GetEntry(i);
+                bool no_bjets = has_no_bjets(nJets, jet1_pt, jet2_pt, jet1_cmva, jet2_cmva);
 
-            if(m >= 150. && met_pt < 50. && no_bjets){
-                if(is_data){
-                    h_m->Fill(m);
-                    h_cost->Fill(cost);
-                }
-                else{
-                    Double_t bcdef_weight = gen_weight *pu_SF * bcdef_HLT_SF * bcdef_iso_SF * bcdef_id_SF;
-                    Double_t gh_weight = gen_weight *pu_SF * gh_HLT_SF * gh_iso_SF * gh_id_SF;
-                    if (nJets >= 1){
-                        bcdef_weight *= jet1_b_weight;
-                        gh_weight *= jet1_b_weight;
+                if(m >= 150. && met_pt < 50. && no_bjets){
+                    if(is_data){
+                        h_m->Fill(m);
+                        h_cost->Fill(cost);
                     }
-                    if (nJets >= 2){
-                        bcdef_weight *= jet2_b_weight;
-                        gh_weight *= jet2_b_weight;
+                    else{
+                        Double_t bcdef_weight = gen_weight *pu_SF * bcdef_HLT_SF * bcdef_iso_SF * bcdef_id_SF;
+                        Double_t gh_weight = gen_weight *pu_SF * gh_HLT_SF * gh_iso_SF * gh_id_SF;
+                        if (nJets >= 1){
+                            bcdef_weight *= jet1_b_weight;
+                            gh_weight *= jet1_b_weight;
+                        }
+                        if (nJets >= 2){
+                            bcdef_weight *= jet2_b_weight;
+                            gh_weight *= jet2_b_weight;
+                        }
+                        //Double_t weight = gen_weight;
+                        h_m_bcdef->Fill(m,bcdef_weight);
+                        h_m_gh->Fill(m,gh_weight);
+                        h_cost_bcdef->Fill(cost,bcdef_weight);
+                        h_cost_gh->Fill(cost,gh_weight);
                     }
-                    //Double_t weight = gen_weight;
-                    h_m_bcdef->Fill(m,bcdef_weight);
-                    h_m_gh->Fill(m,gh_weight);
-                    h_cost_bcdef->Fill(cost,bcdef_weight);
-                    h_cost_gh->Fill(cost,gh_weight);
+
+
                 }
-
-
+            }
+            if(!is_data){
+                h_m_bcdef ->Scale(bcdef_lumi * 1000);
+                h_cost_bcdef ->Scale(bcdef_lumi * 1000);
+                h_m_gh ->Scale(gh_lumi * 1000);
+                h_cost_gh ->Scale(gh_lumi * 1000);
+                h_m->Add(h_m_bcdef, h_m_gh);
+                h_cost->Add(h_cost_bcdef, h_cost_gh);
             }
         }
-        if(!is_data){
-            h_m_bcdef ->Scale(bcdef_lumi * 1000);
-            h_cost_bcdef ->Scale(bcdef_lumi * 1000);
-            h_m_gh ->Scale(gh_lumi * 1000);
-            h_cost_gh ->Scale(gh_lumi * 1000);
-            h_m->Add(h_m_bcdef, h_m_gh);
-            h_cost->Add(h_cost_bcdef, h_cost_gh);
-        }
-    }
-    else if(flag == FLAG_QCD){
-        Double_t evt_fakerate, mu1_fakerate, mu2_fakerate;
-        Bool_t double_muon_trig;
-        //t1->SetBranchAddress("evt_fakerate", &evt_fakerate);
-        t1->SetBranchAddress("mu1_fakerate", &mu1_fakerate);
-        t1->SetBranchAddress("mu2_fakerate", &mu2_fakerate);
-        //t1->SetBranchAddress("double_muon_tig", &double_muon_trig);
-        for (int i=0; i<size; i++) {
-            t1->GetEntry(i);
-            bool no_bjets = has_no_bjets(nJets, jet1_pt, jet2_pt, jet1_cmva, jet2_cmva);
+        else if(flag2 == FLAG_QCD){
+            Double_t evt_fakerate, mu1_fakerate, mu2_fakerate;
+            Bool_t double_muon_trig;
+            //t1->SetBranchAddress("evt_fakerate", &evt_fakerate);
+            t1->SetBranchAddress("mu1_fakerate", &mu1_fakerate);
+            t1->SetBranchAddress("mu2_fakerate", &mu2_fakerate);
+            //t1->SetBranchAddress("double_muon_tig", &double_muon_trig);
+            for (int i=0; i<size; i++) {
+                t1->GetEntry(i);
+                bool no_bjets = has_no_bjets(nJets, jet1_pt, jet2_pt, jet1_cmva, jet2_cmva);
 
-            if(m >= 150. && met_pt < 50. && no_bjets){
-                //mu1_fakerate = std::min(mu1_fakerate, 0.91);
-                mu1_fakerate = 0.91;
-                mu2_fakerate = 0.13;
+                if(m >= 150. && met_pt < 50. && no_bjets){
+                    //mu1_fakerate = std::min(mu1_fakerate, 0.94);
+                    //mu1_fakerate = 0.91;
+                    //mu2_fakerate = 0.13;
+                    /*
+                       if(double_muon_trig){
+                       mu1_fakerate = 0.91;
+                       mu2_fakerate = 0.13;
+                       }
+                       */
+                    //mu2_fakerate = std::min(mu2_fakerate, 0.9);
+                    evt_fakerate = mu1_fakerate*mu2_fakerate/((1-mu1_fakerate)*(1-mu2_fakerate));
+                    //printf("Evt %.2f %.2f %.2f \n",mu1_fakerate, mu2_fakerate, evt_fakerate);
+                    h_m->Fill(m, evt_fakerate);
+                    h_cost->Fill(cost, evt_fakerate);
+                }
+            }
+            printf("Tot QCD is %.0f \n", h_m->Integral());
+        }
+        else if(flag2 == FLAG_WJETS){
+            Double_t evt_fakerate, mu_fakerate, frac_WJet;
+            Bool_t double_muon_trig;
+            t1->SetBranchAddress("evt_fakerate", &evt_fakerate);
+            t1->SetBranchAddress("mu_fakerate", &mu_fakerate);
+            //t1->SetBranchAddress("double_muon_trig", &double_muon_trig);
+            for (int i=0; i<size; i++) {
+                t1->GetEntry(i);
+                bool no_bjets = has_no_bjets(nJets, jet1_pt, jet2_pt, jet1_cmva, jet2_cmva);
+                frac_WJet = 7.38/(22.3+7.38);
                 /*
-                if(double_muon_trig){
-                    mu1_fakerate = 0.91;
-                    mu2_fakerate = 0.13;
-                }
-                */
-                //mu2_fakerate = std::min(mu2_fakerate, 0.9);
-                evt_fakerate = mu1_fakerate*mu2_fakerate/((1-mu1_fakerate)*(1-mu2_fakerate));
-                printf("Evt %.2f %.2f %.2f \n",mu1_fakerate, mu2_fakerate, evt_fakerate);
-                h_m->Fill(m, evt_fakerate);
-                h_cost->Fill(cost, evt_fakerate);
-            }
-        }
-        printf("Tot QCD is %.0f \n", h_m->Integral());
-    }
-    else if(flag == FLAG_WJETS){
-        Double_t evt_fakerate, mu_fakerate, frac_WJet;
-        Bool_t double_muon_trig;
-        t1->SetBranchAddress("evt_fakerate", &evt_fakerate);
-        t1->SetBranchAddress("mu_fakerate", &mu_fakerate);
-        //t1->SetBranchAddress("double_muon_trig", &double_muon_trig);
-        for (int i=0; i<size; i++) {
-            t1->GetEntry(i);
-            bool no_bjets = has_no_bjets(nJets, jet1_pt, jet2_pt, jet1_cmva, jet2_cmva);
-            frac_WJet = 7.38/(22.3+7.38);
-            /*
-            if(double_muon_trig){
-                frac_WJet = 4.06/(4.06 + 17.88);
-                mu_fakerate = 0.13;
-            }
-            else{
-                frac_WJet = 3.33/(3.33 + 2.53);
-                mu_fakerate = 0.13;
-            }
-            */
-                
-            if(m >= 150. && met_pt < 50. && no_bjets){
-                //mu_fakerate = std::min(mu_fakerate, 0.9);
-                evt_fakerate =  frac_WJet * mu_fakerate/(1-mu_fakerate);
-                //printf("Evt %.2f %.2f \n", mu_fakerate, evt_fakerate);
-                h_m->Fill(m, evt_fakerate);
-                h_cost->Fill(cost, evt_fakerate);
-            }
-        }
-        printf("Tot WJet is %.0f \n", h_m->Integral());
-    }
-    else if(flag==FLAG_ELECTRONS) {
-        if(!is_data) t1->SetBranchAddress("el_id_SF", &el_id_SF);
-        if(!is_data) t1->SetBranchAddress("el_reco_SF", &el_reco_SF);
-        for (int i=0; i<size; i++) {
-            t1->GetEntry(i);
-            bool no_bjets = has_no_bjets(nJets, jet1_pt, jet2_pt, jet1_cmva, jet2_cmva);
-            if(m >= 150 && met_pt < 50.  && no_bjets){
-                if(is_data){
-                    h_m->Fill(m);
-                    h_cost->Fill(cost);
-                }
-                else{
+                   if(double_muon_trig){
+                   frac_WJet = 4.06/(4.06 + 17.88);
+                   mu_fakerate = 0.13;
+                   }
+                   else{
+                   frac_WJet = 3.33/(3.33 + 2.53);
+                   mu_fakerate = 0.13;
+                   }
+                   */
 
-                    Double_t evt_weight = gen_weight *pu_SF * el_id_SF * el_reco_SF;
-                    if (nJets >= 1){
-                        evt_weight *= jet1_b_weight;
-                    }
-                    if (nJets >= 2){
-                        evt_weight *= jet2_b_weight;
-                    }
-                    h_m->Fill(m, evt_weight);
-                    h_cost->Fill(cost, evt_weight);
+                if(m >= 150. && met_pt < 50. && no_bjets){
+                    //mu_fakerate = std::min(mu_fakerate, 0.9);
+                    evt_fakerate =  frac_WJet * mu_fakerate/(1-mu_fakerate);
+                    //printf("Evt %.2f %.2f \n", mu_fakerate, evt_fakerate);
+                    h_m->Fill(m, evt_fakerate);
+                    h_cost->Fill(cost, evt_fakerate);
                 }
             }
-        }
-        if(!is_data){
-            Double_t el_lumi = 1000*tot_lumi;
-            h_m->Scale(el_lumi);
-            h_cost->Scale(el_lumi);
+            printf("Tot WJet is %.0f \n", h_m->Integral());
         }
     }
+    else if(flag1==FLAG_ELECTRONS) {
+        if(flag2 == FLAG_NORMAL){
+            if(!is_data) t1->SetBranchAddress("el_id_SF", &el_id_SF);
+            if(!is_data) t1->SetBranchAddress("el_reco_SF", &el_reco_SF);
+            for (int i=0; i<size; i++) {
+                t1->GetEntry(i);
+                bool no_bjets = has_no_bjets(nJets, jet1_pt, jet2_pt, jet1_cmva, jet2_cmva);
+                if(m >= 150 && met_pt < 50.  && no_bjets){
+                    if(is_data){
+                        h_m->Fill(m);
+                        h_cost->Fill(cost);
+                    }
+                    else{
+
+                        Double_t evt_weight = gen_weight *pu_SF * el_id_SF * el_reco_SF;
+                        if (nJets >= 1){
+                            evt_weight *= jet1_b_weight;
+                        }
+                        if (nJets >= 2){
+                            evt_weight *= jet2_b_weight;
+                        }
+                        h_m->Fill(m, evt_weight);
+                        h_cost->Fill(cost, evt_weight);
+                    }
+                }
+            }
+            if(!is_data){
+                Double_t el_lumi = 1000*tot_lumi;
+                h_m->Scale(el_lumi);
+                h_cost->Scale(el_lumi);
+            }
+        }
+        if(flag2 == FLAG_WJETS){
+            Double_t evt_fakerate, el_fakerate, frac_WJet;
+            t1->SetBranchAddress("evt_fakerate", &evt_fakerate);
+            t1->SetBranchAddress("el_fakerate", &el_fakerate);
+            for (int i=0; i<size; i++) {
+                t1->GetEntry(i);
+                bool no_bjets = has_no_bjets(nJets, jet1_pt, jet2_pt, jet1_cmva, jet2_cmva);
+                frac_WJet = 1.19/(1.91+1.19);
+
+                if(m >= 150. && met_pt < 50. && no_bjets){
+                    //el_fakerate = std::min(el_fakerate, 0.9);
+                    evt_fakerate =  frac_WJet * el_fakerate/(1-el_fakerate);
+                    //printf("Evt %.2f %.2f \n", el_fakerate, evt_fakerate);
+                    h_m->Fill(m, evt_fakerate);
+                    h_cost->Fill(cost, evt_fakerate);
+                }
+            }
+            printf("Tot WJet is %.0f from %i events \n", h_m->Integral(), size);
+        }
+        else if(flag2 == FLAG_QCD){
+            Double_t evt_fakerate, el1_fakerate, el2_fakerate;
+            //t1->SetBranchAddress("evt_fakerate", &evt_fakerate);
+            t1->SetBranchAddress("el1_fakerate", &el1_fakerate);
+            t1->SetBranchAddress("el2_fakerate", &el2_fakerate);
+            for (int i=0; i<size; i++) {
+                t1->GetEntry(i);
+                bool no_bjets = has_no_bjets(nJets, jet1_pt, jet2_pt, jet1_cmva, jet2_cmva);
+                double_t frac_QCD = 1.19/(1.91+1.19);
+
+                if(m >= 150. && met_pt < 50. && no_bjets){
+                    //el1_fakerate = std::min(el1_fakerate, 0.94);
+                    //el2_fakerate = std::min(el2_fakerate, 0.94);
+                    //el1_fakerate = 0.88;
+                    //el2_fakerate = 0.44;
+                    evt_fakerate = frac_QCD* el1_fakerate*el2_fakerate/((1-el1_fakerate)*(1-el2_fakerate));
+                    //printf("Evt %.2f %.2f %.2f \n",el1_fakerate, el2_fakerate, evt_fakerate);
+                    h_m->Fill(m, evt_fakerate);
+                    h_cost->Fill(cost, evt_fakerate);
+                }
+            }
+            printf("Tot QCD is %.0f from %i events\n", h_m->Integral(), size);
+        }
+
+    }
+
 
     t1->ResetBranchAddresses();
 }
