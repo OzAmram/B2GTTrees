@@ -11,8 +11,8 @@
 #define JET_SIZE 20
 
 const double root2 = sqrt(2);
-const char* filename("SingleElectron_files_aug29.txt");
-const TString fout_name("FakeRate/SingleElectron_data_fake_rate_oct12.root");
+const char* filename("SingleElectron_files_test.txt");
+const TString fout_name("FakeRate/SingleElectron_data_fake_rate_oct16_test.root");
 const double alpha = 0.05;
 
 
@@ -135,6 +135,11 @@ void SingleElectron_data_fake_rate()
             bool good_trigger = HLT_El;
             if( el_size >= 1 && el_IDMedium_NoIso[0] && el_Pt[0] > 29. && abs(el_Eta[0]) < 2.4 &&
                  (el_size == 1 || (el_size >= 2  && !el_IDMedium_NoIso[1])) ){ 
+                bool no_other_els = true;
+                for (int j=1; j < el_size; j++){
+                    if(el_IDMedium_NoIso[j]) no_other_els = false;
+                    //if(el_IDMedium[j] && !el_IDMedium_NoIso[j] ) printf("HI\n");
+                }
                 //Want events with only 1 electron
 
                 //get jets
@@ -159,7 +164,7 @@ void SingleElectron_data_fake_rate()
                 bool no_bjets = has_no_bjets(nJets, jet1_pt, jet2_pt, jet1_cmva, jet2_cmva);
                 float iso_0 = el_IDMedium[0];
 
-                if(no_bjets && met_pt < 50){
+                if(no_other_els && no_bjets && met_pt < 50){
                     if(good_trigger){
                         if(iso_0){
                             nPass++;

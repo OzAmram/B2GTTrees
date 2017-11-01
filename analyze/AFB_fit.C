@@ -43,8 +43,8 @@ int FLAG = FLAG_ELECTRONS;
 //Float_t cost_bins[] = {-1.0, -.75, -.5, -.25, 0., 0.25, 0.5, 0.75, 1.0};
 
 
-float m_low = 700;
-float m_high = 1000000;
+float m_low = 650;
+float m_high = 800;
 //alpha = 0.0981;
 
 bool print = true;
