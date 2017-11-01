@@ -112,6 +112,8 @@ void draw_cmp(){
 
     make_m_cost_hist(t_diboson, diboson_m, diboson_cost, false,type);
     make_m_cost_hist(t_wt, wt_m, wt_cost, false,type);
+    
+    Double_t QCD_in_WJets = WJets_est_from_QCD(t_QCD, FLAG_ELECTRONS); 
 
     make_m_cost_hist(t_QCD, QCD_m, QCD_cost, true, type, FLAG_QCD);
     
