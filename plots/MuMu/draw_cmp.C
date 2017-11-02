@@ -124,10 +124,13 @@ void draw_cmp(){
     make_m_cost_hist(t_mc_nosig, mc_nosig_m, mc_nosig_cost, false, type);
     make_m_cost_hist(t_ttbar, ttbar_m, ttbar_cost, false, type);
 
+    /*
     make_m_cost_hist(t_QCD, QCD_m, QCD_cost, true, type, FLAG_QCD);
-    
     make_m_cost_hist(t_WJets, WJets_m, WJets_cost, true, type, FLAG_WJETS);
-
+    QCD_m->Add(WJets_m);
+    QCD_cost->Add(WJets_cost);
+    */
+    Fakerate_est_mu(t_WJets, t_QCD, t_WJets, QCD_m, QCD_cost);
 
     make_m_cost_hist(t_diboson, diboson_m, diboson_cost, false, type);
 
@@ -148,8 +151,6 @@ void draw_cmp(){
     QCD_m->SetFillColor(kRed -7);
     QCD_cost->SetFillColor(kRed -7);
 
-    QCD_m->Add(WJets_m);
-    QCD_cost->Add(WJets_cost);
 
     //mc_m->Draw();
     

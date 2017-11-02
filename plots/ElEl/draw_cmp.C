@@ -98,15 +98,10 @@ void draw_cmp(){
     wt_m->SetFillColor(kOrange+7); 
     wt_cost->SetFillColor(kOrange+7); 
 
-    printf("1 \n");
     make_m_cost_hist(t_data, data_m, data_cost, true,type);
-    printf("2 \n");
     make_m_cost_hist(t_mc, mc_m, mc_cost, false,type);
-    printf("3 \n");
     make_m_cost_hist(t_mc_nosig, mc_nosig_m, mc_nosig_cost, false,type);
-    printf("4 \n");
     make_m_cost_hist(t_ttbar, ttbar_m, ttbar_cost, false,type);
-    printf("5 \n");
 
 
 
@@ -115,9 +110,15 @@ void draw_cmp(){
     
     Double_t QCD_in_WJets = WJets_est_from_QCD(t_QCD, FLAG_ELECTRONS); 
 
+    Fakerate_est_el(t_WJets, t_QCD, t_QCD, QCD_m, QCD_cost);
+
+    /*
     make_m_cost_hist(t_QCD, QCD_m, QCD_cost, true, type, FLAG_QCD);
     
     make_m_cost_hist(t_WJets, WJets_m, WJets_cost, true, type, FLAG_WJETS);
+    QCD_m->Add(WJets_m);
+    QCD_cost->Add(WJets_cost);
+    */
     
     Double_t EMu_ratio = 1.05;
     ttbar_m->Scale(EMu_ratio);
@@ -134,8 +135,6 @@ void draw_cmp(){
     QCD_cost->SetFillColor(kRed -7);
 
     //QCD_m->Scale(0.000001);
-    QCD_m->Add(WJets_m);
-    QCD_cost->Add(WJets_cost);
 
     //mc_m->Draw();
     
