@@ -649,79 +649,6 @@ void make_m_cost_hist(TTree *t1, TH1F *h_m, TH1F *h_cost, bool is_data=false, in
     t1->ResetBranchAddresses();
 }
 
-Double_t WJets_est_from_QCD(TTree *t1, int flag1 = FLAG_MUONS){
-    //read event data
-    Long64_t size  =  t1->GetEntries();
-    Double_t m, xF, cost, mu1_pt, mu2_pt, jet1_cmva, jet2_cmva, gen_weight;
-    Double_t bcdef_HLT_SF, bcdef_iso_SF, bcdef_id_SF;
-    Double_t gh_HLT_SF, gh_iso_SF, gh_id_SF, el_id_SF, el_reco_SF;
-    Double_t jet1_pt, jet2_pt, jet1_b_weight, jet2_b_weight, pu_SF;
-    Float_t met_pt;
-    Int_t nJets;
-    nJets = 2;
-    pu_SF=1;
-    t1->SetBranchAddress("m", &m);
-    t1->SetBranchAddress("xF", &xF);
-    t1->SetBranchAddress("cost", &cost);
-    t1->SetBranchAddress("met_pt", &met_pt);
-    t1->SetBranchAddress("jet2_CMVA", &jet2_cmva);
-    t1->SetBranchAddress("jet1_CMVA", &jet1_cmva);
-    t1->SetBranchAddress("jet1_pt", &jet1_pt);
-    t1->SetBranchAddress("jet2_pt", &jet2_pt);
-    Double_t tot_events = 0;
-    if(flag1 == FLAG_MUONS){
-            Double_t evt_fakerate, mu1_fakerate, mu2_fakerate;
-            Bool_t double_muon_trig;
-            //t1->SetBranchAddress("evt_fakerate", &evt_fakerate);
-            t1->SetBranchAddress("mu1_fakerate", &mu1_fakerate);
-            t1->SetBranchAddress("mu2_fakerate", &mu2_fakerate);
-            //t1->SetBranchAddress("double_muon_tig", &double_muon_trig);
-            double_t WJets_MC = 7.38e-02 * 1000* tot_lumi;
-            double_t background_MC = 22.3e-02 *1000*tot_lumi;
-            double_t frac_WJet = WJets_MC/(WJets_MC + background_MC);
-            for (int i=0; i<size; i++) {
-                t1->GetEntry(i);
-                bool no_bjets = has_no_bjets(nJets, jet1_pt, jet2_pt, jet1_cmva, jet2_cmva);
-
-                if(m >= 150. && met_pt < 50. && no_bjets){
-                    //mu1_fakerate = std::min(mu1_fakerate, 0.94);
-                    //mu1_fakerate = 0.91;
-                    //mu2_fakerate = 0.13;
-                    //mu2_fakerate = std::min(mu2_fakerate, 0.9);
-                    evt_fakerate = mu1_fakerate/(1-mu1_fakerate) + mu2_fakerate/(1-mu2_fakerate);
-                    //printf("Evt %.2f %.2f %.2f \n",mu1_fakerate, mu2_fakerate, evt_fakerate);
-                    tot_events += evt_fakerate;
-                }
-            }
-    }
-    else{
-            Double_t evt_fakerate, el1_fakerate, el2_fakerate;
-            //t1->SetBranchAddress("evt_fakerate", &evt_fakerate);
-            t1->SetBranchAddress("el1_fakerate", &el1_fakerate);
-            t1->SetBranchAddress("el2_fakerate", &el2_fakerate);
-            double_t WJets_MC = 1.19e-01 * 1000* tot_lumi;
-            double_t background_MC = 1.9e-01 *1000*tot_lumi;
-            double_t frac_Wjets = WJets_MC/(WJets_MC + background_MC);
-            double_t frac_QCD = 1;
-            for (int i=0; i<size; i++) {
-                t1->GetEntry(i);
-                bool no_bjets = has_no_bjets(nJets, jet1_pt, jet2_pt, jet1_cmva, jet2_cmva);
-
-                if(m >= 150. && met_pt < 50. && no_bjets){
-                    //el1_fakerate = std::min(el1_fakerate, 0.94);
-                    //el2_fakerate = std::min(el2_fakerate, 0.94);
-                    //el1_fakerate = 0.88;
-                    //el2_fakerate = 0.44;
-                    evt_fakerate = el1_fakerate/(1-el1_fakerate) + el2_fakerate/(1-el2_fakerate);
-                    //printf("Evt %.2f %.2f %.2f \n",el1_fakerate, el2_fakerate, evt_fakerate);
-                    tot_events += evt_fakerate;
-                }
-            }
-
-    }
-    printf("QCD in WJets is %.0f \n", tot_events);
-    return tot_events;
-}
 typedef struct {
     TH2D *h;
 } FakeRate;
@@ -748,6 +675,7 @@ static Double_t get_new_fakerate_prob(Double_t pt, Double_t eta, TH2D *h){
     pt=35;
     //if (pt >= 50) pt = 49;
 
+
     TAxis* x_ax =  h->GetXaxis();
     TAxis *y_ax =  h->GetYaxis();
     
@@ -767,11 +695,12 @@ void Fakerate_est_mu(TTree *t_WJets, TTree *t_QCD, TTree *t_MC, TH1F *h_m, TH1F 
     //TH2D *FR;
     setup_new_mu_fakerate(&FR);
     FR.h->Print();
-    for (int l=0; l<=1; l++){
+    for (int l=0; l<=2; l++){
+        printf("l=%i\n", l);
         TTree *t;
         if (l==0) t = t_WJets;
         if (l==1) t = t_QCD;
-        if (l==2) t = t_QCD;
+        if (l==2) t = t_MC;
         Double_t m, xF, cost, jet1_cmva, jet2_cmva, gen_weight;
         Double_t bcdef_HLT_SF, bcdef_iso_SF, bcdef_id_SF;
         Double_t gh_HLT_SF, gh_iso_SF, gh_id_SF;
@@ -852,11 +781,11 @@ void Fakerate_est_el(TTree *t_WJets, TTree *t_QCD, TTree *t_MC, TH1F *h_m, TH1F 
     //TH2D *FR;
     setup_new_el_fakerate(&FR);
     FR.h->Print();
-    for (int l=0; l<=1; l++){
+    for (int l=0; l<=2; l++){
         TTree *t;
         if (l==0) t = t_WJets;
         if (l==1) t = t_QCD;
-        if (l==2) t = t_QCD;
+        if (l==2) t = t_MC;
         Double_t m, xF, cost, jet1_cmva, jet2_cmva, gen_weight;
         Double_t jet1_pt, jet2_pt, jet1_b_weight, jet2_b_weight, pu_SF;
         Double_t el_id_SF, el_reco_SF;

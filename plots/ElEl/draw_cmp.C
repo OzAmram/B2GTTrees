@@ -45,6 +45,9 @@ void draw_cmp(){
     TFile *f_WJets = TFile::Open("../analyze/output_files/ElEl_WJets_est_sep29.root");
     TTree *t_WJets = (TTree *)f_WJets->Get("T_data");
 
+    TFile *f_WJets_mc = TFile::Open("../analyze/output_files/ElEl_fakerate_WJets_MC_nov2.root");
+    TTree *t_WJets_mc = (TTree *)f_WJets_mc->Get("T_data");
+
     TFile *f_diboson = TFile::Open("../analyze/output_files/ElEl_diboson_sep25.root");
     TTree *t_diboson = (TTree *)f_diboson->Get("T_data");
 
@@ -108,9 +111,8 @@ void draw_cmp(){
     make_m_cost_hist(t_diboson, diboson_m, diboson_cost, false,type);
     make_m_cost_hist(t_wt, wt_m, wt_cost, false,type);
     
-    Double_t QCD_in_WJets = WJets_est_from_QCD(t_QCD, FLAG_ELECTRONS); 
 
-    Fakerate_est_el(t_WJets, t_QCD, t_QCD, QCD_m, QCD_cost);
+    Fakerate_est_el(t_WJets, t_QCD, t_WJets_mc, QCD_m, QCD_cost);
 
     /*
     make_m_cost_hist(t_QCD, QCD_m, QCD_cost, true, type, FLAG_QCD);

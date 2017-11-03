@@ -39,11 +39,14 @@ void draw_cmp(){
     TFile *f_ttbar = TFile::Open("../analyze/output_files/MuMu_TTbar_aug30.root");
     TTree *t_ttbar = (TTree *)f_ttbar->Get("T_data");
 
-    TFile *f_QCD = TFile::Open("../analyze/output_files/MuMu_QCD_est_oct9.root");
+    TFile *f_QCD = TFile::Open("../analyze/output_files/MuMu_QCD_est_nov2.root");
     TTree *t_QCD = (TTree *)f_QCD->Get("T_data");
 
-    TFile *f_WJets = TFile::Open("../analyze/output_files/MuMu_WJets_est_oct5.root");
+    TFile *f_WJets = TFile::Open("../analyze/output_files/MuMu_WJets_est_Nov2.root");
     TTree *t_WJets = (TTree *)f_WJets->Get("T_data");
+
+    TFile *f_WJets_mc = TFile::Open("../analyze/output_files/MuMu_fakerate_Wjets_MC_nov2.root");
+    TTree *t_WJets_mc = (TTree *)f_WJets_mc->Get("T_data");
 
     TFile *f_diboson = TFile::Open("../analyze/output_files/MuMu_diboson_aug30.root");
     TTree *t_diboson = (TTree *)f_diboson->Get("T_data");
@@ -130,7 +133,7 @@ void draw_cmp(){
     QCD_m->Add(WJets_m);
     QCD_cost->Add(WJets_cost);
     */
-    Fakerate_est_mu(t_WJets, t_QCD, t_WJets, QCD_m, QCD_cost);
+    Fakerate_est_mu(t_WJets, t_QCD, t_WJets_mc, QCD_m, QCD_cost);
 
     make_m_cost_hist(t_diboson, diboson_m, diboson_cost, false, type);
 
