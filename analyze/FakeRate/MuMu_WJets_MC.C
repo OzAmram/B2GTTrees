@@ -17,8 +17,8 @@
 #define MAX_SAMPLES 20
 
 const double root2 = sqrt(2);
-const char* filename("non_QCD_files.txt");
-const TString fout_name("output_files/MuMu_fakerate_non_Wjets_MC_sep6.root");
+const char* filename("non_QCD_files_aug29.txt");
+const TString fout_name("output_files/MuMu_fakerate_Wjets_MC_nov2.root");
 
 
 bool is_empty_line(const char *s) {
@@ -107,7 +107,7 @@ void MuMu_WJets_MC()
              jet1_cmva, jet1_csv, jet2_cmva, jet2_csv;
     Double_t bcdef_HLT_SF, bcdef_iso_SF, bcdef_id_SF, gh_HLT_SF, gh_iso_SF, gh_id_SF,
              jet1_b_weight, jet2_b_weight, pu_SF;
-    Int_t nJets, jet1_flavour, jet2_flavour;
+    Int_t nJets, jet1_flavour, jet2_flavour, iso_muon;
     Float_t met_pt;
     Bool_t double_muon_trig;
     TLorentzVector mu_p, mu_m, cm, q1, q2;
@@ -142,6 +142,7 @@ void MuMu_WJets_MC()
     tout->Branch("jet1_flavour", &jet1_flavour, "jet1_flavour/I");
     tout->Branch("jet2_flavour", &jet2_flavour, "jet2_flavour/I");
     tout->Branch("double_muon_trig", &double_muon_trig);
+    tout->Branch("iso_muon", &iso_muon);
 
 
 
@@ -253,8 +254,7 @@ void MuMu_WJets_MC()
                 if(mu_size > MU_SIZE) printf("Warning: too many muons\n");
                 bool good_trigger = HLT_IsoMu || HLT_IsoTkMu;
                 //bool good_trigger = true;
-                if(good_trigger &&
-                        mu_size >= 2 && ((abs(mu_Charge[0] - mu_Charge[1])) > 0.01) &&
+                if( mu_size >= 2 && ((abs(mu_Charge[0] - mu_Charge[1])) > 0.01) &&
                         mu_IsTightMuon[0] && mu_IsTightMuon[1] &&
                         mu_Pt[0] > 26. &&  mu_Pt[1] > 10. &&
                         abs(mu_Eta[0]) < 2.4 && abs(mu_Eta[1]) < 2.4){ 
@@ -304,7 +304,7 @@ void MuMu_WJets_MC()
                         mu1_eta = mu_Eta[0];
                         mu2_eta = mu_Eta[1];
 
-                        int iso_muon = 0; //which muon is isolated
+                        iso_muon = 0; //which muon is isolated
                         if(iso_0 < tight_iso) iso_muon = 0;
                         else if(iso_1 < tight_iso) iso_muon = 1;
                         else printf("ERROR: Neither muon iso\n");
