@@ -406,6 +406,10 @@ process.extraVar = cms.EDProducer("B2GEdmExtraVarProducer",
         "HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL", 
         "HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ", 
         "HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ",
+        # Photon Triggers
+        "HLT_Photon22",
+        "HLT_Photon30",
+        "HLT_Photon36",
         # end of triggers
         # Event variables
         "evt_NGoodVtx",

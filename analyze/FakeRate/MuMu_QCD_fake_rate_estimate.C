@@ -11,7 +11,7 @@
 
 const double root2 = sqrt(2);
 const char* filename("SingleMuon_files_sep25.txt");
-const TString fout_name("output_files/MuMu_QCD_est_oct9.root");
+const TString fout_name("output_files/MuMu_QCD_est_nov2.root");
 
 const bool data_2016 = true;
 
@@ -24,6 +24,7 @@ bool is_empty_line(const char *s) {
     return true;
 }
 
+/*
 typedef struct{
     TH2D *noHLT;
     TH2D *HLT;
@@ -44,6 +45,7 @@ void setup_fakerate(FakeRate *FR){
     FR->noHLT_avg = 0.13; 
     FR->HLT_avg = 0.91; 
 }
+*/
 
 Double_t get_fakerate_prob(Double_t pt, Double_t eta, TH2D *h){
     if (pt >= 400) pt = 380;
@@ -61,8 +63,8 @@ Double_t get_fakerate_prob(Double_t pt, Double_t eta, TH2D *h){
 
 void MuMu_QCD_fake_rate_estimate()
 {
-    FakeRate FR;
-    setup_fakerate(&FR);
+    //FakeRate FR;
+    //setup_fakerate(&FR);
 
 
     TTree *tout= new TTree("T_data", "Tree with reco events");
@@ -175,8 +177,7 @@ void MuMu_QCD_fake_rate_estimate()
             if(met_size != 1) printf("WARNING: Met size not equal to 1\n");
             if(mu_size > MU_SIZE) printf("Warning: too many muons\n");
             bool good_trigger = HLT_IsoMu || HLT_IsoTkMu;
-            if(good_trigger &&
-                    mu_size >= 2 && ((abs(mu_Charge[0] - mu_Charge[1])) > 0.01) &&
+            if( mu_size >= 2 && ((abs(mu_Charge[0] - mu_Charge[1])) > 0.01) &&
                     mu_IsTightMuon[0] && mu_IsTightMuon[1] &&
                     mu_Pt[0] > 26. &&  mu_Pt[1] > 10. &&
                     abs(mu_Eta[0]) < 2.4 && abs(mu_Eta[1]) < 2.4){ 
@@ -242,7 +243,7 @@ void MuMu_QCD_fake_rate_estimate()
                     mu2_eta = mu_Eta[1];
 
 
-                    double_muon_trig = HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL || HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL || HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ || HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ;
+                    //double_muon_trig = HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL || HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL || HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ || HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ;
                     /*
                     if(double_muon_trig){
                         for(int k =2; k < mu_size; k++){
@@ -254,6 +255,7 @@ void MuMu_QCD_fake_rate_estimate()
                     }
                     */
 
+                    /*
                     Double_t p1, p2;
                     if(mu2_pt < 20){
                         //mu1 definitely set off trigger
@@ -266,6 +268,7 @@ void MuMu_QCD_fake_rate_estimate()
                     }
                     evt_fakerate = mu1_fakerate * mu2_fakerate/((1 - mu1_fakerate)*(1- mu2_fakerate));
                     printf("evt_fakerate = %.2f \n", evt_fakerate);
+                    */
 
                     tout->Fill();
                     nEvents++;

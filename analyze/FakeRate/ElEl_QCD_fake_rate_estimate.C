@@ -12,7 +12,7 @@
 
 const double root2 = sqrt(2);
 const char* filename("SingleElectron_files_aug29.txt");
-const TString fout_name("output_files/ElEl_QCD_est_sep29.root");
+const TString fout_name("output_files/ElEl_QCD_est_nov2.root");
 
 const bool data_2016 = true;
 
@@ -25,6 +25,7 @@ bool is_empty_line(const char *s) {
     return true;
 }
 
+/*
 typedef struct{
     TH2D *noHLT;
     TH2D *HLT;
@@ -45,6 +46,7 @@ void setup_fakerate(FakeRate *FR){
     FR->noHLT_avg = 0.44; 
     FR->HLT_avg = 0.88; 
 }
+*/
 
 Double_t get_fakerate_prob(Double_t pt, Double_t eta, TH2D *h){
     if (pt >= 400) pt = 380;
@@ -62,8 +64,8 @@ Double_t get_fakerate_prob(Double_t pt, Double_t eta, TH2D *h){
 
 void ElEl_QCD_fake_rate_estimate()
 {
-    FakeRate FR;
-    setup_fakerate(&FR);
+    //FakeRate FR;
+    //setup_fakerate(&FR);
 
 
     TTree *tout= new TTree("T_data", "Tree with reco events");
@@ -165,8 +167,7 @@ void ElEl_QCD_fake_rate_estimate()
             if(met_size != 1) printf("WARNING: Met size not equal to 1\n");
             if(el_size > EL_SIZE) printf("Warning: too many muons\n");
             bool good_trigger = HLT_El;
-            if(good_trigger &&
-                    el_size >= 2 && ((abs(el_Charge[0] - el_Charge[1])) > 0.01) &&
+            if( el_size >= 2 && ((abs(el_Charge[0] - el_Charge[1])) > 0.01) &&
                     el_IDMedium_NoIso[0] && el_IDMedium_NoIso[1] &&
                     el_Pt[0] > 29. &&  el_Pt[1] > 10. &&
                     abs(el_Eta[0]) < 2.4 && abs(el_Eta[1]) < 2.4){ 
@@ -228,6 +229,7 @@ void ElEl_QCD_fake_rate_estimate()
 
 
 
+                    /*
                     Double_t p1, p2;
                     if(el2_pt < 29){
                         //el1 definitely set off trigger
@@ -240,6 +242,7 @@ void ElEl_QCD_fake_rate_estimate()
                     }
                     evt_fakerate = el1_fakerate * el2_fakerate/((1 - el1_fakerate)*(1- el2_fakerate));
                     printf("evt_fakerate = %.2f \n", evt_fakerate);
+                    */
 
                     tout->Fill();
                     nEvents++;
