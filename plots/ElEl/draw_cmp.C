@@ -39,10 +39,10 @@ void draw_cmp(){
     TFile *f_ttbar = TFile::Open("../analyze/output_files/ElEl_TTbar_sep25.root");
     TTree *t_ttbar = (TTree *)f_ttbar->Get("T_data");
 
-    TFile *f_QCD = TFile::Open("../analyze/output_files/ElEl_QCD_est_sep29.root");
+    TFile *f_QCD = TFile::Open("../analyze/output_files/ElEl_QCD_est_nov2.root");
     TTree *t_QCD = (TTree *)f_QCD->Get("T_data");
 
-    TFile *f_WJets = TFile::Open("../analyze/output_files/ElEl_WJets_est_sep29.root");
+    TFile *f_WJets = TFile::Open("../analyze/output_files/ElEl_WJets_est_nov2.root");
     TTree *t_WJets = (TTree *)f_WJets->Get("T_data");
 
     TFile *f_WJets_mc = TFile::Open("../analyze/output_files/ElEl_fakerate_WJets_MC_nov2.root");
