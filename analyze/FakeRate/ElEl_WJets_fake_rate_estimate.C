@@ -170,7 +170,7 @@ void ElEl_WJets_fake_rate_estimate()
             if( el_size >= 2 && ((abs(el_Charge[0] - el_Charge[1])) > 0.01) &&
                     el_IDMedium_NoIso[0] && el_IDMedium_NoIso[1] &&
                     el_Pt[0] > 29. &&  el_Pt[1] > 10. &&
-                    abs(el_Eta[0]) < 2.4 && abs(el_Eta[1]) < 2.4){ 
+                    abs(el_Eta[0]) < 2.5 && abs(el_Eta[1]) < 2.5){ 
 
                 if(el_Charge[0] >0){
                     el_p.SetPtEtaPhiE(el_Pt[0], el_Eta[0], el_Phi[0], el_E[0]);

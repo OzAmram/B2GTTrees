@@ -111,7 +111,7 @@ void ElEl_reco_background_batch()
     Double_t cm_m, xF, cost_r, el1_pt, el2_pt, el1_eta, el2_eta, jet1_pt, jet2_pt, deltaC, jet1_eta, jet2_eta, gen_weight,
              jet1_cmva, jet1_csv, jet2_cmva, jet2_csv;
     Double_t el_id_SF, el_reco_SF, jet1_b_weight, jet2_b_weight, pu_SF;
-    Int_t nJets, jet1_flavour, jet2_flavour;
+    Int_t nJets, jet1_flavour, jet2_flavour, pu_NTrueInt;
     Float_t met_pt;
     TLorentzVector el_p, el_m, cm, q1, q2;
     tout->Branch("m", &cm_m, "m/D");
@@ -140,6 +140,7 @@ void ElEl_reco_background_batch()
     tout->Branch("nJets", &nJets, "nJets/I");
     tout->Branch("jet1_flavour", &jet1_flavour, "jet1_flavour/I");
     tout->Branch("jet2_flavour", &jet2_flavour, "jet2_flavour/I");
+    tout->Branch("pu_NTrueInt", &pu_NTrueInt);
 
 
 
@@ -198,7 +199,7 @@ void ElEl_reco_background_batch()
 
             Float_t evt_Gen_Weight;
 
-            Int_t HLT_El, pu_NtrueInt;
+            Int_t HLT_El;
             t1->SetBranchAddress("el_size", &el_size); //number of els in the event
             t1->SetBranchAddress("el_Pt", &el_Pt);
             t1->SetBranchAddress("el_Eta", &el_Eta);
@@ -252,7 +253,7 @@ void ElEl_reco_background_batch()
                         el_size >= 2 && ((abs(el_Charge[0] - el_Charge[1])) > 0.01) &&
                         el_IDMedium[0] && el_IDMedium[1] &&
                         el_Pt[0] > 29. &&  el_Pt[1] > 10. &&
-                        abs(el_Eta[0]) < 2.4 && abs(el_Eta[1]) < 2.4){ 
+                        abs(el_Eta[0]) < 2.5 && abs(el_Eta[1]) < 2.5){ 
 
                     //only want events with 2 oppositely charged leptons
                     if(el_Charge[0] >0){

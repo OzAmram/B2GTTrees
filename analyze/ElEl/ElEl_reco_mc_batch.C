@@ -114,7 +114,7 @@ void ElEl_reco_mc_batch()
     Double_t cm_m, xF, cost_r, cost_st, el1_pt, el2_pt, el1_eta, el2_eta, jet1_pt, jet2_pt, jet1_eta, jet2_eta, deltaC, 
              gen_weight, reweight, jet1_csv, jet1_cmva, jet2_csv, jet2_cmva;
     Double_t el_id_SF, el_reco_SF, jet1_b_weight, jet2_b_weight, pu_SF;
-    Int_t nJets, jet1_flavour, jet2_flavour;
+    Int_t nJets, jet1_flavour, jet2_flavour, pu_NTrueInt;
     Bool_t is_tau_event;
     Float_t met_pt;
     TLorentzVector el_p, el_m, cm, q1, q2;
@@ -148,6 +148,7 @@ void ElEl_reco_mc_batch()
     t_signal->Branch("jet1_flavour", &jet1_flavour, "jet1_flavour/I");
     t_signal->Branch("jet2_flavour", &jet2_flavour, "jet2_flavour/I");
     t_signal->Branch("is_tau_event", &is_tau_event);
+    t_signal->Branch("pu_NTrueInt", &pu_NTrueInt);
 
 
     TTree *t_back = new TTree("T_back", "Tree for events with no asym (qq, gg)");
@@ -180,6 +181,7 @@ void ElEl_reco_mc_batch()
     t_back->Branch("jet1_flavour", &jet1_flavour, "jet1_flavour/I");
     t_back->Branch("jet2_flavour", &jet2_flavour, "jet2_flavour/I");
     t_back->Branch("is_tau_event", &is_tau_event);
+    t_back->Branch("pu_NTrueInt", &pu_NTrueInt);
 
 
 
@@ -255,7 +257,7 @@ void ElEl_reco_mc_batch()
 
             Float_t evt_Gen_Weight;
 
-            Int_t HLT_El, pu_NtrueInt;
+            Int_t HLT_El;
             t1->SetBranchAddress("el_size", &el_size); //number of els in the event
             t1->SetBranchAddress("el_Pt", &el_Pt);
             t1->SetBranchAddress("el_Eta", &el_Eta);
@@ -315,7 +317,7 @@ void ElEl_reco_mc_batch()
                         el_size >= 2 && ((abs(el_Charge[0] - el_Charge[1])) > 0.01) &&
                         el_IDMedium[0] && el_IDMedium[1] &&
                         el_Pt[0] > 29. &&  el_Pt[1] > 10. &&
-                        abs(el_Eta[0]) < 2.4 && abs(el_Eta[1]) < 2.4){ 
+                        abs(el_Eta[0]) < 2.5 && abs(el_Eta[1]) < 2.5){ 
 
                     //only want events with 2 oppositely charged leptons
                     if(el_Charge[0] >0){

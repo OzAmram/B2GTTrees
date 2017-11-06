@@ -118,31 +118,17 @@ void SingleMuon_data_fake_rate_v2()
 
         t1->SetBranchAddress("evt_NIsoTrk", &evt_NIsoTrk);
 
-        if(data_2016){
-            t1->SetBranchAddress("jetAK4CHS_size", &jet_size);
-            t1->SetBranchAddress("jetAK4CHS_Pt", &jet_Pt);
-            t1->SetBranchAddress("jetAK4CHS_Eta", &jet_Eta);
-            t1->SetBranchAddress("jetAK4CHS_Phi", &jet_Phi);
-            t1->SetBranchAddress("jetAK4CHS_E", &jet_E);
-            t1->SetBranchAddress("jetAK4CHS_CSVv2", &jet_CSV);
-            t1->SetBranchAddress("jetAK4CHS_CMVAv2", &jet_CMVA);
+        t1->SetBranchAddress("jetAK4CHS_size", &jet_size);
+        t1->SetBranchAddress("jetAK4CHS_Pt", &jet_Pt);
+        t1->SetBranchAddress("jetAK4CHS_Eta", &jet_Eta);
+        t1->SetBranchAddress("jetAK4CHS_Phi", &jet_Phi);
+        t1->SetBranchAddress("jetAK4CHS_E", &jet_E);
+        t1->SetBranchAddress("jetAK4CHS_CSVv2", &jet_CSV);
+        t1->SetBranchAddress("jetAK4CHS_CMVAv2", &jet_CMVA);
 
-            t1->SetBranchAddress("HLT_IsoMu24", &HLT_IsoMu);
-            t1->SetBranchAddress("HLT_IsoTkMu24", &HLT_IsoTkMu);
-        }
+        t1->SetBranchAddress("HLT_IsoMu24", &HLT_IsoMu);
+        t1->SetBranchAddress("HLT_IsoTkMu24", &HLT_IsoTkMu);
 
-        else{
-            t1->SetBranchAddress("jetAK4Puppi_size", &jet_size);
-            t1->SetBranchAddress("jetAK4Puppi_Pt", &jet_Pt);
-            t1->SetBranchAddress("jetAK4Puppi_Eta", &jet_Eta);
-            t1->SetBranchAddress("jetAK4Puppi_Phi", &jet_Phi);
-            t1->SetBranchAddress("jetAK4Puppi_E", &jet_E);
-            t1->SetBranchAddress("jetAK4Puppi_CSVv2", &jet_CSV);
-            t1->SetBranchAddress("jetAK4Puppi_CMVAv2", &jet_CMVA);
-
-            t1->SetBranchAddress("HLT_IsoMu20", &HLT_IsoMu);
-            t1->SetBranchAddress("HLT_IsoTkMu20", &HLT_IsoTkMu);
-        }
         t1->SetBranchAddress("met_size", &met_size);
         t1->SetBranchAddress("met_Pt", &met_pt);
 

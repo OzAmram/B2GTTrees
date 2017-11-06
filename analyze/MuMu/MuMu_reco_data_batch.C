@@ -11,9 +11,7 @@
 const double root2 = sqrt(2);
 const char* filename("SingleMuon_files_aug17.txt");
 const TString fout_name("output_files/SingleMuon_data_aug28.root");
-const double alpha = 0.05;
 
-const bool data_2016 = true;
 
 bool is_empty_line(const char *s) {
     while (*s != '\0') {
@@ -33,7 +31,7 @@ void MuMu_reco_data_batch()
     tout->SetDirectory(0);
     Double_t cm_m, xF, cost_r, mu1_pt, mu2_pt, mu1_eta, mu2_eta, jet1_pt, jet2_pt,
              jet1_cmva, jet1_eta, jet2_cmva, jet2_eta;
-    Int_t nJets;
+    Int_t nJets, pu_NTrueInt;
     Float_t met_pt;
     TLorentzVector mu_p, mu_m, cm, q1, q2;
     tout->Branch("m", &cm_m, "m/D");
@@ -53,6 +51,7 @@ void MuMu_reco_data_batch()
     tout->Branch("jet2_CMVA", &jet2_cmva, "jet2_CMVA/D");
     tout->Branch("met_pt", &met_pt, "met_Pt/F");
     tout->Branch("nJets", &nJets, "nJets/I");
+    tout->Branch("pu_NTrueInt", &pu_NTrueInt);
 
 
 
@@ -108,33 +107,20 @@ void MuMu_reco_data_batch()
         t1->SetBranchAddress("mu_SumPhotonPt", &mu_SumPhotonPt);
 
 
-        if(data_2016){
-            t1->SetBranchAddress("jetAK4CHS_size", &jet_size);
-            t1->SetBranchAddress("jetAK4CHS_Pt", &jet_Pt);
-            t1->SetBranchAddress("jetAK4CHS_Eta", &jet_Eta);
-            t1->SetBranchAddress("jetAK4CHS_Phi", &jet_Phi);
-            t1->SetBranchAddress("jetAK4CHS_E", &jet_E);
-            t1->SetBranchAddress("jetAK4CHS_CSVv2", &jet_CSV);
-            t1->SetBranchAddress("jetAK4CHS_CMVAv2", &jet_CMVA);
+        t1->SetBranchAddress("jetAK4CHS_size", &jet_size);
+        t1->SetBranchAddress("jetAK4CHS_Pt", &jet_Pt);
+        t1->SetBranchAddress("jetAK4CHS_Eta", &jet_Eta);
+        t1->SetBranchAddress("jetAK4CHS_Phi", &jet_Phi);
+        t1->SetBranchAddress("jetAK4CHS_E", &jet_E);
+        t1->SetBranchAddress("jetAK4CHS_CSVv2", &jet_CSV);
+        t1->SetBranchAddress("jetAK4CHS_CMVAv2", &jet_CMVA);
 
-            t1->SetBranchAddress("HLT_IsoMu24", &HLT_IsoMu);
-            t1->SetBranchAddress("HLT_IsoTkMu24", &HLT_IsoTkMu);
-        }
+        t1->SetBranchAddress("HLT_IsoMu24", &HLT_IsoMu);
+        t1->SetBranchAddress("HLT_IsoTkMu24", &HLT_IsoTkMu);
 
-        else{
-            t1->SetBranchAddress("jetAK4Puppi_size", &jet_size);
-            t1->SetBranchAddress("jetAK4Puppi_Pt", &jet_Pt);
-            t1->SetBranchAddress("jetAK4Puppi_Eta", &jet_Eta);
-            t1->SetBranchAddress("jetAK4Puppi_Phi", &jet_Phi);
-            t1->SetBranchAddress("jetAK4Puppi_E", &jet_E);
-            t1->SetBranchAddress("jetAK4Puppi_CSVv2", &jet_CSV);
-            t1->SetBranchAddress("jetAK4Puppi_CMVAv2", &jet_CMVA);
-
-            t1->SetBranchAddress("HLT_IsoMu20", &HLT_IsoMu);
-            t1->SetBranchAddress("HLT_IsoTkMu20", &HLT_IsoTkMu);
-        }
         t1->SetBranchAddress("met_size", &met_size);
         t1->SetBranchAddress("met_Pt", &met_pt);
+        t1->SetBranchAddress("pu_NtrueInt",&pu_NtrueInt);
 
         unsigned int nEntries =  t1->GetEntries();
         printf("there are %i entries in this tree\n", nEntries);

@@ -149,7 +149,7 @@ void EMu_data_check_El()
                         ((abs(mu_Charge[0] - el_Charge[0])) > 0.01) &&
                         mu_IsTightMuon[0] && el_IDMedium[0] && 
                         el_Pt[0] > 29. && mu_Pt[0] > 10. &&
-                        bs(mu_Eta[0]) < 2.4 && abs(el_Eta[0]) < 2.4){ 
+                        abs(mu_Eta[0]) < 2.4 && abs(el_Eta[0]) < 2.5){ 
 
                 //See https://twiki.cern.ch/twiki/bin/viewauth/CMS/SWGuideMuonIdRun2 for iso cuts
                 float iso_0 = (mu_SumChargedHadronPt[0] + max(0., mu_SumNeutralHadronPt[0] + mu_SumPhotonPt[0] - 0.5 * mu_SumPUPt[0]))/mu_Pt[0];

@@ -32,7 +32,7 @@ void ElEl_reco_data_batch()
     tout->SetDirectory(0);
     Double_t cm_m, xF, cost_r, el1_pt, el2_pt, el1_eta, el2_eta, jet1_pt, jet2_pt,
              jet1_cmva, jet1_eta, jet2_cmva, jet2_eta;
-    Int_t nJets;
+    Int_t nJets, pu_NTrueInt;
     Float_t met_pt;
     TLorentzVector el_p, el_m, cm, q1, q2;
     tout->Branch("m", &cm_m, "m/D");
@@ -52,6 +52,7 @@ void ElEl_reco_data_batch()
     tout->Branch("jet2_CMVA", &jet2_cmva, "jet2_CMVA/D");
     tout->Branch("met_pt", &met_pt, "met_Pt/F");
     tout->Branch("nJets", &nJets, "nJets/I");
+    tout->Branch("pu_NTrueInt", &pu_NTrueInt);
 
 
 
@@ -114,6 +115,7 @@ void ElEl_reco_data_batch()
 
         t1->SetBranchAddress("met_size", &met_size);
         t1->SetBranchAddress("met_Pt", &met_pt);
+        t1->SetBranchAddress("pu_NtrueInt",&pu_NtrueInt);
 
         unsigned int nEntries =  t1->GetEntries();
         printf("there are %i entries in this tree\n", nEntries);
@@ -126,7 +128,7 @@ void ElEl_reco_data_batch()
                     el_size >= 2 && ((abs(el_Charge[0] - el_Charge[1])) > 0.01) &&
                     el_IDMedium[0] && el_IDMedium[1] &&
                     el_Pt[0] > 29. &&  el_Pt[1] > 10. &&
-                    abs(el_Eta[0]) < 2.4 && abs(el_Eta[1]) < 2.4){ 
+                    abs(el_Eta[0]) < 2.5 && abs(el_Eta[1]) < 2.5){ 
             /*
             if(good_trigger &&
                     el_size >=2 && 
