@@ -93,7 +93,7 @@ void SingleMuon_data_fake_rate_v3()
 
         UInt_t mu_size, met_size, jet_size;
         Float_t mu_Pt[MU_SIZE], mu_Eta[MU_SIZE], mu_Phi[MU_SIZE], mu_E[MU_SIZE], 
-                mu_IsTightMuon[MU_SIZE], mu_Charge[MU_SIZE];
+                mu_IsTightMuon[MU_SIZE], mu_IsMediumMuon[MU_SIZE], mu_Charge[MU_SIZE];
 
         Float_t mu_SumChargedHadronPt[MU_SIZE], mu_SumNeutralHadronPt[MU_SIZE], mu_SumPUPt[MU_SIZE], mu_SumPhotonPt[MU_SIZE];
 
@@ -110,6 +110,7 @@ void SingleMuon_data_fake_rate_v3()
         t1->SetBranchAddress("mu_Charge", &mu_Charge);
 
         t1->SetBranchAddress("mu_IsTightMuon", &mu_IsTightMuon);
+        t1->SetBranchAddress("mu_IsMediumMuon", &mu_IsMediumMuon);
         t1->SetBranchAddress("mu_SumChargedHadronPt", &mu_SumChargedHadronPt);
         t1->SetBranchAddress("mu_SumNeutralHadronPt", &mu_SumNeutralHadronPt);
         t1->SetBranchAddress("mu_SumPUPt", &mu_SumPUPt);

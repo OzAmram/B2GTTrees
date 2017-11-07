@@ -36,9 +36,6 @@ Double_t bcdef_lumi = 5.746 + 2.572 + 4.242 + 4.024 + 3.104;
 // adding new Hv2 data set to get full 2016 luminosity
 Double_t gh_lumi =  7.573 + 0.215 + 8.434;
 Double_t tot_lumi = 35.9;
-//                   150-200  200-250 250-350 350-500 500-700 700+
-Double_t alphas[6] = {0.0981, 0.0703, 0.0480, 0.0386, 0.0148, 0.0180};
-Double_t alpha = alphas[5];
 
 bool has_no_bjets(Int_t nJets, Double_t jet1_pt, Double_t jet2_pt, 
         Double_t jet1_cmva, Double_t jet2_cmva){
@@ -91,7 +88,7 @@ int gen_data_template(TTree *t1, TH2F* h, vector<double> *v_m, vector<double> *v
 }
 
 
-int gen_mc_template(TTree *t1, TH2F* h_sym, TH2F *h_asym, TH2F *h_count, 
+int gen_mc_template(TTree *t1, Double_t alpha, TH2F* h_sym, TH2F *h_asym, TH2F *h_count, 
         Double_t m_low, Double_t m_high, int flag = FLAG_MUONS){
     Long64_t nEntries  =  t1->GetEntries();
     //printf("size is %i \n", nEntries);

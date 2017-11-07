@@ -21,7 +21,7 @@
 #include "TSystem.h"
 //#include"Minuit2/Minuit2Minimizer.h"
 #include "Math/Functor.h"
-#include "TemplateMaker.C"
+#include "../TemplateMaker.C"
 
 
 
@@ -31,6 +31,8 @@ Float_t xf_bins[] = {0., 0.05, 0.1, 0.15, 0.25, 1.0};
 int n_m_bins = 1;
 int n_cost_bins = 10;
 Float_t cost_bins[] = {-1.0, -.8, -.6, -.4, -.2, 0., 0.2, 0.4, 0.6, 0.8, 1.0};
+Double_t alphas[6] = {0.0981, 0.0703, 0.0480, 0.0386, 0.0148, 0.0180};
+Double_t alpha = alphas[5];
 
 int FLAG = FLAG_ELECTRONS;
 
@@ -43,8 +45,8 @@ int FLAG = FLAG_ELECTRONS;
 //Float_t cost_bins[] = {-1.0, -.75, -.5, -.25, 0., 0.25, 0.5, 0.75, 1.0};
 
 
-float m_low = 650;
-float m_high = 800;
+float m_low = 700;
+float m_high = 100000;
 //alpha = 0.0981;
 
 bool print = true;
@@ -167,7 +169,7 @@ void setup(){
             n_xf_bins, xf_bins, n_cost_bins, cost_bins);
 
 
-    gen_mc_template(t_mc, h_sym, h_asym, h_sym_count, m_low, m_high, FLAG);
+    gen_mc_template(t_mc, alpha, h_sym, h_asym, h_sym_count, m_low, m_high, FLAG);
     TTree *ts[2] = {t_back, t_nosig};
     gen_combined_background_template(2, ts, h_back, m_low, m_high, FLAG);
 
@@ -176,7 +178,7 @@ void setup(){
     return;
 }
 
-void AFB_fit(){
+void single_fit(){
     setup();
 
     printf("Integrals are %f %f %f %f  \n", h_data->Integral(), h_sym->Integral(), 

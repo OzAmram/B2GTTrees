@@ -22,7 +22,7 @@
 #include "TSystem.h"
 //#include"Minuit2/Minuit2Minimizer.h"
 #include "Math/Functor.h"
-#include "TemplateMaker.C"
+#include "../TemplateMaker.C"
 
 
 
@@ -32,6 +32,8 @@ Float_t xf_bins[] = {0., 0.05, 0.1, 0.15, 0.25, 1.0};
 int n_m_bins = 1;
 int n_cost_bins = 10;
 Float_t cost_bins[] = {-1.0, -.8, -.6, -.4, -.2, 0., 0.2, 0.4, 0.6, 0.8, 1.0};
+Double_t alphas[6] = {0.0981, 0.0703, 0.0480, 0.0386, 0.0148, 0.0180};
+Double_t alpha = alphas[5];
 
 
 //int n_xf_bins = 4;
@@ -183,7 +185,7 @@ void setup(){
             n_xf_bins, xf_bins, n_cost_bins, cost_bins);
 
 
-    gen_mc_template(t_elel_mc, h_elel_sym, h_elel_asym, h_elel_sym_count, m_low, m_high, FLAG_ELECTRONS);
+    gen_mc_template(t_elel_mc, alpha, h_elel_sym, h_elel_asym, h_elel_sym_count, m_low, m_high, FLAG_ELECTRONS);
     TTree *elel_ts[2] = {t_elel_back, t_elel_nosig};
     gen_combined_background_template(2, elel_ts, h_elel_back, m_low, m_high, FLAG_ELECTRONS);
 
@@ -204,7 +206,7 @@ void setup(){
             n_xf_bins, xf_bins, n_cost_bins, cost_bins);
 
 
-    gen_mc_template(t_mumu_mc, h_mumu_sym, h_mumu_asym, h_mumu_sym_count, m_low, m_high, FLAG_MUONS);
+    gen_mc_template(t_mumu_mc, alpha, h_mumu_sym, h_mumu_asym, h_mumu_sym_count, m_low, m_high, FLAG_MUONS);
     TTree *mumu_ts[2] = {t_mumu_back, t_mumu_nosig};
     gen_combined_background_template(2, mumu_ts, h_mumu_back, m_low, m_high, FLAG_MUONS);
 
@@ -213,7 +215,7 @@ void setup(){
     return;
 }
 
-void AFB_combined_fit(){
+void combined_fit(){
     setup();
 
     printf("ElEL: Integrals are %f %f %f %f  \n", h_elel_data->Integral(), h_elel_sym->Integral(), 
