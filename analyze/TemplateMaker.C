@@ -413,6 +413,86 @@ int gen_combined_background_template(int nTrees, TTree **ts, TH2F* h,
     return 0;
 }
 
+void make_emu_m_hist(TTree *t1, TH1F *h_m, bool is_data = false, int flag1 = FLAG_MUONS){
+    Long64_t size  =  t1->GetEntries();
+    Double_t m, xF, cost, mu1_pt, mu2_pt, jet1_cmva, jet2_cmva, gen_weight;
+    Double_t bcdef_HLT_SF, bcdef_iso_SF, bcdef_id_SF;
+    Double_t gh_HLT_SF, gh_iso_SF, gh_id_SF, el_id_SF, el_reco_SF;
+    Double_t jet1_pt, jet2_pt, jet1_b_weight, jet2_b_weight, pu_SF;
+    Float_t met_pt;
+    Int_t nJets;
+    nJets = 2;
+    pu_SF=1;
+    TH2D *h_m_bcdef = (TH2D *)h_m->Clone("h_m_bcdef");
+    TH2D *h_m_gh = (TH2D *)h_m->Clone("h_m_gh");
+    TLorentzVector *el=0;
+    TLorentzVector *mu=0;
+
+    t1->SetBranchAddress("el", &el);
+    t1->SetBranchAddress("mu", &mu);
+    t1->SetBranchAddress("met_pt", &met_pt);
+    t1->SetBranchAddress("jet2_CMVA", &jet2_cmva);
+    t1->SetBranchAddress("jet1_CMVA", &jet1_cmva);
+    t1->SetBranchAddress("jet1_pt", &jet1_pt);
+    t1->SetBranchAddress("jet2_pt", &jet2_pt);
+    if(!is_data){
+        t1->SetBranchAddress("nJets", &nJets);
+        t1->SetBranchAddress("gen_weight", &gen_weight);
+        t1->SetBranchAddress("jet1_b_weight", &jet1_b_weight);
+        t1->SetBranchAddress("jet2_b_weight", &jet2_b_weight);
+        t1->SetBranchAddress("pu_SF", &pu_SF);
+        t1->SetBranchAddress("bcdef_HLT_SF", &bcdef_HLT_SF);
+        t1->SetBranchAddress("bcdef_iso_SF", &bcdef_iso_SF);
+        t1->SetBranchAddress("bcdef_id_SF", &bcdef_id_SF);
+        t1->SetBranchAddress("gh_HLT_SF", &gh_HLT_SF);
+        t1->SetBranchAddress("gh_iso_SF", &gh_iso_SF);
+        t1->SetBranchAddress("gh_id_SF", &gh_id_SF);
+        t1->SetBranchAddress("el_id_SF", &el_id_SF);
+        t1->SetBranchAddress("el_reco_SF", &el_reco_SF);     
+    }
+
+    for (int i=0; i<size; i++) {
+        t1->GetEntry(i);
+        bool no_bjets = has_no_bjets(nJets, jet1_pt, jet2_pt, jet1_cmva, jet2_cmva);
+        TLorentzVector cm;
+        cm = *el + *mu;
+        m = cm.M();
+
+        if(m >= 150. && met_pt < 50. && no_bjets){
+            if(is_data){
+                h_m->Fill(m);
+            }
+            else{
+                Double_t evt_weight = gen_weight * pu_SF * el_id_SF * el_reco_SF;
+                Double_t bcdef_weight = bcdef_iso_SF * bcdef_id_SF;
+                Double_t gh_weight = gh_iso_SF * gh_id_SF;
+                if(flag1 == FLAG_MUONS){
+                    bcdef_weight *= bcdef_HLT_SF;
+                    gh_weight *= gh_HLT_SF;
+                }
+                if (nJets >= 1){
+                    evt_weight *= jet1_b_weight;
+                }
+                if (nJets >= 2){
+                    evt_weight *= jet2_b_weight;
+                }
+                //printf(" %.2e %.2e %.2e \n", evt_weight, evt_weight *bcdef_weight, evt_weight *gh_weight);
+                h_m_bcdef->Fill(m,evt_weight * bcdef_weight);
+                h_m_gh->Fill(m, evt_weight * gh_weight);
+            }
+
+
+            
+        }
+    }
+    if(!is_data){
+        h_m_bcdef ->Scale(bcdef_lumi * 1000);
+        h_m_gh ->Scale(gh_lumi * 1000);
+        //Printf("%.1f %.1f", h_m_bcdef->Integral(), h_m_gh->Integral());
+        h_m->Add(h_m_bcdef, h_m_gh);
+    }
+}
+
 
 void make_m_cost_hist(TTree *t1, TH1F *h_m, TH1F *h_cost, bool is_data=false, int flag1 = FLAG_MUONS, int flag2 = FLAG_NORMAL){
     //read event data

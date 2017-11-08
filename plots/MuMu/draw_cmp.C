@@ -85,26 +85,6 @@ void draw_cmp(){
 
 
 
-    /*
-    TH1F *ww_m = new TH1F("ww_m", "MC Signal (qqbar, qglu, qbarglu)", 30, 150, 2000);
-    TH1F *ww_cost = new TH1F("ww_cost", "MC Signal (qqbar, qglu, qbarglu)", 40, -1,1);
-    TH1F *wz_m = new TH1F("wz_m", "MC Signal (qqbar, qglu, qbarglu)", 30, 150, 2000);
-    TH1F *wz_cost = new TH1F("wz_cost", "MC Signal (qqbar, qglu, qbarglu)", 40, -1,1);
-    TH1F *zz_m = new TH1F("zz_m", "MC Signal (qqbar, qglu, qbarglu)", 30, 150, 2000);
-    TH1F *zz_cost = new TH1F("zz_cost", "MC Signal (qqbar, qglu, qbarglu)", 40, -1,1);
-    TH1F *diboson_m = new TH1F("diboson_m", "DiBoson (WW, WZ, ZZ)", 30, 150, 2000);
-    TH1F *diboson_cost = new TH1F("diboson_cost", "DiBoson (WW, WZ,ZZ)", 40, -1,1);
-    make_m_cost_hist(t_ww, ww_m, ww_cost, false);
-    make_m_cost_hist(t_wz, wz_m, wz_cost, false);
-    make_m_cost_hist(t_zz, zz_m, zz_cost, false);
-    diboson_m->Add(ww_m);
-    diboson_m->Add(wz_m);
-    diboson_m->Add(zz_m);
-
-    diboson_cost->Add(ww_cost);
-    diboson_cost->Add(wz_cost);
-    diboson_cost->Add(zz_cost);
-    */
 
     TH1F *diboson_m = new TH1F("diboson_m", "DiBoson (WW, WZ, ZZ)", 30, 150, 2000);
     TH1F *diboson_cost = new TH1F("diboson_cost", "DiBoson (WW, WZ,ZZ)", 40, -1,1);
