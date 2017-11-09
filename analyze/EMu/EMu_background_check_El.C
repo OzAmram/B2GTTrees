@@ -20,8 +20,8 @@ const double root2 = sqrt(2);
 double Ebeam = 6500.;
 double Pbeam = sqrt(Ebeam*Ebeam - 0.938*0.938);
 
-char *filename("non_QCD_files_aug29.txt");
-const TString fout_name("output_files/EMu_background_El_nov3.root");
+char *filename("WJets_files_aug29.txt");
+const TString fout_name("output_files/EMu_background_WJets_El_nov8.root");
 const bool PRINT=false;
 
 

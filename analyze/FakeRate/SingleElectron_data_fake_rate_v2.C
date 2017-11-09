@@ -52,10 +52,10 @@ void SingleElectron_data_fake_rate_v2()
     Float_t met_pt;
     TLorentzVector mu_p, mu_m, cm, q1, q2;
 
-    Float_t pt_bins[] = {0,35, 45, 55,65,80, 120, 200, 400};
+    Float_t pt_bins[] = {0,20, 30, 45, 70,100, 200, 1000};
+    int n_pt_bins = 7;
     Float_t eta_bins[] = {0, 0.9, 2.4};
     int n_eta_bins = 2;
-    int n_pt_bins = 8;
 
     TH2D *h_pass = new TH2D("h_pass", "Rate of passing ISO cut for single electrons",  n_eta_bins, eta_bins, n_pt_bins, pt_bins);
     TH2D *h_total = new TH2D("h_total", "Total number of single electrons",  n_eta_bins, eta_bins, n_pt_bins, pt_bins);
@@ -132,7 +132,8 @@ void SingleElectron_data_fake_rate_v2()
             if(el_size > EL_SIZE) printf("WARNING: MU_SIZE TOO LARGE \n");
             if(met_size != 1) printf("WARNING: Met size not equal to 1\n");
             bool good_trigger = HLT_El;
-            if( el_size >= 3 && el_Pt[0] > 29. && el_IDMedium_NoIso[0] && abs(el_Eta[0]) < 2.4
+            if( good_trigger &&
+                    el_size >= 3 && el_Pt[0] > 29. && el_IDMedium_NoIso[0] && abs(el_Eta[0]) < 2.4
                     && el_Pt[1] > 10. && el_IDMedium_NoIso[1] && abs(el_Eta[1]) < 2.4
                     && el_Pt[2] > 10. && el_IDMedium_NoIso[2] && abs(el_Eta[2]) < 2.4){
                 //Want events with 3 elons, 2 from Z and 1 extra

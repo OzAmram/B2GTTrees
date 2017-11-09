@@ -52,10 +52,10 @@ void SingleMuon_data_fake_rate_v2()
     Float_t met_pt;
     TLorentzVector mu_p, mu_m, cm, q1, q2;
 
-    Float_t pt_bins[] = {0,35, 45, 55,65,80, 120, 200, 400};
+    Float_t pt_bins[] = {0,20, 30, 45, 70,100, 200, 1000};
+    int n_pt_bins = 7;
     Float_t eta_bins[] = {0, 0.9, 2.4};
     int n_eta_bins = 2;
-    int n_pt_bins = 8;
 
     TH2D *h_pass = new TH2D("h_pass", "Rate of passing ISO cut",  n_eta_bins, eta_bins, n_pt_bins, pt_bins);
     TH2D *h_total = new TH2D("h_total", "Total number of muons",  n_eta_bins, eta_bins, n_pt_bins, pt_bins);
