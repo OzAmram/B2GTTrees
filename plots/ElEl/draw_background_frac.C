@@ -37,11 +37,14 @@ void draw_background_frac(){
     TFile *f_ttbar = TFile::Open("../analyze/output_files/ElEl_TTbar_sep25.root");
     TTree *t_ttbar = (TTree *)f_ttbar->Get("T_data");
 
-    TFile *f_QCD = TFile::Open("../analyze/output_files/ElEl_QCD_est_sep29.root");
+    TFile *f_QCD = TFile::Open("../analyze/output_files/ElEl_QCD_est_nov2.root");
     TTree *t_QCD = (TTree *)f_QCD->Get("T_data");
 
-    TFile *f_WJets = TFile::Open("../analyze/output_files/ElEl_WJets_est_sep29.root");
+    TFile *f_WJets = TFile::Open("../analyze/output_files/ElEl_WJets_est_nov2.root");
     TTree *t_WJets = (TTree *)f_WJets->Get("T_data");
+
+    TFile *f_WJets_mc = TFile::Open("../analyze/output_files/ElEl_fakerate_WJets_MC_nov2.root");
+    TTree *t_WJets_mc = (TTree *)f_WJets_mc->Get("T_data");
 
     TFile *f_diboson = TFile::Open("../analyze/output_files/ElEl_diboson_sep25.root");
     TTree *t_diboson = (TTree *)f_diboson->Get("T_data");
@@ -65,8 +68,6 @@ void draw_background_frac(){
     TH1F *diboson_cost = new TH1F("diboson_cost", "MC Signal (qqbar, qglu, qbarglu)", 40, -1,1);
     TH1F *QCD_cost = new TH1F("QCD_cost", "MC Signal (qqbar, qglu, qbarglu)", 40, -1,1);
     
-    TH1F *WJets_m = new TH1F("WJets_m", "MC Signal (qqbar, qglu, qbarglu)", nBins, m_bins);
-    TH1F *WJets_cost = new TH1F("WJets_cost", "MC Signal (qqbar, qglu, qbarglu)", 40, -1,1);
     /*
     TH1F *ww_m = new TH1F("ww_m", "MC Signal (qqbar, qglu, qbarglu)", nBins, m_bins);
     TH1F *ww_cost = new TH1F("ww_cost", "MC Signal (qqbar, qglu, qbarglu)", 40, -1,1);
@@ -84,10 +85,8 @@ void draw_background_frac(){
     make_m_cost_hist(t_ttbar, ttbar_m, ttbar_cost, false, FLAG_ELECTRONS);
     make_m_cost_hist(t_wt, wt_m, wt_cost, false, FLAG_ELECTRONS);
     make_m_cost_hist(t_diboson, diboson_m, diboson_cost, false, FLAG_ELECTRONS);
-    make_m_cost_hist(t_QCD, QCD_m, QCD_cost, true, FLAG_ELECTRONS, FLAG_QCD);
-    make_m_cost_hist(t_WJets, WJets_m, WJets_cost, true, FLAG_ELECTRONS, FLAG_WJETS);
-    QCD_m->Add(WJets_m);
-    QCD_cost->Add(WJets_cost);
+    Fakerate_est_el(t_WJets, t_QCD, t_WJets_mc, QCD_m, QCD_cost);
+
 
     /*
      

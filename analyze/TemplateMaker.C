@@ -731,16 +731,17 @@ typedef struct {
 } FakeRate;
 //static type means functions scope is only this file, to avoid conflicts
 static void setup_new_el_fakerate(FakeRate *FR){
-    TFile *f0 = TFile::Open("../analyze/FakeRate/SingleElectron_data_fake_rate_oct23.root");
-    TH2D *h1 = (TH2D *) gDirectory->Get("h_rate")->Clone();
+    TFile *f0 = TFile::Open("../analyze/FakeRate/root_files/SingleElectron_data_fake_rate_v2_corrected_nov9.root");
+    TH2D *h1 = (TH2D *) gDirectory->Get("h_rate_new")->Clone();
     h1->SetDirectory(0);
     FR->h = h1;
     f0->Close();
 }
 static void setup_new_mu_fakerate(FakeRate *FR){
-    TFile *f0 = TFile::Open("../analyze/FakeRate/SingleMuon_data_fake_rate_oct23.root");
+    TFile *f0 = TFile::Open("../analyze/FakeRate/root_files/SingleMuon_data_fake_rate_v2_corrected_nov14.root");
+    f0->ls();
     TDirectory *subdir = gDirectory;
-    TH2D *h1 = (TH2D *) subdir->Get("h_rate")->Clone();
+    TH2D *h1 = (TH2D *) subdir->Get("h_rate_new")->Clone();
     h1->SetDirectory(0);
     h1->Print();
     FR->h = h1;
@@ -750,7 +751,7 @@ static void setup_new_mu_fakerate(FakeRate *FR){
 
 static Double_t get_new_fakerate_prob(Double_t pt, Double_t eta, TH2D *h){
     //pt=35;
-    if (pt >= 100) pt =100 ;
+    if (pt >= 80) pt =80 ;
 
 
     TAxis* x_ax =  h->GetXaxis();
@@ -763,6 +764,7 @@ static Double_t get_new_fakerate_prob(Double_t pt, Double_t eta, TH2D *h){
     //printf("prob: %.2f \n", prob);
     if(prob < 0.001 || prob >= 0.99) printf("Warning: %.2f Rate for pt %.0f, eta %1.1f! \n", prob, pt, eta);
     prob = min(prob, 0.98);
+    prob = max(prob, 0.07);
     //printf("Efficiency is %f \n", eff);
     return prob;
 }
