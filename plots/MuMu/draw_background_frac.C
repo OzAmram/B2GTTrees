@@ -38,11 +38,14 @@ void draw_background_frac(){
     TFile *f_ttbar = TFile::Open("../analyze/output_files/MuMu_TTbar_aug30.root");
     TTree *t_ttbar = (TTree *)f_ttbar->Get("T_data");
 
-    TFile *f_QCD = TFile::Open("../analyze/output_files/MuMu_QCD_est_oct9.root");
+    TFile *f_QCD = TFile::Open("../analyze/output_files/MuMu_QCD_est_nov2.root");
     TTree *t_QCD = (TTree *)f_QCD->Get("T_data");
 
-    TFile *f_WJets = TFile::Open("../analyze/output_files/MuMu_WJets_est_oct5.root");
+    TFile *f_WJets = TFile::Open("../analyze/output_files/MuMu_WJets_est_Nov2.root");
     TTree *t_WJets = (TTree *)f_WJets->Get("T_data");
+
+    TFile *f_WJets_mc = TFile::Open("../analyze/output_files/MuMu_fakerate_Wjets_MC_nov2.root");
+    TTree *t_WJets_mc = (TTree *)f_WJets_mc->Get("T_data");
     /*
     TFile *f_ww = TFile::Open("../analyze/output_files/WW_background_jun06.root");
     TTree *t_ww = (TTree *)f_ww->Get("T_data");
@@ -70,12 +73,11 @@ void draw_background_frac(){
     TH1F *ttbar_cost = new TH1F("back_cost", "TTbar", 40, -1,1);
 
     TH1F *diboson_m = new TH1F("diboson_m", "MC Signal (qqbar, qglu, qbarglu)", nBins, m_bins);
-    TH1F *QCD_m = new TH1F("QCD_m", "MC Signal (qqbar, qglu, qbarglu)", nBins, m_bins);
     TH1F *diboson_cost = new TH1F("diboson_cost", "MC Signal (qqbar, qglu, qbarglu)", 40, -1,1);
+
+    TH1F *QCD_m = new TH1F("QCD_m", "MC Signal (qqbar, qglu, qbarglu)", nBins, m_bins);
     TH1F *QCD_cost = new TH1F("QCD_cost", "MC Signal (qqbar, qglu, qbarglu)", 40, -1,1);
     
-    TH1F *WJets_m = new TH1F("WJets_m", "MC Signal (qqbar, qglu, qbarglu)", nBins, m_bins);
-    TH1F *WJets_cost = new TH1F("WJets_cost", "MC Signal (qqbar, qglu, qbarglu)", 40, -1,1);
     /*
     TH1F *ww_m = new TH1F("ww_m", "MC Signal (qqbar, qglu, qbarglu)", nBins, m_bins);
     TH1F *ww_cost = new TH1F("ww_cost", "MC Signal (qqbar, qglu, qbarglu)", 40, -1,1);
@@ -93,10 +95,7 @@ void draw_background_frac(){
     make_m_cost_hist(t_ttbar, ttbar_m, ttbar_cost, false, FLAG_MUONS);
     make_m_cost_hist(t_wt, wt_m, wt_cost, false, FLAG_MUONS);
     make_m_cost_hist(t_diboson, diboson_m, diboson_cost, false, FLAG_MUONS);
-    make_m_cost_hist(t_QCD, QCD_m, QCD_cost, true, FLAG_MUONS, FLAG_QCD);
-    make_m_cost_hist(t_WJets, WJets_m, WJets_cost, true, FLAG_MUONS, FLAG_WJETS);
-    QCD_m->Add(WJets_m);
-    QCD_cost->Add(WJets_cost);
+    Fakerate_est_mu(t_WJets, t_QCD, t_WJets_mc, QCD_m, QCD_cost);
 
     /*
      
@@ -247,8 +246,6 @@ void draw_background_frac(){
     leg2->AddEntry(QCD_est_frac, "QCD", "l");
     leg2->Draw();
 
-    writeExtraText = true;
-    extraText = "Preliminary";
     //lumi_sqrtS = "";       // used with iPeriod = 0, e.g. for simulation-only plots (default is an empty string)
     int iPeriod = 4; 
     CMS_lumi(c3, iPeriod, 33 );

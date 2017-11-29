@@ -42,7 +42,7 @@ void SetErrors(TH1D *h_pass, TH1D *h_total){
 
 
 void draw_mc_fakerate(){
-    TFile *f = TFile::Open("../analyze/output_files/SingleEl_mc_fakerate_contam_v2_nov7.root");
+    TFile *f = TFile::Open("../analyze/FakeRate/root_files/SingleEl_mc_fakerate_contam_v2_nov28.root");
 
     TH2D* h_pass = (TH2D *)f->Get("h_pass"); 
     TH2D* h_total = (TH2D *)f->Get("h_total"); 
