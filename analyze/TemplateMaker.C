@@ -547,9 +547,10 @@ void gen_fakes_template(TTree *t_WJets, TTree *t_QCD, TTree *t_MC, TH2F *h,
                     if(iso_mu ==1) mu1_fakerate = get_new_fakerate_prob(mu2_pt, mu2_eta, FR.h);
                     evt_fakerate = -(mu1_fakerate * mc_weight)/(1-mu1_fakerate);
                 }
-                if(has_no_bjets
+                if(m >= m_low && m <= m_high && met_pt < 50.  && no_bjets){
 
-                h->Fill(xF, cost, evt_fakerate);
+                    h->Fill(xF, cost, evt_fakerate);
+                }
 
             }
 
