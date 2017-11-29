@@ -97,7 +97,7 @@ void draw_background_frac(){
     */
         
     
-    Double_t emu_scaling = 1.00;
+    Double_t emu_scaling = 1.05;
 
     Double_t ttbar_frac[nBins], ttbar_frac_unc[nBins], diboson_frac[nBins], diboson_frac_unc[nBins], bin_center[nBins];
     Double_t back_frac[nBins], back_frac_unc[nBins], nosig_frac[nBins], nosig_frac_unc[nBins];

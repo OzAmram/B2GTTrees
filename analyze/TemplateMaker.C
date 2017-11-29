@@ -54,16 +54,17 @@ bool has_no_bjets(Int_t nJets, Double_t jet1_pt, Double_t jet2_pt,
 typedef struct {
     TH2D *h;
 } FakeRate;
+//
 //static type means functions scope is only this file, to avoid conflicts
 static void setup_new_el_fakerate(FakeRate *FR){
-    TFile *f0 = TFile::Open("../analyze/FakeRate/root_files/SingleElectron_data_fake_rate_v2_corrected_nov9.root");
+    TFile *f0 = TFile::Open("../analyze/FakeRate/root_files/SingleElectron_data_fake_rate_v2_corrected_nov29.root");
     TH2D *h1 = (TH2D *) gDirectory->Get("h_rate_new")->Clone();
     h1->SetDirectory(0);
     FR->h = h1;
     f0->Close();
 }
 static void setup_new_mu_fakerate(FakeRate *FR){
-    TFile *f0 = TFile::Open("../analyze/FakeRate/root_files/SingleMuon_data_fake_rate_v2_corrected_nov14.root");
+    TFile *f0 = TFile::Open("../analyze/FakeRate/root_files/SingleMuon_data_fake_rate_v2_corrected_nov29.root");
     f0->ls();
     TDirectory *subdir = gDirectory;
     TH2D *h1 = (TH2D *) subdir->Get("h_rate_new")->Clone();
@@ -88,14 +89,12 @@ static Double_t get_new_fakerate_prob(Double_t pt, Double_t eta, TH2D *h){
     Double_t prob = h->GetBinContent(xbin, ybin);
     //printf("prob: %.2f \n", prob);
     if(prob < 0.001 || prob >= 0.99){
-        //printf("Warning: %.2f Rate for pt %.0f, eta %1.1f! \n Trying 1 lower pt bin \n", prob, pt, eta);
-        ybin -= 1;
+        printf("Warning: %.2f Rate for pt %.0f, eta %1.1f! \n", prob, pt, eta);
+        ybin -=1;
         prob = h->GetBinContent(xbin, ybin);
-        if(prob < 0.001 || prob >= 0.99){
-            //printf("Still  %.2f Rate. ", prob, pt, eta);
-        }
+        if(prob < 0.001) printf("Tried 1 lower pt bin and still 0 fakerate \n");
     }
-        
+
     prob = min(prob, 0.98);
     prob = max(prob, 0.07);
     //printf("Efficiency is %f \n", eff);
@@ -470,6 +469,7 @@ int gen_background_template(TTree *t1, TH2F* h, TH2F* h_count,
     t1->ResetBranchAddresses();
     return 0;
 }
+
 void gen_fakes_template(TTree *t_WJets, TTree *t_QCD, TTree *t_MC, TH2F *h, 
         Double_t m_low, Double_t m_high, int flag = FLAG_MUONS){
     if(flag == FLAG_MUONS){

@@ -263,8 +263,6 @@ void draw_cmp(){
    ratio->GetXaxis()->SetLabelFont(43); // Absolute font size in pixel (precision 3)
    ratio->GetXaxis()->SetLabelSize(20);
  
-    writeExtraText = true;
-    extraText = "Preliminary";
     //lumi_sqrtS = "";       // used with iPeriod = 0, e.g. for simulation-only plots (default is an empty string)
     int iPeriod = 4; 
     CMS_lumi(pad1, iPeriod, 33 );
