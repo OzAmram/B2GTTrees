@@ -547,6 +547,7 @@ void gen_fakes_template(TTree *t_WJets, TTree *t_QCD, TTree *t_MC, TH2F *h,
                     if(iso_mu ==1) mu1_fakerate = get_new_fakerate_prob(mu2_pt, mu2_eta, FR.h);
                     evt_fakerate = -(mu1_fakerate * mc_weight)/(1-mu1_fakerate);
                 }
+                if(has_no_bjets
 
                 h->Fill(xF, cost, evt_fakerate);
 
@@ -622,8 +623,11 @@ void gen_fakes_template(TTree *t_WJets, TTree *t_QCD, TTree *t_MC, TH2F *h,
                     if(iso_el ==1) el1_fakerate = get_new_fakerate_prob(el2_pt, el2_eta, FR.h);
                     evt_fakerate = -(el1_fakerate * mc_weight)/(1-el1_fakerate);
                 }
+            
+                if(m >= m_low && m <= m_high && met_pt < 50.  && no_bjets){
 
-                h->Fill(xF, cost, evt_fakerate);
+                    h->Fill(xF, cost, evt_fakerate);
+                }
 
             }
 
@@ -636,6 +640,7 @@ int gen_combined_background_template(int nTrees, TTree **ts, TH2F* h,
         Double_t m_low, Double_t m_high, int flag = FLAG_MUONS){
     h->Sumw2();
     gen_fakes_template(t_WJets, t_QCD, t_WJets_contam, h, m_low, m_high, flag);
+    printf("QCD Weight is %.2f \n", h->Integral());
     for(int i=0; i<nTrees; i++){
         TTree *t1 = ts[i];
         Long64_t nEntries  =  t1->GetEntries();
@@ -720,6 +725,7 @@ int gen_combined_background_template(int nTrees, TTree **ts, TH2F* h,
 
         t1->ResetBranchAddresses();
     }
+    printf("Tot Weight is %.2f \n", h->Integral());
     h->Scale(1./h->Integral());
     return 0;
 }
@@ -1120,8 +1126,10 @@ void Fakerate_est_mu(TTree *t_WJets, TTree *t_QCD, TTree *t_MC, TH1F *h_m, TH1F 
 
 
 
-            h_m->Fill(m, evt_fakerate);
-            h_cost->Fill(cost, evt_fakerate);
+            if(met_pt < 50.  && no_bjets){
+                h_m->Fill(m, evt_fakerate);
+                h_cost->Fill(cost, evt_fakerate);
+            }
         }
 
     }
@@ -1197,8 +1205,10 @@ void Fakerate_est_el(TTree *t_WJets, TTree *t_QCD, TTree *t_MC, TH1F *h_m, TH1F 
 
 
 
-            h_m->Fill(m, evt_fakerate);
-            h_cost->Fill(cost, evt_fakerate);
+            if(met_pt < 50.  && no_bjets){
+                h_m->Fill(m, evt_fakerate);
+                h_cost->Fill(cost, evt_fakerate);
+            }
         }
 
     }

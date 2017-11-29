@@ -35,7 +35,7 @@ Float_t m_bins[] = {150,200,250,350,500,700,100000};
 Double_t alphas[6] = {0.0981, 0.0703, 0.0480, 0.0386, 0.0148, 0.0180};
 Double_t alpha;
 
-int FLAG = FLAG_ELECTRONS;
+int FLAG = FLAG_MUONS;
 
 //int n_xf_bins = 4;
 //float xf_max = 1.0;
@@ -62,6 +62,7 @@ TH2F *h_mc_count, *h_sym_count;
 TAxis *x_ax, *y_ax, *z_ax;
 
 //MC templates
+/*
 TFile* f_mc = (TFile*) TFile::Open("output_files/ElEl_DY_sep25.root");
 TTree *t_mc = (TTree *) f_mc ->Get("T_data");
 TTree *t_nosig = (TTree *) f_mc ->Get("T_back");
@@ -70,7 +71,7 @@ TTree *t_back = (TTree *) f_back ->Get("T_data");
 
 TFile *f_data = TFile::Open("output_files/SingleElectron_data_sep22.root");
 TTree *t_data = (TTree *)f_data->Get("T_data"); 
-/*
+*/
 TFile* f_mc = (TFile*) TFile::Open("output_files/MuMu_DY_sep8.root");
 TTree *t_mc = (TTree *) f_mc ->Get("T_data");
 TTree *t_nosig = (TTree *) f_mc ->Get("T_back");
@@ -79,13 +80,18 @@ TTree *t_back = (TTree *) f_back ->Get("T_data");
 
 TFile *f_data = TFile::Open("output_files/SingleMuon_data_aug28.root");
 TTree *t_data = (TTree *)f_data->Get("T_data"); 
-*/
 
 
 vector<double> v_xF;
 vector<double> v_m;
 vector<double> v_cost;
+
+vector<double> v_xF_back;
+vector<double> v_m_back;
+vector<double> v_cost_back;
+vector<double> v_weight_back;
 unsigned int nDataEvents;
+unsigned int nBackgroundEvents;
 
 Double_t get_prob(Double_t xF, Double_t cost, TH2F *h){
     TAxis* x_ax =  h->GetXaxis();
@@ -113,12 +119,13 @@ void count_AFB(double *AFB, double *AFB_unc){
     Double_t N_BB = 0;
     Double_t C_BB = 0;
 
-    for (int i =0; i nDataEvents; i++){
+    for (int i =0; i < nDataEvents; i++){
         Double_t cost = v_cost[i];
         Double_t cost2 = cost*cost;
-        Double_t h = alpha * (1 - cost2);
-        Double_t w_D = 0.5 *cost2 / (pow((1 + cost2 + h),3));
-        Double_t w_N = 0.5 *abs(cost) / (pow((1 + cost2 + h),2));
+        Double_t A_0 = 4.0*((1.0+alpha)/(2.0+alpha)) -2.0;
+        Double_t h = 0.5*A_0*(1.0 - 3.0 * cost2);
+        Double_t w_D = 0.5 *cost2 / (pow((1.0 + cost2 + h),3.0));
+        Double_t w_N = 0.5 *fabs(cost) / (pow((1.0 + cost2 + h),2.0));
 
         if(cost >0){
             D_F += w_D;
@@ -127,7 +134,7 @@ void count_AFB(double *AFB, double *AFB_unc){
             N_FF += w_N*w_N;
             C_FF += w_N*w_D;
         }
-        else{
+        else if(cost <0){
             D_B += w_D;
             N_B += w_N;
             D_BB += w_D*w_D;
@@ -135,11 +142,39 @@ void count_AFB(double *AFB, double *AFB_unc){
             C_BB += w_N*w_D;
         }
     }
-    AFB = (3.0/8.0) * (N_F - N_B)/ (D_F + D_B);
+    printf("N_F N_B D_F D_B = %.0f %.0f %.0f %.0f \n", N_F, N_B, D_F, D_B);
+    for (int i =0; i < nBackgroundEvents; i++){
+        Double_t cost = v_cost_back[i];
+        Double_t evt_weight = v_weight_back[i];
+        Double_t cost2 = cost*cost;
+        Double_t A_0 = 4.0*((1.0+alpha)/(2.0+alpha)) -2.0;
+        Double_t h = 0.5*A_0*(1.0 - 3.0 * cost2);
+        Double_t w_D = 0.5 *cost2 *evt_weight / (pow((1.0 + cost2 + h),3.0));
+        Double_t w_N = 0.5 *fabs(cost) * evt_weight / (pow((1.0 + cost2 + h),2.0));
+
+        if(cost >0){
+            D_F -= w_D;
+            N_F -= w_N;
+            D_FF -= w_D*w_D;
+            N_FF -= w_N*w_N;
+            C_FF -= w_N*w_D;
+        }
+        else if(cost <0){
+            D_B -= w_D;
+            N_B -= w_N;
+            D_BB -= w_D*w_D;
+            N_BB -= w_N*w_N;
+            C_BB -= w_N*w_D;
+        }
+    }
+    printf("N_F N_B D_F D_B = %.0f %.0f %.0f %.0f \n", N_F, N_B, D_F, D_B);
+    *AFB = (3.0/8.0) * (N_F - N_B)/ (D_F + D_B);
+    printf("AFB %.2f \n", *AFB);
+    Double_t AFB2 = (*AFB) * (*AFB);
     Double_t term1 = (9.0/64.0)*(N_FF + N_BB);
-    Double_t term2 = (AFB*AFB*(D_FF + D_BB));
+    Double_t term2 = (AFB2*(D_FF + D_BB));
     Double_t term3 = (-3.0/4.0)*(C_FF - C_BB);
-    AFB_unc = (1./(D_F + D_B)) * sqrt(term1 + term2 + term3);
+    *AFB_unc = (1./(D_F + D_B)) * sqrt(term1 + term2 + term3);
 }
 
 
@@ -177,6 +212,7 @@ void setup(){
     //gen_combined_background_template(2, ts, h_back, m_low, m_high, FLAG);
 
     nDataEvents = gen_data_template(t_data, h_data, &v_m, &v_xF, &v_cost, m_low, m_high);
+    nBackgroundEvents = gen_background_counting_template(2, ts, &v_m_back, &v_xF_back, &v_cost_back, &v_weight_back, m_low, m_high, FLAG);
     //f_data->Close();
     //f_back->Close();
     //f_mc->Close();
@@ -198,7 +234,7 @@ void cleanup(){
     printf("Finishing cleanup\n");
 }
 
-void single_fit_all(){
+void AFB_weighted_sum(){
     int n_m_bins = 6;
     Double_t AFB_fit[n_m_bins], AFB_fit_err[n_m_bins], r_back_fit[n_m_bins], r_back_fit_err[n_m_bins];
     unsigned int nEvents[n_m_bins];
@@ -209,10 +245,10 @@ void single_fit_all(){
         m_high = m_bins[i+1];
         alpha = alphas[i];
         Double_t AFB, AFB_unc;
+        setup();
         count_AFB(&AFB, &AFB_unc);
 
 
-        setup();
 
 
         nEvents[i] = nDataEvents;

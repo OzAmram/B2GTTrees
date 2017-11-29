@@ -111,7 +111,7 @@ void MuMu_reco_background_batch()
              jet1_cmva, jet1_csv, jet2_cmva, jet2_csv;
     Double_t bcdef_HLT_SF, bcdef_iso_SF, bcdef_id_SF, gh_HLT_SF, gh_iso_SF, gh_id_SF,
              jet1_b_weight, jet2_b_weight, pu_SF;
-    Int_t nJets, jet1_flavour, jet2_flavour, pu_NTrueInt;
+    Int_t nJets, jet1_flavour, jet2_flavour, pu_NtrueInt;
     Float_t met_pt;
     TLorentzVector mu_p, mu_m, cm, q1, q2;
     tout->Branch("m", &cm_m, "m/D");
@@ -144,7 +144,7 @@ void MuMu_reco_background_batch()
     tout->Branch("nJets", &nJets, "nJets/I");
     tout->Branch("jet1_flavour", &jet1_flavour, "jet1_flavour/I");
     tout->Branch("jet2_flavour", &jet2_flavour, "jet2_flavour/I");
-    tout->Branch("pu_NTrueInt", &pu_NTrueInt);
+    tout->Branch("pu_NtrueInt", &pu_NtrueInt);
 
 
 

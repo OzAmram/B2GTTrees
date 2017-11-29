@@ -35,7 +35,6 @@ Float_t m_bins[] = {150,200,250,350,500,700,100000};
 Double_t alphas[6] = {0.0981, 0.0703, 0.0480, 0.0386, 0.0148, 0.0180};
 Double_t alpha;
 
-int FLAG = FLAG_ELECTRONS;
 
 //int n_xf_bins = 4;
 //float xf_max = 1.0;
@@ -61,8 +60,14 @@ TH2F *h_mc_count, *h_sym_count;
 //define axis globally for convinience 
 TAxis *x_ax, *y_ax, *z_ax;
 
+
+
+int FLAG = FLAG_ELECTRONS;
+//int FLAG = FLAG_MUONS;
+
 //MC templates
-TFile* f_mc = (TFile*) TFile::Open("output_files/ElEl_DY_sep25.root");
+// /*
+TFile* f_mc = (TFile*) TFile::Open("output_files/ElEl_DY_nov25.root");
 TTree *t_mc = (TTree *) f_mc ->Get("T_data");
 TTree *t_nosig = (TTree *) f_mc ->Get("T_back");
 TFile* f_back = (TFile*) TFile::Open("output_files/ElEl_combined_back_sep25.root");
@@ -70,7 +75,17 @@ TTree *t_back = (TTree *) f_back ->Get("T_data");
 
 TFile *f_data = TFile::Open("output_files/SingleElectron_data_sep22.root");
 TTree *t_data = (TTree *)f_data->Get("T_data"); 
-/*
+
+TFile *f_QCD = TFile::Open("../analyze/output_files/ElEl_QCD_est_nov2.root");
+TTree *t_QCD = (TTree *)f_QCD->Get("T_data");
+
+TFile *f_WJets = TFile::Open("../analyze/output_files/ElEl_WJets_est_nov2.root");
+TTree *t_WJets = (TTree *)f_WJets->Get("T_data");
+
+TFile *f_WJets_contam = TFile::Open("../analyze/output_files/ElEl_fakerate_WJets_MC_nov2.root");
+TTree *t_WJets_contam = (TTree *)f_WJets_contam->Get("T_data");
+// */
+ /*
 TFile* f_mc = (TFile*) TFile::Open("output_files/MuMu_DY_sep8.root");
 TTree *t_mc = (TTree *) f_mc ->Get("T_data");
 TTree *t_nosig = (TTree *) f_mc ->Get("T_back");
@@ -79,7 +94,16 @@ TTree *t_back = (TTree *) f_back ->Get("T_data");
 
 TFile *f_data = TFile::Open("output_files/SingleMuon_data_aug28.root");
 TTree *t_data = (TTree *)f_data->Get("T_data"); 
-*/
+
+TFile *f_QCD = TFile::Open("../analyze/output_files/MuMu_QCD_est_nov2.root");
+TTree *t_QCD = (TTree *)f_QCD->Get("T_data");
+
+TFile *f_WJets = TFile::Open("../analyze/output_files/MuMu_WJets_est_Nov2.root");
+TTree *t_WJets = (TTree *)f_WJets->Get("T_data");
+
+TFile *f_WJets_contam = TFile::Open("../analyze/output_files/MuMu_fakerate_Wjets_MC_nov2.root");
+TTree *t_WJets_contam = (TTree *)f_WJets_contam->Get("T_data");
+ */
 
 
 vector<double> v_xF;
@@ -179,7 +203,7 @@ void setup(){
 
     gen_mc_template(t_mc, alpha, h_sym, h_asym, h_sym_count, m_low, m_high, FLAG);
     TTree *ts[2] = {t_back, t_nosig};
-    gen_combined_background_template(2, ts, h_back, m_low, m_high, FLAG);
+    gen_combined_background_template(2, ts, h_back, t_WJets, t_QCD, t_WJets_contam, m_low, m_high, FLAG);
 
     nDataEvents = gen_data_template(t_data, h_data, &v_m, &v_xF, &v_cost, m_low, m_high);
     //f_data->Close();

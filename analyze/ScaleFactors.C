@@ -86,8 +86,12 @@ Double_t get_HLT_SF_1mu(Double_t mu1_pt, Double_t mu1_eta, TH2D *h_SF){
 
     result = SF1;
     if(result < 0.01) printf("0 HLT SF for Pt %.1f, Eta %1.2f \n", mu1_pt, mu1_eta);
+    if(TMath::IsNaN(result)){ 
+        printf("Nan HLT SF for Pt %.1f, Eta %1.2f \n", mu1_pt, mu1_eta);
+        result = 1;
+    }
     //printf("Result, SF1 = (%0.3f, %0.3f) \n", result, SF1);
-    return SF1;
+    return result;
 }
 
 Double_t get_HLT_SF(Double_t mu1_pt, Double_t mu1_eta, Double_t mu2_pt, Double_t mu2_eta, TH2D *h_SF, TH2D *h_MC_EFF){
@@ -122,6 +126,10 @@ Double_t get_HLT_SF(Double_t mu1_pt, Double_t mu1_eta, Double_t mu2_pt, Double_t
     Double_t result = (1 - (1-MC_EFF1*SF1)*(1-MC_EFF2*SF2))/
                       (1 - (1-MC_EFF1)*(1-MC_EFF2));
     if(result < 0.01) printf("0 HLT SF for Pt %.1f, Eta %1.2f \n", mu1_pt, mu1_eta);
+    if(TMath::IsNaN(result)){ 
+        printf("Nan HLT SF for Pt %.1f, Eta %1.2f \n", mu1_pt, mu1_eta);
+        result = 1;
+    }
     //printf("Result, SF1 = (%0.3f, %0.3f) \n", result, SF1);
     return result;
 }

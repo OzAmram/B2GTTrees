@@ -6,7 +6,6 @@
 #include <cstring>
 #include <algorithm>
 #include "TFile.h"
-#include "TFile.h"
 #include "../ScaleFactors.C"
 #include "../TemplateMaker.C"
 
@@ -17,7 +16,7 @@
 
 const double root2 = sqrt(2);
 char *filename("non_QCD_files_aug29.txt");
-const TString fout_name("output_files/SingleMu_mc_fakerate_contam_v2_nov8.root");
+const TString fout_name("FakeRate/root_files/SingleMu_mc_fakerate_contam_v2_nov28.root");
 
 
 bool is_empty_line(const char *s) {
@@ -27,6 +26,12 @@ bool is_empty_line(const char *s) {
         s++;
     }
     return true;
+}
+
+bool in_Z_window(Double_t m){
+    double_t Z_mass_low = 91.2 -7.;
+    double_t Z_mass_high = 91.2 + 7.;
+    return (m > Z_mass_low ) && (m < Z_mass_high);
 }
 
 
@@ -103,13 +108,14 @@ void SingleMuon_mc_fake_rate_v2()
     printf("Retrieved Scale Factors \n\n");
 
     TFile *fout = TFile::Open(fout_name, "RECREATE");
-    Float_t pt_bins[] = {0,20, 30, 45, 70,100, 200, 1000};
-    int n_pt_bins = 7;
+    Float_t pt_bins[] = {0, 25, 35, 50, 90, 1000};
+    int n_pt_bins = 5;
     Float_t eta_bins[] = {0, 0.9, 2.4};
     int n_eta_bins = 2;
 
     TH2D *h_pass = new TH2D("h_pass", "Rate of passing ISO cut for single muons",  n_eta_bins, eta_bins, n_pt_bins, pt_bins);
     TH2D *h_total = new TH2D("h_total", "Total number of single muons",  n_eta_bins, eta_bins, n_pt_bins, pt_bins);
+    TTree *tout= new TTree("T_data", "Tree with reco events");
     Double_t cm_m, xF, cost_r, mu1_pt, mu2_pt, mu1_eta, mu2_eta, jet1_pt, jet2_pt, deltaC, jet1_eta, jet2_eta, gen_weight,
              jet1_cmva, jet1_csv, jet2_cmva, jet2_csv;
     Double_t bcdef_HLT_SF, bcdef_iso_SF, bcdef_id_SF, gh_HLT_SF, gh_iso_SF, gh_id_SF,
@@ -117,6 +123,13 @@ void SingleMuon_mc_fake_rate_v2()
     Int_t nJets, jet1_flavour, jet2_flavour;
     Float_t met_pt;
     TLorentzVector mu_p, mu_m, cm, q1, q2;
+
+    Double_t mu_pt, mu_eta;
+    Bool_t pass;
+    tout->Branch("mu_pt", &mu_pt);
+    tout->Branch("mu_eta", &mu_eta);
+    tout->Branch("gen_weight", &gen_weight);
+    tout->Branch("pass", &pass);
 
 
 
@@ -224,6 +237,8 @@ void SingleMuon_mc_fake_rate_v2()
 
                     //get jets
                     nJets =0;
+                    jet1_b_weight = 1;
+                    jet2_b_weight = 1;
                     for(int j=0; j < jet_size; j++){
                         if(jet_Pt[j] > 20. && std::abs(jet_Eta[j]) < 2.4){
                             if(nJets == 1){
@@ -264,6 +279,10 @@ void SingleMuon_mc_fake_rate_v2()
                     Double_t m02 = (mu0 + mu2).M();
                     Double_t m12 = (mu1 + mu2).M();
 
+                    bool m01_in_Z = in_Z_window(m01);
+                    bool m02_in_Z = in_Z_window(m02);
+                    bool m12_in_Z = in_Z_window(m12);
+
                     float iso[3];
                     iso[0] = (mu_SumChargedHadronPt[0] + max(0., mu_SumNeutralHadronPt[0] + mu_SumPhotonPt[0] - 0.5 * mu_SumPUPt[0]))/mu_Pt[0];
                     iso[1] = (mu_SumChargedHadronPt[1] + max(0., mu_SumNeutralHadronPt[1] + mu_SumPhotonPt[1] - 0.5 * mu_SumPUPt[1]))/mu_Pt[1];
@@ -271,7 +290,7 @@ void SingleMuon_mc_fake_rate_v2()
                     const float tight_iso = 0.15;
                     const float loose_iso = 0.25;
 
-                    if(m01 > Z_mass_low && m01 < Z_mass_high && mu_Charge[0] * mu_Charge[1] < 0 && iso[0] < tight_iso && iso[1] < tight_iso){
+                    if(m01_in_Z && !m02_in_Z && !m12_in_Z && mu_Charge[0] * mu_Charge[1] < 0 && iso[0] < tight_iso && iso[1] < tight_iso){
                         mu_extra = 2;
                         if(mu_Charge[0] >0){
                             mu_p = 0;
@@ -282,7 +301,7 @@ void SingleMuon_mc_fake_rate_v2()
                             mu_m =0;
                         }
                     }
-                    else if(m02 > Z_mass_low && m02 < Z_mass_high && mu_Charge[0] * mu_Charge[2] < 0 && iso[0] < tight_iso && iso[2] < tight_iso){
+                    else if(!m01_in_Z && m02_in_Z && !m12_in_Z && mu_Charge[0] * mu_Charge[2] < 0 && iso[0] < tight_iso && iso[2] < tight_iso){
                         mu_extra = 1;
                         if(mu_Charge[0] >0){
                             mu_p = 0;
@@ -293,7 +312,7 @@ void SingleMuon_mc_fake_rate_v2()
                             mu_m =0;
                         }
                     }
-                    else if(m12 > Z_mass_low && m12 < Z_mass_high && mu_Charge[1] * mu_Charge[2] < 0 && iso[1] < tight_iso && iso[2] < tight_iso){
+                    else if(!m01_in_Z && !m02_in_Z && m12_in_Z  && mu_Charge[1] * mu_Charge[2] < 0 && iso[1] < tight_iso && iso[2] < tight_iso){
                         mu_extra = 0;
                         if(mu_Charge[1] >0){
                             mu_p = 1;
@@ -306,12 +325,25 @@ void SingleMuon_mc_fake_rate_v2()
                     }
 
 
-                    if( (mu_p != -1) && no_bjets && met_pt < 50){
+                    if( (mu_p != -1) && no_bjets && met_pt < 25.){
                         //get el cut SFs
+                        mu1_pt = mu_Pt[mu_p];
+                        mu2_pt = mu_Pt[mu_m];
+                        mu1_eta = mu_Eta[mu_p];
+                        mu2_eta = mu_Eta[mu_m];
 
-                        bcdef_HLT_SF = get_HLT_SF(mu1_pt, mu1_eta, mu2_pt, mu2_eta, runs_bcdef.HLT_SF, runs_bcdef.HLT_MC_EFF);
-                        gh_HLT_SF = get_HLT_SF(mu1_pt, mu1_eta, mu2_pt, mu2_eta, runs_gh.HLT_SF, runs_gh.HLT_MC_EFF);
-
+                        /*
+                        if(mu1_pt > 26 || mu2_pt > 26){
+                            bcdef_HLT_SF = get_HLT_SF(mu1_pt, mu1_eta, mu2_pt, mu2_eta, runs_bcdef.HLT_SF, runs_bcdef.HLT_MC_EFF);
+                            gh_HLT_SF = get_HLT_SF(mu1_pt, mu1_eta, mu2_pt, mu2_eta, runs_gh.HLT_SF, runs_gh.HLT_MC_EFF);
+                        }
+                        else{
+                            bcdef_HLT_SF = get_HLT_SF_1mu(mu_Pt[mu_extra], mu_Eta[mu_extra], runs_bcdef.HLT_SF);
+                            gh_HLT_SF = get_HLT_SF_1mu(mu_Pt[mu_extra], mu_Eta[mu_extra], runs_gh.HLT_SF);
+                        }
+                        */
+                        bcdef_HLT_SF = 1;
+                        gh_HLT_SF = 1;
                         bcdef_iso_SF = get_SF(mu1_pt, mu1_eta, runs_bcdef.ISO_SF) * get_SF(mu2_pt, mu2_eta, runs_bcdef.ISO_SF);
                         bcdef_id_SF = get_SF(mu1_pt, mu1_eta, runs_bcdef.ID_SF) * get_SF(mu2_pt, mu2_eta, runs_bcdef.ID_SF);
 
@@ -323,18 +355,23 @@ void SingleMuon_mc_fake_rate_v2()
 
                         pu_SF = get_pileup_SF(pu_NtrueInt, pu_SFs.pileup_ratio);
                         gen_weight = pu_SF * evt_Gen_Weight * normalization * jet1_b_weight * jet2_b_weight* (bcdef_weight *bcdef_lumi + gh_weight * gh_lumi)/(bcdef_lumi + gh_lumi);
+                        if(TMath::IsNaN(gen_weight)){
+                            printf("NAN ENTRY!!!! \n");
+                            printf(" mu1: %.0f %.2f \n mu2: %.0f %.2f \n HLT ISO ID %.0e %.0e %.0e \n", mu1_pt, mu1_eta, mu2_pt, mu2_eta, bcdef_HLT_SF, bcdef_iso_SF, bcdef_id_SF);
+                            continue;
+                        }
+                        //printf("%.e %.e %.e %.e %.e %.e\n", gen_weight, pu_SF, evt_Gen_Weight, normalization, bcdef_weight, gh_weight);
 
                         nEvents++;
+                        pass = iso[mu_extra] < tight_iso;
+                        mu_pt = mu_Pt[mu_extra];
+                        mu_eta = mu_Eta[mu_extra];
                         if(iso[mu_extra] < tight_iso){
                             h_pass->Fill(abs(mu_Eta[mu_extra]), mu_Pt[mu_extra], gen_weight);
                         }
                         h_total->Fill(abs(mu_Eta[mu_extra]), mu_Pt[mu_extra], gen_weight);
 
-
-
-
-
-
+                        tout->Fill();
                     }
 
                 }
@@ -346,6 +383,7 @@ void SingleMuon_mc_fake_rate_v2()
     printf("Final output for %s file \n. %i events", filename, nEvents);
     fout->cd();
     printf("Writing out put to %s \n", fout_name.Data());
+    tout->Write();
     h_pass->Write();
     h_total->Write();
 

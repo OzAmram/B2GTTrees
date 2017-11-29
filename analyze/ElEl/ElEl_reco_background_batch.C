@@ -111,7 +111,7 @@ void ElEl_reco_background_batch()
     Double_t cm_m, xF, cost_r, el1_pt, el2_pt, el1_eta, el2_eta, jet1_pt, jet2_pt, deltaC, jet1_eta, jet2_eta, gen_weight,
              jet1_cmva, jet1_csv, jet2_cmva, jet2_csv;
     Double_t el_id_SF, el_reco_SF, jet1_b_weight, jet2_b_weight, pu_SF;
-    Int_t nJets, jet1_flavour, jet2_flavour, pu_NTrueInt;
+    Int_t nJets, jet1_flavour, jet2_flavour, pu_NtrueInt;
     Float_t met_pt;
     TLorentzVector el_p, el_m, cm, q1, q2;
     tout->Branch("m", &cm_m, "m/D");
@@ -140,7 +140,7 @@ void ElEl_reco_background_batch()
     tout->Branch("nJets", &nJets, "nJets/I");
     tout->Branch("jet1_flavour", &jet1_flavour, "jet1_flavour/I");
     tout->Branch("jet2_flavour", &jet2_flavour, "jet2_flavour/I");
-    tout->Branch("pu_NTrueInt", &pu_NTrueInt);
+    tout->Branch("pu_NtrueInt", &pu_NtrueInt);
 
 
 

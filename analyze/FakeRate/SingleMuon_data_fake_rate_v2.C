@@ -12,7 +12,7 @@
 
 const double root2 = sqrt(2);
 const char* filename("SingleMuon_files_sep25.txt");
-const TString fout_name("FakeRate/SingleMuon_data_fake_rate_oct23.root");
+const TString fout_name("FakeRate/root_files/SingleMuon_data_fake_rate_v2_nov28.root");
 const double alpha = 0.05;
 
 const bool data_2016 = true;
@@ -39,6 +39,13 @@ bool has_no_bjets(Int_t nJets, Double_t jet1_pt, Double_t jet2_pt,
     }
 }
 
+bool in_Z_window(Double_t m){
+    double_t Z_mass_low = 91.2 -7.;
+    double_t Z_mass_high = 91.2 + 7.;
+    return (m > Z_mass_low ) && (m < Z_mass_high);
+}
+
+
 void SingleMuon_data_fake_rate_v2()
 {
 
@@ -51,9 +58,15 @@ void SingleMuon_data_fake_rate_v2()
     Int_t nJets;
     Float_t met_pt;
     TLorentzVector mu_p, mu_m, cm, q1, q2;
+    Double_t mu_pt, mu_eta;
+    Bool_t pass;
+    
+    tout->Branch("mu_pt", &mu_pt);
+    tout->Branch("mu_eta", &mu_eta);
+    tout->Branch("pass", &pass);
 
-    Float_t pt_bins[] = {0,20, 30, 45, 70,100, 200, 1000};
-    int n_pt_bins = 7;
+    Float_t pt_bins[] = {0, 25, 35, 50, 90, 1000};
+    int n_pt_bins = 5;
     Float_t eta_bins[] = {0, 0.9, 2.4};
     int n_eta_bins = 2;
 
@@ -165,8 +178,6 @@ void SingleMuon_data_fake_rate_v2()
                     }
                 }
                 bool no_bjets = has_no_bjets(nJets, jet1_pt, jet2_pt, jet1_cmva, jet2_cmva);
-                double_t Z_mass_low = 91.2 -7;
-                double_t Z_mass_high = 91.2 + 7;
 
                 TLorentzVector mu0, mu1, mu2;
                 mu0.SetPtEtaPhiE(mu_Pt[0], mu_Eta[0], mu_Phi[0], mu_E[0]);
@@ -183,6 +194,11 @@ void SingleMuon_data_fake_rate_v2()
                 Double_t m02 = (mu0 + mu2).M();
                 Double_t m12 = (mu1 + mu2).M();
 
+
+                bool m01_in_Z = in_Z_window(m01);
+                bool m02_in_Z = in_Z_window(m02);
+                bool m12_in_Z = in_Z_window(m12);
+
                 float iso[3];
                 iso[0] = (mu_SumChargedHadronPt[0] + max(0., mu_SumNeutralHadronPt[0] + mu_SumPhotonPt[0] - 0.5 * mu_SumPUPt[0]))/mu_Pt[0];
                 iso[1] = (mu_SumChargedHadronPt[1] + max(0., mu_SumNeutralHadronPt[1] + mu_SumPhotonPt[1] - 0.5 * mu_SumPUPt[1]))/mu_Pt[1];
@@ -190,7 +206,7 @@ void SingleMuon_data_fake_rate_v2()
                 const float tight_iso = 0.15;
                 const float loose_iso = 0.25;
 
-                if(m01 > Z_mass_low && m01 < Z_mass_high && mu_Charge[0] * mu_Charge[1] < 0 && iso[0] < tight_iso && iso[1] < tight_iso){
+                if(m01_in_Z && !m02_in_Z && !m12_in_Z && mu_Charge[0] * mu_Charge[1] < 0 && iso[0] < tight_iso && iso[1] < tight_iso){
                     mu_extra = 2;
                     if(mu_Charge[0] >0){
                         mu_p = 0;
@@ -201,7 +217,7 @@ void SingleMuon_data_fake_rate_v2()
                         mu_m =0;
                     }
                 }
-                else if(m02 > Z_mass_low && m02 < Z_mass_high && mu_Charge[0] * mu_Charge[2] < 0 && iso[0] < tight_iso && iso[2] < tight_iso){
+                else if(!m01_in_Z && m02_in_Z && !m12_in_Z && mu_Charge[0] * mu_Charge[2] < 0 && iso[0] < tight_iso && iso[2] < tight_iso){
                     mu_extra = 1;
                     if(mu_Charge[0] >0){
                         mu_p = 0;
@@ -212,7 +228,7 @@ void SingleMuon_data_fake_rate_v2()
                         mu_m =0;
                     }
                 }
-                else if(m12 > Z_mass_low && m12 < Z_mass_high && mu_Charge[1] * mu_Charge[2] < 0 && iso[1] < tight_iso && iso[2] < tight_iso){
+                else if(!m01_in_Z && !m02_in_Z && m12_in_Z  && mu_Charge[1] * mu_Charge[2] < 0 && iso[1] < tight_iso && iso[2] < tight_iso){
                     mu_extra = 0;
                     if(mu_Charge[1] >0){
                         mu_p = 1;
@@ -225,13 +241,17 @@ void SingleMuon_data_fake_rate_v2()
                 }
 
 
-                if( (mu_p != -1) && no_bjets && met_pt < 50){
+                if( (mu_p != -1) && no_bjets && met_pt < 25.){
+                    mu_pt = mu_Pt[mu_extra];
+                    mu_eta = mu_Eta[mu_extra];
+                    pass = iso[mu_extra] < tight_iso;
                     nEvents++;
                     if(iso[mu_extra] < tight_iso){
                         nPass++;
                         h_pass->Fill(abs(mu_Eta[mu_extra]), mu_Pt[mu_extra], 1);
                     }
                     h_total->Fill(abs(mu_Eta[mu_extra]), mu_Pt[mu_extra], 1);
+                    tout->Fill();
                 }
 
             }
@@ -247,7 +267,7 @@ void SingleMuon_data_fake_rate_v2()
 
     TFile *fout = TFile::Open(fout_name, "RECREATE");
     fout->cd();
-
+    tout->Write();
     h_rate->Write();
     h_total->Write();
 

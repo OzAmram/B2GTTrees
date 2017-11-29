@@ -20,7 +20,7 @@
 
 const double root2 = sqrt(2);
 char *filename("non_QCD_files_aug29.txt");
-const TString fout_name("output_files/SingleEl_mc_fakerate_contam_v2_nov7.root");
+const TString fout_name("FakeRate/root_files/SingleEl_mc_fakerate_contam_v2_nov28.root");
 
 
 bool is_empty_line(const char *s) {
@@ -30,6 +30,12 @@ bool is_empty_line(const char *s) {
         s++;
     }
     return true;
+}
+
+bool in_Z_window(Double_t m){
+    double_t Z_mass_low = 91.2 -7.;
+    double_t Z_mass_high = 91.2 + 7.;
+    return (m > Z_mass_low ) && (m < Z_mass_high);
 }
 
 
@@ -106,20 +112,29 @@ void SingleElectron_mc_fake_rate_v2()
     printf("Retrieved Scale Factors \n\n");
 
     TFile *fout = TFile::Open(fout_name, "RECREATE");
-    Float_t pt_bins[] = {0,20, 30, 45, 70,100, 200, 1000};
-    int n_pt_bins = 7;
+    Float_t pt_bins[] = {0, 25, 35, 50, 90, 1000};
+    int n_pt_bins = 5;
     Float_t eta_bins[] = {0, 0.9, 2.4};
     int n_eta_bins = 2;
 
     TH2D *h_pass = new TH2D("h_pass", "Rate of passing ISO cut for single electrons",  n_eta_bins, eta_bins, n_pt_bins, pt_bins);
     TH2D *h_total = new TH2D("h_total", "Total number of single electrons",  n_eta_bins, eta_bins, n_pt_bins, pt_bins);
-    Double_t cm_m, xF, cost_r, mu1_pt, mu2_pt, mu1_eta, mu2_eta, jet1_pt, jet2_pt, deltaC, jet1_eta, jet2_eta, gen_weight,
+
+    TTree *tout= new TTree("T_data", "Tree with reco events");
+    Double_t cm_m, xF, cost_r, mu_pt, mu_eta, jet1_pt, jet2_pt, deltaC, jet1_eta, jet2_eta, gen_weight,
              jet1_cmva, jet1_csv, jet2_cmva, jet2_csv;
     Double_t bcdef_HLT_SF, bcdef_iso_SF, bcdef_id_SF, gh_HLT_SF, gh_iso_SF, gh_id_SF,
              jet1_b_weight, jet2_b_weight, pu_SF;
     Int_t nJets, jet1_flavour, jet2_flavour;
     Float_t met_pt;
+    Double_t el_pt, el_eta;
+    Bool_t pass;
+
     TLorentzVector mu_p, mu_m, cm, q1, q2;
+    tout->Branch("el_pt", &el_pt);
+    tout->Branch("el_eta", &el_eta);
+    tout->Branch("gen_weight", &gen_weight);
+    tout->Branch("pass", &pass);
 
 
 
@@ -229,6 +244,8 @@ void SingleElectron_mc_fake_rate_v2()
 
                     //get jets
                     nJets =0;
+                    jet1_b_weight = 1;
+                    jet2_b_weight = 1;
                     for(int j=0; j < jet_size; j++){
                         if(jet_Pt[j] > 20. && std::abs(jet_Eta[j]) < 2.4){
                             if(nJets == 1){
@@ -269,12 +286,16 @@ void SingleElectron_mc_fake_rate_v2()
                     Double_t m02 = (el0 + el2).M();
                     Double_t m12 = (el1 + el2).M();
 
+                    bool m01_in_Z = in_Z_window(m01);
+                    bool m02_in_Z = in_Z_window(m02);
+                    bool m12_in_Z = in_Z_window(m12);
+
                     Int_t iso[3];
                     iso[0] = el_IDMedium[0]; 
                     iso[1] = el_IDMedium[1];
                     iso[2] = el_IDMedium[2];
 
-                    if(m01 > Z_mass_low && m01 < Z_mass_high && el_Charge[0] * el_Charge[1] < 0 && iso[0] && iso[1]){
+                    if(m01_in_Z && !m02_in_Z && !m12_in_Z && el_Charge[0] * el_Charge[1] < 0 && iso[0] && iso[1]){
                         el_extra = 2;
                         if(el_Charge[0] >0){
                             el_p = 0;
@@ -285,7 +306,7 @@ void SingleElectron_mc_fake_rate_v2()
                             el_m =0;
                         }
                     }
-                    else if(m02 > Z_mass_low && m02 < Z_mass_high && el_Charge[0] * el_Charge[2] < 0 && iso[0]  && iso[2]){
+                    else if(!m01_in_Z && m02_in_Z && !m12_in_Z && el_Charge[0] * el_Charge[2] < 0 && iso[0]  && iso[2]){
                         el_extra = 1;
                         if(el_Charge[0] >0){
                             el_p = 0;
@@ -296,7 +317,7 @@ void SingleElectron_mc_fake_rate_v2()
                             el_m =0;
                         }
                     }
-                    else if(m12 > Z_mass_low && m12 < Z_mass_high && el_Charge[1] * el_Charge[2] < 0 && iso[1]  && iso[2] ){
+                    else if(!m01_in_Z && !m02_in_Z && m12_in_Z && el_Charge[1] * el_Charge[2] < 0 && iso[1]  && iso[2] ){
                         el_extra = 0;
                         if(el_Charge[1] >0){
                             el_p = 1;
@@ -311,7 +332,7 @@ void SingleElectron_mc_fake_rate_v2()
 
 
 
-                    if( (el_p != -1) && no_bjets && met_pt < 50){
+                    if( (el_p != -1) && no_bjets && met_pt < 25.){
 
                         //get el cut SFs
 
@@ -324,10 +345,14 @@ void SingleElectron_mc_fake_rate_v2()
                         gen_weight = evt_Gen_Weight * pu_SF * normalization * el_id_SF * el_reco_SF * jet1_b_weight * jet2_b_weight;
 
                         nEvents++;
+                        el_pt = el_Pt[el_extra];
+                        el_eta = abs(el_Eta[el_extra]);
+                        pass = iso[el_extra];
                         if(iso[el_extra]){
                             h_pass->Fill(abs(el_Eta[el_extra]), el_Pt[el_extra], gen_weight);
                         }
                         h_total->Fill(abs(el_Eta[el_extra]), el_Pt[el_extra], gen_weight);
+                        tout->Fill();
 
 
 
@@ -345,6 +370,7 @@ void SingleElectron_mc_fake_rate_v2()
     printf("Final output for %s file \n. %i events", filename, nEvents);
     fout->cd();
     printf("Writing out put to %s \n", fout_name.Data());
+    tout->Write();
     h_pass->Write();
     h_total->Write();
 

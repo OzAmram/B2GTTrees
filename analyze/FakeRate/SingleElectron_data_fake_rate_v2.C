@@ -13,7 +13,7 @@
 
 const double root2 = sqrt(2);
 const char* filename("SingleElectron_files_aug29.txt");
-const TString fout_name("FakeRate/SingleElectron_data_fake_rate_oct23.root");
+const TString fout_name("FakeRate/root_files/SingleElectron_data_fake_rate_v2_nov28.root");
 const double alpha = 0.05;
 
 
@@ -39,6 +39,12 @@ bool has_no_bjets(Int_t nJets, Double_t jet1_pt, Double_t jet2_pt,
     }
 }
 
+bool in_Z_window(Double_t m){
+    double_t Z_mass_low = 91.2 -7.;
+    double_t Z_mass_high = 91.2 + 7.;
+    return (m > Z_mass_low ) && (m < Z_mass_high);
+}
+
 void SingleElectron_data_fake_rate_v2()
 {
 
@@ -50,10 +56,16 @@ void SingleElectron_data_fake_rate_v2()
              jet1_cmva, jet1_eta, jet2_cmva, jet2_eta;
     Int_t nJets;
     Float_t met_pt;
+    Double_t el_pt, el_eta;
+    Bool_t pass;
     TLorentzVector mu_p, mu_m, cm, q1, q2;
 
-    Float_t pt_bins[] = {0,20, 30, 45, 70,100, 200, 1000};
-    int n_pt_bins = 7;
+    tout->Branch("el_pt", &el_pt);
+    tout->Branch("el_eta", &el_eta);
+    tout->Branch("pass", &pass);
+
+    Float_t pt_bins[] = {0, 25, 35, 50, 90, 1000};
+    int n_pt_bins = 5;
     Float_t eta_bins[] = {0, 0.9, 2.4};
     int n_eta_bins = 2;
 
@@ -177,12 +189,16 @@ void SingleElectron_data_fake_rate_v2()
                 Double_t m02 = (el0 + el2).M();
                 Double_t m12 = (el1 + el2).M();
 
+                bool m01_in_Z = in_Z_window(m01);
+                bool m02_in_Z = in_Z_window(m02);
+                bool m12_in_Z = in_Z_window(m12);
+
                 Int_t iso[3];
                 iso[0] = el_IDMedium[0]; 
                 iso[1] = el_IDMedium[1];
                 iso[2] = el_IDMedium[2];
 
-                if(m01 > Z_mass_low && m01 < Z_mass_high && el_Charge[0] * el_Charge[1] < 0 && iso[0] && iso[1]){
+                if(m01_in_Z && !m02_in_Z && !m12_in_Z && el_Charge[0] * el_Charge[1] < 0 && iso[0] && iso[1]){
                     el_extra = 2;
                     if(el_Charge[0] >0){
                         el_p = 0;
@@ -193,7 +209,7 @@ void SingleElectron_data_fake_rate_v2()
                         el_m =0;
                     }
                 }
-                else if(m02 > Z_mass_low && m02 < Z_mass_high && el_Charge[0] * el_Charge[2] < 0 && iso[0]  && iso[2]){
+                else if(!m01_in_Z && m02_in_Z && !m12_in_Z && el_Charge[0] * el_Charge[2] < 0 && iso[0]  && iso[2]){
                     el_extra = 1;
                     if(el_Charge[0] >0){
                         el_p = 0;
@@ -204,7 +220,7 @@ void SingleElectron_data_fake_rate_v2()
                         el_m =0;
                     }
                 }
-                else if(m12 > Z_mass_low && m12 < Z_mass_high && el_Charge[1] * el_Charge[2] < 0 && iso[1]  && iso[2] ){
+                else if(!m01_in_Z && !m02_in_Z && m12_in_Z && el_Charge[1] * el_Charge[2] < 0 && iso[1]  && iso[2] ){
                     el_extra = 0;
                     if(el_Charge[1] >0){
                         el_p = 1;
@@ -217,13 +233,17 @@ void SingleElectron_data_fake_rate_v2()
                 }
 
 
-                if( (el_p != -1) && no_bjets && met_pt < 50){
+                if( (el_p != -1) && no_bjets && met_pt < 25.){
                     nEvents++;
+                    el_pt = el_Pt[el_extra];
+                    el_eta = abs(el_Eta[el_extra]);
+                    pass = iso[el_extra];
                     if(iso[el_extra]){
                         nPass++;
                         h_pass->Fill(abs(el_Eta[el_extra]), el_Pt[el_extra], 1);
                     }
                     h_total->Fill(abs(el_Eta[el_extra]), el_Pt[el_extra], 1);
+                    tout->Fill();
                 }
 
             }
@@ -239,6 +259,7 @@ void SingleElectron_data_fake_rate_v2()
 
     TFile *fout = TFile::Open(fout_name, "RECREATE");
     fout->cd();
+    tout->Write();
 
     h_rate->Write();
     h_total->Write();

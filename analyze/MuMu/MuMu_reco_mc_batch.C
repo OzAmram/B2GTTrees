@@ -16,8 +16,8 @@ const double root2 = sqrt(2);
 double Ebeam = 6500.;
 double Pbeam = sqrt(Ebeam*Ebeam - 0.938*0.938);
 
-char *filename("DY_files_aug29.txt");
-const TString fout_name("output_files/MuMu_DY_sep8.root");
+char *filename("DY_files_nov20.txt");
+const TString fout_name("output_files/MuMu_DY_nov25.root");
 const bool PRINT=false;
 
 const bool data_2016 = true;
@@ -111,10 +111,10 @@ void MuMu_reco_mc_batch()
     TTree *t_signal= new TTree("T_data", "Tree with asym events (qq bar, qg)");
     t_signal->SetDirectory(0);
     Double_t cm_m, xF, cost_r, cost_st, mu1_pt, mu2_pt, mu1_eta, mu2_eta, jet1_pt, jet2_pt, jet1_eta, jet2_eta, deltaC, 
-             gen_weight, reweight, jet1_csv, jet1_cmva, jet2_csv, jet2_cmva;
+             gen_weight, jet1_csv, jet1_cmva, jet2_csv, jet2_cmva;
     Double_t bcdef_HLT_SF, bcdef_iso_SF, bcdef_id_SF, gh_HLT_SF, gh_iso_SF, gh_id_SF,
              jet1_b_weight, jet2_b_weight, pu_SF;
-    Int_t nJets, jet1_flavour, jet2_flavour, pu_NTrueInt;
+    Int_t nJets, jet1_flavour, jet2_flavour, pu_NtrueInt;
     Bool_t is_tau_event;
     Float_t met_pt;
     TLorentzVector mu_p, mu_m, cm, q1, q2;
@@ -139,7 +139,6 @@ void MuMu_reco_mc_batch()
     t_signal->Branch("deltaC", &deltaC, "deltaC/D");
     t_signal->Branch("pu_SF", &pu_SF);
     t_signal->Branch("gen_weight", &gen_weight, "gen_weight/D");
-    t_signal->Branch("reweight", &reweight, "reweight/D");
     t_signal->Branch("bcdef_HLT_SF", &bcdef_HLT_SF);
     t_signal->Branch("bcdef_iso_SF", &bcdef_iso_SF);
     t_signal->Branch("bcdef_id_SF", &bcdef_id_SF);
@@ -152,7 +151,7 @@ void MuMu_reco_mc_batch()
     t_signal->Branch("jet1_flavour", &jet1_flavour, "jet1_flavour/I");
     t_signal->Branch("jet2_flavour", &jet2_flavour, "jet2_flavour/I");
     t_signal->Branch("is_tau_event", &is_tau_event);
-    t_signal->Branch("pu_NTrueInt", &pu_NTrueInt);
+    t_signal->Branch("pu_NtrueInt", &pu_NtrueInt);
 
 
     TTree *t_back = new TTree("T_back", "Tree for events with no asym (qq, gg)");
@@ -177,7 +176,6 @@ void MuMu_reco_mc_batch()
     t_back->Branch("deltaC", &deltaC, "deltaC/D");
     t_back->Branch("pu_SF", &pu_SF);
     t_back->Branch("gen_weight", &gen_weight, "gen_weight/D");
-    t_back->Branch("reweight", &reweight, "reweight/D");
     t_back->Branch("bcdef_HLT_SF", &bcdef_HLT_SF);
     t_back->Branch("bcdef_iso_SF", &bcdef_iso_SF);
     t_back->Branch("bcdef_id_SF", &bcdef_id_SF);
@@ -190,7 +188,7 @@ void MuMu_reco_mc_batch()
     t_back->Branch("jet1_flavour", &jet1_flavour, "jet1_flavour/I");
     t_back->Branch("jet2_flavour", &jet2_flavour, "jet2_flavour/I");
     t_back->Branch("is_tau_event", &is_tau_event);
-    t_back->Branch("pu_NTrueInt", &pu_NTrueInt);
+    t_back->Branch("pu_NtrueInt", &pu_NtrueInt);
 
 
 
@@ -753,8 +751,6 @@ void MuMu_reco_mc_batch()
                             //anti-symmetric template has computed weight and is 
                             //anti-symmetrized by flipping the sign of the weight and the bin
                             //in c_r
-                            reweight = (4./3.)*cost_st*(2. + alpha)/
-                                (1. + cost_st*cost_st + alpha*(1.- cost_st*cost_st));
                             nSignal++;
                             t_signal->Fill();
                         }
