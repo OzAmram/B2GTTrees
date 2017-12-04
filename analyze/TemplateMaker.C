@@ -472,6 +472,7 @@ int gen_background_template(TTree *t1, TH2F* h, TH2F* h_count,
 
 void gen_fakes_template(TTree *t_WJets, TTree *t_QCD, TTree *t_MC, TH2F *h, 
         Double_t m_low, Double_t m_high, int flag = FLAG_MUONS){
+    h->Sumw2();
     if(flag == FLAG_MUONS){
         FakeRate FR;
         //TH2D *FR;
@@ -480,9 +481,9 @@ void gen_fakes_template(TTree *t_WJets, TTree *t_QCD, TTree *t_MC, TH2F *h,
         for (int l=0; l<=2; l++){
             printf("l=%i\n", l);
             TTree *t;
-            if (l==0) t = t_WJets;
-            if (l==1) t = t_QCD;
-            if (l==2) t = t_MC;
+            if (l==0) t = t_WJets; //One iso one non-iso lepton
+            if (l==1) t = t_QCD; // two non-iso leptons
+            if (l==2) t = t_MC; // MC of EWK contamination of one iso one non-iso lepton
             Double_t m, xF, cost, jet1_cmva, jet2_cmva, gen_weight;
             Double_t bcdef_HLT_SF, bcdef_iso_SF, bcdef_id_SF;
             Double_t gh_HLT_SF, gh_iso_SF, gh_id_SF;
@@ -634,14 +635,12 @@ void gen_fakes_template(TTree *t_WJets, TTree *t_QCD, TTree *t_MC, TH2F *h,
 
         }
     }
+    printf("QCD Weight is %.2f \n", h->Integral());
 }
 
 int gen_combined_background_template(int nTrees, TTree **ts, TH2F* h,  
-        TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_contam, 
         Double_t m_low, Double_t m_high, int flag = FLAG_MUONS){
     h->Sumw2();
-    gen_fakes_template(t_WJets, t_QCD, t_WJets_contam, h, m_low, m_high, flag);
-    printf("QCD Weight is %.2f \n", h->Integral());
     for(int i=0; i<nTrees; i++){
         TTree *t1 = ts[i];
         Long64_t nEntries  =  t1->GetEntries();

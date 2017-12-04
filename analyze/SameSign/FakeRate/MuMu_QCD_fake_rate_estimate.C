@@ -5,13 +5,15 @@
 #include <cstring>
 #include <algorithm>
 #include "TFile.h"
+#include "../../TemplateMaker.C"
 #define MU_SIZE 200
 #define JET_SIZE 20
 
 const double root2 = sqrt(2);
 const char* filename("SingleMuon_files_sep25.txt");
-const TString fout_name("output_files/SingleMuon_data_aug28.root");
+const TString fout_name("output_files/MuMu_QCD_est_nov2.root");
 
+const bool data_2016 = true;
 
 bool is_empty_line(const char *s) {
     while (*s != '\0') {
@@ -22,16 +24,56 @@ bool is_empty_line(const char *s) {
     return true;
 }
 
-void MuMu_reco_data_batch()
-{
+/*
+typedef struct{
+    TH2D *noHLT;
+    TH2D *HLT;
+    Double_t noHLT_avg;
+    Double_t HLT_avg;
+} FakeRate;
 
+
+
+void setup_fakerate(FakeRate *FR){
+    TFile *f0 = TFile::Open("FakeRate/SingleMuon_data_fake_rate_aug22.root");
+    TH2D *h1 = (TH2D *) gDirectory->Get("h_rate_HLT")->Clone();
+    TH2D *h2 = (TH2D *) gDirectory->Get("h_rate_noHLT")->Clone();
+    h1->SetDirectory(0);
+    h2->SetDirectory(0);
+    FR->HLT = h1;
+    FR->noHLT = h2;
+    FR->noHLT_avg = 0.13; 
+    FR->HLT_avg = 0.91; 
+}
+*/
+
+Double_t get_fakerate_prob(Double_t pt, Double_t eta, TH2D *h){
+    if (pt >= 400) pt = 380;
+
+    TAxis* x_ax =  h->GetXaxis();
+    TAxis *y_ax =  h->GetYaxis();
+    int xbin = x_ax->FindBin(std::abs(eta));
+    int ybin = y_ax->FindBin(pt);
+
+    Double_t prob = h->GetBinContent(xbin, ybin);
+    if(prob < 0.001 || prob > 1) printf("Warning: %.2f Rate for pt %.0f, eta %1.1f! \n", prob, pt, eta);
+    //printf("Efficiency is %f \n", eff);
+    return prob;
+}
+
+void MuMu_QCD_fake_rate_estimate()
+{
+    //FakeRate FR;
+    //setup_fakerate(&FR);
 
 
     TTree *tout= new TTree("T_data", "Tree with reco events");
     tout->SetDirectory(0);
     Double_t cm_m, xF, cost_r, mu1_pt, mu2_pt, mu1_eta, mu2_eta, jet1_pt, jet2_pt,
-             jet1_cmva, jet1_eta, jet2_cmva, jet2_eta;
-    Int_t nJets, pu_NtrueInt;
+             jet1_cmva, jet1_eta, jet2_cmva, jet2_eta, evt_fakerate;
+    Double_t mu1_fakerate, mu2_fakerate;
+    Int_t nJets;
+    Bool_t double_muon_trig;
     Float_t met_pt;
     TLorentzVector mu_p, mu_m, cm, q1, q2;
     tout->Branch("m", &cm_m, "m/D");
@@ -41,6 +83,8 @@ void MuMu_reco_data_batch()
     tout->Branch("mu2_pt", &mu2_pt, "mu2_pt/D");
     tout->Branch("mu1_eta", &mu1_eta, "mu1_eta/D");
     tout->Branch("mu2_eta", &mu2_eta, "mu2_eta/D");
+    tout->Branch("mu1_fakerate", &mu1_fakerate);
+    tout->Branch("mu2_fakerate", &mu2_fakerate);
     tout->Branch("mu_m", "TLorentzVector", &mu_m);
     tout->Branch("mu_p", "TLorentzVector", &mu_p);
     tout->Branch("jet1_pt", &jet1_pt, "jet1_pt/D");
@@ -50,8 +94,9 @@ void MuMu_reco_data_batch()
     tout->Branch("jet2_eta", &jet2_eta, "jet2_eta/D");
     tout->Branch("jet2_CMVA", &jet2_cmva, "jet2_CMVA/D");
     tout->Branch("met_pt", &met_pt, "met_Pt/F");
+    tout->Branch("evt_fakerate", &evt_fakerate);
     tout->Branch("nJets", &nJets, "nJets/I");
-    tout->Branch("pu_NtrueInt", &pu_NtrueInt);
+    tout->Branch("double_muon_trig", &double_muon_trig);
 
 
 
@@ -92,7 +137,8 @@ void MuMu_reco_data_batch()
         Float_t jet_Pt[JET_SIZE], jet_Eta[JET_SIZE], jet_Phi[JET_SIZE], jet_E[JET_SIZE],
                 jet_CSV[JET_SIZE], jet_CMVA[JET_SIZE];
 
-        Int_t HLT_IsoMu, HLT_IsoTkMu;
+        Int_t HLT_IsoMu, HLT_IsoTkMu, HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL, HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL, 
+              HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ, HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ;
         t1->SetBranchAddress("mu_size", &mu_size); //number of muons in the event
         t1->SetBranchAddress("mu_Pt", &mu_Pt);
         t1->SetBranchAddress("mu_Eta", &mu_Eta);
@@ -117,10 +163,12 @@ void MuMu_reco_data_batch()
 
         t1->SetBranchAddress("HLT_IsoMu24", &HLT_IsoMu);
         t1->SetBranchAddress("HLT_IsoTkMu24", &HLT_IsoTkMu);
-
+        t1->SetBranchAddress("HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ", &HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ);
+        t1->SetBranchAddress("HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL", &HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL);
+        t1->SetBranchAddress("HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ", &HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ);
+        t1->SetBranchAddress("HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL", &HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL);
         t1->SetBranchAddress("met_size", &met_size);
         t1->SetBranchAddress("met_Pt", &met_pt);
-        t1->SetBranchAddress("pu_NtrueInt",&pu_NtrueInt);
 
         unsigned int nEntries =  t1->GetEntries();
         printf("there are %i entries in this tree\n", nEntries);
@@ -129,8 +177,7 @@ void MuMu_reco_data_batch()
             if(met_size != 1) printf("WARNING: Met size not equal to 1\n");
             if(mu_size > MU_SIZE) printf("Warning: too many muons\n");
             bool good_trigger = HLT_IsoMu || HLT_IsoTkMu;
-            if(good_trigger &&
-                    mu_size >= 2 && ((abs(mu_Charge[0] - mu_Charge[1])) > 0.01) &&
+            if( mu_size >= 2 && ((abs(mu_Charge[0] - mu_Charge[1])) > 0.01) &&
                     mu_IsTightMuon[0] && mu_IsTightMuon[1] &&
                     mu_Pt[0] > 26. &&  mu_Pt[1] > 10. &&
                     abs(mu_Eta[0]) < 2.4 && abs(mu_Eta[1]) < 2.4){ 
@@ -152,7 +199,28 @@ void MuMu_reco_data_batch()
 
                 cm = mu_p + mu_m;
                 cm_m = cm.M();
-                if (iso_0 < tight_iso && iso_1 < tight_iso && cm_m >=150.){
+
+                nJets =0;
+                for(int j=0; j < jet_size; j++){
+                    if(jet_Pt[j] > 20. && std::abs(jet_Eta[j]) < 2.4){
+                        if(nJets == 1){
+                            jet2_pt = jet_Pt[j];
+                            jet2_eta = jet_Eta[j];
+                            jet2_cmva = jet_CMVA[j];
+                            nJets =2;
+                            break;
+                        }
+                        else if(nJets ==0){
+                            jet1_pt = jet_Pt[j];
+                            jet1_eta = jet_Eta[j];
+                            jet1_cmva = jet_CMVA[j];
+                            nJets = 1;
+                        }
+                    }
+                }
+                bool no_bjets = has_no_bjets(nJets, jet1_pt, jet2_pt, jet1_cmva, jet2_cmva);
+                if (iso_0 > tight_iso && iso_1 > tight_iso && cm_m >=150. && no_bjets && met_pt < 50.){
+                    //both muons FAIL ISO
                     xF = abs(2.*cm.Pz()/13000.); 
 
                     // compute Colins soper angle with formula
@@ -174,26 +242,35 @@ void MuMu_reco_data_batch()
                     mu1_eta = mu_Eta[0];
                     mu2_eta = mu_Eta[1];
 
-                    nJets =0;
-                    for(int j=0; j < jet_size; j++){
-                        if(jet_Pt[j] > 20. && std::abs(jet_Eta[j]) < 2.4){
-                            if(nJets == 1){
-                                jet2_pt = jet_Pt[j];
-                                jet2_eta = jet_Eta[j];
-                                jet2_cmva = jet_CMVA[j];
-                                nJets =2;
-                                break;
-                            }
-                            else if(nJets ==0){
-                                jet1_pt = jet_Pt[j];
-                                jet1_eta = jet_Eta[j];
-                                jet1_cmva = jet_CMVA[j];
-                                nJets = 1;
+
+                    //double_muon_trig = HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL || HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL || HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ || HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ;
+                    /*
+                    if(double_muon_trig){
+                        for(int k =2; k < mu_size; k++){
+                            if(mu_Pt[k] > 8.){
+                                float iso_k = (mu_SumChargedHadronPt[k] + max(0., mu_SumNeutralHadronPt[k] + mu_SumPhotonPt[k] - 0.5 * mu_SumPUPt[k]))/mu_Pt[k];
+                                if (iso_k < loose_iso) double_muon_trig = false; //other muon caused trigger
                             }
                         }
                     }
-                    tout->Fill();
+                    */
 
+                    /*
+                    Double_t p1, p2;
+                    if(mu2_pt < 20){
+                        //mu1 definitely set off trigger
+                        mu1_fakerate = std::min(get_fakerate_prob(mu1_pt, mu1_eta, FR.HLT), 0.97);
+                        mu2_fakerate = get_fakerate_prob(mu2_pt, mu2_eta, FR.noHLT);
+                    }
+                    else{
+                       mu1_fakerate = FR.HLT_avg;
+                       mu2_fakerate = FR.noHLT_avg;
+                    }
+                    evt_fakerate = mu1_fakerate * mu2_fakerate/((1 - mu1_fakerate)*(1- mu2_fakerate));
+                    printf("evt_fakerate = %.2f \n", evt_fakerate);
+                    */
+
+                    tout->Fill();
                     nEvents++;
 
                 }
@@ -206,7 +283,6 @@ void MuMu_reco_data_batch()
     printf("Ran on data from %i Files and produced template with %i Events \n", 
             nFiles, nEvents );
     printf("Writing out put to %s \n", fout_name.Data());
-
     TFile *fout = TFile::Open(fout_name, "RECREATE");
     fout->cd();
     tout->Write();
