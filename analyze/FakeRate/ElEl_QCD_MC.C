@@ -19,10 +19,9 @@ double Ebeam = 6500.;
 double Pbeam = sqrt(Ebeam*Ebeam - 0.938*0.938);
 
 char *filename("non_QCD_files_aug29.txt");
-const TString fout_name("output_files/ElEl_QCD_non_QCD_MC_est_Oct9.root");
+const TString fout_name("FakeRate/root_files/ElEl_fakerate_QCD_MC_dec4.root");
 const bool PRINT=false;
 
-const bool data_2016 = true;
 
 bool is_empty_line(const char *s) {
     while (*s != '\0') {
@@ -212,28 +211,15 @@ void ElEl_QCD_MC()
             t1->SetBranchAddress("HLT_Ele27_WPTight_Gsf", &HLT_El);
 
 
-            if(data_2016){
-                t1->SetBranchAddress("jetAK4CHS_size", &jet_size);
-                t1->SetBranchAddress("jetAK4CHS_Pt", &jet_Pt);
-                t1->SetBranchAddress("jetAK4CHS_Eta", &jet_Eta);
-                t1->SetBranchAddress("jetAK4CHS_Phi", &jet_Phi);
-                t1->SetBranchAddress("jetAK4CHS_E", &jet_E);
-                t1->SetBranchAddress("jetAK4CHS_CSVv2", &jet_CSV);
-                t1->SetBranchAddress("jetAK4CHS_CMVAv2", &jet_CMVA);
-                t1->SetBranchAddress("jetAK4CHS_PartonFlavour", &jet_partonflavour);
+            t1->SetBranchAddress("jetAK4CHS_size", &jet_size);
+            t1->SetBranchAddress("jetAK4CHS_Pt", &jet_Pt);
+            t1->SetBranchAddress("jetAK4CHS_Eta", &jet_Eta);
+            t1->SetBranchAddress("jetAK4CHS_Phi", &jet_Phi);
+            t1->SetBranchAddress("jetAK4CHS_E", &jet_E);
+            t1->SetBranchAddress("jetAK4CHS_CSVv2", &jet_CSV);
+            t1->SetBranchAddress("jetAK4CHS_CMVAv2", &jet_CMVA);
+            t1->SetBranchAddress("jetAK4CHS_PartonFlavour", &jet_partonflavour);
 
-            }
-
-            else{
-                t1->SetBranchAddress("jetAK4Puppi_size", &jet_size);
-                t1->SetBranchAddress("jetAK4Puppi_Pt", &jet_Pt);
-                t1->SetBranchAddress("jetAK4Puppi_Eta", &jet_Eta);
-                t1->SetBranchAddress("jetAK4Puppi_Phi", &jet_Phi);
-                t1->SetBranchAddress("jetAK4Puppi_E", &jet_E);
-                t1->SetBranchAddress("jetAK4Puppi_CSVv2", &jet_CSV);
-                t1->SetBranchAddress("jetAK4Puppi_CMVAv2", &jet_CMVA);
-
-            }
             t1->SetBranchAddress("evt_Gen_Weight", &evt_Gen_Weight);
             t1->SetBranchAddress("pu_NtrueInt",&pu_NtrueInt);
 
@@ -288,38 +274,56 @@ void ElEl_QCD_MC()
                     }
                 }
                 bool no_bjets = has_no_bjets(nJets, jet1_pt, jet2_pt, jet1_cmva, jet2_cmva);
-                
+
                 if (!el_IDMedium[0] && !el_IDMedium[1] && cm_m >=150. && no_bjets && met_pt < 50.){
-                        if(PRINT) sprintf(out_buff + strlen(out_buff),"Event %i \n", i);
 
-                        //RECO LEVEL
-                        xF = abs(2.*cm.Pz()/13000.); 
+                    //RECO LEVEL
+                    xF = abs(2.*cm.Pz()/13000.); 
+
+                    // compute Colins soper angle with formula
+                    double el_p_pls = (el_p.E()+el_p.Pz())/root2;
+                    double el_p_min = (el_p.E()-el_p.Pz())/root2;
+                    double el_m_pls = (el_m.E()+el_m.Pz())/root2;
+                    double el_m_min = (el_m.E()-el_m.Pz())/root2;
+                    double qt2 = cm.Px()*cm.Px()+cm.Py()*cm.Py();
+                    //cost_p = cos(theta)_r (reconstructed collins soper angle, sign
+                    //may be 'wrong' if lepton pair direction is not the same as inital
+                    //quark direction
+                    double cost = 2*(el_m_pls*el_p_min - el_m_min*el_p_pls)/(cm_m*sqrt(cm_m*cm_m + qt2));
+                    if(cm.Pz() < 0.) cost_r = -cost;
+                    else cost_r = cost;
+
+
+                    el1_pt = el_Pt[0];
+                    el2_pt = el_Pt[1];
+                    el1_eta = el_Eta[0];
+                    el2_eta = el_Eta[1];
 
 
 
 
-                        gen_weight = evt_Gen_Weight * normalization;
-                        el1_pt = el_Pt[0];
-                        el2_pt = el_Pt[1];
-                        el1_eta = el_Eta[0];
-                        el2_eta = el_Eta[1];
+                    gen_weight = evt_Gen_Weight * normalization;
+                    el1_pt = el_Pt[0];
+                    el2_pt = el_Pt[1];
+                    el1_eta = el_Eta[0];
+                    el2_eta = el_Eta[1];
 
-                        //pick out 2 highest pt jets with eta < 2.4
-                        nJets =0;
-                        for(int j=0; j < jet_size; j++){
-                            if(jet_Pt[j] > 20. && std::abs(jet_Eta[j]) < 2.4){
-                                if(nJets == 1){
-                                    jet2_pt = jet_Pt[j];
-                                    jet2_eta = jet_Eta[j];
-                                    jet2_cmva = jet_CMVA[j];
-                                    jet2_flavour = jet_partonflavour[j];
-                                    jet2_b_weight = get_btag_weight(jet_Pt[j], jet_Eta[j],jet_partonflavour[j],btag_effs, b_reader);
-                                    nJets =2;
-                                    break;
-                                }
-                                else if(nJets ==0){
-                                    jet1_pt = jet_Pt[j];
-                                    jet1_eta = jet_Eta[j];
+                    //pick out 2 highest pt jets with eta < 2.4
+                    nJets =0;
+                    for(int j=0; j < jet_size; j++){
+                        if(jet_Pt[j] > 20. && std::abs(jet_Eta[j]) < 2.4){
+                            if(nJets == 1){
+                                jet2_pt = jet_Pt[j];
+                                jet2_eta = jet_Eta[j];
+                                jet2_cmva = jet_CMVA[j];
+                                jet2_flavour = jet_partonflavour[j];
+                                jet2_b_weight = get_btag_weight(jet_Pt[j], jet_Eta[j],jet_partonflavour[j],btag_effs, b_reader);
+                                nJets =2;
+                                break;
+                            }
+                            else if(nJets ==0){
+                                jet1_pt = jet_Pt[j];
+                                jet1_eta = jet_Eta[j];
                                     jet1_cmva = jet_CMVA[j];
                                     jet1_flavour = jet_partonflavour[j];
                                     jet1_b_weight = get_btag_weight(jet_Pt[j], jet_Eta[j],jet_partonflavour[j],btag_effs, b_reader);

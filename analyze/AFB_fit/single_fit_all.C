@@ -66,7 +66,7 @@ int FLAG = FLAG_ELECTRONS;
 //int FLAG = FLAG_MUONS;
 
 //MC templates
-// /*
+ ///*
 TFile* f_mc = (TFile*) TFile::Open("output_files/ElEl_DY_nov25.root");
 TTree *t_mc = (TTree *) f_mc ->Get("T_data");
 TTree *t_nosig = (TTree *) f_mc ->Get("T_back");
@@ -84,7 +84,7 @@ TTree *t_WJets = (TTree *)f_WJets->Get("T_data");
 
 TFile *f_WJets_contam = TFile::Open("../analyze/output_files/ElEl_fakerate_WJets_MC_nov2.root");
 TTree *t_WJets_contam = (TTree *)f_WJets_contam->Get("T_data");
-// */
+ //*/
  /*
 TFile* f_mc = (TFile*) TFile::Open("output_files/MuMu_DY_sep8.root");
 TTree *t_mc = (TTree *) f_mc ->Get("T_data");
@@ -103,7 +103,7 @@ TTree *t_WJets = (TTree *)f_WJets->Get("T_data");
 
 TFile *f_WJets_contam = TFile::Open("../analyze/output_files/MuMu_fakerate_Wjets_MC_nov2.root");
 TTree *t_WJets_contam = (TTree *)f_WJets_contam->Get("T_data");
- */
+*/
 
 
 vector<double> v_xF;
@@ -203,7 +203,9 @@ void setup(){
 
     gen_mc_template(t_mc, alpha, h_sym, h_asym, h_sym_count, m_low, m_high, FLAG);
     TTree *ts[2] = {t_back, t_nosig};
-    gen_combined_background_template(2, ts, h_back, t_WJets, t_QCD, t_WJets_contam, m_low, m_high, FLAG);
+
+    gen_fakes_template(t_WJets, t_QCD, t_WJets_contam, h_back, m_low, m_high, FLAG);
+    gen_combined_background_template(2, ts, h_back, m_low, m_high, FLAG);
 
     nDataEvents = gen_data_template(t_data, h_data, &v_m, &v_xF, &v_cost, m_low, m_high);
     //f_data->Close();
@@ -254,7 +256,7 @@ void single_fit_all(){
         TVirtualFitter * minuit = TVirtualFitter::Fitter(0,2);
         minuit->SetFCN(fcn);
         minuit->SetParameter(0,"AFB", AFB_start, AFB_start_error, -AFB_max, AFB_max);
-        minuit->SetParameter(1,"r_back", r_back_start, r_back_start_error, 0, r_back_max);
+        minuit->SetParameter(1,"r_back", r_back_start, r_back_start_error, 0., 0.);
         Double_t arglist[100];
         arglist[0] = 10000.;
         minuit->ExecuteCommand("MIGRAD", arglist,0);
@@ -293,7 +295,7 @@ void single_fit_all(){
         cleanup();
     }
     for(int i=0; i<n_m_bins; i++){
-        printf("\n\n\n Fit on M=[%.0f, %.0f], %i Events: AFB = %0.3f +/- %0.3f r_back = %0.3f +/- %0.3f \n", 
+        printf("\n Fit on M=[%.0f, %.0f], %i Events: AFB = %0.3f +/- %0.3f r_back = %0.3f +/- %0.3f \n", 
                     m_bins[i], m_bins[i+1], nEvents[i], AFB_fit[i], AFB_fit_err[i], r_back_fit[i], r_back_fit_err[i]);
 
     }

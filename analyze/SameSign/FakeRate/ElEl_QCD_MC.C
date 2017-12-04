@@ -6,8 +6,8 @@
 #include <cstring>
 #include <algorithm>
 #include "TFile.h"
-#include "../ScaleFactors.C"
-#include "../TemplateMaker.C"
+#include "../../ScaleFactors.C"
+#include "../../TemplateMaker.C"
 
 #define GEN_SIZE 300
 #define EL_SIZE 100
@@ -19,7 +19,7 @@ double Ebeam = 6500.;
 double Pbeam = sqrt(Ebeam*Ebeam - 0.938*0.938);
 
 char *filename("non_QCD_files_aug29.txt");
-const TString fout_name("FakeRate/root_files/ElEl_fakerate_WJets_MC_dec4.root");
+const TString fout_name("SameSign/output_files/ElEl_fakerate_QCD_MC_dec1.root");
 const bool PRINT=false;
 
 
@@ -87,7 +87,7 @@ void compute_norms(Double_t *norms, unsigned int *nFiles){
 
 
 
-void ElEl_WJets_MC()
+void ElEl_QCD_MC()
 {
 
     Double_t norms[MAX_SAMPLES]; // computed normalizations to apply to each event in a sample (based on xsection and total weight)
@@ -111,7 +111,7 @@ void ElEl_WJets_MC()
     Double_t cm_m, xF, cost_r, el1_pt, el2_pt, el1_eta, el2_eta, jet1_pt, jet2_pt, deltaC, jet1_eta, jet2_eta, gen_weight,
              jet1_cmva, jet1_csv, jet2_cmva, jet2_csv;
     Double_t el_id_SF, el_reco_SF, jet1_b_weight, jet2_b_weight, pu_SF;
-    Int_t nJets, jet1_flavour, jet2_flavour, iso_el;
+    Int_t nJets, jet1_flavour, jet2_flavour;
     Float_t met_pt;
     TLorentzVector el_p, el_m, cm, q1, q2;
     tout->Branch("m", &cm_m, "m/D");
@@ -140,7 +140,6 @@ void ElEl_WJets_MC()
     tout->Branch("nJets", &nJets, "nJets/I");
     tout->Branch("jet1_flavour", &jet1_flavour, "jet1_flavour/I");
     tout->Branch("jet2_flavour", &jet2_flavour, "jet2_flavour/I");
-    tout->Branch("iso_el", &iso_el);
 
 
 
@@ -233,15 +232,16 @@ void ElEl_WJets_MC()
             char out_buff[10000];
             bool print_out = false;
 
-            for (int i=0; i<nEntries; i++) {
-                t1->GetEntry(i);
-                if(met_size != 1) printf("WARNING: Met size not equal to 1\n");
-                if(el_size > EL_SIZE) printf("Warning: too many muons\n");
-                bool good_trigger = HLT_El;
-                if( el_size >= 2 && ((abs(el_Charge[0] - el_Charge[1])) > 0.01) &&
-                        el_IDMedium_NoIso[0] && el_IDMedium_NoIso[1] &&
-                        el_Pt[0] > 29. &&  el_Pt[1] > 10. &&
-                        abs(el_Eta[0]) < 2.4 && abs(el_Eta[1]) < 2.4){ 
+        for (int i=0; i<nEntries; i++) {
+            t1->GetEntry(i);
+            if(met_size != 1) printf("WARNING: Met size not equal to 1\n");
+            if(el_size > EL_SIZE) printf("Warning: too many muons\n");
+            bool good_trigger = HLT_El;
+            if(good_trigger &&
+                    el_size >= 2 && (el_Charge[0] * el_Charge[1]> 0.) &&
+                    el_IDMedium_NoIso[0] && el_IDMedium_NoIso[1] &&
+                    el_Pt[0] > 29. &&  el_Pt[1] > 10. &&
+                    abs(el_Eta[0]) < 2.4 && abs(el_Eta[1]) < 2.4){ 
 
                     //only want events with 2 oppositely charged leptons
                     if(el_Charge[0] >0){
@@ -252,47 +252,35 @@ void ElEl_WJets_MC()
                         el_m.SetPtEtaPhiE(el_Pt[0], el_Eta[0], el_Phi[0], el_E[0]);
                         el_p.SetPtEtaPhiE(el_Pt[1], el_Eta[1], el_Phi[1], el_E[1]);
                     }
-                    cm = el_p + el_m;
-                    cm_m = cm.M();
+                cm = el_p + el_m;
+                cm_m = cm.M();
 
-                    nJets =0;
-                    for(int j=0; j < jet_size; j++){
-                        if(jet_Pt[j] > 20. && std::abs(jet_Eta[j]) < 2.4){
-                            if(nJets == 1){
-                                jet2_pt = jet_Pt[j];
-                                jet2_eta = jet_Eta[j];
-                                jet2_cmva = jet_CMVA[j];
-                                nJets =2;
-                                break;
-                            }
-                            else if(nJets ==0){
-                                jet1_pt = jet_Pt[j];
-                                jet1_eta = jet_Eta[j];
-                                jet1_cmva = jet_CMVA[j];
-                                nJets = 1;
-                            }
+                nJets =0;
+                for(int j=0; j < jet_size; j++){
+                    if(jet_Pt[j] > 20. && std::abs(jet_Eta[j]) < 2.4){
+                        if(nJets == 1){
+                            jet2_pt = jet_Pt[j];
+                            jet2_eta = jet_Eta[j];
+                            jet2_cmva = jet_CMVA[j];
+                            nJets =2;
+                            break;
+                        }
+                        else if(nJets ==0){
+                            jet1_pt = jet_Pt[j];
+                            jet1_eta = jet_Eta[j];
+                            jet1_cmva = jet_CMVA[j];
+                            nJets = 1;
                         }
                     }
-                    bool no_bjets = has_no_bjets(nJets, jet1_pt, jet2_pt, jet1_cmva, jet2_cmva);
-                    bool one_iso = el_IDMedium[0] ^ el_IDMedium[1];
-
-                    if ((one_iso && cm_m >=150. && no_bjets && met_pt < 50.)){
+                }
+                bool no_bjets = has_no_bjets(nJets, jet1_pt, jet2_pt, jet1_cmva, jet2_cmva);
+                
+                if (!el_IDMedium[0] && !el_IDMedium[1] && cm_m >=150. && no_bjets && met_pt < 50.){
+                        if(PRINT) sprintf(out_buff + strlen(out_buff),"Event %i \n", i);
 
                         //RECO LEVEL
                         xF = abs(2.*cm.Pz()/13000.); 
 
-                        // compute Colins soper angle with formula
-                        double el_p_pls = (el_p.E()+el_p.Pz())/root2;
-                        double el_p_min = (el_p.E()-el_p.Pz())/root2;
-                        double el_m_pls = (el_m.E()+el_m.Pz())/root2;
-                        double el_m_min = (el_m.E()-el_m.Pz())/root2;
-                        double qt2 = cm.Px()*cm.Px()+cm.Py()*cm.Py();
-                        //cost_p = cos(theta)_r (reconstructed collins soper angle, sign
-                        //may be 'wrong' if lepton pair direction is not the same as inital
-                        //quark direction
-                        double cost = 2*(el_m_pls*el_p_min - el_m_min*el_p_pls)/(cm_m*sqrt(cm_m*cm_m + qt2));
-                        if(cm.Pz() < 0.) cost_r = -cost;
-                        else cost_r = cost;
 
 
 
@@ -329,10 +317,6 @@ void ElEl_WJets_MC()
 
 
                         //get el cut SFs
-                        iso_el = 0; //which muon is isolated
-                        if(el_IDMedium[0]) iso_el = 0;
-                        else if(el_IDMedium[1]) iso_el = 1;
-                        else printf("ERROR: Neither el iso\n");
 
 
                         el_id_SF = get_el_SF(el1_pt, el1_eta, el_SF.ID_SF) * get_el_SF(el2_pt, el2_eta, el_SF.ID_SF);
@@ -354,7 +338,7 @@ void ElEl_WJets_MC()
             }
 
             f1->Close();
-            printf("moving on to next file, currently %i events \n xsection is %.3e\n\n", nEvents, tot_weight);
+        printf("moving on to next file, currently %i events \n xsection is %.3e\n\n", nEvents, tot_weight);
         }
     }
     fclose(root_files);

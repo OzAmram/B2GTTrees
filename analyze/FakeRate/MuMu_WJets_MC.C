@@ -18,7 +18,7 @@
 
 const double root2 = sqrt(2);
 const char* filename("non_QCD_files_aug29.txt");
-const TString fout_name("output_files/MuMu_fakerate_Wjets_MC_nov2.root");
+const TString fout_name("FakeRate/root_files/MuMu_fakerate_Wjets_MC_dec4.root");
 
 
 bool is_empty_line(const char *s) {
@@ -147,8 +147,7 @@ void MuMu_WJets_MC()
 
 
     unsigned int nEvents=0;
-    Double_t tot_double_trig_weight=0;
-    Double_t tot_single_trig_weight=0;
+    Double_t tot_weight=0;
 
     Double_t normalization = 1.0;
 
@@ -298,6 +297,20 @@ void MuMu_WJets_MC()
                     bool no_bjets = has_no_bjets(nJets, jet1_pt, jet2_pt, jet1_cmva, jet2_cmva);
                     bool one_iso = (iso_0 < tight_iso) ^ (iso_1 < tight_iso);
                     if (one_iso && cm_m >=150. && no_bjets && met_pt < 50.){
+                        xF = abs(2.*cm.Pz()/13000.); 
+
+                        // compute Colins soper angle with formula
+                        double mu_p_pls = (mu_p.E()+mu_p.Pz())/root2;
+                        double mu_p_min = (mu_p.E()-mu_p.Pz())/root2;
+                        double mu_m_pls = (mu_m.E()+mu_m.Pz())/root2;
+                        double mu_m_min = (mu_m.E()-mu_m.Pz())/root2;
+                        double qt2 = cm.Px()*cm.Px()+cm.Py()*cm.Py();
+                        //cost_p = cos(theta)_r (reconstructed collins soper angle, sign
+                        //may be 'wrong' if lepton pair direction is not the same as inital
+                        //quark direction
+                        double cost = 2*(mu_m_pls*mu_p_min - mu_m_min*mu_p_pls)/(cm_m*sqrt(cm_m*cm_m + qt2));
+                        if(cm.Pz() < 0.) cost_r = -cost;
+                        else cost_r = cost;
 
                         mu1_pt = mu_Pt[0];
                         mu2_pt = mu_Pt[1];
@@ -309,7 +322,6 @@ void MuMu_WJets_MC()
                         else if(iso_1 < tight_iso) iso_muon = 1;
                         else printf("ERROR: Neither muon iso\n");
 
-                        double_muon_trig = HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL || HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL || HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ || HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ;
 
                         bcdef_HLT_SF = get_HLT_SF(mu1_pt, mu1_eta, mu2_pt, mu2_eta, runs_bcdef.HLT_SF, runs_bcdef.HLT_MC_EFF);
                         gh_HLT_SF = get_HLT_SF(mu1_pt, mu1_eta, mu2_pt, mu2_eta, runs_gh.HLT_SF, runs_gh.HLT_MC_EFF);
@@ -328,8 +340,7 @@ void MuMu_WJets_MC()
                         Double_t final_weight = (bcdef_weight *bcdef_lumi + gh_weight * gh_lumi)/(bcdef_lumi + gh_lumi);
                         //printf("Gen_weight, final_weight: %.2e, %.2e \n", gen_weight, final_weight);
 
-                        if(double_muon_trig) tot_double_trig_weight += final_weight;
-                        else tot_single_trig_weight += final_weight;
+                        tot_weight += gen_weight;
 
 
                         nEvents++;
@@ -341,10 +352,10 @@ void MuMu_WJets_MC()
             }
             f1->Close();
         }
-        printf("moving on to next file, currently %i events \n double trig xsection is %.3e, single trig xsection is %.3e \n\n", nEvents, tot_double_trig_weight, tot_single_trig_weight);
+        printf("moving on to next file, currently %i events \n xsection is %.3e\n\n", nEvents, tot_weight);
     }
     printf("Final output for %s file \n", filename);
-    printf("Total double trig xsection is %.3e, single trig xsection is %.3e \n\n", tot_double_trig_weight, tot_single_trig_weight);
+    printf("Total xsection is %.3e \n\n", tot_weight);
 
     TFile *fout = TFile::Open(fout_name, "RECREATE");
     fout->cd();

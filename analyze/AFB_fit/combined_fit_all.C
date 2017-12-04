@@ -143,7 +143,7 @@ void fcn(int& npar, double* deriv, double& f, double par[], int flag){
         if(elel_prob > 1) printf("Warning prob is too big \n");
         if(print && p_elel_sym < 1e-20){
             elel_misses++;
-            printf(" Warning p_sym is 0 or negative! for elel bin xf: %0.2f cost: %1.2f \n", v_elel_xF[i], v_elel_cost[i]);
+            //printf(" Warning p_sym is 0 or negative! for elel bin xf: %0.2f cost: %1.2f \n", v_elel_xF[i], v_elel_cost[i]);
             if(p_elel_back < 1e-20) printf("p_back Is also 0 or negative! \n");
             if(elel_prob < 1e-20) printf("Warning prob is also 0 or negative! \n");
             p_elel_sym = 1e-20;
@@ -212,7 +212,9 @@ void setup(){
 
     gen_mc_template(t_elel_mc, alpha, h_elel_sym, h_elel_asym, h_elel_sym_count, m_low, m_high, FLAG_ELECTRONS);
     TTree *elel_ts[2] = {t_elel_back, t_elel_nosig};
-    gen_combined_background_template(2, elel_ts, h_elel_back, t_elel_WJets, t_elel_QCD, t_elel_WJets_contam, m_low, m_high, FLAG_ELECTRONS);
+
+    gen_fakes_template(t_elel_WJets, t_elel_QCD, t_elel_WJets_contam, h_elel_back, m_low, m_high, FLAG_ELECTRONS);
+    gen_combined_background_template(2, elel_ts, h_elel_back, m_low, m_high, FLAG_ELECTRONS);
 
     nElEl_DataEvents = gen_data_template(t_elel_data, h_elel_data, &v_elel_m, &v_elel_xF, &v_elel_cost, m_low, m_high);
 
@@ -239,7 +241,8 @@ void setup(){
 
     gen_mc_template(t_mumu_mc, alpha, h_mumu_sym, h_mumu_asym, h_mumu_sym_count, m_low, m_high, FLAG_MUONS);
     TTree *mumu_ts[2] = {t_mumu_back, t_mumu_nosig};
-    gen_combined_background_template(2, mumu_ts, h_mumu_back, t_mumu_WJets, t_mumu_QCD, t_mumu_WJets_contam, m_low, m_high, FLAG_MUONS);
+    gen_fakes_template(t_mumu_WJets, t_mumu_QCD, t_mumu_WJets_contam, h_mumu_back, m_low, m_high, FLAG_MUONS);
+    gen_combined_background_template(2, mumu_ts, h_mumu_back, m_low, m_high, FLAG_MUONS);
 
     nMuMu_DataEvents = gen_data_template(t_mumu_data, h_mumu_data, &v_mumu_m, &v_mumu_xF, &v_mumu_cost, m_low, m_high);
     printf("Finishing setup \n");
@@ -326,7 +329,7 @@ void combined_fit_all(){
         cleanup();
     }
     for(int i=0; i<n_m_bins; i++){
-        printf("\n\n\n Fit on M=[%.0f, %.0f], %i ElEl Events, %i MuMu Events: AFB = %0.3f +/- %0.3f r_elel_back = %0.3f +/- %0.3f r_mumu_back =%0.3f +/- %0.3f \n", 
+        printf("\n Fit on M=[%.0f, %.0f], %i ElEl Events, %i MuMu Events: AFB = %0.3f +/- %0.3f r_elel_back = %0.3f +/- %0.3f r_mumu_back =%0.3f +/- %0.3f \n", 
                     m_bins[i], m_bins[i+1], nElElEvents[i], nMuMuEvents[i], AFB_fit[i], AFB_fit_err[i], r_elel_back_fit[i], r_elel_back_fit_err[i], r_mumu_back_fit[i], r_mumu_back_fit_err[i]);
 
     }
