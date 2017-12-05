@@ -137,13 +137,13 @@ void draw_background_frac(){
                                        pow(QCD_frac_unc[i-1],2) );
     }
     bin_center[nBins-1] = 1000;
-    Double_t fit_res[] = {0.151, 0.174, 0.134, 0.204, 0.207, 0.127};
-    Double_t fit_errs[] = {0.007, 0.011, 0.004, 0.017, 0.031, 0.04};
+    Double_t fit_res[] = {0.124, 0.143, 0.174, 0.167, 0.171, 0.095};
+    Double_t fit_errs[] = {0.005, 0.010, 0.006, 0.014, 0.026, 0.031};
 
     Int_t nCombBins = 9;
     Double_t comb_bin_center[] ={175., 225., 275., 350., 450., 550., 650., 775., 1000.};
-    Double_t comb_fit_res[] = {0.240, 0.177, 0.233, 0.182, 0.209, 0.172, 0.151, 0.155, 0.021};
-    Double_t comb_fit_errs[] = {0.003, 0.011, 0.015, 0.015, 0.024, 0.036, 0.045, 0.049, 0.048};
+    Double_t comb_fit_res[] = {0.186, 0.145, 0.211, 0.146, 0.169, 0.140, 0.123, 0.106, 0.013};
+    Double_t comb_fit_errs[] = {0.002, 0.010, 0.013, 0.012, 0.019, 0.030, 0.036, 0.037, 0.037};
 
     TGraphErrors *mc_nosig_frac = new TGraphErrors(nBins, bin_center, nosig_frac, 0, nosig_frac_unc);
     mc_nosig_frac->SetTitle("MC no asym events (qq, gluglu, qbarqbar)");

@@ -77,7 +77,8 @@ static void setup_new_mu_fakerate(FakeRate *FR){
 
 static Double_t get_new_fakerate_prob(Double_t pt, Double_t eta, TH2D *h){
     //pt=35;
-    if (pt >= 80) pt =80 ;
+    if (pt >= 150) pt =150 ;
+    if(abs(eta) > 2.4) eta = 2.3;
 
 
     TAxis* x_ax =  h->GetXaxis();
