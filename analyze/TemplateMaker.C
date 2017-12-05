@@ -933,17 +933,18 @@ void make_m_cost_hist(TTree *t1, TH1F *h_m, TH1F *h_cost, bool is_data=false, in
 }
 
 
-void Fakerate_est_mu(TTree *t_WJets, TTree *t_QCD, TTree *t_MC, TH1F *h_m, TH1F *h_cost){
+void Fakerate_est_mu(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_contam, TTree *t_QCD_contam, TH1F *h_m, TH1F *h_cost){
     FakeRate FR;
     //TH2D *FR;
     setup_new_mu_fakerate(&FR);
-    FR.h->Print();
-    for (int l=0; l<=2; l++){
+    //FR.h->Print();
+    for (int l=0; l<=3; l++){
         printf("l=%i\n", l);
         TTree *t;
         if (l==0) t = t_WJets;
         if (l==1) t = t_QCD;
-        if (l==2) t = t_MC;
+        if (l==2) t = t_WJets_contam;
+        if (l==3) t = t_QCD_contam;
         Double_t m, xF, cost, jet1_cmva, jet2_cmva, gen_weight;
         Double_t bcdef_HLT_SF, bcdef_iso_SF, bcdef_id_SF;
         Double_t gh_HLT_SF, gh_iso_SF, gh_id_SF;
@@ -973,7 +974,7 @@ void Fakerate_est_mu(TTree *t_WJets, TTree *t_QCD, TTree *t_MC, TH1F *h_m, TH1F 
         if(l==0 || l==2 ){
             t->SetBranchAddress("iso_muon", &iso_mu);
         }
-        if(l==2){
+        if(l==2 || l==3){
             t->SetBranchAddress("gen_weight", &gen_weight);
             t->SetBranchAddress("jet1_b_weight", &jet1_b_weight);
             t->SetBranchAddress("jet2_b_weight", &jet2_b_weight);
@@ -1003,20 +1004,29 @@ void Fakerate_est_mu(TTree *t_WJets, TTree *t_QCD, TTree *t_MC, TH1F *h_m, TH1F 
             if(l==2){
                 Double_t bcdef_weight = gen_weight * bcdef_HLT_SF *  bcdef_id_SF * bcdef_iso_SF;
                 Double_t gh_weight = gen_weight * gh_HLT_SF * gh_id_SF * gh_iso_SF;
-                Double_t mc_weight = (bcdef_weight *bcdef_lumi + gh_weight * gh_lumi) * jet1_b_weight * jet2_b_weight * 1000;
+                Double_t mc_weight = (bcdef_weight *bcdef_lumi + gh_weight * gh_lumi) * 1000;
                 if(iso_mu ==0) mu1_fakerate = get_new_fakerate_prob(mu1_pt, mu1_eta, FR.h);
                 if(iso_mu ==1) mu1_fakerate = get_new_fakerate_prob(mu2_pt, mu2_eta, FR.h);
                 evt_fakerate = -(mu1_fakerate * mc_weight)/(1-mu1_fakerate);
+            }
+            if(l==3){
+                Double_t bcdef_weight = gen_weight * bcdef_HLT_SF *  bcdef_id_SF;
+                Double_t gh_weight = gen_weight * gh_HLT_SF * gh_id_SF;
+                Double_t mc_weight = (bcdef_weight *bcdef_lumi + gh_weight * gh_lumi) * 1000;
+                mu1_fakerate = get_new_fakerate_prob(mu1_pt, mu1_eta, FR.h);
+                mu2_fakerate = get_new_fakerate_prob(mu2_pt, mu2_eta, FR.h);
+                evt_fakerate = mc_weight * (mu1_fakerate/(1-mu1_fakerate)) * (mu2_fakerate/(1-mu2_fakerate));
             }
 
 
 
             if(met_pt < 50.  && no_bjets){
+                //if(l==3) printf("Evt rate %.2e \n", evt_fakerate);
                 h_m->Fill(m, evt_fakerate);
                 h_cost->Fill(cost, evt_fakerate);
             }
         }
-
+    printf("After iter %i current fakerate est is %.0f \n", l, h_cost->Integral());
     }
     printf("Total fakerate est is %.0f \n", h_m->Integral());
 }
@@ -1025,7 +1035,7 @@ void Fakerate_est_el(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_MC, TTree *t_Q
     FakeRate FR;
     //TH2D *FR;
     setup_new_el_fakerate(&FR);
-    FR.h->Print();
+    //FR.h->Print();
     for (int l=0; l<=3; l++){
         TTree *t;
         if (l==0) t = t_WJets;
@@ -1084,13 +1094,13 @@ void Fakerate_est_el(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_MC, TTree *t_Q
             }
             if(l==2){
                 
-                Double_t mc_weight = gen_weight * el_id_SF * el_reco_SF * jet1_b_weight * jet2_b_weight * 1000. * tot_lumi;
+                Double_t mc_weight = gen_weight * el_id_SF * el_reco_SF  * 1000. * tot_lumi;
                 if(iso_el ==0) el1_fakerate = get_new_fakerate_prob(el1_pt, el1_eta, FR.h);
                 if(iso_el ==1) el1_fakerate = get_new_fakerate_prob(el2_pt, el2_eta, FR.h);
                 evt_fakerate = -(el1_fakerate * mc_weight)/(1-el1_fakerate);
             }
             if(l==3){
-                Double_t mc_weight = gen_weight * el_id_SF * el_reco_SF * jet1_b_weight * jet2_b_weight * 1000. * tot_lumi;
+                Double_t mc_weight = gen_weight * el_id_SF * el_reco_SF * 1000. * tot_lumi;
 
                 el1_fakerate = get_new_fakerate_prob(el1_pt, el1_eta, FR.h);
                 el2_fakerate = get_new_fakerate_prob(el2_pt, el2_eta, FR.h);
@@ -1101,7 +1111,7 @@ void Fakerate_est_el(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_MC, TTree *t_Q
 
             if(met_pt < 50.  && no_bjets){
                 //if(l==3) printf("Evt fr %.2e \n", evt_fakerate);
-                if(l==3) printf("cost, fr %.2f %.2e \n", cost, evt_fakerate);
+                //if(l==3) printf("cost, fr %.2f %.2e \n", cost, evt_fakerate);
                 h_m->Fill(m, evt_fakerate);
                 h_cost->Fill(cost, evt_fakerate);
             }

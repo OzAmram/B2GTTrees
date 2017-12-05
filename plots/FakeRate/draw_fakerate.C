@@ -203,7 +203,7 @@ void draw_fakerate(){
 
     TCanvas *c1 = new TCanvas("c1", "Histograms", 200, 10, 900, 700);
     c1->SetLogx();
-    rate_barrel->SetTitle("Muons fakerate");
+    rate_barrel->SetTitle("Electrons fakerate");
     rate_barrel->SetStats(0);
     rate_barrel->SetLineWidth(3);
     rate_barrel ->Draw("E1");

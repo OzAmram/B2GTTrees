@@ -44,16 +44,11 @@ void draw_background_frac(){
     TFile *f_WJets = TFile::Open("../analyze/output_files/MuMu_WJets_est_Nov2.root");
     TTree *t_WJets = (TTree *)f_WJets->Get("T_data");
 
-    TFile *f_WJets_mc = TFile::Open("../analyze/output_files/MuMu_fakerate_Wjets_MC_nov2.root");
+    TFile *f_WJets_mc = TFile::Open("../analyze/FakeRate/root_files/MuMu_fakerate_Wjets_MC_dec4.root");
     TTree *t_WJets_mc = (TTree *)f_WJets_mc->Get("T_data");
-    /*
-    TFile *f_ww = TFile::Open("../analyze/output_files/WW_background_jun06.root");
-    TTree *t_ww = (TTree *)f_ww->Get("T_data");
-    TFile *f_wz = TFile::Open("../analyze/output_files/WZ_background_jun06.root");
-    TTree *t_wz = (TTree *)f_wz->Get("T_data");
-    TFile *f_zz = TFile::Open("../analyze/output_files/ZZ_background_jun06.root");
-    TTree *t_zz = (TTree *)f_zz->Get("T_data");
-    */
+
+    TFile *f_QCD_mc = TFile::Open("../analyze/FakeRate/root_files/MuMu_fakerate_QCD_MC_dec4.root");
+    TTree *t_QCD_mc = (TTree *)f_QCD_mc->Get("T_data");
 
     TFile *f_diboson = TFile::Open("../analyze/output_files/MuMu_diboson_aug30.root");
     TTree *t_diboson = (TTree *)f_diboson->Get("T_data");
@@ -61,9 +56,9 @@ void draw_background_frac(){
     TFile *f_wt = TFile::Open("../analyze/output_files/MuMu_WT_aug30.root");
     TTree *t_wt = (TTree *)f_wt->Get("T_data");
 
-    int nBins = 6;
+    int nBins = 7;
 
-    Double_t m_bins[] = {150,200,250,350,500,700,10000};
+    Double_t m_bins[] = {150,200,250,350,500,700, 850, 10000};
     TH1F *mc_m = new TH1F("mc_m", "MC Signal (qqbar, qglu, qbarglu)", nBins, m_bins);
     TH1F *mc_nosig_m = new TH1F("mc_nosig_m", "MC no Asymmetry production (qq, qbarqbar, gluglu)", nBins, m_bins);
     TH1F *mc_cost = new TH1F("mc_cost", "MC Signal (qqbar, qglu, qbarglu)", 40, -1,1);
@@ -95,7 +90,7 @@ void draw_background_frac(){
     make_m_cost_hist(t_ttbar, ttbar_m, ttbar_cost, false, FLAG_MUONS);
     make_m_cost_hist(t_wt, wt_m, wt_cost, false, FLAG_MUONS);
     make_m_cost_hist(t_diboson, diboson_m, diboson_cost, false, FLAG_MUONS);
-    Fakerate_est_mu(t_WJets, t_QCD, t_WJets_mc, QCD_m, QCD_cost);
+    Fakerate_est_mu(t_WJets, t_QCD, t_WJets_mc, t_QCD_mc, QCD_m, QCD_cost);
 
     /*
      
@@ -141,9 +136,14 @@ void draw_background_frac(){
                                        pow(nosig_frac_unc[i-1],2) + pow(wt_frac_unc[i-1], 2) +
                                        pow(QCD_frac_unc[i-1],2) );
     }
-    bin_center[nBins-1] = 850;
-    Double_t fit_res[] = {0.192, 0.159, 0.195, 0.163, 0.152, 0.095};
-    Double_t fit_errs[] = {0.008, 0.011, 0.011, 0.014, 0.024, 0.030};
+    bin_center[nBins-1] = 1000;
+    Double_t fit_res[] = {0.151, 0.174, 0.134, 0.204, 0.207, 0.127};
+    Double_t fit_errs[] = {0.007, 0.011, 0.004, 0.017, 0.031, 0.04};
+
+    Int_t nCombBins = 9;
+    Double_t comb_bin_center[] ={175., 225., 275., 350., 450., 550., 650., 775., 1000.};
+    Double_t comb_fit_res[] = {0.240, 0.177, 0.233, 0.182, 0.209, 0.172, 0.151, 0.155, 0.021};
+    Double_t comb_fit_errs[] = {0.003, 0.011, 0.015, 0.015, 0.024, 0.036, 0.045, 0.049, 0.048};
 
     TGraphErrors *mc_nosig_frac = new TGraphErrors(nBins, bin_center, nosig_frac, 0, nosig_frac_unc);
     mc_nosig_frac->SetTitle("MC no asym events (qq, gluglu, qbarqbar)");
@@ -163,11 +163,16 @@ void draw_background_frac(){
     TGraphErrors *back_mc_frac = new TGraphErrors(nBins, bin_center, back_frac, 0, back_frac_unc);
     back_mc_frac->SetTitle("Total background fraction from MC ");
 
-    TGraphErrors *fit_frac = new TGraphErrors(nBins, bin_center, fit_res, 0, fit_errs);
-    fit_frac->SetTitle("Fraction of background events from fit results");
+    TGraphErrors *fit_frac = new TGraphErrors(nBins -1, bin_center, fit_res, 0, fit_errs);
+    fit_frac->SetTitle("Fraction of background events from #mu#mu fit");
+
+    TGraphErrors *comb_fit_frac = new TGraphErrors(nCombBins, comb_bin_center, comb_fit_res, 0, comb_fit_errs);
+    comb_fit_frac->SetTitle("Fraction of background events from combined fit");
 
     fit_frac->SetMaximum(0.3);
     fit_frac->SetMinimum(0.0);
+    comb_fit_frac->SetMaximum(0.3);
+    comb_fit_frac->SetMinimum(0.0);
     ttbar_mc_frac->SetMaximum(0.3);
     ttbar_mc_frac->SetMinimum(0.0);
     wt_mc_frac->SetMaximum(0.3);
@@ -184,7 +189,11 @@ void draw_background_frac(){
 
     TCanvas *c3 = new TCanvas("c3", "canvas", 200,10, 900,700);
     fit_frac->SetMarkerStyle(kFullSquare);
-    fit_frac->SetLineWidth(2);
+    //fit_frac->SetLineWidth(2);
+
+    comb_fit_frac->SetMarkerStyle(kFullTriangleUp);
+    comb_fit_frac->SetMarkerColor(kRed);
+    //comb_fit_frac->SetLineWidth(2);
     c3->Update();
     ttbar_mc_frac->SetMarkerStyle(kFullSquare);
     ttbar_mc_frac->SetMarkerColor(kBlue);
@@ -225,6 +234,7 @@ void draw_background_frac(){
     mg->Add(back_mc_frac);
     mg->Add(mc_nosig_frac);
     mg->Add(fit_frac);
+    mg->Add(comb_fit_frac);
 
     mg->SetTitle("Fraction of background events (Nominal e#mu scaling)");
     
@@ -237,7 +247,8 @@ void draw_background_frac(){
 
     gStyle->SetLegendBorderSize(0);
     TLegend *leg2 = new TLegend(0.5, 0.65, 0.75, 0.8);
-    leg2->AddEntry(fit_frac, "R_{bk} value from fit", "l");
+    leg2->AddEntry(fit_frac, "R_{bk} value from #mu#mu fit", "p");
+    leg2->AddEntry(comb_fit_frac, "R_{bk} value from combined fit", "p");
     leg2->AddEntry(back_mc_frac, "Total background fraction from MC", "l");
     leg2->AddEntry(ttbar_mc_frac, "t#bar{t}", "l");
     leg2->AddEntry(mc_nosig_frac, "DY no asymmety(gg, qq, #bar{q}#bar{q})", "l");
