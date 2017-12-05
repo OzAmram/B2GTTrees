@@ -73,14 +73,18 @@ TTree *t_elel_back = (TTree *) f_elel_back ->Get("T_data");
 
 TFile *f_elel_data = TFile::Open("output_files/SingleElectron_data_sep22.root");
 TTree *t_elel_data = (TTree *)f_elel_data->Get("T_data"); 
+
 TFile *f_elel_QCD = TFile::Open("../analyze/output_files/ElEl_QCD_est_nov2.root");
 TTree *t_elel_QCD = (TTree *)f_elel_QCD->Get("T_data");
 
 TFile *f_elel_WJets = TFile::Open("../analyze/output_files/ElEl_WJets_est_nov2.root");
 TTree *t_elel_WJets = (TTree *)f_elel_WJets->Get("T_data");
 
-TFile *f_elel_WJets_contam = TFile::Open("../analyze/output_files/ElEl_fakerate_WJets_MC_nov2.root");
+TFile *f_elel_WJets_contam = TFile::Open("../analyze/FakeRate/root_files/ElEl_fakerate_WJets_MC_dec4.root");
 TTree *t_elel_WJets_contam = (TTree *)f_elel_WJets_contam->Get("T_data");
+
+TFile *f_elel_QCD_contam = TFile::Open("../analyze/FakeRate/root_files/ElEl_fakerate_QCD_MC_dec4.root");
+TTree *t_elel_QCD_contam = (TTree *)f_elel_QCD_contam->Get("T_data");
 ////////////////////////////////////////
 
 TFile* f_mumu_mc = (TFile*) TFile::Open("output_files/MuMu_DY_sep8.root");
@@ -98,8 +102,11 @@ TTree *t_mumu_QCD = (TTree *)f_mumu_QCD->Get("T_data");
 TFile *f_mumu_WJets = TFile::Open("../analyze/output_files/MuMu_WJets_est_Nov2.root");
 TTree *t_mumu_WJets = (TTree *)f_mumu_WJets->Get("T_data");
 
-TFile *f_mumu_WJets_contam = TFile::Open("../analyze/output_files/MuMu_fakerate_Wjets_MC_nov2.root");
+TFile *f_mumu_WJets_contam = TFile::Open("../analyze/FakeRate/root_files/MuMu_fakerate_Wjets_MC_dec4.root");
 TTree *t_mumu_WJets_contam = (TTree *)f_mumu_WJets_contam->Get("T_data");
+
+TFile *f_mumu_QCD_contam = TFile::Open("../analyze/FakeRate/root_files/MuMu_fakerate_QCD_MC_dec4.root");
+TTree *t_mumu_QCD_contam = (TTree *)f_mumu_QCD_contam->Get("T_data");
 
 
 vector<double> v_elel_xF;
@@ -213,7 +220,7 @@ void setup(){
     gen_mc_template(t_elel_mc, alpha, h_elel_sym, h_elel_asym, h_elel_sym_count, m_low, m_high, FLAG_ELECTRONS);
     TTree *elel_ts[2] = {t_elel_back, t_elel_nosig};
 
-    gen_fakes_template(t_elel_WJets, t_elel_QCD, t_elel_WJets_contam, h_elel_back, m_low, m_high, FLAG_ELECTRONS);
+    gen_fakes_template(t_elel_WJets, t_elel_QCD, t_elel_WJets_contam, t_elel_QCD_contam, h_elel_back, m_low, m_high, FLAG_ELECTRONS);
     gen_combined_background_template(2, elel_ts, h_elel_back, m_low, m_high, FLAG_ELECTRONS);
 
     nElEl_DataEvents = gen_data_template(t_elel_data, h_elel_data, &v_elel_m, &v_elel_xF, &v_elel_cost, m_low, m_high);
@@ -241,7 +248,7 @@ void setup(){
 
     gen_mc_template(t_mumu_mc, alpha, h_mumu_sym, h_mumu_asym, h_mumu_sym_count, m_low, m_high, FLAG_MUONS);
     TTree *mumu_ts[2] = {t_mumu_back, t_mumu_nosig};
-    gen_fakes_template(t_mumu_WJets, t_mumu_QCD, t_mumu_WJets_contam, h_mumu_back, m_low, m_high, FLAG_MUONS);
+    gen_fakes_template(t_mumu_WJets, t_mumu_QCD, t_mumu_WJets_contam, t_mumu_QCD_contam, h_mumu_back, m_low, m_high, FLAG_MUONS);
     gen_combined_background_template(2, mumu_ts, h_mumu_back, m_low, m_high, FLAG_MUONS);
 
     nMuMu_DataEvents = gen_data_template(t_mumu_data, h_mumu_data, &v_mumu_m, &v_mumu_xF, &v_mumu_cost, m_low, m_high);
@@ -272,6 +279,9 @@ void combined_fit_all(){
     unsigned int nElElEvents[n_m_bins];
     unsigned int nMuMuEvents[n_m_bins];
 
+    Double_t r_mumu_back_starts[] = {0.124, 0.143, 0.16, 0.16, 0.17, 0.17, 0.17, 0.1, 0.1};
+    Double_t r_elel_back_starts[] = {0.1, 0.16, 0.2, 0.2, 0.17, 0.16, 0.16, 0.13, 0.13};
+
     for(int i=0; i<n_m_bins; i++){
         printf("Starting loop \n");
         m_low = m_bins[i];
@@ -295,14 +305,14 @@ void combined_fit_all(){
         float AFB_start_error = 0.1;
         float AFB_max = 0.75;
         float r_back_start = 0.12;
-        float r_back_start_error = 0.04;
+        float r_back_start_error = 0.02;
         float r_back_max = 0.6;
 
         TVirtualFitter * minuit = TVirtualFitter::Fitter(0,3);
         minuit->SetFCN(fcn);
         minuit->SetParameter(0,"AFB", AFB_start, AFB_start_error, -AFB_max, AFB_max);
-        minuit->SetParameter(1,"r_elel_back", r_back_start, r_back_start_error, 0, r_back_max);
-        minuit->SetParameter(2,"r_mumu_back", r_back_start, r_back_start_error, 0, r_back_max);
+        minuit->SetParameter(1,"r_elel_back", r_elel_back_starts[i], r_back_start_error, 0, r_back_max);
+        minuit->SetParameter(2,"r_mumu_back", r_mumu_back_starts[i], r_back_start_error, 0, r_back_max);
         Double_t arglist[100];
         arglist[0] = 10000.;
         minuit->ExecuteCommand("MIGRAD", arglist,0);

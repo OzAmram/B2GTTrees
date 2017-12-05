@@ -19,7 +19,7 @@ double Ebeam = 6500.;
 double Pbeam = sqrt(Ebeam*Ebeam - 0.938*0.938);
 
 char *filename("diboson_files_aug29.txt");
-const TString fout_name("SameSign/output_files/ElEl_fakerate_WJets_MC_samesign_dec1.root");
+const TString fout_name("SameSign/output_files/ElEl_fakerate_WJets_MC_samesign_dec4.root");
 const bool PRINT=false;
 
 

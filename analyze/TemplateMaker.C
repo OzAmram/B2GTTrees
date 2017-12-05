@@ -470,8 +470,8 @@ int gen_background_template(TTree *t1, TH2F* h, TH2F* h_count,
     return 0;
 }
 
-void gen_fakes_template(TTree *t_WJets, TTree *t_QCD, TTree *t_MC, TH2F *h, 
-        Double_t m_low, Double_t m_high, int flag = FLAG_MUONS){
+void gen_fakes_template(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_contam, TTree* t_QCD_contam, 
+        TH2F *h, Double_t m_low, Double_t m_high, int flag = FLAG_MUONS){
     h->Sumw2();
     if(flag == FLAG_MUONS){
         FakeRate FR;
@@ -558,10 +558,11 @@ void gen_fakes_template(TTree *t_WJets, TTree *t_QCD, TTree *t_MC, TH2F *h,
                     evt_fakerate = mc_weight * (mu1_fakerate/(1-mu1_fakerate)) * (mu2_fakerate/(1-mu2_fakerate));
                 }
 
-                if( m>= m_low && m>= m_high && met_pt < 50.  && no_bjets){
+                if( m >= m_low && m <= m_high && met_pt < 50.  && no_bjets){
                     //if(l==3) printf("Evt fr %.2e \n", evt_fakerate);
                     //if(l==3) printf("cost, fr %.2f %.2e \n", cost, evt_fakerate);
                     h->Fill(xF, cost, evt_fakerate);
+                }
 
 
             }
@@ -578,8 +579,8 @@ void gen_fakes_template(TTree *t_WJets, TTree *t_QCD, TTree *t_MC, TH2F *h,
             TTree *t;
             if (l==0) t = t_WJets;
             if (l==1) t = t_QCD;
-            if (l==2) t = t_WJets_MC;
-            if (l==3) t = t_QCD_MC;
+            if (l==2) t = t_WJets_contam;
+            if (l==3) t = t_QCD_contam;
             Double_t m, xF, cost, jet1_cmva, jet2_cmva, gen_weight;
             Double_t jet1_pt, jet2_pt, jet1_b_weight, jet2_b_weight, pu_SF;
             Double_t el_id_SF, el_reco_SF;
@@ -647,7 +648,7 @@ void gen_fakes_template(TTree *t_WJets, TTree *t_QCD, TTree *t_MC, TH2F *h,
 
 
 
-                if( m>= m_low && m>= m_high && met_pt < 50.  && no_bjets){
+                if( m >= m_low && m <= m_high && met_pt < 50.  && no_bjets){
                     //if(l==3) printf("Evt fr %.2e \n", evt_fakerate);
                     //if(l==3) printf("cost, fr %.2f %.2e \n", cost, evt_fakerate);
                     h->Fill(xF, cost, evt_fakerate);

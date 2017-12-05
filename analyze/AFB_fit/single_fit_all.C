@@ -31,17 +31,13 @@ float xf_max = 1.0;
 Float_t xf_bins[] = {0., 0.05, 0.1, 0.15, 0.25, 1.0};
 int n_cost_bins = 10;
 Float_t cost_bins[] = {-1.0, -.8, -.6, -.4, -.2, 0., 0.2, 0.4, 0.6, 0.8, 1.0};
+//int n_cost_bins = 16;
+//Float_t cost_bins[] = {-1.0, -.875, -.75, -.625, -.5, -.375, -.25, -.125, 0., .125, 0.25, 0.375, 0.5, 0.625, 0.75, 0.875, 1.0};
 Float_t m_bins[] = {150,200,250,350,500,700,100000};
 Double_t alphas[6] = {0.0981, 0.0703, 0.0480, 0.0386, 0.0148, 0.0180};
 Double_t alpha;
 
 
-//int n_xf_bins = 4;
-//float xf_max = 1.0;
-//Float_t xf_bins[] = {0., 0.04, 0.08, 0.14, 1.0};
-//float m_max = 1000.;
-//int n_cost_bins = 8;
-//Float_t cost_bins[] = {-1.0, -.75, -.5, -.25, 0., 0.25, 0.5, 0.75, 1.0};
 
 
 float m_low;
@@ -62,11 +58,11 @@ TAxis *x_ax, *y_ax, *z_ax;
 
 
 
-int FLAG = FLAG_ELECTRONS;
-//int FLAG = FLAG_MUONS;
+//int FLAG = FLAG_ELECTRONS;
+int FLAG = FLAG_MUONS;
 
 //MC templates
- ///*
+ /*
 TFile* f_mc = (TFile*) TFile::Open("output_files/ElEl_DY_nov25.root");
 TTree *t_mc = (TTree *) f_mc ->Get("T_data");
 TTree *t_nosig = (TTree *) f_mc ->Get("T_back");
@@ -82,10 +78,13 @@ TTree *t_QCD = (TTree *)f_QCD->Get("T_data");
 TFile *f_WJets = TFile::Open("../analyze/output_files/ElEl_WJets_est_nov2.root");
 TTree *t_WJets = (TTree *)f_WJets->Get("T_data");
 
-TFile *f_WJets_contam = TFile::Open("../analyze/output_files/ElEl_fakerate_WJets_MC_nov2.root");
+TFile *f_WJets_contam = TFile::Open("../analyze/FakeRate/root_files/ElEl_fakerate_WJets_MC_dec4.root");
 TTree *t_WJets_contam = (TTree *)f_WJets_contam->Get("T_data");
- //*/
- /*
+
+TFile *f_QCD_contam = TFile::Open("../analyze/FakeRate/root_files/ElEl_fakerate_QCD_MC_dec4.root");
+TTree *t_QCD_contam = (TTree *)f_QCD_contam->Get("T_data");
+*/
+ ///*
 TFile* f_mc = (TFile*) TFile::Open("output_files/MuMu_DY_sep8.root");
 TTree *t_mc = (TTree *) f_mc ->Get("T_data");
 TTree *t_nosig = (TTree *) f_mc ->Get("T_back");
@@ -101,9 +100,12 @@ TTree *t_QCD = (TTree *)f_QCD->Get("T_data");
 TFile *f_WJets = TFile::Open("../analyze/output_files/MuMu_WJets_est_Nov2.root");
 TTree *t_WJets = (TTree *)f_WJets->Get("T_data");
 
-TFile *f_WJets_contam = TFile::Open("../analyze/output_files/MuMu_fakerate_Wjets_MC_nov2.root");
+TFile *f_WJets_contam = TFile::Open("../analyze/FakeRate/root_files/MuMu_fakerate_Wjets_MC_dec4.root");
 TTree *t_WJets_contam = (TTree *)f_WJets_contam->Get("T_data");
-*/
+
+TFile *f_QCD_contam = TFile::Open("../analyze/FakeRate/root_files/MuMu_fakerate_QCD_MC_dec4.root");
+TTree *t_QCD_contam = (TTree *)f_QCD_contam->Get("T_data");
+//*/
 
 
 vector<double> v_xF;
@@ -137,8 +139,13 @@ void fcn(int& npar, double* deriv, double& f, double par[], int flag){
 
         double AFB = par[0];
         double r_back = par[1];
+        if(p_back < 0){ 
+            Printf("P_back < 0! Setting to 0\n");
+            p_back = 1e-20;
+        }
+
         double prob = r_back*p_back + (1 - r_back) * (p_sym + AFB*p_asym);
-        if(prob > 1) printf("Warning prob is too big \n");
+        if(prob > 1) printf("Warning prob is too big %.2f %.2f %.2f %.2f %.2f  \n", r_back, AFB, p_back, p_sym, p_asym);
         if(print && p_sym < 1e-20){
             misses++;
             printf(" Warning p_sym is 0 or negative! for bin xf: %0.2f cost: %1.2f \n", v_xF[i], v_cost[i]);
@@ -204,7 +211,7 @@ void setup(){
     gen_mc_template(t_mc, alpha, h_sym, h_asym, h_sym_count, m_low, m_high, FLAG);
     TTree *ts[2] = {t_back, t_nosig};
 
-    gen_fakes_template(t_WJets, t_QCD, t_WJets_contam, h_back, m_low, m_high, FLAG);
+    gen_fakes_template(t_WJets, t_QCD, t_WJets_contam, t_QCD_contam, h_back, m_low, m_high, FLAG);
     gen_combined_background_template(2, ts, h_back, m_low, m_high, FLAG);
 
     nDataEvents = gen_data_template(t_data, h_data, &v_m, &v_xF, &v_cost, m_low, m_high);
@@ -256,7 +263,7 @@ void single_fit_all(){
         TVirtualFitter * minuit = TVirtualFitter::Fitter(0,2);
         minuit->SetFCN(fcn);
         minuit->SetParameter(0,"AFB", AFB_start, AFB_start_error, -AFB_max, AFB_max);
-        minuit->SetParameter(1,"r_back", r_back_start, r_back_start_error, 0., 0.);
+        minuit->SetParameter(1,"r_back", r_back_start, r_back_start_error, 0., 0.5);
         Double_t arglist[100];
         arglist[0] = 10000.;
         minuit->ExecuteCommand("MIGRAD", arglist,0);
