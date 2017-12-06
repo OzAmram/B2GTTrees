@@ -17,6 +17,7 @@ typedef struct {
     TH2D *HLT_MC_EFF;
     TH2D *ISO_SF;
     TH2D *ID_SF;
+    TH2D *TRK_SF;
 } mu_SFs;
 
 typedef struct {
@@ -46,6 +47,17 @@ Double_t get_pileup_SF(Int_t n_int, TH1D *h){
 
     TAxis* x_ax =  h->GetXaxis();
     int xbin = x_ax->FindBin(n_int);
+
+    Double_t result = h->GetBinContent(xbin);
+    //if(result < 0.0001) printf("0 pileup SF for %i vertices\n", n_int);
+    return result;
+}
+
+Double_t get_Mu_trk_SF(Double_t eta, TH1D *h){
+    eta = abs(eta);
+
+    TAxis* x_ax =  h->GetXaxis();
+    int xbin = x_ax->FindBin(eta);
 
     Double_t result = h->GetBinContent(xbin);
     //if(result < 0.0001) printf("0 pileup SF for %i vertices\n", n_int);
@@ -341,6 +353,20 @@ void setup_SFs(mu_SFs *runs_BCDEF, mu_SFs *runs_GH, BTag_readers *btag_r, BTag_e
     ISO_2->SetDirectory(0);
     runs_GH->ISO_SF = ISO_2;
     f6->Close();
+
+    TFile *f6a = TFile::Open("SFs/Muon_tracking_SF_BCDEF.root");
+    TDirectory *subdir6a = gDirectory;
+    TH1D *TRK_1 = (TH1D *) subdir6a->Get("ratio_eff_aeta_dr030e030_corr");
+    TRK_1->SetDirectory(0);
+    runs_BCDEF->TRK_SF = TRK_1;
+    f6a->Close();
+
+    TFile *f6b = TFile::Open("SFs/Muon_tracking_SF_GH.root");
+    TDirectory *subdir6b = gDirectory;
+    TH1D *TRK_1 = (TH1D *) subdir6b->Get("ratio_eff_aeta_dr030e030_corr");
+    TRK_1->SetDirectory(0);
+    runs_GH->TRK_SF = TRK_1;
+    f6a->Close();
 
 
 
