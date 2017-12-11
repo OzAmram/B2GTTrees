@@ -58,6 +58,12 @@ void draw_cmp(){
     TTree *t_wt = (TTree *)f_wt->Get("T_data");
     TH1F *data_m = new TH1F("data_m", "Data Dimuon Mass Distribution", 30, 150, 2000);
 
+
+
+    el_SFs el_SF;
+    //separate SFs for runs BCDEF and GH
+    setup_el_SF(&el_SF);
+
     TH1F *mc_m = new TH1F("mc_m", "MC Signal (qqbar, qglu, qbarglu)", 30, 150, 2000);
     mc_m->SetFillColor(kRed+1);
     mc_m->SetMarkerStyle(21);

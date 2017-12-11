@@ -80,6 +80,9 @@ static Double_t get_new_fakerate_prob(Double_t pt, Double_t eta, TH2D *h){
     if (pt >= 150) pt =150 ;
     if(abs(eta) > 2.4) eta = 2.3;
 
+    Double_t variation = -1.;
+    Double_t err;
+
 
     TAxis* x_ax =  h->GetXaxis();
     TAxis *y_ax =  h->GetYaxis();
@@ -88,6 +91,9 @@ static Double_t get_new_fakerate_prob(Double_t pt, Double_t eta, TH2D *h){
     int ybin = y_ax->FindBin(pt);
 
     Double_t prob = h->GetBinContent(xbin, ybin);
+    err = h->GetBinError(xbin, ybin);
+    //printf("prob err %.2f %.2f \n", prob, err);
+    prob += err * variation;
     //printf("prob: %.2f \n", prob);
     if(prob < 0.001 || prob >= 0.99){
         printf("Warning: %.2f Rate for pt %.0f, eta %1.1f! \n", prob, pt, eta);
@@ -97,7 +103,7 @@ static Double_t get_new_fakerate_prob(Double_t pt, Double_t eta, TH2D *h){
     }
 
     prob = min(prob, 0.98);
-    prob = max(prob, 0.07);
+    prob = max(prob, 0.05);
     //printf("Efficiency is %f \n", eff);
     return prob;
 }
