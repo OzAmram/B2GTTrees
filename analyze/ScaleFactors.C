@@ -17,7 +17,7 @@ typedef struct {
     TH2D *HLT_MC_EFF;
     TH2D *ISO_SF;
     TH2D *ID_SF;
-    TH2D *TRK_SF;
+    TGraphAsymmErrors *TRK_SF;
 } mu_SFs;
 
 typedef struct {
@@ -53,16 +53,30 @@ Double_t get_pileup_SF(Int_t n_int, TH1D *h){
     return result;
 }
 
-Double_t get_Mu_trk_SF(Double_t eta, TH1D *h){
+Double_t get_Mu_trk_SF(Double_t eta, TGraphAsymmErrors *h){
     eta = abs(eta);
+    Double_t result = h->Eval(eta);
 
-    TAxis* x_ax =  h->GetXaxis();
-    int xbin = x_ax->FindBin(eta);
-
-    Double_t result = h->GetBinContent(xbin);
     //if(result < 0.0001) printf("0 pileup SF for %i vertices\n", n_int);
     return result;
 }
+
+void get_pdf_avg_std_dev(Float_t pdf_Weights[100], Float_t *pdf_avg, Float_t *pdf_std_dev){
+    Float_t sum = 0;
+    for (i=0; i<100; i++){
+        sum+= pdf_Weights[i];
+    }
+    *pdf_avg = sum/100.;
+    Float_t var = 0;
+    for (i=0; i<100; i++){
+        var += pow(*pdf_avg - pdf_Weights[i], 2);
+    }
+    *pdf_std_dev = sqrt(var/99.);
+    return;
+}
+
+
+
 
 
 Double_t get_SF(Double_t pt, Double_t eta, TH2D *h){
@@ -96,7 +110,7 @@ Double_t get_HLT_SF_1mu(Double_t mu1_pt, Double_t mu1_eta, TH2D *h_SF){
 
     Double_t SF1 = h_SF->GetBinContent(xbin1_SF, ybin1_SF);
 
-    result = SF1;
+    Double_t result = SF1;
     if(result < 0.01) printf("0 HLT SF for Pt %.1f, Eta %1.2f \n", mu1_pt, mu1_eta);
     if(TMath::IsNaN(result)){ 
         printf("Nan HLT SF for Pt %.1f, Eta %1.2f \n", mu1_pt, mu1_eta);
@@ -356,17 +370,15 @@ void setup_SFs(mu_SFs *runs_BCDEF, mu_SFs *runs_GH, BTag_readers *btag_r, BTag_e
 
     TFile *f6a = TFile::Open("SFs/Muon_tracking_SF_BCDEF.root");
     TDirectory *subdir6a = gDirectory;
-    TH1D *TRK_1 = (TH1D *) subdir6a->Get("ratio_eff_aeta_dr030e030_corr");
-    TRK_1->SetDirectory(0);
+    TGraphAsymmErrors *TRK_1 = (TGraphAsymmErrors *) subdir6a->Get("ratio_eff_aeta_dr030e030_corr");
     runs_BCDEF->TRK_SF = TRK_1;
     f6a->Close();
 
     TFile *f6b = TFile::Open("SFs/Muon_tracking_SF_GH.root");
     TDirectory *subdir6b = gDirectory;
-    TH1D *TRK_1 = (TH1D *) subdir6b->Get("ratio_eff_aeta_dr030e030_corr");
-    TRK_1->SetDirectory(0);
-    runs_GH->TRK_SF = TRK_1;
-    f6a->Close();
+    TGraphAsymmErrors *TRK_2 = (TGraphAsymmErrors *) subdir6b->Get("ratio_eff_aeta_dr030e030_corr");
+    runs_GH->TRK_SF = TRK_2;
+    f6b->Close();
 
 
 
