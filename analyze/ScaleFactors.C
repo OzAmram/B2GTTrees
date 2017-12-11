@@ -40,6 +40,8 @@ typedef struct {
 typedef struct{
     TH2D *ID_SF;
     TH2D *RECO_SF;
+    TH2D *HLT_SF;
+    TH2D *HLT_MC_EFF;
 } el_SFs;
 
 
@@ -397,5 +399,15 @@ void setup_el_SF(el_SFs *sf){
     h2->SetDirectory(0);
     sf->RECO_SF = h2;
     f8->Close();
+
+    TFile *f9 = TFile::Open("SFs/egammaEffi_HLT.root");
+    TDirectory *subdir9 = gDirectory;
+    TH2D *h_hltsf = (TH2D *) subdir8->Get("EGamma_SF2D")->Clone();
+    h_hltsf->SetDirectory(0);
+    sf->HLT_SF = h_hltsf;
+    TH2D *h_hltmc = (TH2D *) subdir8->Get("EGamma_EffMC")->Clone();
+    h_hltmc->SetDirectory(0);
+    sf->HLT_MC_EFF = h_hltmc;
+    
 }
 
