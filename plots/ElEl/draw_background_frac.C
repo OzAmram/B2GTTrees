@@ -128,21 +128,22 @@ void draw_background_frac(){
         //wt_frac_unc[i-1] = std::sqrt(  N_wt*pow((1/denom - N_wt/pow(denom,2)), 2) +
                                           //(denom - N_wt) * pow(1/denom, 4));
         QCD_frac[i-1] =  (N_QCD)/(denom);
-        //QCD_frac_unc[i-1] = std::sqrt(  N_QCD*pow((1/denom - N_QCD/pow(denom,2)), 2) +
-                                          //(denom - N_QCD) * pow(1/denom, 4));
+        QCD_frac_unc[i-1]  = 0.2 * (N_QCD) / (denom);
+                                          
         back_frac[i-1]  = diboson_frac[i-1] + ttbar_frac[i-1] + nosig_frac[i-1] + wt_frac[i-1] + QCD_frac[i-1];
+        back_frac_unc[i-1] = sqrt(pow(0.02*(back_frac[i-1]-QCD_frac[i-1]),2) + pow(QCD_frac_unc[i-1],2));
         //back_frac_unc[i-1] = std::sqrt(pow(ttbar_frac_unc[i-1],2) + pow(diboson_frac_unc[i-1], 2) + 
                                        //pow(nosig_frac_unc[i-1],2) + pow(wt_frac_unc[i-1], 2) +
                                        //pow(QCD_frac_unc[i-1],2) );
     }
     bin_center[nBins-1] = 800.;
-    Double_t fit_res[] = {0.109, 0.163, 0.248, 0.159, 0.144, 0.155};
-    Double_t fit_errs[] = {0.006, 0.009, 0.011, 0.014, 0.022, 0.036};
+    Double_t fit_res[] = {0.104, 0.168, 0.225, 0.171, 0.162, 0.164};
+    Double_t fit_errs[] = {0.006, 0.009, 0.011, 0.014, 0.024, 0.037};
 
     Int_t nCombBins = 8;
     Double_t comb_bin_center[] ={175., 225., 275., 350., 450., 550., 650., 800., 1000.};
-    Double_t comb_fit_res[] = {0.108, 0.162, 0.244, 0.238, 0.130, 0.148, 0.142, 0.156};
-    Double_t comb_fit_errs[] = {0.006, 0.009, 0.013, 0.014, 0.018, 0.029, 0.033, 0.036};
+    Double_t comb_fit_res[] = {0.103, 0.168, 0.222, 0.220, 0.144, 0.164, 0.145, 0.165};
+    Double_t comb_fit_errs[] = {0.006, 0.010, 0.014, 0.014, 0.019, 0.031, 0.033, 0.037};
 
     TGraphErrors *mc_nosig_frac = new TGraphErrors(nBins, bin_center, nosig_frac, 0, 0);
     mc_nosig_frac->SetTitle("MC no asym events (qq, gluglu, qbarqbar)");
@@ -156,10 +157,10 @@ void draw_background_frac(){
     TGraphErrors *diboson_mc_frac = new TGraphErrors(nBins, bin_center, diboson_frac, 0, 0);
     diboson_mc_frac->SetTitle("diboson fraction from MC ");
 
-    TGraphErrors *QCD_est_frac = new TGraphErrors(nBins, bin_center, QCD_frac, 0, 0);
+    TGraphErrors *QCD_est_frac = new TGraphErrors(nBins, bin_center, QCD_frac, 0, QCD_frac_unc);
     diboson_mc_frac->SetTitle("QCD fraction from Fakerate Est.");
 
-    TGraphErrors *back_mc_frac = new TGraphErrors(nBins, bin_center, back_frac, 0, 0);
+    TGraphErrors *back_mc_frac = new TGraphErrors(nBins, bin_center, back_frac, 0, back_frac_unc);
     back_mc_frac->SetTitle("Total background fraction from MC ");
 
     TGraphErrors *fit_frac = new TGraphErrors(nBins, bin_center, fit_res, 0, fit_errs);

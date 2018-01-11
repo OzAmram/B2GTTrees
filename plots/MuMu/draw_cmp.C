@@ -58,6 +58,23 @@ void draw_cmp(){
     TTree *t_wt = (TTree *)f_wt->Get("T_data");
     TH1F *data_m = new TH1F("data_m", "Data Dimuon Mass Distribution", 30, 150, 2000);
 
+    TH1F *mc_pt = new TH1F("mc_pt", "MC signal", 40, 0, 1000);
+    TH1F *mc_nosig_pt = new TH1F("mc_nosig_pt", "MC signal", 40, 0, 1000);
+    TH1F *data_pt = new TH1F("data_pt", "MC signal", 40, 0, 1000);
+    TH1F *ttbar_pt = new TH1F("ttbar_pt", "MC signal", 40, 0, 1000);
+    TH1F *diboson_pt = new TH1F("diboson_pt", "MC signal", 40, 0, 1000);
+    TH1F *wt_pt = new TH1F("wt_pt", "MC signal", 40, 0, 1000);
+    TH1F *QCD_pt = new TH1F("QCD_pt", "MC signal", 40, 0, 1000);
+    mc_pt->SetFillColor(kRed+1);
+    mc_pt->SetMarkerColor(kRed+1);
+    mc_nosig_pt->SetFillColor(kMagenta);
+    ttbar_pt->SetFillColor(kBlue);
+    ttbar_pt->SetMarkerStyle(21);
+    ttbar_pt->SetMarkerColor(kBlue);
+    diboson_pt->SetFillColor(kGreen+3);
+    QCD_pt->SetFillColor(kRed -7);
+    wt_pt->SetFillColor(kOrange+7); 
+
     TH1F *mc_m = new TH1F("mc_m", "MC Signal (qqbar, qglu, qbarglu)", 30, 150, 2000);
     mc_m->SetFillColor(kRed+1);
     mc_m->SetMarkerStyle(21);
@@ -104,23 +121,21 @@ void draw_cmp(){
 
     wt_m->SetFillColor(kOrange+7); 
     wt_cost->SetFillColor(kOrange+7); 
+    diboson_m->SetFillColor(kGreen+3);
+    diboson_cost->SetFillColor(kGreen + 3);
+    QCD_m->SetFillColor(kRed -7);
+    QCD_cost->SetFillColor(kRed -7);
 
-    make_m_cost_hist(t_data, data_m, data_cost, true, type);
-    make_m_cost_hist(t_mc, mc_m, mc_cost, false, type);
-    make_m_cost_hist(t_mc_nosig, mc_nosig_m, mc_nosig_cost, false, type);
-    make_m_cost_hist(t_ttbar, ttbar_m, ttbar_cost, false, type);
+    make_m_cost_pt_hist(t_data, data_m, data_cost, data_pt, true, type);
+    make_m_cost_pt_hist(t_mc, mc_m, mc_cost, mc_pt, false, type);
+    make_m_cost_pt_hist(t_mc_nosig, mc_nosig_m, mc_nosig_cost, mc_nosig_pt, false, type);
+    make_m_cost_pt_hist(t_ttbar, ttbar_m, ttbar_cost, ttbar_pt, false, type);
+    make_m_cost_pt_hist(t_wt, wt_m, wt_cost, wt_pt, false);
+    make_m_cost_pt_hist(t_diboson, diboson_m, diboson_cost, diboson_pt, false, type);
 
-    /*
-    make_m_cost_hist(t_QCD, QCD_m, QCD_cost, true, type, FLAG_QCD);
-    make_m_cost_hist(t_WJets, WJets_m, WJets_cost, true, type, FLAG_WJETS);
-    QCD_m->Add(WJets_m);
-    QCD_cost->Add(WJets_cost);
-    */
-    Fakerate_est_mu(t_WJets, t_QCD, t_WJets_mc, t_QCD_mc, QCD_m, QCD_cost);
+    Fakerate_est_mu(t_WJets, t_QCD, t_WJets_mc, t_QCD_mc, QCD_m, QCD_cost, QCD_pt);
 
-    make_m_cost_hist(t_diboson, diboson_m, diboson_cost, false, type);
 
-    make_m_cost_hist(t_wt, wt_m, wt_cost, false);
 
 
     Double_t EMu_ratio= 1.05;
@@ -131,11 +146,20 @@ void draw_cmp(){
     wt_m->Scale(EMu_ratio);
     wt_cost->Scale(EMu_ratio);
 
-    diboson_m->SetFillColor(kGreen+3);
-    diboson_cost->SetFillColor(kGreen + 3);
-    
-    QCD_m->SetFillColor(kRed -7);
-    QCD_cost->SetFillColor(kRed -7);
+
+    int nBins_x = QCD_m->GetXaxis()->GetNbins();
+    int nBins_y = QCD_cost->GetYaxis()->GetNbins();
+    //printf("Get size %i \n", nBins);
+    for (int i=1; i <= nBins_x; i++){
+        for (int j=1; j <= nBins_y; j++){
+
+            Double_t m_val = QCD_m->GetBinContent(i,j);
+            Double_t cost_val = QCD_cost->GetBinContent(i,j);
+
+            QCD_m->SetBinError(i,j, 0.2*m_val);
+            QCD_cost->SetBinError(i,j, 0.2*cost_val);
+        }
+    }
 
 
     //mc_m->Draw();
@@ -190,6 +214,14 @@ void draw_cmp(){
     cost_stack->Add(diboson_cost);
     cost_stack->Add(mc_nosig_cost);
     cost_stack->Add(mc_cost);
+
+    THStack *pt_stack = new THStack("pt_stack", "Dimuon Pt Distribution: Data vs MC; Dimuon Pt (GeV)");
+    pt_stack->Add(ttbar_pt);
+    pt_stack->Add(QCD_pt);
+    pt_stack->Add(wt_pt);
+    pt_stack->Add(diboson_pt);
+    pt_stack->Add(mc_nosig_pt);
+    pt_stack->Add(mc_pt);
 
     TCanvas *c_m = new TCanvas("c_m", "Histograms", 200, 10, 900, 700);
     TPad *pad1 = new TPad("pad1", "pad1", 0.,0.3,0.98,1.);
@@ -308,16 +340,32 @@ void draw_cmp(){
     //TCanvas *c_cost_cut = new TCanvas("c_cost_cut", "Histograms", 200, 10, 900, 700);
     //c_cost_cut->cd();
 
-/*
-    TCanvas *c_met_pt = new TCanvas("c_met_pt", "Histograms", 200, 10, 900, 700);
-    c_met_pt->cd();
-    h_met_pt->SetFillColor(35);
-    h_met_pt->Draw();
-    c_met_pt->Update();
-    TH1F *met_pt_int = h_integral(h_met_pt, "met_pt_int");
+    TCanvas *c_pt = new TCanvas("c_pt", "Histograms", 200, 10, 900, 700);
+    c_pt->cd();
+    pt_stack->Draw("hist");
+    data_pt->SetMarkerStyle(kFullCircle);
+    data_pt->SetMarkerColor(1);
+    pt_stack->SetMinimum(1);
+    pt_stack->SetMaximum(100000);
+    data_pt->SetMinimum(1);
+    data_pt->SetMaximum(100000);
+    data_pt->Draw("P E same");
+    c_pt->SetLogy();
+    c_pt->Update();
+    TLegend *leg3 = new TLegend(0.5, 0.65, 0.75, 0.8);
+    leg3->AddEntry(data_m, "data", "p");
+    leg3->AddEntry(mc_m, "DY (q#bar{q}, qg #bar{q}g)", "f");
+    leg3->AddEntry(mc_nosig_m, "DY no asymmety(gg, qq, #bar{q}#bar{q})", "f");
+    leg3->AddEntry(diboson_m, "WW + WZ + ZZ", "f");
+    leg3->AddEntry(wt_m, "tW + #bar{t}W", "f");
+    leg3->AddEntry(QCD_m, "QCD + WJets", "f");
+    leg3->AddEntry(ttbar_m, "t#bar{t}", "f");
+    leg3->Draw();
+
+    CMS_lumi(c_pt, iPeriod, 11 );
+    c_pt->Update();
 
 
-*/
 
 
  
