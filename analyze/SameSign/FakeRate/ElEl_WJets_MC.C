@@ -276,7 +276,7 @@ void ElEl_WJets_MC()
                 bool no_bjets = has_no_bjets(nJets, jet1_pt, jet2_pt, jet1_cmva, jet2_cmva);
                 bool one_iso = el_IDMedium[0] ^ el_IDMedium[1];
                 
-                if ((one_iso && cm_m >=150. && no_bjets && met_pt < 50.)){
+                if ((one_iso && cm_m >=25. && no_bjets && met_pt < 50.)){
                         if(PRINT) sprintf(out_buff + strlen(out_buff),"Event %i \n", i);
 
                         //RECO LEVEL

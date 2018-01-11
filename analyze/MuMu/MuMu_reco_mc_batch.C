@@ -16,8 +16,8 @@ const double root2 = sqrt(2);
 double Ebeam = 6500.;
 double Pbeam = sqrt(Ebeam*Ebeam - 0.938*0.938);
 
-char *filename("DY_files_nov20.txt");
-const TString fout_name("output_files/MuMu_DY_nov25.root");
+char *filename("DY_files_dec7.txt");
+const TString fout_name("output_files/MuMu_DY_dec11_v2.root");
 const bool PRINT=false;
 
 const bool data_2016 = true;
@@ -108,12 +108,15 @@ void MuMu_reco_mc_batch()
     printf("Retrieved Scale Factors \n\n");
 
 
+    TFile *fout = TFile::Open(fout_name, "RECREATE");
     TTree *t_signal= new TTree("T_data", "Tree with asym events (qq bar, qg)");
-    t_signal->SetDirectory(0);
+    //t_signal->SetDirectory(0);
     Double_t cm_m, xF, cost_r, cost_st, mu1_pt, mu2_pt, mu1_eta, mu2_eta, jet1_pt, jet2_pt, jet1_eta, jet2_eta, deltaC, 
              gen_weight, jet1_csv, jet1_cmva, jet2_csv, jet2_cmva;
     Double_t bcdef_HLT_SF, bcdef_iso_SF, bcdef_id_SF, gh_HLT_SF, gh_iso_SF, gh_id_SF,
+             bcdef_trk_SF, gh_trk_SF,
              jet1_b_weight, jet2_b_weight, pu_SF;
+    Double_t mu_R_up, mu_R_down, mu_F_up, mu_F_down, mu_RF_up, mu_RF_down, pdf_up, pdf_down;
     Int_t nJets, jet1_flavour, jet2_flavour, pu_NtrueInt;
     Bool_t is_tau_event;
     Float_t met_pt;
@@ -142,11 +145,21 @@ void MuMu_reco_mc_batch()
     t_signal->Branch("bcdef_HLT_SF", &bcdef_HLT_SF);
     t_signal->Branch("bcdef_iso_SF", &bcdef_iso_SF);
     t_signal->Branch("bcdef_id_SF", &bcdef_id_SF);
+    t_signal->Branch("bcdef_trk_SF", &bcdef_trk_SF);
     t_signal->Branch("gh_HLT_SF", &gh_HLT_SF);
     t_signal->Branch("gh_iso_SF", &gh_iso_SF);
     t_signal->Branch("gh_id_SF", &gh_id_SF);
+    t_signal->Branch("gh_trk_SF", &gh_trk_SF);
     t_signal->Branch("jet1_b_weight", &jet1_b_weight);
     t_signal->Branch("jet2_b_weight", &jet2_b_weight);
+    t_signal->Branch("mu_R_up", &mu_R_up);
+    t_signal->Branch("mu_R_down", &mu_R_down);
+    t_signal->Branch("mu_F_up", &mu_F_up);
+    t_signal->Branch("mu_F_down", &mu_F_down);
+    t_signal->Branch("mu_RF_up", &mu_RF_up);
+    t_signal->Branch("mu_RF_down", &mu_RF_down);
+    t_signal->Branch("pdf_up", &pdf_up);
+    t_signal->Branch("pdf_down", &pdf_down);
     t_signal->Branch("nJets", &nJets, "nJets/I");
     t_signal->Branch("jet1_flavour", &jet1_flavour, "jet1_flavour/I");
     t_signal->Branch("jet2_flavour", &jet2_flavour, "jet2_flavour/I");
@@ -155,7 +168,7 @@ void MuMu_reco_mc_batch()
 
 
     TTree *t_back = new TTree("T_back", "Tree for events with no asym (qq, gg)");
-    t_back->SetDirectory(0);
+    //t_back->SetDirectory(0);
     t_back->Branch("m", &cm_m, "m/D");
     t_back->Branch("xF", &xF, "xF/D");
     t_back->Branch("cost", &cost_r, "cost/D");
@@ -179,9 +192,11 @@ void MuMu_reco_mc_batch()
     t_back->Branch("bcdef_HLT_SF", &bcdef_HLT_SF);
     t_back->Branch("bcdef_iso_SF", &bcdef_iso_SF);
     t_back->Branch("bcdef_id_SF", &bcdef_id_SF);
+    t_back->Branch("bcdef_trk_SF", &bcdef_trk_SF);
     t_back->Branch("gh_HLT_SF", &gh_HLT_SF);
     t_back->Branch("gh_iso_SF", &gh_iso_SF);
     t_back->Branch("gh_id_SF", &gh_id_SF);
+    t_back->Branch("gh_trk_SF", &gh_trk_SF);
     t_back->Branch("jet1_b_weight", &jet1_b_weight);
     t_back->Branch("jet2_b_weight", &jet2_b_weight);
     t_back->Branch("nJets", &nJets, "nJets/I");
@@ -261,6 +276,8 @@ void MuMu_reco_mc_batch()
             Float_t jet_Pt[JET_SIZE], jet_Eta[JET_SIZE], jet_Phi[JET_SIZE], jet_E[JET_SIZE],
                     jet_CSV[JET_SIZE], jet_CMVA[JET_SIZE], jet_partonflavour[JET_SIZE];
 
+            Float_t scale_Weights[10], pdf_Weights[100];
+
             Float_t evt_Gen_Weight;
 
             Int_t HLT_IsoMu, HLT_IsoTkMu;
@@ -277,32 +294,18 @@ void MuMu_reco_mc_batch()
             t1->SetBranchAddress("mu_SumPUPt", &mu_SumPUPt);
             t1->SetBranchAddress("mu_SumPhotonPt", &mu_SumPhotonPt);
 
-            if(data_2016){
-                t1->SetBranchAddress("jetAK4CHS_size", &jet_size);
-                t1->SetBranchAddress("jetAK4CHS_Pt", &jet_Pt);
-                t1->SetBranchAddress("jetAK4CHS_Eta", &jet_Eta);
-                t1->SetBranchAddress("jetAK4CHS_Phi", &jet_Phi);
-                t1->SetBranchAddress("jetAK4CHS_E", &jet_E);
-                t1->SetBranchAddress("jetAK4CHS_CSVv2", &jet_CSV);
-                t1->SetBranchAddress("jetAK4CHS_CMVAv2", &jet_CMVA);
-                t1->SetBranchAddress("jetAK4CHS_PartonFlavour", &jet_partonflavour);
+            t1->SetBranchAddress("jetAK4CHS_size", &jet_size);
+            t1->SetBranchAddress("jetAK4CHS_Pt", &jet_Pt);
+            t1->SetBranchAddress("jetAK4CHS_Eta", &jet_Eta);
+            t1->SetBranchAddress("jetAK4CHS_Phi", &jet_Phi);
+            t1->SetBranchAddress("jetAK4CHS_E", &jet_E);
+            t1->SetBranchAddress("jetAK4CHS_CSVv2", &jet_CSV);
+            t1->SetBranchAddress("jetAK4CHS_CMVAv2", &jet_CMVA);
+            t1->SetBranchAddress("jetAK4CHS_PartonFlavour", &jet_partonflavour);
 
-                t1->SetBranchAddress("HLT_IsoMu24", &HLT_IsoMu);
-                t1->SetBranchAddress("HLT_IsoTkMu24", &HLT_IsoTkMu);
-            }
+            t1->SetBranchAddress("HLT_IsoMu24", &HLT_IsoMu);
+            t1->SetBranchAddress("HLT_IsoTkMu24", &HLT_IsoTkMu);
 
-            else{
-                t1->SetBranchAddress("jetAK4Puppi_size", &jet_size);
-                t1->SetBranchAddress("jetAK4Puppi_Pt", &jet_Pt);
-                t1->SetBranchAddress("jetAK4Puppi_Eta", &jet_Eta);
-                t1->SetBranchAddress("jetAK4Puppi_Phi", &jet_Phi);
-                t1->SetBranchAddress("jetAK4Puppi_E", &jet_E);
-                t1->SetBranchAddress("jetAK4Puppi_CSVv2", &jet_CSV);
-                t1->SetBranchAddress("jetAK4Puppi_CMVAv2", &jet_CMVA);
-
-                t1->SetBranchAddress("HLT_IsoMu20", &HLT_IsoMu);
-                t1->SetBranchAddress("HLT_IsoTkMu20", &HLT_IsoTkMu);
-            }
 
 
             t1->SetBranchAddress("gen_size", &gen_size); //number of muons in the event
@@ -314,6 +317,9 @@ void MuMu_reco_mc_batch()
             t1->SetBranchAddress("gen_Status", &gen_status);
             t1->SetBranchAddress("evt_Gen_Weight", &evt_Gen_Weight);
             t1->SetBranchAddress("pu_NtrueInt",&pu_NtrueInt);
+
+            t1->SetBranchAddress("scale_Weights", &scale_Weights);
+            t1->SetBranchAddress("pdf_Weights", &pdf_Weights);
 
 
             t1->SetBranchAddress("gen_Mom0ID", &gen_Mom0ID);
@@ -727,7 +733,26 @@ void MuMu_reco_mc_batch()
                         gh_iso_SF = get_SF(mu1_pt, mu1_eta, runs_gh.ISO_SF) * get_SF(mu2_pt, mu2_eta, runs_gh.ISO_SF);
                         gh_id_SF = get_SF(mu1_pt, mu1_eta, runs_gh.ID_SF) * get_SF(mu2_pt, mu2_eta, runs_gh.ID_SF);
 
+
                         pu_SF = get_pileup_SF(pu_NtrueInt, pu_SFs.pileup_ratio);
+
+                        bcdef_trk_SF = get_Mu_trk_SF(abs(mu1_eta), runs_bcdef.TRK_SF) * get_Mu_trk_SF(abs(mu2_eta), runs_bcdef.TRK_SF);
+                        gh_trk_SF = get_Mu_trk_SF(abs(mu1_eta), runs_gh.TRK_SF) * get_Mu_trk_SF(abs(mu2_eta), runs_gh.TRK_SF);
+
+
+                        mu_R_up = scale_Weights[2];
+                        mu_R_down = scale_Weights[4];
+                        mu_F_up = scale_Weights[0];
+                        mu_F_down = scale_Weights[1];
+                        mu_RF_up = scale_Weights[3];
+                        mu_RF_down = scale_Weights[5];
+
+                        Float_t pdf_avg, pdf_std_dev;
+
+                        get_pdf_avg_std_dev(pdf_Weights, &pdf_avg, &pdf_std_dev);
+
+                        pdf_up = pdf_avg + pdf_std_dev;
+                        pdf_down = pdf_avg - pdf_std_dev;
 
                         if(signal_event){
                             //cost_st = cos(theta)_* correct angle obtained from 'cheating' and
@@ -782,7 +807,6 @@ void MuMu_reco_mc_batch()
             nQQb, nQGlu, nTauTau, nSignal, nFiles, nQQ + nGluGlu, nQQ, nGluGlu, nFailedID);
     //printf("Ran on MC data and produced templates with %i events\n", nEvents);
 
-    TFile *fout = TFile::Open(fout_name, "RECREATE");
     fout->cd();
 
 
@@ -795,6 +819,7 @@ void MuMu_reco_mc_batch()
     printf("Writing output to file at %s \n", fout_name.Data());
 
     fout->Close();
+
 
     return;
 }

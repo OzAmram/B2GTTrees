@@ -284,7 +284,7 @@ void MuMu_reco_background_batch()
                     cm = mu_p + mu_m;
                     cm_m = cm.M();
                     //met and cmva cuts to reduce ttbar background
-                    if (iso_0 < tight_iso && iso_1 < tight_iso && cm_m >=150.){
+                    if (iso_0 < tight_iso && iso_1 < tight_iso && cm_m >=25.){
                         if(PRINT) sprintf(out_buff + strlen(out_buff),"Event %i \n", i);
 
                         //RECO LEVEL

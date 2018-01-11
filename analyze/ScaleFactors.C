@@ -155,7 +155,45 @@ Double_t get_HLT_SF(Double_t mu1_pt, Double_t mu1_eta, Double_t mu2_pt, Double_t
                       (1 - (1-MC_EFF1)*(1-MC_EFF2));
     if(result < 0.01) printf("0 HLT SF for Pt %.1f, Eta %1.2f \n", mu1_pt, mu1_eta);
     if(TMath::IsNaN(result)){ 
-        printf("Nan HLT SF for Pt %.1f, Eta %1.2f \n", mu1_pt, mu1_eta);
+        printf("Nan HLT SF for Pt %.1f, Eta %1.2f  %.2f %.2f %.2f %.2f \n", mu1_pt, mu1_eta, MC_EFF1, MC_EFF2, SF1, SF2);
+        result = 1;
+    }
+    //printf("Result, SF1 = (%0.3f, %0.3f) \n", result, SF1);
+    return result;
+}
+
+Double_t get_el_HLT_SF(Double_t el1_pt, Double_t el1_eta, Double_t el2_pt, Double_t el2_eta, TH2D *h_SF, TH2D *h_MC_EFF){
+    //Get HLT SF for event with 2 elons
+    //stay in range of histogram
+    if (el1_pt >= 350.) el1_pt = 350.;
+    if (el2_pt >= 350.) el2_pt = 350.;
+    TAxis *x_ax_SF =  h_SF->GetXaxis();
+    TAxis *y_ax_SF =  h_SF->GetYaxis();
+    int xbin1_SF = x_ax_SF->FindBin(el1_eta);
+    int ybin1_SF = y_ax_SF->FindBin(el1_pt);
+
+    int xbin2_SF = x_ax_SF->FindBin(el2_eta);
+    int ybin2_SF = y_ax_SF->FindBin(el2_pt);
+
+    Double_t SF1 = h_SF->GetBinContent(xbin1_SF, ybin1_SF);
+    Double_t SF2 = h_SF->GetBinContent(xbin2_SF, ybin2_SF);
+
+
+    TAxis *x_ax_MC_EFF =  h_MC_EFF->GetXaxis();
+    TAxis *y_ax_MC_EFF =  h_MC_EFF->GetYaxis();
+    int xbin1_MC_EFF = x_ax_MC_EFF->FindBin(el1_eta);
+    int ybin1_MC_EFF = y_ax_MC_EFF->FindBin(el1_pt);
+
+    int xbin2_MC_EFF = x_ax_MC_EFF->FindBin(el2_eta);
+    int ybin2_MC_EFF = y_ax_MC_EFF->FindBin(el2_pt);
+
+    Double_t MC_EFF1 = h_MC_EFF->GetBinContent(xbin1_MC_EFF, ybin1_MC_EFF);
+    Double_t MC_EFF2 = h_MC_EFF->GetBinContent(xbin2_MC_EFF, ybin2_MC_EFF);
+    Double_t result = (1 - (1-MC_EFF1*SF1)*(1-MC_EFF2*SF2))/
+                      (1 - (1-MC_EFF1)*(1-MC_EFF2));
+    if(result < 0.01) printf("0 HLT SF for Pt %.1f, Eta %1.2f \n", el1_pt, el1_eta);
+    if(TMath::IsNaN(result)){ 
+        printf("Nan HLT SF for Pt %.1f, Eta %1.2f  %.2f %.2f %.2f %.2f \n", el1_pt, el1_eta, MC_EFF1, MC_EFF2, SF1, SF2);
         result = 1;
     }
     //printf("Result, SF1 = (%0.3f, %0.3f) \n", result, SF1);
@@ -414,10 +452,10 @@ void setup_el_SF(el_SFs *sf){
 
     TFile *f9 = TFile::Open("SFs/egammaEffi_HLT.root");
     TDirectory *subdir9 = gDirectory;
-    TH2D *h_hltsf = (TH2D *) subdir8->Get("EGamma_SF2D")->Clone();
+    TH2D *h_hltsf = (TH2D *) subdir9->Get("EGamma_SF2D")->Clone();
     h_hltsf->SetDirectory(0);
     sf->HLT_SF = h_hltsf;
-    TH2D *h_hltmc = (TH2D *) subdir8->Get("EGamma_EffMC")->Clone();
+    TH2D *h_hltmc = (TH2D *) subdir9->Get("EGamma_EffMC2D")->Clone();
     h_hltmc->SetDirectory(0);
     sf->HLT_MC_EFF = h_hltmc;
     

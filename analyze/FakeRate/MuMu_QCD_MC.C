@@ -295,7 +295,7 @@ void MuMu_QCD_MC()
                         }
                     }
                     bool no_bjets = has_no_bjets(nJets, jet1_pt, jet2_pt, jet1_cmva, jet2_cmva);
-                    if ( (iso_0 > tight_iso) && (iso_1 > tight_iso) && cm_m >=150. && no_bjets && met_pt < 50.){
+                    if ( (iso_0 > tight_iso) && (iso_1 > tight_iso) && cm_m >=25. && no_bjets && met_pt < 50.){
 
                         xF = abs(2.*cm.Pz()/13000.); 
 

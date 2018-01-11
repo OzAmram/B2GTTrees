@@ -11,7 +11,7 @@
 
 const double root2 = sqrt(2);
 const char* filename("SingleMuon_files_sep25.txt");
-const TString fout_name("output_files/MuMu_WJets_est_samesign_dec1.root");
+const TString fout_name("output_files/MuMu_WJets_est_samesign_dec12.root");
 
 const bool data_2016 = true;
 

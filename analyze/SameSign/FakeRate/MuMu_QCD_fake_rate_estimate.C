@@ -11,7 +11,7 @@
 
 const double root2 = sqrt(2);
 const char* filename("SingleMuon_files_sep25.txt");
-const TString fout_name("output_files/MuMu_QCD_est_nov2.root");
+const TString fout_name("SameSign/output_files/MuMu_QCD_est_samesign_dec10.root");
 
 const bool data_2016 = true;
 
@@ -177,7 +177,7 @@ void MuMu_QCD_fake_rate_estimate()
             if(met_size != 1) printf("WARNING: Met size not equal to 1\n");
             if(mu_size > MU_SIZE) printf("Warning: too many muons\n");
             bool good_trigger = HLT_IsoMu || HLT_IsoTkMu;
-            if( mu_size >= 2 && ((abs(mu_Charge[0] - mu_Charge[1])) > 0.01) &&
+            if( mu_size >= 2 && (mu_Charge[0] * mu_Charge[1] > 0.) &&
                     mu_IsTightMuon[0] && mu_IsTightMuon[1] &&
                     mu_Pt[0] > 26. &&  mu_Pt[1] > 10. &&
                     abs(mu_Eta[0]) < 2.4 && abs(mu_Eta[1]) < 2.4){ 
@@ -219,7 +219,7 @@ void MuMu_QCD_fake_rate_estimate()
                     }
                 }
                 bool no_bjets = has_no_bjets(nJets, jet1_pt, jet2_pt, jet1_cmva, jet2_cmva);
-                if (iso_0 > tight_iso && iso_1 > tight_iso && cm_m >=150. && no_bjets && met_pt < 50.){
+                if (iso_0 > tight_iso && iso_1 > tight_iso && cm_m >=25. && no_bjets && met_pt < 50.){
                     //both muons FAIL ISO
                     xF = abs(2.*cm.Pz()/13000.); 
 

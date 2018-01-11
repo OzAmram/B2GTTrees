@@ -24,6 +24,7 @@
 #include "TFitter.h"
 #include "TSystem.h"
 #include "Math/Functor.h"
+#include "ScaleFactors.C"
 
 
 #define FLAG_MUONS  0
@@ -107,6 +108,7 @@ static Double_t get_new_fakerate_prob(Double_t pt, Double_t eta, TH2D *h){
     //printf("Efficiency is %f \n", eff);
     return prob;
 }
+
 
 int gen_data_template(TTree *t1, TH2F* h, vector<double> *v_m, vector<double> *v_xF, vector<double> *v_cost, Double_t m_low, Double_t m_high){
     Long64_t nEntries  =  t1->GetEntries();
@@ -252,6 +254,7 @@ int gen_mc_template(TTree *t1, Double_t alpha, TH2F* h_sym, TH2F *h_asym, TH2F *
     Long64_t nEntries  =  t1->GetEntries();
     //printf("size is %i \n", nEntries);
 
+
     h_sym->Sumw2();
     h_asym->Sumw2();
 
@@ -260,6 +263,9 @@ int gen_mc_template(TTree *t1, Double_t alpha, TH2F* h_sym, TH2F *h_asym, TH2F *
     Double_t gh_HLT_SF, gh_iso_SF, gh_id_SF;
     Double_t el_id_SF, el_reco_SF, pu_SF;
     Double_t jet1_pt, jet2_pt, jet1_b_weight, jet2_b_weight;
+
+    Double_t mu_R_up, mu_R_down, mu_F_up, mu_F_down, 
+             mu_RF_up, mu_RF_down, pdf_up, pdf_down;
     Float_t cost_pt, met_pt;
     Int_t nJets;
     t1->SetBranchAddress("m", &m);
@@ -276,6 +282,14 @@ int gen_mc_template(TTree *t1, Double_t alpha, TH2F* h_sym, TH2F *h_asym, TH2F *
     t1->SetBranchAddress("jet1_b_weight", &jet1_b_weight);
     t1->SetBranchAddress("jet2_b_weight", &jet2_b_weight);
     t1->SetBranchAddress("pu_SF", &pu_SF);
+    t1->SetBranchAddress("mu_R_up", &mu_R_up);
+    t1->SetBranchAddress("mu_R_down", &mu_R_down);
+    t1->SetBranchAddress("mu_F_up", &mu_F_up);
+    t1->SetBranchAddress("mu_F_down", &mu_F_down);
+    t1->SetBranchAddress("mu_RF_up", &mu_RF_up);
+    t1->SetBranchAddress("mu_RF_down", &mu_RF_down);
+    t1->SetBranchAddress("pdf_up", &pdf_up);
+    t1->SetBranchAddress("pdf_down", &pdf_down);
     int n = 0;
     if(flag == FLAG_MUONS){
         t1->SetBranchAddress("bcdef_HLT_SF", &bcdef_HLT_SF);
@@ -296,7 +310,8 @@ int gen_mc_template(TTree *t1, Double_t alpha, TH2F* h_sym, TH2F *h_asym, TH2F *
                 reweight = (4./3.)*cost_st*(2. + alpha)/
                     (1. + cost_st*cost_st + alpha*(1.- cost_st*cost_st));
                 n++;
-
+                
+                //gen_weight *=pdf_down;
 
                 Double_t bcdef_weight = gen_weight * pu_SF * bcdef_HLT_SF * bcdef_iso_SF * bcdef_id_SF;
                 Double_t gh_weight = gen_weight * pu_SF * gh_HLT_SF * gh_iso_SF * gh_id_SF;
@@ -334,8 +349,16 @@ int gen_mc_template(TTree *t1, Double_t alpha, TH2F* h_sym, TH2F *h_asym, TH2F *
         h_asym->Add(h_asym_bcdef, h_asym_gh);
     }
     else if (flag == FLAG_ELECTRONS) {
+        Double_t el1_pt, el1_eta, el2_pt, el2_eta;
+        
+        el_SFs el_SF;
+        setup_el_SF(&el_SF);
         t1->SetBranchAddress("el_id_SF", &el_id_SF);
         t1->SetBranchAddress("el_reco_SF", &el_reco_SF);
+        t1->SetBranchAddress("el1_pt", &el1_pt);
+        t1->SetBranchAddress("el2_pt", &el2_pt);
+        t1->SetBranchAddress("el1_eta", &el1_eta);
+        t1->SetBranchAddress("el2_eta", &el2_eta);
         for (int i=0; i<nEntries; i++) {
             t1->GetEntry(i);
             bool no_bjets = has_no_bjets(nJets, jet1_pt, jet2_pt, jet1_cmva, jet2_cmva);
@@ -345,8 +368,10 @@ int gen_mc_template(TTree *t1, Double_t alpha, TH2F* h_sym, TH2F *h_asym, TH2F *
                     (1. + cost_st*cost_st + alpha*(1.- cost_st*cost_st));
                 n++;
 
+                //gen_weight *= pdf_down;
 
-                Double_t evt_weight = gen_weight * el_id_SF *el_reco_SF * pu_SF;
+                Double_t HLT_SF = get_el_HLT_SF(el1_pt, el1_eta, el2_pt, el2_eta, el_SF.HLT_SF, el_SF.HLT_MC_EFF);
+                Double_t evt_weight = gen_weight * el_id_SF *el_reco_SF * pu_SF * HLT_SF;
                 if (nJets >= 1){
                     evt_weight *= jet1_b_weight;
                 }
@@ -448,15 +473,24 @@ int gen_background_template(TTree *t1, TH2F* h, TH2F* h_count,
         h->Add(h_bcdef, h_gh);
     }
     else if (flag == FLAG_ELECTRONS) {
+        Double_t el1_pt, el1_eta, el2_pt, el2_eta;
+        
+        el_SFs el_SF;
+        setup_el_SF(&el_SF);
         t1->SetBranchAddress("el_id_SF", &el_id_SF);
         t1->SetBranchAddress("el_reco_SF", &el_reco_SF);
+        t1->SetBranchAddress("el1_pt", &el1_pt);
+        t1->SetBranchAddress("el2_pt", &el2_pt);
+        t1->SetBranchAddress("el1_eta", &el1_eta);
+        t1->SetBranchAddress("el2_eta", &el2_eta);
         for (int i=0; i<nEntries; i++) {
             t1->GetEntry(i);
             bool no_bjets = has_no_bjets(nJets, jet1_pt, jet2_pt, jet1_cmva, jet2_cmva);
             if(m >= m_low && m <= m_high && met_pt < 50.  && no_bjets){
 
 
-                Double_t evt_weight = gen_weight * pu_SF * el_id_SF * el_reco_SF;
+                Double_t HLT_SF = get_el_HLT_SF(el1_pt, el1_eta, el2_pt, el2_eta, el_SF.HLT_SF, el_SF.HLT_MC_EFF);
+                Double_t evt_weight = gen_weight * pu_SF * el_id_SF * el_reco_SF * HLT_SF;
                 if (nJets >= 1){
                     evt_weight *= jet1_b_weight;
                 }
@@ -484,7 +518,6 @@ void gen_fakes_template(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_contam, TTr
         FakeRate FR;
         //TH2D *FR;
         setup_new_mu_fakerate(&FR);
-        FR.h->Print();
         for (int l=0; l<=3; l++){
             printf("l=%i\n", l);
             TTree *t;
@@ -581,7 +614,6 @@ void gen_fakes_template(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_contam, TTr
         FakeRate FR;
         //TH2D *FR;
         setup_new_el_fakerate(&FR);
-        FR.h->Print();
         for (int l=0; l<=3; l++){
             TTree *t;
             if (l==0) t = t_WJets;
@@ -594,6 +626,7 @@ void gen_fakes_template(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_contam, TTr
             Double_t evt_fakerate, el1_fakerate, el2_fakerate, el1_eta, el1_pt, el2_eta, el2_pt;
             Int_t iso_el;
             Float_t met_pt;
+            el_SFs el_SF;
             Int_t nJets;
             nJets = 2;
             pu_SF=1;
@@ -616,6 +649,7 @@ void gen_fakes_template(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_contam, TTr
                 t->SetBranchAddress("iso_el", &iso_el);
             }
             if(l==2 || l==3){
+                setup_el_SF(&el_SF);
                 t->SetBranchAddress("el_id_SF", &el_id_SF);
                 t->SetBranchAddress("el_reco_SF", &el_reco_SF);
                 t->SetBranchAddress("gen_weight", &gen_weight);
@@ -639,14 +673,15 @@ void gen_fakes_template(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_contam, TTr
                     evt_fakerate = -(el1_fakerate/(1-el1_fakerate)) * (el2_fakerate/(1-el2_fakerate));
                 }
                 if(l==2){
-
-                    Double_t mc_weight = gen_weight * el_id_SF * el_reco_SF  * 1000. * tot_lumi;
+                    Double_t HLT_SF = get_el_HLT_SF(el1_pt, el1_eta, el2_pt, el2_eta, el_SF.HLT_SF, el_SF.HLT_MC_EFF);
+                    Double_t mc_weight = gen_weight * el_id_SF * el_reco_SF * HLT_SF  * 1000. * tot_lumi;
                     if(iso_el ==0) el1_fakerate = get_new_fakerate_prob(el1_pt, el1_eta, FR.h);
                     if(iso_el ==1) el1_fakerate = get_new_fakerate_prob(el2_pt, el2_eta, FR.h);
                     evt_fakerate = -(el1_fakerate * mc_weight)/(1-el1_fakerate);
                 }
                 if(l==3){
-                    Double_t mc_weight = gen_weight * el_id_SF * el_reco_SF * 1000. * tot_lumi;
+                    Double_t HLT_SF = get_el_HLT_SF(el1_pt, el1_eta, el2_pt, el2_eta, el_SF.HLT_SF, el_SF.HLT_MC_EFF);
+                    Double_t mc_weight = gen_weight * el_id_SF * el_reco_SF * HLT_SF * 1000. * tot_lumi;
 
                     el1_fakerate = get_new_fakerate_prob(el1_pt, el1_eta, FR.h);
                     el2_fakerate = get_new_fakerate_prob(el2_pt, el2_eta, FR.h);

@@ -206,7 +206,7 @@ void ElEl_WJets_fake_rate_estimate()
                 bool no_bjets = has_no_bjets(nJets, jet1_pt, jet2_pt, jet1_cmva, jet2_cmva);
                 bool one_iso = el_IDMedium[0] ^ el_IDMedium[1];
                 
-                if (one_iso && cm_m >=150. && no_bjets && met_pt < 50.){
+                if (one_iso && cm_m >=25. && no_bjets && met_pt < 50.){
                     //both electrons FAIL ISO
                     xF = abs(2.*cm.Pz()/13000.); 
 

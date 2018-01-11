@@ -16,8 +16,8 @@ const double root2 = sqrt(2);
 double Ebeam = 6500.;
 double Pbeam = sqrt(Ebeam*Ebeam - 0.938*0.938);
 
-char *filename("DY_files_nov20.txt");
-const TString fout_name("output_files/ElEl_DY_nov25.root");
+char *filename("DY_files_dec7.txt");
+const TString fout_name("output_files/ElEl_DY_dec11.root");
 const double alpha = 0.05;
 const bool PRINT=false;
 
@@ -113,7 +113,8 @@ void ElEl_reco_mc_batch()
     TTree *t_signal= new TTree("T_data", "Tree with asym events (qq bar, qg)");
     Double_t cm_m, xF, cost_r, cost_st, el1_pt, el2_pt, el1_eta, el2_eta, jet1_pt, jet2_pt, jet1_eta, jet2_eta, deltaC, 
              gen_weight, jet1_csv, jet1_cmva, jet2_csv, jet2_cmva;
-    Double_t el_id_SF, el_reco_SF, jet1_b_weight, jet2_b_weight, pu_SF;
+    Double_t el_id_SF, el_reco_SF, jet1_b_weight, jet2_b_weight, pu_SF, el_HLT_SF;
+    Double_t mu_R_up, mu_R_down, mu_F_up, mu_F_down, mu_RF_up, mu_RF_down, pdf_up, pdf_down;
     Int_t nJets, jet1_flavour, jet2_flavour, pu_NtrueInt;
     Bool_t is_tau_event;
     Float_t met_pt;
@@ -141,8 +142,17 @@ void ElEl_reco_mc_batch()
     t_signal->Branch("pu_SF", &pu_SF);
     t_signal->Branch("jet1_b_weight", &jet1_b_weight);
     t_signal->Branch("jet2_b_weight", &jet2_b_weight);
+    t_signal->Branch("mu_R_up", &mu_R_up);
+    t_signal->Branch("mu_R_down", &mu_R_down);
+    t_signal->Branch("mu_F_up", &mu_F_up);
+    t_signal->Branch("mu_F_down", &mu_F_down);
+    t_signal->Branch("mu_RF_up", &mu_RF_up);
+    t_signal->Branch("mu_RF_down", &mu_RF_down);
+    t_signal->Branch("pdf_up", &pdf_up);
+    t_signal->Branch("pdf_down", &pdf_down);
     t_signal->Branch("el_id_SF", &el_id_SF);
     t_signal->Branch("el_reco_SF", &el_reco_SF);
+    t_signal->Branch("el_HLT_SF", &el_HLT_SF);
     t_signal->Branch("nJets", &nJets, "nJets/I");
     t_signal->Branch("jet1_flavour", &jet1_flavour, "jet1_flavour/I");
     t_signal->Branch("jet2_flavour", &jet2_flavour, "jet2_flavour/I");
@@ -173,6 +183,7 @@ void ElEl_reco_mc_batch()
     t_back->Branch("pu_SF", &pu_SF);
     t_back->Branch("el_id_SF", &el_id_SF);
     t_back->Branch("el_reco_SF", &el_reco_SF);
+    t_back->Branch("el_HLT_SF", &el_HLT_SF);
     t_back->Branch("jet1_b_weight", &jet1_b_weight);
     t_back->Branch("jet2_b_weight", &jet2_b_weight);
     t_back->Branch("nJets", &nJets, "nJets/I");
@@ -255,6 +266,8 @@ void ElEl_reco_mc_batch()
 
             Float_t evt_Gen_Weight;
 
+            Float_t scale_Weights[10], pdf_Weights[100];
+
             Int_t HLT_El;
             t1->SetBranchAddress("el_size", &el_size); //number of els in the event
             t1->SetBranchAddress("el_Pt", &el_Pt);
@@ -286,6 +299,9 @@ void ElEl_reco_mc_batch()
             t1->SetBranchAddress("gen_Status", &gen_status);
             t1->SetBranchAddress("evt_Gen_Weight", &evt_Gen_Weight);
             t1->SetBranchAddress("pu_NtrueInt",&pu_NtrueInt);
+
+            t1->SetBranchAddress("scale_Weights", &scale_Weights);
+            t1->SetBranchAddress("pdf_Weights", &pdf_Weights);
 
 
             t1->SetBranchAddress("gen_Mom0ID", &gen_Mom0ID);
@@ -719,7 +735,22 @@ void ElEl_reco_mc_batch()
 
                         el_id_SF = get_el_SF(el1_pt, el1_eta, el_SF.ID_SF) * get_el_SF(el2_pt, el2_eta, el_SF.ID_SF);
                         el_reco_SF = get_el_SF(el1_pt, el1_eta, el_SF.RECO_SF) * get_el_SF(el2_pt, el2_eta, el_SF.RECO_SF);
+                        el_HLT_SF = get_HLT_SF(el1_pt, el1_eta, el2_pt, el2_eta, el_SF.HLT_SF, el_SF.HLT_MC_EFF);
                         pu_SF = get_pileup_SF(pu_NtrueInt, pu_SFs.pileup_ratio);
+
+                        mu_R_up = scale_Weights[2];
+                        mu_R_down = scale_Weights[4];
+                        mu_F_up = scale_Weights[0];
+                        mu_F_down = scale_Weights[1];
+                        mu_RF_up = scale_Weights[3];
+                        mu_RF_down = scale_Weights[5];
+
+                        Float_t pdf_avg, pdf_std_dev;
+
+                        get_pdf_avg_std_dev(pdf_Weights, &pdf_avg, &pdf_std_dev);
+
+                        pdf_up = pdf_avg + pdf_std_dev;
+                        pdf_down = pdf_avg - pdf_std_dev;
 
 
                         if(signal_event && !pileup_event){

@@ -153,7 +153,7 @@ void ElEl_reco_data_batch()
 
                 cm = el_p + el_m;
                 cm_m = cm.M();
-                if (cm_m >=150.){
+                if (cm_m >=25.){
                     xF = abs(2.*cm.Pz()/13000.); 
 
                     // compute Colins soper angle with formula

@@ -22,22 +22,32 @@
 #include "TSystem.h"
 //#include"Minuit2/Minuit2Minimizer.h"
 #include "Math/Functor.h"
-#include "../TemplateMaker.C"
+#include "../TemplateMaker_systematics.C"
 
 
 
-int n_xf_bins = 5;
+int n_xf_bins = 4;
 float xf_max = 1.0;
-Float_t xf_bins[] = {0., 0.05, 0.1, 0.15, 0.25, 1.0};
+Float_t xf_bins[] = {0., 0.05, 0.1, 0.20, 1.0};
+//int n_cost_bins = 8;
+//Float_t cost_bins[] = {-1.0, -.75, -.5, -.25, 0., 0.25, 0.5,  0.75, 1.0};
 int n_cost_bins = 10;
 Float_t cost_bins[] = {-1.0, -.8, -.6, -.4, -.2, 0., 0.2, 0.4, 0.6, 0.8, 1.0};
-//int n_cost_bins = 16;
-//Float_t cost_bins[] = {-1.0, -.875, -.75, -.625, -.5, -.375, -.25, -.125, 0., .125, 0.25, 0.375, 0.5, 0.625, 0.75, 0.875, 1.0};
+//int n_cost_bins = 12;
+//Float_t cost_bins[] = {-1.0, -.8333, -.6667, -.5, -.3333, -0.1667, 0., 0.1667, 0.3333, 0.5, 0.6667, 0.8333, 1.0};
+//int n_cost_bins = 14;
+//Float_t cost_bins[] = {-1.0, -.857, -.714, -.571, -.429, -0.286, -.143,  0., 0.143, .286, 0.429, 0.571, 0.714, 0.857, 1.0};
+int n_m_bins = 6;
 Float_t m_bins[] = {150,200,250,350,500,700,100000};
+//Double_t alphas[6] = {0.08, 0.06, 0.035, 0.032, 0.005, 0.01};
 Double_t alphas[6] = {0.0981, 0.0703, 0.0480, 0.0386, 0.0148, 0.0180};
+//Double_t alphas[6] = {0.11, 0.08, 0.06, 0.045, 0.025, 0.025};
 Double_t alpha;
 
 
+int FLAG = FLAG_ELECTRONS;
+//int FLAG = FLAG_MUONS;
+const TString fout_name("AFB_fit/fit_results/ElEl_fit_dec11_pdf_up.root");
 
 
 float m_low;
@@ -58,54 +68,9 @@ TAxis *x_ax, *y_ax, *z_ax;
 
 
 
-//int FLAG = FLAG_ELECTRONS;
-int FLAG = FLAG_MUONS;
 
-//MC templates
- /*
-TFile* f_mc = (TFile*) TFile::Open("output_files/ElEl_DY_nov25.root");
-TTree *t_mc = (TTree *) f_mc ->Get("T_data");
-TTree *t_nosig = (TTree *) f_mc ->Get("T_back");
-TFile* f_back = (TFile*) TFile::Open("output_files/ElEl_combined_back_sep25.root");
-TTree *t_back = (TTree *) f_back ->Get("T_data");
-
-TFile *f_data = TFile::Open("output_files/SingleElectron_data_sep22.root");
-TTree *t_data = (TTree *)f_data->Get("T_data"); 
-
-TFile *f_QCD = TFile::Open("../analyze/output_files/ElEl_QCD_est_nov2.root");
-TTree *t_QCD = (TTree *)f_QCD->Get("T_data");
-
-TFile *f_WJets = TFile::Open("../analyze/output_files/ElEl_WJets_est_nov2.root");
-TTree *t_WJets = (TTree *)f_WJets->Get("T_data");
-
-TFile *f_WJets_contam = TFile::Open("../analyze/FakeRate/root_files/ElEl_fakerate_WJets_MC_dec4.root");
-TTree *t_WJets_contam = (TTree *)f_WJets_contam->Get("T_data");
-
-TFile *f_QCD_contam = TFile::Open("../analyze/FakeRate/root_files/ElEl_fakerate_QCD_MC_dec4.root");
-TTree *t_QCD_contam = (TTree *)f_QCD_contam->Get("T_data");
-*/
- ///*
-TFile* f_mc = (TFile*) TFile::Open("output_files/MuMu_DY_sep8.root");
-TTree *t_mc = (TTree *) f_mc ->Get("T_data");
-TTree *t_nosig = (TTree *) f_mc ->Get("T_back");
-TFile* f_back = (TFile*) TFile::Open("output_files/MuMu_combined_back_aug30.root");
-TTree *t_back = (TTree *) f_back ->Get("T_data");
-
-TFile *f_data = TFile::Open("output_files/SingleMuon_data_aug28.root");
-TTree *t_data = (TTree *)f_data->Get("T_data"); 
-
-TFile *f_QCD = TFile::Open("../analyze/output_files/MuMu_QCD_est_nov2.root");
-TTree *t_QCD = (TTree *)f_QCD->Get("T_data");
-
-TFile *f_WJets = TFile::Open("../analyze/output_files/MuMu_WJets_est_Nov2.root");
-TTree *t_WJets = (TTree *)f_WJets->Get("T_data");
-
-TFile *f_WJets_contam = TFile::Open("../analyze/FakeRate/root_files/MuMu_fakerate_Wjets_MC_dec4.root");
-TTree *t_WJets_contam = (TTree *)f_WJets_contam->Get("T_data");
-
-TFile *f_QCD_contam = TFile::Open("../analyze/FakeRate/root_files/MuMu_fakerate_QCD_MC_dec4.root");
-TTree *t_QCD_contam = (TTree *)f_QCD_contam->Get("T_data");
-//*/
+TFile *f_mc, *f_back, *f_data, *f_QCD, *f_WJets, *f_WJets_contam, *f_QCD_contam;
+TTree *t_mc, *t_back, *t_data, *t_QCD, *t_WJets, *t_WJets_contam, *t_QCD_contam, *t_nosig;
 
 
 vector<double> v_xF;
@@ -140,7 +105,7 @@ void fcn(int& npar, double* deriv, double& f, double par[], int flag){
         double AFB = par[0];
         double r_back = par[1];
         if(p_back < 0){ 
-            Printf("P_back < 0! Setting to 0\n");
+            //Printf("P_back < 0! %.2e %.2f %.2f \n", p_back, v_xF[i], v_cost[i]);
             p_back = 1e-20;
         }
 
@@ -166,18 +131,52 @@ void fcn(int& npar, double* deriv, double& f, double par[], int flag){
 
 }
 
-Double_t  template_fcn(Double_t *x, Double_t *par){
-    Double_t xx = x[0];
-    Double_t yy = x[1];
+void init(){
+    if(FLAG == FLAG_ELECTRONS){
+         f_mc = (TFile*) TFile::Open("output_files/ElEl_DY_dec11.root");
+         t_mc = (TTree *) f_mc ->Get("T_data");
+         t_nosig = (TTree *) f_mc ->Get("T_back");
+         f_back = (TFile*) TFile::Open("output_files/ElEl_combined_back_sep25.root");
+         t_back = (TTree *) f_back ->Get("T_data");
 
-    Double_t p_sym = get_prob(xx, yy,  h_sym);
-    Double_t p_asym = get_prob(xx, yy, h_asym);
-    Double_t p_back = get_prob(xx, yy,  h_back);
+         f_data = TFile::Open("output_files/SingleElectron_data_sep22.root");
+         t_data = (TTree *)f_data->Get("T_data"); 
 
-    Double_t AFB = par[0];
-    Double_t r_back = par[1];
-    Double_t prob = r_back*p_back + (1 - r_back) * (p_sym + AFB*p_asym);
-    return prob;
+         f_QCD = TFile::Open("../analyze/output_files/ElEl_QCD_est_nov2.root");
+         t_QCD = (TTree *)f_QCD->Get("T_data");
+
+         f_WJets = TFile::Open("../analyze/output_files/ElEl_WJets_est_nov2.root");
+         t_WJets = (TTree *)f_WJets->Get("T_data");
+
+         f_WJets_contam = TFile::Open("../analyze/FakeRate/root_files/ElEl_fakerate_WJets_MC_dec4.root");
+         t_WJets_contam = (TTree *)f_WJets_contam->Get("T_data");
+
+         f_QCD_contam = TFile::Open("../analyze/FakeRate/root_files/ElEl_fakerate_QCD_MC_dec4.root");
+         t_QCD_contam = (TTree *)f_QCD_contam->Get("T_data");
+    }
+    else{
+         f_mc = (TFile*) TFile::Open("output_files/MuMu_DY_dec11_v2.root");
+         t_mc = (TTree *) f_mc ->Get("T_data");
+         t_nosig = (TTree *) f_mc ->Get("T_back");
+         f_back = (TFile*) TFile::Open("output_files/MuMu_combined_back_aug30.root");
+         t_back = (TTree *) f_back ->Get("T_data");
+
+         f_data = TFile::Open("output_files/SingleMuon_data_aug28.root");
+         t_data = (TTree *)f_data->Get("T_data"); 
+
+         f_QCD = TFile::Open("../analyze/output_files/MuMu_QCD_est_nov2.root");
+         t_QCD = (TTree *)f_QCD->Get("T_data");
+
+         f_WJets = TFile::Open("../analyze/output_files/MuMu_WJets_est_Nov2.root");
+         t_WJets = (TTree *)f_WJets->Get("T_data");
+
+         f_WJets_contam = TFile::Open("../analyze/FakeRate/root_files/MuMu_fakerate_Wjets_MC_dec4.root");
+         t_WJets_contam = (TTree *)f_WJets_contam->Get("T_data");
+
+         f_QCD_contam = TFile::Open("../analyze/FakeRate/root_files/MuMu_fakerate_QCD_MC_dec4.root");
+         t_QCD_contam = (TTree *)f_QCD_contam->Get("T_data");
+    }
+    return;
 }
 
 
@@ -235,9 +234,21 @@ void cleanup(){
     printf("Finishing cleanup\n");
 }
 void single_fit_all(){
-    int n_m_bins = 6;
+    init();
     Double_t AFB_fit[n_m_bins], AFB_fit_err[n_m_bins], r_back_fit[n_m_bins], r_back_fit_err[n_m_bins];
     unsigned int nEvents[n_m_bins];
+    TTree *tout= new TTree("T_fit_res", "Tree with Fit Results");
+    tout->SetDirectory(0);
+
+    Double_t AFB, AFB_err, r_back, r_back_err;
+
+    tout->Branch("m_low", &m_low);
+    tout->Branch("m_high", &m_high);
+    tout->Branch("nEvents", &nDataEvents);
+    tout->Branch("AFB", &AFB);
+    tout->Branch("AFB_err", &AFB_err);
+    tout->Branch("r_back", &r_back);
+    tout->Branch("r_back_err", &r_back_err);
 
     for(int i=0; i<n_m_bins; i++){
         printf("Starting loop \n");
@@ -273,39 +284,34 @@ void single_fit_all(){
         minuit->ExecuteCommand("MINOS", arglist, 0);
 
 
-        /*
-        printf("Trying template fit \n\n\n");
-        Int_t npar = 2;
-        Int_t ndim = 2;
-        TF2 *fit_fcn = new TF2("F1", &template_fcn, 0., 1., -1.,1., npar, ndim);
-        fit_fcn->SetParNames("AFB", "r_back");
-        fit_fcn->SetParameter(0, AFB_start); //AFB
-        fit_fcn->SetParLimits(0, -AFB_max, AFB_max);
-        fit_fcn->SetParError(0, AFB_start_error);
-        fit_fcn->SetParameter(1, r_back_start); //r_back
-        fit_fcn->SetParLimits(1, 0, r_back_max);
-        fit_fcn->SetParError(1, r_back_start_error);
-        h_data->Sumw2();
-        h_data->Fit(fit_fcn, "WL M N");
-        */
-
 
         AFB_fit[i] = minuit->GetParameter(0); 
         AFB_fit_err[i] = minuit->GetParError(0);
         r_back_fit[i] = minuit->GetParameter(1); 
         r_back_fit_err[i] = minuit->GetParError(1);
 
+        AFB = AFB_fit[i];
+        AFB_err = AFB_fit_err[i];
+
+        r_back = r_back_fit[i];
+        r_back_err = r_back_fit_err[i];
+
         nEvents[i] = nDataEvents;
+        tout->Fill();
 
 
 
         cleanup();
     }
+    TFile *fout = TFile::Open(fout_name, "RECREATE");
+    fout->cd();
+    tout->Write();
     for(int i=0; i<n_m_bins; i++){
         printf("\n Fit on M=[%.0f, %.0f], %i Events: AFB = %0.3f +/- %0.3f r_back = %0.3f +/- %0.3f \n", 
                     m_bins[i], m_bins[i+1], nEvents[i], AFB_fit[i], AFB_fit_err[i], r_back_fit[i], r_back_fit_err[i]);
 
     }
+    printf("fit results written to %s \n", fout_name.Data());
 
 }
 

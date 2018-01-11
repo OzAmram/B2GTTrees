@@ -110,7 +110,7 @@ void ElEl_reco_background_batch()
     tout->SetDirectory(0);
     Double_t cm_m, xF, cost_r, el1_pt, el2_pt, el1_eta, el2_eta, jet1_pt, jet2_pt, deltaC, jet1_eta, jet2_eta, gen_weight,
              jet1_cmva, jet1_csv, jet2_cmva, jet2_csv;
-    Double_t el_id_SF, el_reco_SF, jet1_b_weight, jet2_b_weight, pu_SF;
+    Double_t el_id_SF, el_reco_SF, jet1_b_weight, jet2_b_weight, pu_SF, el_HLT_SF;
     Int_t nJets, jet1_flavour, jet2_flavour, pu_NtrueInt;
     Float_t met_pt;
     TLorentzVector el_p, el_m, cm, q1, q2;
@@ -135,6 +135,7 @@ void ElEl_reco_background_batch()
     tout->Branch("gen_weight", &gen_weight, "gen_weight/D");
     tout->Branch("el_id_SF", &el_id_SF);
     tout->Branch("el_reco_SF", &el_reco_SF);
+    tout->Branch("el_HLT_SF", &el_HLT_SF);
     tout->Branch("jet1_b_weight", &jet1_b_weight);
     tout->Branch("jet2_b_weight", &jet2_b_weight);
     tout->Branch("nJets", &nJets, "nJets/I");
@@ -349,6 +350,7 @@ void ElEl_reco_background_batch()
 
                         el_id_SF = get_el_SF(el1_pt, el1_eta, el_SF.ID_SF) * get_el_SF(el2_pt, el2_eta, el_SF.ID_SF);
                         el_reco_SF = get_el_SF(el1_pt, el1_eta, el_SF.RECO_SF) * get_el_SF(el2_pt, el2_eta, el_SF.RECO_SF);
+                        el_HLT_SF = get_HLT_SF(el1_pt, el1_eta, el2_pt, el2_eta, el_SF.HLT_SF, el_SF.HLT_MC_EFF);
 
 
                         pu_SF = get_pileup_SF(pu_NtrueInt, pu_SFs.pileup_ratio);

@@ -268,7 +268,7 @@ void ElEl_reco_background_batch()
                     cm = el_p + el_m;
                     cm_m = cm.M();
                     //met and cmva cuts to reduce ttbar background
-                    if (cm_m >=150.){
+                    if (cm_m >=25.){
                         if(PRINT) sprintf(out_buff + strlen(out_buff),"Event %i \n", i);
 
                         //RECO LEVEL

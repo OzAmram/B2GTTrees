@@ -22,21 +22,30 @@
 #include "TSystem.h"
 //#include"Minuit2/Minuit2Minimizer.h"
 #include "Math/Functor.h"
-#include "../TemplateMaker.C"
+#include "../TemplateMaker_systematics.C"
 
 
 
-int n_xf_bins = 5;
+int n_xf_bins = 4;
 float xf_max = 1.0;
-Float_t xf_bins[] = {0., 0.05, 0.1, 0.15, 0.25, 1.0};
+Float_t xf_bins[] = {0., 0.05, 0.1, 0.20, 1.0};
+//int n_cost_bins = 8;
+//Float_t cost_bins[] = {-1.0, -.75, -.5, -.25, 0., 0.25, 0.5,  0.75, 1.0};
 int n_cost_bins = 10;
 Float_t cost_bins[] = {-1.0, -.8, -.6, -.4, -.2, 0., 0.2, 0.4, 0.6, 0.8, 1.0};
-Float_t m_bins[] = {150,200,250,300,400, 500,600, 700, 850, 100000};
+//int n_cost_bins = 12;
+//Float_t cost_bins[] = {-1.0, -.8333, -.6667, -.5, -.3333, -0.1667, 0., 0.1667, 0.3333, 0.5, 0.6667, 0.8333, 1.0};
+//int n_cost_bins = 14;
+//Float_t cost_bins[] = {-1.0, -.857, -.714, -.571, -.429, -0.286, -.143,  0., 0.143, .286, 0.429, 0.571, 0.714, 0.857, 1.0};
+int n_m_bins = 8;
+Float_t m_bins[] = {150,200,250,300,350, 500,600, 700, 10000};
 //                   150-200  200-250 250-350         350-500 500-700 700+
-Double_t alphas[9] = {0.0981, 0.0703, 0.0480, 0.0480, 0.0386, 0.0148, 0.0148, 0.0180, 0.0180};
+//Double_t alphas[8] = {0.08, 0.06, 0.035, 0.035, 0.032, 0.005, 0.005,  0.01};
+Double_t alphas[8] = {0.0981, 0.0703, 0.0480, 0.0480, 0.0386, 0.0148, 0.0148, 0.0180};
+//Double_t alphas[8] = {0.11, 0.08, 0.06, 0.06, 0.045, 0.025, 0.005, 0.025};
 Double_t alpha;
 
-int FLAG = FLAG_ELECTRONS;
+const TString fout_name("AFB_fit/fit_results/combined_fit_dec14_m350.root");
 
 //int n_xf_bins = 4;
 //float xf_max = 1.0;
@@ -65,7 +74,7 @@ TH2F *h_mumu_mc_count, *h_mumu_sym_count;
 TAxis *x_ax, *y_ax, *z_ax;
 
 //MC templates
-TFile* f_elel_mc = (TFile*) TFile::Open("output_files/ElEl_DY_sep25.root");
+TFile* f_elel_mc = (TFile*) TFile::Open("output_files/ElEl_DY_dec11.root");
 TTree *t_elel_mc = (TTree *) f_elel_mc ->Get("T_data");
 TTree *t_elel_nosig = (TTree *) f_elel_mc ->Get("T_back");
 TFile* f_elel_back = (TFile*) TFile::Open("output_files/ElEl_combined_back_sep25.root");
@@ -87,7 +96,7 @@ TFile *f_elel_QCD_contam = TFile::Open("../analyze/FakeRate/root_files/ElEl_fake
 TTree *t_elel_QCD_contam = (TTree *)f_elel_QCD_contam->Get("T_data");
 ////////////////////////////////////////
 
-TFile* f_mumu_mc = (TFile*) TFile::Open("output_files/MuMu_DY_sep8.root");
+TFile* f_mumu_mc = (TFile*) TFile::Open("output_files/MuMu_DY_dec11_v2.root");
 TTree *t_mumu_mc = (TTree *) f_mumu_mc ->Get("T_data");
 TTree *t_mumu_nosig = (TTree *) f_mumu_mc ->Get("T_back");
 TFile* f_mumu_back = (TFile*) TFile::Open("output_files/MuMu_combined_back_aug30.root");
@@ -144,6 +153,10 @@ void fcn(int& npar, double* deriv, double& f, double par[], int flag){
         Double_t p_elel_asym = get_prob(v_elel_xF[i],  v_elel_cost[i], h_elel_asym);
         Double_t p_elel_back = get_prob(v_elel_xF[i], v_elel_cost[i], h_elel_back);
 
+        if(p_elel_back < 0){ 
+            //Printf("P_back < 0! %.2e %.2f %.2f \n", p_back, v_xF[i], v_cost[i]);
+            p_elel_back = 1e-20;
+        }
 
 
         double elel_prob = r_elel_back*p_elel_back + (1 - r_elel_back) * (p_elel_sym + AFB*p_elel_asym);
@@ -166,6 +179,10 @@ void fcn(int& npar, double* deriv, double& f, double par[], int flag){
         Double_t p_mumu_back = get_prob(v_mumu_xF[i], v_mumu_cost[i], h_mumu_back);
 
 
+        if(p_mumu_back < 0){ 
+            //Printf("P_back < 0! %.2e %.2f %.2f \n", p_back, v_xF[i], v_cost[i]);
+            p_mumu_back = 1e-20;
+        }
 
         double mumu_prob = r_mumu_back*p_mumu_back + (1 - r_mumu_back) * (p_mumu_sym + AFB*p_mumu_asym);
         if(mumu_prob > 1) printf("Warning prob is too big \n");
@@ -272,9 +289,24 @@ void cleanup(){
     printf("Finishing cleanup\n");
 }
 void combined_fit_all(){
-    int n_m_bins = 9;
     Double_t AFB_fit[n_m_bins], AFB_fit_err[n_m_bins], r_elel_back_fit[n_m_bins], r_elel_back_fit_err[n_m_bins], 
              r_mumu_back_fit[n_m_bins], r_mumu_back_fit_err[n_m_bins];
+
+    TTree *tout= new TTree("T_fit_res", "Tree with Fit Results");
+    tout->SetDirectory(0);
+
+    Double_t AFB, AFB_err, r_elel_back, r_elel_back_err, r_mumu_back, r_mumu_back_err;
+
+    tout->Branch("m_low", &m_low);
+    tout->Branch("m_high", &m_high);
+    tout->Branch("nElElEvents", &nElEl_DataEvents);
+    tout->Branch("nMuMuEvents", &nMuMu_DataEvents);
+    tout->Branch("AFB", &AFB);
+    tout->Branch("AFB_err", &AFB_err);
+    tout->Branch("r_elel_back", &r_elel_back);
+    tout->Branch("r_elel_back_err", &r_elel_back_err);
+    tout->Branch("r_mumu_back", &r_mumu_back);
+    tout->Branch("r_mumu_back_err", &r_mumu_back_err);
 
     unsigned int nElElEvents[n_m_bins];
     unsigned int nMuMuEvents[n_m_bins];
@@ -334,15 +366,27 @@ void combined_fit_all(){
         nElElEvents[i] = nElEl_DataEvents;
         nMuMuEvents[i] = nMuMu_DataEvents;
 
+        AFB= AFB_fit[i];
+        AFB_err = AFB_fit_err[i];
 
+        r_elel_back= r_elel_back_fit[i];
+        r_elel_back_err = r_elel_back_fit_err[i];
+
+        r_mumu_back= r_mumu_back_fit[i];
+        r_mumu_back_err = r_mumu_back_fit_err[i];
+        tout->Fill();
 
         cleanup();
     }
+    TFile *fout = TFile::Open(fout_name, "RECREATE");
+    fout->cd();
+    tout->Write();
     for(int i=0; i<n_m_bins; i++){
         printf("\n Fit on M=[%.0f, %.0f], %i ElEl Events, %i MuMu Events: AFB = %0.3f +/- %0.3f r_elel_back = %0.3f +/- %0.3f r_mumu_back =%0.3f +/- %0.3f \n", 
                     m_bins[i], m_bins[i+1], nElElEvents[i], nMuMuEvents[i], AFB_fit[i], AFB_fit_err[i], r_elel_back_fit[i], r_elel_back_fit_err[i], r_mumu_back_fit[i], r_mumu_back_fit_err[i]);
 
     }
+    printf("fit results written to %s \n", fout_name.Data());
 
 }
 

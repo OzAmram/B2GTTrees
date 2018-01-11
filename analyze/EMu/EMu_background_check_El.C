@@ -114,7 +114,7 @@ void EMu_background_check_El()
     Double_t cm_m, xF, cost_r, mu1_pt, el1_pt, jet1_pt, jet2_pt, gen_weight,
              jet1_cmva, jet2_cmva, mu1_eta, el1_eta, jet1_eta, jet2_eta;
     Double_t bcdef_HLT_SF, bcdef_iso_SF, bcdef_id_SF, gh_HLT_SF, gh_iso_SF, gh_id_SF,
-             el_id_SF, el_reco_SF, btag_weight, jet1_b_weight, jet2_b_weight, pu_SF;
+             el_id_SF, el_reco_SF, btag_weight, jet1_b_weight, jet2_b_weight, pu_SF, el_HLT_SF;
     Float_t met_pt;
     Int_t nJets, jet1_flavour, jet2_flavour;
     Bool_t mu_trigger;
@@ -145,6 +145,7 @@ void EMu_background_check_El()
     tout->Branch("gh_id_SF", &gh_id_SF);
     tout->Branch("el_id_SF", &el_id_SF);
     tout->Branch("el_reco_SF", &el_reco_SF);
+    tout->Branch("el_HLT_SF", &el_HLT_SF);
     tout->Branch("jet1_b_weight", &jet1_b_weight);
     tout->Branch("jet2_b_weight", &jet2_b_weight);
     tout->Branch("btag_weight", &btag_weight);
@@ -350,6 +351,7 @@ void EMu_background_check_El()
                         gh_id_SF = get_SF(mu1_pt, mu1_eta, runs_gh.ID_SF);
 
                         el_id_SF = get_el_SF(el1_pt, el1_eta, el_SF.ID_SF);
+                        el_HLT_SF = get_HLT_SF_1mu(el1_pt, el1_eta, el_SF.HLT_SF);
                         el_reco_SF = get_el_SF(el1_pt, el1_eta, el_SF.RECO_SF);
 
                         pu_SF = get_pileup_SF(pu_NtrueInt, pu_SFs.pileup_ratio);
