@@ -17,7 +17,7 @@ double Ebeam = 6500.;
 double Pbeam = sqrt(Ebeam*Ebeam - 0.938*0.938);
 
 char *filename("DY_files_dec7.txt");
-const TString fout_name("output_files/MuMu_DY_dec11_v2.root");
+const TString fout_name("output_files/MuMu_DY_jan16.root");
 const bool PRINT=false;
 
 const bool data_2016 = true;
@@ -120,7 +120,7 @@ void MuMu_reco_mc_batch()
     Int_t nJets, jet1_flavour, jet2_flavour, pu_NtrueInt;
     Bool_t is_tau_event;
     Float_t met_pt;
-    TLorentzVector mu_p, mu_m, cm, q1, q2;
+    TLorentzVector mu_p, mu_m, cm, gen_mu_p_vec, gen_mu_m_vec;
 
     t_signal->Branch("m", &cm_m, "m/D");
     t_signal->Branch("xF", &xF, "xF/D");
@@ -132,6 +132,8 @@ void MuMu_reco_mc_batch()
     t_signal->Branch("mu2_eta", &mu2_eta, "mu2_eta/D");
     t_signal->Branch("mu_m", "TLorentzVector", &mu_m);
     t_signal->Branch("mu_p", "TLorentzVector", &mu_p);
+    t_signal->Branch("gen_mu_m", "TLorentzVector", &gen_mu_m_vec);
+    t_signal->Branch("gen_mu_p", "TLorentzVector", &gen_mu_p_vec);
     t_signal->Branch("jet1_pt", &jet1_pt, "jet1_pt/D");
     t_signal->Branch("jet1_eta", &jet1_eta, "jet1_eta/D");
     t_signal->Branch("jet1_CMVA", &jet1_cmva, "jet1_CMVA/D");
@@ -179,6 +181,8 @@ void MuMu_reco_mc_batch()
     t_back->Branch("mu2_eta", &mu2_pt, "mu2_eta/D");
     t_back->Branch("mu_m", "TLorentzVector", &mu_m);
     t_back->Branch("mu_p", "TLorentzVector", &mu_p);
+    t_back->Branch("gen_mu_m", "TLorentzVector", &gen_mu_m_vec);
+    t_back->Branch("gen_mu_p", "TLorentzVector", &gen_mu_p_vec);
     t_back->Branch("jet1_pt", &jet1_pt, "jet1_pt/D");
     t_back->Branch("jet1_eta", &jet1_eta, "jet1_eta/D");
     t_back->Branch("jet1_CMVA", &jet1_cmva, "jet1_CMVA/D");
@@ -601,6 +605,8 @@ void MuMu_reco_mc_batch()
                             }
                         }
                         //RECO LEVEL
+                        gen_mu_p_vec.SetPtEtaPhiE(gen_Pt[gen_mu_p], gen_Eta[gen_mu_p], gen_Phi[gen_mu_p], gen_E[gen_mu_p]);
+                        gen_mu_m_vec.SetPtEtaPhiE(gen_Pt[gen_mu_m], gen_Eta[gen_mu_m], gen_Phi[gen_mu_m], gen_E[gen_mu_m]);
                         xF = abs(2.*cm.Pz()/13000.); 
 
                         // compute Colins soper angle with formula
@@ -704,22 +710,6 @@ void MuMu_reco_mc_batch()
                                 }
                             }
                         }
-
-
-                        /*
-                           if(jet_size >=2) nJets = 2;
-                           else nJets = jet_size;
-                           if(jet_size >=1 && jet_Pt[0] > 20. && std::abs(jet_Eta[0]) < 2.4){
-
-
-                           } 
-                           if(jet_size >=2 && jet_Pt[1] > 20. && std::abs(jet_Eta[1]) < 2.4){
-                           jet2_pt = jet_Pt[1];
-                           jet2_cmva = jet_CMVA[1];
-                           jet2_flavour = jet_partonflavour[1];
-                           jet2_b_weight = get_btag_weight(jet_Pt[1], jet_Eta[1],jet_partonflavour[1],btag_effs, b_reader);
-                           }
-                           */
 
 
                         //get muon cut SFs

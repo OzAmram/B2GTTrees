@@ -12,7 +12,7 @@
 
 const double root2 = sqrt(2);
 const char* filename("SingleMuon_files_sep25.txt");
-const TString fout_name("FakeRate/root_files/SingleMuon_data_fake_rate_v2_nov28.root");
+const TString fout_name("FakeRate/root_files/SingleMuon_data_fake_rate_v2_jan17.root");
 const double alpha = 0.05;
 
 const bool data_2016 = true;
