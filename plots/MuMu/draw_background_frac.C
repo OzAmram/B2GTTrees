@@ -72,6 +72,15 @@ void draw_background_frac(){
 
     TH1F *QCD_m = new TH1F("QCD_m", "MC Signal (qqbar, qglu, qbarglu)", nBins, m_bins);
     TH1F *QCD_cost = new TH1F("QCD_cost", "MC Signal (qqbar, qglu, qbarglu)", 40, -1,1);
+
+
+    TH1F *mc_pt = new TH1F("mc_pt", "MC signal", 40, 0, 1000);
+    TH1F *mc_nosig_pt = new TH1F("mc_nosig_pt", "MC signal", 40, 0, 1000);
+    TH1F *data_pt = new TH1F("data_pt", "MC signal", 40, 0, 1000);
+    TH1F *ttbar_pt = new TH1F("ttbar_pt", "MC signal", 40, 0, 1000);
+    TH1F *diboson_pt = new TH1F("diboson_pt", "MC signal", 40, 0, 1000);
+    TH1F *wt_pt = new TH1F("wt_pt", "MC signal", 40, 0, 1000);
+    TH1F *QCD_pt = new TH1F("QCD_pt", "MC signal", 40, 0, 1000);
     
     /*
     TH1F *ww_m = new TH1F("ww_m", "MC Signal (qqbar, qglu, qbarglu)", nBins, m_bins);
@@ -85,12 +94,12 @@ void draw_background_frac(){
     TH1F *wt_m = new TH1F("wt_m", "W top", nBins, m_bins);
     TH1F *wt_cost = new TH1F("wt_cost", "W top", 40, -1,1);
 
-    make_m_cost_hist(t_mc, mc_m, mc_cost, false, FLAG_MUONS);
-    make_m_cost_hist(t_mc_nosig, mc_nosig_m, mc_nosig_cost, false, FLAG_MUONS);
-    make_m_cost_hist(t_ttbar, ttbar_m, ttbar_cost, false, FLAG_MUONS);
-    make_m_cost_hist(t_wt, wt_m, wt_cost, false, FLAG_MUONS);
-    make_m_cost_hist(t_diboson, diboson_m, diboson_cost, false, FLAG_MUONS);
-    Fakerate_est_mu(t_WJets, t_QCD, t_WJets_mc, t_QCD_mc, QCD_m, QCD_cost);
+    make_m_cost_pt_hist(t_mc, mc_m, mc_cost, mc_pt, false, FLAG_MUONS);
+    make_m_cost_pt_hist(t_mc_nosig, mc_nosig_m, mc_nosig_cost, mc_nosig_pt, false, FLAG_MUONS);
+    make_m_cost_pt_hist(t_ttbar, ttbar_m, ttbar_cost, ttbar_pt, false, FLAG_MUONS);
+    make_m_cost_pt_hist(t_wt, wt_m, wt_cost, wt_pt, false, FLAG_MUONS);
+    make_m_cost_pt_hist(t_diboson, diboson_m, diboson_cost, diboson_pt, false, FLAG_MUONS);
+    Fakerate_est_mu(t_WJets, t_QCD, t_WJets_mc, t_QCD_mc, QCD_m, QCD_cost, QCD_pt);
 
     /*
      
