@@ -10,7 +10,7 @@
 
 const double root2 = sqrt(2);
 const char* filename("SingleMuon_files_sep25.txt");
-const TString fout_name("SameSign/output_files/SingleMuon_samesign_data_dec12.root");
+const TString fout_name("SameSign/output_files/SingleMuon_samesign_data_jan11.root");
 
 
 bool is_empty_line(const char *s) {

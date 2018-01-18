@@ -22,7 +22,8 @@
 #include "TSystem.h"
 //#include"Minuit2/Minuit2Minimizer.h"
 #include "Math/Functor.h"
-#include "../TemplateMaker_systematics.C"
+//#include "../TemplateMaker_systematics.C"
+#include "../TemplateMaker.C"
 
 
 
@@ -37,8 +38,8 @@ Float_t cost_bins[] = {-1.0, -.8, -.6, -.4, -.2, 0., 0.2, 0.4, 0.6, 0.8, 1.0};
 //Float_t cost_bins[] = {-1.0, -.8333, -.6667, -.5, -.3333, -0.1667, 0., 0.1667, 0.3333, 0.5, 0.6667, 0.8333, 1.0};
 //int n_cost_bins = 14;
 //Float_t cost_bins[] = {-1.0, -.857, -.714, -.571, -.429, -0.286, -.143,  0., 0.143, .286, 0.429, 0.571, 0.714, 0.857, 1.0};
-int n_m_bins = 8;
-Float_t m_bins[] = {150,200,250,300,350, 500,600, 700, 10000};
+int n_m_bins = 6;
+Float_t m_bins[] = {150,200,250,350,500,700,100000};
 //                   150-200  200-250 250-350         350-500 500-700 700+
 //Double_t alphas[8] = {0.08, 0.06, 0.035, 0.035, 0.032, 0.005, 0.005,  0.01};
 Double_t alphas[8] = {0.0981, 0.0703, 0.0480, 0.0480, 0.0386, 0.0148, 0.0148, 0.0180};
@@ -119,10 +120,8 @@ TTree *t_mumu_QCD_contam = (TTree *)f_mumu_QCD_contam->Get("T_data");
 
 
 vector<double> v_elel_xF;
-vector<double> v_elel_m;
 vector<double> v_elel_cost;
 vector<double> v_mumu_xF;
-vector<double> v_mumu_m;
 vector<double> v_mumu_cost;
 unsigned int nElEl_DataEvents;
 unsigned int nMuMu_DataEvents;
@@ -240,7 +239,7 @@ void setup(){
     gen_fakes_template(t_elel_WJets, t_elel_QCD, t_elel_WJets_contam, t_elel_QCD_contam, h_elel_back, m_low, m_high, FLAG_ELECTRONS);
     gen_combined_background_template(2, elel_ts, h_elel_back, m_low, m_high, FLAG_ELECTRONS);
 
-    nElEl_DataEvents = gen_data_template(t_elel_data, h_elel_data, &v_elel_m, &v_elel_xF, &v_elel_cost, m_low, m_high);
+    nElEl_DataEvents = gen_data_template(t_elel_data, h_elel_data,  &v_elel_xF, &v_elel_cost, m_low, m_high, FLAG_ELECTRONS);
 
     h_mumu_mc_count = new TH2F("h_mumu_mc_count", "Events in bins for MC templates",
             n_xf_bins, xf_bins, n_cost_bins, cost_bins);
@@ -268,7 +267,7 @@ void setup(){
     gen_fakes_template(t_mumu_WJets, t_mumu_QCD, t_mumu_WJets_contam, t_mumu_QCD_contam, h_mumu_back, m_low, m_high, FLAG_MUONS);
     gen_combined_background_template(2, mumu_ts, h_mumu_back, m_low, m_high, FLAG_MUONS);
 
-    nMuMu_DataEvents = gen_data_template(t_mumu_data, h_mumu_data, &v_mumu_m, &v_mumu_xF, &v_mumu_cost, m_low, m_high);
+    nMuMu_DataEvents = gen_data_template(t_mumu_data, h_mumu_data, &v_mumu_xF, &v_mumu_cost, m_low, m_high, FLAG_MUONS);
     printf("Finishing setup \n");
     return;
 }
@@ -280,10 +279,8 @@ void cleanup(){
     //delete h_asym;
     //delete h_back;
     //delete h_data;
-    v_elel_m.clear();
     v_elel_cost.clear();
     v_elel_xF.clear();
-    v_mumu_m.clear();
     v_mumu_cost.clear();
     v_mumu_xF.clear();
     printf("Finishing cleanup\n");

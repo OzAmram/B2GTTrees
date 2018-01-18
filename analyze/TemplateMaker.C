@@ -32,6 +32,9 @@
 #define FLAG_WJETS  3
 #define FLAG_NORMAL 4
 
+#define FLAG_M_BINS 0
+#define FLAG_PT_BINS 1
+
 Double_t bcdef_lumi = 5.746 + 2.572 + 4.242 + 4.024 + 3.104;
 // adding new Hv2 data set to get full 2016 luminosity
 Double_t gh_lumi =  7.573 + 0.215 + 8.434;
@@ -108,13 +111,16 @@ static Double_t get_new_fakerate_prob(Double_t pt, Double_t eta, TH2D *h){
     return prob;
 }
 
-int gen_data_template(TTree *t1, TH2F* h, vector<double> *v_m, vector<double> *v_xF, vector<double> *v_cost, Double_t m_low, Double_t m_high){
+int gen_data_template(TTree *t1, TH2F* h, vector<double> *v_xF, vector<double> *v_cost, Double_t var_low, Double_t var_high, 
+        int flag1 = FLAG_MUONS, int flag2 = FLAG_M_BINS){
     Long64_t nEntries  =  t1->GetEntries();
     //printf("size is %i \n", nEntries);
     Double_t m, xF, cost, gen_weight, jet1_cmva, jet2_cmva,
              jet1_pt, jet2_pt;
     Float_t met_pt;
     Int_t nJets;
+    TLorentzVector *lep_p = 0;
+    TLorentzVector *lep_m = 0;
     t1->SetBranchAddress("m", &m);
     t1->SetBranchAddress("xF", &xF);
     t1->SetBranchAddress("cost", &cost);
@@ -123,6 +129,14 @@ int gen_data_template(TTree *t1, TH2F* h, vector<double> *v_m, vector<double> *v
     t1->SetBranchAddress("met_pt", &met_pt);
     t1->SetBranchAddress("jet1_pt", &jet1_pt);
     t1->SetBranchAddress("jet2_pt", &jet2_pt);
+    if(flag1 == FLAG_MUONS){
+        t1->SetBranchAddress("mu_p", &lep_p);
+        t1->SetBranchAddress("mu_m", &lep_m);
+    }
+    else{
+        t1->SetBranchAddress("el_p", &lep_p);
+        t1->SetBranchAddress("el_m", &lep_m);
+    }
     //t1->SetBranchAddress("nJets", &nJets);
     nJets =2;
     int nEvents = 0;
@@ -130,14 +144,27 @@ int gen_data_template(TTree *t1, TH2F* h, vector<double> *v_m, vector<double> *v
     for (int i=0; i<nEntries; i++) {
         t1->GetEntry(i);
         bool no_bjets = has_no_bjets(nJets, jet1_pt, jet2_pt, jet1_cmva, jet2_cmva);
-        if(m >= m_low && m <= m_high && met_pt < 50. && no_bjets){
-            n++;
-            h->Fill(xF, cost, 1); 
-            v_m->push_back(m);
-            v_xF->push_back(xF);
-            v_cost->push_back(cost);
-            nEvents++;
+        if(flag2 == FLAG_M_BINS){
+            if(m >= var_low && m <= var_high && met_pt < 50. && no_bjets){
+                n++;
+                h->Fill(xF, cost, 1); 
+                v_xF->push_back(xF);
+                v_cost->push_back(cost);
+                nEvents++;
+            }
         }
+        else{
+            TLorentzVector cm = *lep_p + *lep_m;
+            Double_t pt = cm.Pt();
+            if(m>= 150. &&  pt >= var_low && pt <= var_high && met_pt < 50. && no_bjets){
+                n++;
+                h->Fill(xF, cost, 1); 
+                v_xF->push_back(xF);
+                v_cost->push_back(cost);
+                nEvents++;
+            }
+        }
+
     }
 
     h->Scale(1./h->Integral());
@@ -145,110 +172,10 @@ int gen_data_template(TTree *t1, TH2F* h, vector<double> *v_m, vector<double> *v
     return nEvents;
 }
 
-int gen_background_counting_template(int nTrees, TTree **ts, vector<double> *v_m, vector<double> *v_xF, vector<double> *v_cost, vector<double> *v_weight, 
-        Double_t m_low, Double_t m_high, int flag = FLAG_MUONS){
-    int nEvents = 0;
-    Double_t nBackgroundEvents = 0;
-    for(int i=0; i<nTrees; i++){
-        TTree *t1 = ts[i];
-        Long64_t nEntries  =  t1->GetEntries();
-
-        Double_t m, xF, cost, mu1_pt, mu2_pt, jet1_cmva, jet2_cmva, gen_weight;
-        Double_t bcdef_HLT_SF, bcdef_iso_SF, bcdef_id_SF;
-        Double_t gh_HLT_SF, gh_iso_SF, gh_id_SF, el_id_SF, el_reco_SF;
-        Double_t jet1_pt, jet2_pt, jet1_b_weight, jet2_b_weight, pu_SF;
-        Float_t cost_pt, met_pt;
-        Int_t nJets;
-
-
-        t1->SetBranchAddress("m", &m);
-        t1->SetBranchAddress("xF", &xF);
-        t1->SetBranchAddress("cost", &cost);
-        t1->SetBranchAddress("jet1_CMVA", &jet1_cmva);
-        t1->SetBranchAddress("jet2_CMVA", &jet2_cmva);
-        t1->SetBranchAddress("jet1_pt", &jet1_pt);
-        t1->SetBranchAddress("jet2_pt", &jet2_pt);
-        t1->SetBranchAddress("met_pt", &met_pt);
-        t1->SetBranchAddress("nJets", &nJets);
-        t1->SetBranchAddress("gen_weight", &gen_weight);
-        t1->SetBranchAddress("jet1_b_weight", &jet1_b_weight);
-        t1->SetBranchAddress("jet2_b_weight", &jet2_b_weight);
-        t1->SetBranchAddress("pu_SF", &pu_SF);
-        if(flag == FLAG_MUONS){
-
-            t1->SetBranchAddress("bcdef_HLT_SF", &bcdef_HLT_SF);
-            t1->SetBranchAddress("bcdef_iso_SF", &bcdef_iso_SF);
-            t1->SetBranchAddress("bcdef_id_SF", &bcdef_id_SF);
-            t1->SetBranchAddress("gh_HLT_SF", &gh_HLT_SF);
-            t1->SetBranchAddress("gh_iso_SF", &gh_iso_SF);
-            t1->SetBranchAddress("gh_id_SF", &gh_id_SF);
-
-
-            for (int i=0; i<nEntries; i++) {
-
-                t1->GetEntry(i);
-                bool no_bjets = has_no_bjets(nJets, jet1_pt, jet2_pt, jet1_cmva, jet2_cmva);
-                if(m >= m_low && m <= m_high && met_pt < 50. 
-                        && no_bjets){
-                    nEvents++;
-
-                    Double_t bcdef_weight = gen_weight *pu_SF * bcdef_HLT_SF * bcdef_iso_SF * bcdef_id_SF;
-                    Double_t gh_weight = gen_weight *pu_SF * gh_HLT_SF * gh_iso_SF * gh_id_SF;
-                    if (nJets >= 1){
-                        bcdef_weight *= jet1_b_weight;
-                        gh_weight *= jet1_b_weight;
-                    }
-                    if (nJets >= 2){
-                        bcdef_weight *= jet2_b_weight;
-                        gh_weight *= jet2_b_weight;
-                    }
-                    Double_t evt_weight = 1000*(gh_lumi *gh_weight + bcdef_lumi * bcdef_weight);
-                    v_m->push_back(m);
-                    v_cost->push_back(cost);
-                    v_xF->push_back(xF);
-                    v_weight->push_back(evt_weight);
-                    nBackgroundEvents += evt_weight;
-                }
-            }
-        }
-        else if(flag == FLAG_ELECTRONS) {
-            t1->SetBranchAddress("el_id_SF", &el_id_SF);
-            t1->SetBranchAddress("el_reco_SF", &el_reco_SF);
-            for (int i=0; i<nEntries; i++) {
-                t1->GetEntry(i);
-                bool no_bjets = has_no_bjets(nJets, jet1_pt, jet2_pt, jet1_cmva, jet2_cmva);
-                if(m >= m_low && m <= m_high && met_pt < 50. 
-                        && no_bjets){
-                    nEvents++;
-
-
-                    Double_t evt_weight = gen_weight * pu_SF * el_id_SF * el_reco_SF;
-                    if (nJets >= 1){
-                        evt_weight *= jet1_b_weight;
-                    }
-                    if (nJets >= 2){
-                        evt_weight *= jet2_b_weight;
-                    }
-                    evt_weight *=1000*tot_lumi;
-                    v_m->push_back(m);
-                    v_cost->push_back(cost);
-                    v_xF->push_back(xF);
-                    v_weight->push_back(evt_weight);
-                    nBackgroundEvents += evt_weight;
-                }
-            }
-            //h->Scale(1000*(bcdef_lumi + gh_lumi));
-        }
-
-        t1->ResetBranchAddresses();
-    }
-    printf("%.0f background events total \n", nBackgroundEvents);
-    return nEvents;
-}
 
 
 int gen_mc_template(TTree *t1, Double_t alpha, TH2F* h_sym, TH2F *h_asym, TH2F *h_count, 
-        Double_t m_low, Double_t m_high, int flag = FLAG_MUONS){
+        Double_t var_low, Double_t var_high, int flag1 = FLAG_MUONS, int flag2 = FLAG_M_BINS){
     Long64_t nEntries  =  t1->GetEntries();
     //printf("size is %i \n", nEntries);
 
@@ -261,6 +188,9 @@ int gen_mc_template(TTree *t1, Double_t alpha, TH2F* h_sym, TH2F *h_asym, TH2F *
     Double_t el_id_SF, el_reco_SF, pu_SF;
     Double_t jet1_pt, jet2_pt, jet1_b_weight, jet2_b_weight;
     Float_t cost_pt, met_pt;
+    TLorentzVector *lep_p=0;
+    TLorentzVector *lep_m=0;
+    Double_t pt;
     Int_t nJets;
     t1->SetBranchAddress("m", &m);
     t1->SetBranchAddress("xF", &xF);
@@ -277,7 +207,9 @@ int gen_mc_template(TTree *t1, Double_t alpha, TH2F* h_sym, TH2F *h_asym, TH2F *
     t1->SetBranchAddress("jet2_b_weight", &jet2_b_weight);
     t1->SetBranchAddress("pu_SF", &pu_SF);
     int n = 0;
-    if(flag == FLAG_MUONS){
+    if(flag1 == FLAG_MUONS){
+        t1->SetBranchAddress("mu_p", &lep_p);
+        t1->SetBranchAddress("mu_m", &lep_m);
         t1->SetBranchAddress("bcdef_HLT_SF", &bcdef_HLT_SF);
         t1->SetBranchAddress("bcdef_iso_SF", &bcdef_iso_SF);
         t1->SetBranchAddress("bcdef_id_SF", &bcdef_id_SF);
@@ -291,8 +223,14 @@ int gen_mc_template(TTree *t1, Double_t alpha, TH2F* h_sym, TH2F *h_asym, TH2F *
         for (int i=0; i<nEntries; i++) {
             t1->GetEntry(i);
             bool no_bjets = has_no_bjets(nJets, jet1_pt, jet2_pt, jet1_cmva, jet2_cmva);
-            if(m >= m_low && m <= m_high && met_pt < 50.
-                    && no_bjets){
+            if(flag2 == FLAG_PT_BINS){
+                TLorentzVector cm = *lep_p + *lep_m;
+                pt = cm.Pt();
+            }
+            bool pass = ((flag2 == FLAG_M_BINS && m >= var_low && m <= var_high) ||
+                        (flag2 == FLAG_PT_BINS && m >= 150. && pt >= var_low && pt <= var_high))
+                        && met_pt < 50.  && no_bjets;
+            if(pass){
                 reweight = (4./3.)*cost_st*(2. + alpha)/
                     (1. + cost_st*cost_st + alpha*(1.- cost_st*cost_st));
                 n++;
@@ -333,14 +271,22 @@ int gen_mc_template(TTree *t1, Double_t alpha, TH2F* h_sym, TH2F *h_asym, TH2F *
         h_sym->Add(h_sym_bcdef, h_sym_gh);
         h_asym->Add(h_asym_bcdef, h_asym_gh);
     }
-    else if (flag == FLAG_ELECTRONS) {
+    else if (flag1 == FLAG_ELECTRONS) {
+        t1->SetBranchAddress("el_p", &lep_p);
+        t1->SetBranchAddress("el_m", &lep_m);
         t1->SetBranchAddress("el_id_SF", &el_id_SF);
         t1->SetBranchAddress("el_reco_SF", &el_reco_SF);
         for (int i=0; i<nEntries; i++) {
             t1->GetEntry(i);
             bool no_bjets = has_no_bjets(nJets, jet1_pt, jet2_pt, jet1_cmva, jet2_cmva);
-            if(m >= m_low && m <= m_high && met_pt < 50.
-                    && no_bjets){
+            if(flag2 == FLAG_PT_BINS){
+                TLorentzVector cm = *lep_p + *lep_m;
+                pt = cm.Pt();
+            }
+            bool pass = ((flag2 == FLAG_M_BINS && m >= var_low && m <= var_high) ||
+                        (flag2 == FLAG_PT_BINS && m >= 150. && pt >= var_low && pt <= var_high))
+                        && met_pt < 50.  && no_bjets;
+            if(pass){
                 reweight = (4./3.)*cost_st*(2. + alpha)/
                     (1. + cost_st*cost_st + alpha*(1.- cost_st*cost_st));
                 n++;
@@ -382,7 +328,7 @@ int gen_mc_template(TTree *t1, Double_t alpha, TH2F* h_sym, TH2F *h_asym, TH2F *
 
 
 int gen_background_template(TTree *t1, TH2F* h, TH2F* h_count, 
-        Double_t m_low, Double_t m_high, int flag = FLAG_MUONS){
+        Double_t var_low, Double_t var_high, int flag1 = FLAG_MUONS, int flag2 = FLAG_M_BINS){
     Long64_t nEntries  =  t1->GetEntries();
     h->Sumw2();
 
@@ -392,7 +338,9 @@ int gen_background_template(TTree *t1, TH2F* h, TH2F* h_count,
     Double_t jet1_pt, jet2_pt, jet1_b_weight, jet2_b_weight;
     Float_t cost_pt, met_pt;
     Int_t nJets;
-
+    TLorentzVector *lep_p=0;
+    TLorentzVector *lep_m=0;
+    Double_t pt;
     int nEvents = 0;
 
     t1->SetBranchAddress("m", &m);
@@ -408,8 +356,10 @@ int gen_background_template(TTree *t1, TH2F* h, TH2F* h_count,
     t1->SetBranchAddress("jet1_b_weight", &jet1_b_weight);
     t1->SetBranchAddress("jet2_b_weight", &jet2_b_weight);
     t1->SetBranchAddress("pu_SF", &pu_SF);
-    if(flag == FLAG_MUONS){
+    if(flag1 == FLAG_MUONS){
 
+        t1->SetBranchAddress("mu_p", &lep_p);
+        t1->SetBranchAddress("mu_m", &lep_m);
         t1->SetBranchAddress("bcdef_HLT_SF", &bcdef_HLT_SF);
         t1->SetBranchAddress("bcdef_iso_SF", &bcdef_iso_SF);
         t1->SetBranchAddress("bcdef_id_SF", &bcdef_id_SF);
@@ -423,8 +373,14 @@ int gen_background_template(TTree *t1, TH2F* h, TH2F* h_count,
         for (int i=0; i<nEntries; i++) {
             t1->GetEntry(i);
             bool no_bjets = has_no_bjets(nJets, jet1_pt, jet2_pt, jet1_cmva, jet2_cmva);
-            if(m >= m_low && m <= m_high && met_pt < 50. 
-                    && no_bjets){
+            if(flag2 == FLAG_PT_BINS){
+                TLorentzVector cm = *lep_p + *lep_m;
+                pt = cm.Pt();
+            }
+            bool pass = ((flag2 == FLAG_M_BINS && m >= var_low && m <= var_high) ||
+                        (flag2 == FLAG_PT_BINS && m >= 150. && pt >= var_low && pt <= var_high))
+                        && met_pt < 50.  && no_bjets;
+            if(pass){
 
                 Double_t bcdef_weight = gen_weight *pu_SF * bcdef_HLT_SF * bcdef_iso_SF * bcdef_id_SF;
                 Double_t gh_weight = gen_weight *pu_SF * gh_HLT_SF * gh_iso_SF * gh_id_SF;
@@ -447,13 +403,22 @@ int gen_background_template(TTree *t1, TH2F* h, TH2F* h_count,
         h_gh->Scale(gh_lumi*1000);
         h->Add(h_bcdef, h_gh);
     }
-    else if (flag == FLAG_ELECTRONS) {
+    else if (flag1 == FLAG_ELECTRONS) {
+        t1->SetBranchAddress("el_p", &lep_p);
+        t1->SetBranchAddress("el_m", &lep_m);
         t1->SetBranchAddress("el_id_SF", &el_id_SF);
         t1->SetBranchAddress("el_reco_SF", &el_reco_SF);
         for (int i=0; i<nEntries; i++) {
             t1->GetEntry(i);
             bool no_bjets = has_no_bjets(nJets, jet1_pt, jet2_pt, jet1_cmva, jet2_cmva);
-            if(m >= m_low && m <= m_high && met_pt < 50.  && no_bjets){
+            if(flag2 == FLAG_PT_BINS){
+                TLorentzVector cm = *lep_p + *lep_m;
+                pt = cm.Pt();
+            }
+            bool pass = ((flag2 == FLAG_M_BINS && m >= var_low && m <= var_high) ||
+                        (flag2 == FLAG_PT_BINS && m >= 150. && pt >= var_low && pt <= var_high))
+                        && met_pt < 50.  && no_bjets;
+            if(pass){
 
 
                 Double_t evt_weight = gen_weight * pu_SF * el_id_SF * el_reco_SF;
@@ -477,10 +442,14 @@ int gen_background_template(TTree *t1, TH2F* h, TH2F* h_count,
     return 0;
 }
 
-void gen_fakes_template(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_contam, TTree* t_QCD_contam, 
-        TH2F *h, Double_t m_low, Double_t m_high, int flag = FLAG_MUONS){
+void gen_fakes_template(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_contam, 
+        TTree* t_QCD_contam, TH2F *h, Double_t var_low, Double_t var_high, 
+        int flag1 = FLAG_MUONS, int flag2 = FLAG_M_BINS){
     h->Sumw2();
-    if(flag == FLAG_MUONS){
+    TLorentzVector *lep_p=0;
+    TLorentzVector *lep_m=0;
+    Double_t pt;
+    if(flag1 == FLAG_MUONS){
         FakeRate FR;
         //TH2D *FR;
         setup_new_mu_fakerate(&FR);
@@ -518,6 +487,8 @@ void gen_fakes_template(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_contam, TTr
             t->SetBranchAddress("mu1_eta", &mu1_eta);
             t->SetBranchAddress("mu2_eta", &mu2_eta);
             t->SetBranchAddress("nJets", &nJets);
+            t->SetBranchAddress("mu_p", &lep_p);
+            t->SetBranchAddress("mu_m", &lep_m);
             if(l==0 || l==2 ){
                 t->SetBranchAddress("iso_muon", &iso_mu);
             }
@@ -564,8 +535,15 @@ void gen_fakes_template(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_contam, TTr
                     mu2_fakerate = get_new_fakerate_prob(mu2_pt, mu2_eta, FR.h);
                     evt_fakerate = mc_weight * (mu1_fakerate/(1-mu1_fakerate)) * (mu2_fakerate/(1-mu2_fakerate));
                 }
+                if(flag2 == FLAG_PT_BINS){
+                    TLorentzVector cm = *lep_p + *lep_m;
+                    pt = cm.Pt();
+                }
+                bool pass = ((flag2 == FLAG_M_BINS && m >= var_low && m <= var_high) ||
+                            (flag2 == FLAG_PT_BINS && m >= 150. && pt >= var_low && pt <= var_high))
+                            && met_pt < 50.  && no_bjets;
 
-                if( m >= m_low && m <= m_high && met_pt < 50.  && no_bjets){
+                if(pass){
                     //if(l==3) printf("Evt fr %.2e \n", evt_fakerate);
                     //if(l==3) printf("cost, fr %.2f %.2e \n", cost, evt_fakerate);
                     h->Fill(xF, cost, evt_fakerate);
@@ -612,6 +590,8 @@ void gen_fakes_template(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_contam, TTr
             t->SetBranchAddress("el1_eta", &el1_eta);
             t->SetBranchAddress("el2_eta", &el2_eta);
             t->SetBranchAddress("nJets", &nJets);
+            t->SetBranchAddress("el_p", &lep_p);
+            t->SetBranchAddress("el_m", &lep_m);
             if(l==0 || l==2 ){
                 t->SetBranchAddress("iso_el", &iso_el);
             }
@@ -655,7 +635,14 @@ void gen_fakes_template(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_contam, TTr
 
 
 
-                if( m >= m_low && m <= m_high && met_pt < 50.  && no_bjets){
+                if(flag2 == FLAG_PT_BINS){
+                    TLorentzVector cm = *lep_p + *lep_m;
+                    pt = cm.Pt();
+                }
+                bool pass = ((flag2 == FLAG_M_BINS && m >= var_low && m <= var_high) ||
+                            (flag2 == FLAG_PT_BINS && m >= 150. && pt >= var_low && pt <= var_high))
+                            && met_pt < 50.  && no_bjets;
+                if(pass){
                     //if(l==3) printf("Evt fr %.2e \n", evt_fakerate);
                     //if(l==3) printf("cost, fr %.2f %.2e \n", cost, evt_fakerate);
                     h->Fill(xF, cost, evt_fakerate);
@@ -671,7 +658,7 @@ void gen_fakes_template(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_contam, TTr
 }
 
 int gen_combined_background_template(int nTrees, TTree **ts, TH2F* h,  
-        Double_t m_low, Double_t m_high, int flag = FLAG_MUONS){
+        Double_t var_low, Double_t var_high, int flag1 = FLAG_MUONS, int flag2 = FLAG_M_BINS){
     h->Sumw2();
     for(int i=0; i<nTrees; i++){
         TTree *t1 = ts[i];
@@ -683,6 +670,9 @@ int gen_combined_background_template(int nTrees, TTree **ts, TH2F* h,
         Double_t jet1_pt, jet2_pt, jet1_b_weight, jet2_b_weight, pu_SF;
         Float_t cost_pt, met_pt;
         Int_t nJets;
+        TLorentzVector *lep_p=0;
+        TLorentzVector *lep_m=0;
+        Double_t pt;
 
         int nEvents = 0;
 
@@ -699,7 +689,7 @@ int gen_combined_background_template(int nTrees, TTree **ts, TH2F* h,
         t1->SetBranchAddress("jet1_b_weight", &jet1_b_weight);
         t1->SetBranchAddress("jet2_b_weight", &jet2_b_weight);
         t1->SetBranchAddress("pu_SF", &pu_SF);
-        if(flag == FLAG_MUONS){
+        if(flag1 == FLAG_MUONS){
 
             t1->SetBranchAddress("bcdef_HLT_SF", &bcdef_HLT_SF);
             t1->SetBranchAddress("bcdef_iso_SF", &bcdef_iso_SF);
@@ -707,6 +697,8 @@ int gen_combined_background_template(int nTrees, TTree **ts, TH2F* h,
             t1->SetBranchAddress("gh_HLT_SF", &gh_HLT_SF);
             t1->SetBranchAddress("gh_iso_SF", &gh_iso_SF);
             t1->SetBranchAddress("gh_id_SF", &gh_id_SF);
+            t1->SetBranchAddress("mu_p", &lep_p);
+            t1->SetBranchAddress("mu_m", &lep_m);
 
             TH2D *h_bcdef = (TH2D *)h->Clone("h_back_bcdef");
             TH2D *h_gh = (TH2D *)h->Clone("h_back_gh");
@@ -714,8 +706,15 @@ int gen_combined_background_template(int nTrees, TTree **ts, TH2F* h,
             for (int i=0; i<nEntries; i++) {
                 t1->GetEntry(i);
                 bool no_bjets = has_no_bjets(nJets, jet1_pt, jet2_pt, jet1_cmva, jet2_cmva);
-                if(m >= m_low && m <= m_high && met_pt < 50. 
-                        && no_bjets){
+                if(flag2 == FLAG_PT_BINS){
+                    TLorentzVector cm = *lep_p + *lep_m;
+                    pt = cm.Pt();
+                }
+                bool pass = ((flag2 == FLAG_M_BINS && m >= var_low && m <= var_high) ||
+                            (flag2 == FLAG_PT_BINS && m >= 150. && pt >= var_low && pt <= var_high))
+                            && met_pt < 50.  && no_bjets;
+
+                if(pass){
 
                     Double_t bcdef_weight = gen_weight *pu_SF * bcdef_HLT_SF * bcdef_iso_SF * bcdef_id_SF;
                     Double_t gh_weight = gen_weight *pu_SF * gh_HLT_SF * gh_iso_SF * gh_id_SF;
@@ -732,14 +731,22 @@ int gen_combined_background_template(int nTrees, TTree **ts, TH2F* h,
                 }
             }
         }
-        else if(flag == FLAG_ELECTRONS) {
+        else if(flag1 == FLAG_ELECTRONS) {
+            t1->SetBranchAddress("el_p", &lep_p);
+            t1->SetBranchAddress("el_m", &lep_m);
             t1->SetBranchAddress("el_id_SF", &el_id_SF);
             t1->SetBranchAddress("el_reco_SF", &el_reco_SF);
             for (int i=0; i<nEntries; i++) {
                 t1->GetEntry(i);
                 bool no_bjets = has_no_bjets(nJets, jet1_pt, jet2_pt, jet1_cmva, jet2_cmva);
-                if(m >= m_low && m <= m_high && met_pt < 50. 
-                        && no_bjets){
+                if(flag2 == FLAG_PT_BINS){
+                    TLorentzVector cm = *lep_p + *lep_m;
+                    pt = cm.Pt();
+                }
+                bool pass = ((flag2 == FLAG_M_BINS && m >= var_low && m <= var_high) ||
+                            (flag2 == FLAG_PT_BINS && m >= 150. && pt >= var_low && pt <= var_high))
+                            && met_pt < 50.  && no_bjets;
+                if(pass){
 
 
                     Double_t evt_weight = gen_weight * pu_SF * el_id_SF * el_reco_SF;

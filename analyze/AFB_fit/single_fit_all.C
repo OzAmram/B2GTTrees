@@ -22,7 +22,8 @@
 #include "TSystem.h"
 //#include"Minuit2/Minuit2Minimizer.h"
 #include "Math/Functor.h"
-#include "../TemplateMaker_systematics.C"
+//#include "../TemplateMaker_systematics.C"
+#include "../TemplateMaker.C"
 
 
 
@@ -45,9 +46,9 @@ Double_t alphas[6] = {0.0981, 0.0703, 0.0480, 0.0386, 0.0148, 0.0180};
 Double_t alpha;
 
 
-int FLAG = FLAG_ELECTRONS;
-//int FLAG = FLAG_MUONS;
-const TString fout_name("AFB_fit/fit_results/ElEl_fit_dec11_pdf_up.root");
+//int FLAG = FLAG_ELECTRONS;
+int FLAG = FLAG_MUONS;
+const TString fout_name("AFB_fit/fit_results/MuMu_fit_jan12_nominal.root");
 
 
 float m_low;
@@ -74,7 +75,6 @@ TTree *t_mc, *t_back, *t_data, *t_QCD, *t_WJets, *t_WJets_contam, *t_QCD_contam,
 
 
 vector<double> v_xF;
-vector<double> v_m;
 vector<double> v_cost;
 unsigned int nDataEvents;
 
@@ -213,7 +213,7 @@ void setup(){
     gen_fakes_template(t_WJets, t_QCD, t_WJets_contam, t_QCD_contam, h_back, m_low, m_high, FLAG);
     gen_combined_background_template(2, ts, h_back, m_low, m_high, FLAG);
 
-    nDataEvents = gen_data_template(t_data, h_data, &v_m, &v_xF, &v_cost, m_low, m_high);
+    nDataEvents = gen_data_template(t_data, h_data, &v_xF, &v_cost, m_low, m_high, FLAG);
     //f_data->Close();
     //f_back->Close();
     //f_mc->Close();
@@ -228,7 +228,6 @@ void cleanup(){
     //delete h_asym;
     //delete h_back;
     //delete h_data;
-    v_m.clear();
     v_cost.clear();
     v_xF.clear();
     printf("Finishing cleanup\n");
