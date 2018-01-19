@@ -137,12 +137,12 @@ void draw_fakerate(){
     */
 
     ///*
-    TFile *f = TFile::Open("../analyze/FakeRate/root_files/SingleMuon_data_fake_rate_v2_nov28.root");
+    TFile *f = TFile::Open("../analyze/FakeRate/root_files/SingleMuon_data_fake_rate_v2_jan17.root");
     TFile *f_mc = TFile::Open("../analyze/FakeRate/root_files/SingleMu_mc_fakerate_contam_v2_jan17.root");
-    TFile *f_new = TFile::Open("../analyze/FakeRate/root_files/SingleMuon_data_fake_rate_v2_corrected_jan18.root", "RECREATE");
+    TFile *f_new = TFile::Open("../analyze/FakeRate/root_files/SingleMuon_data_fake_rate_v2_corrected_jan19.root", "RECREATE");
     //*/
 
-    Float_t pt_bins[] = {10,20,26,40,1000};
+    Float_t pt_bins[] = {10,20,26,35,1000};
     int n_pt_bins = 4;
     Float_t eta_bins[] = {0,1.479,2.4};
     int n_eta_bins = 2;

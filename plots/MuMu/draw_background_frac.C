@@ -143,13 +143,11 @@ void draw_background_frac(){
         back_frac_unc[i-1] = sqrt(pow(0.02*(back_frac[i-1]-QCD_frac[i-1]),2) + pow(QCD_frac_unc[i-1],2));
     }
     bin_center[nBins-1] = 850;
-    Double_t fit_res[] = {0.084, 0.168, 0.170, 0.186, 0.167, 0.118};
-    Double_t fit_errs[] = {0.007, 0.011, 0.011, 0.015, 0.026, 0.035};
+    Double_t fit_res[] = {0.108, 0.178, 0.185, 0.189, 0.168, 0.118};
+    Double_t fit_errs[] = {0.008, 0.012, 0.012, 0.015, 0.027, 0.035};
 
-    Int_t nCombBins = 8;
-    Double_t comb_bin_center[] ={175., 225., 275., 350., 450., 550., 650., 850.};
-    Double_t comb_fit_res[] = {0.085, 0.169, 0.169, 0.172, 0.180, 0.162, 0.145, 0.117};
-    Double_t comb_fit_errs[] = {0.007, 0.011, 0.015, 0.013, 0.020, 0.030, 0.041, 0.035};
+    Double_t comb_fit_res[] = {0.109, 0.180, 0.183, 0.187, 0.167, 0.117};
+    Double_t comb_fit_errs[] = {0.008, 0.012, 0.012, 0.015, 0.027, 0.035};
 
     TGraphErrors *mc_nosig_frac = new TGraphErrors(nBins, bin_center, nosig_frac, 0, 0);
     mc_nosig_frac->SetTitle("MC no asym events (qq, gluglu, qbarqbar)");
@@ -172,7 +170,7 @@ void draw_background_frac(){
     TGraphErrors *fit_frac = new TGraphErrors(nBins, bin_center, fit_res, 0, fit_errs);
     fit_frac->SetTitle("Fraction of background events from #mu#mu fit");
 
-    TGraphErrors *comb_fit_frac = new TGraphErrors(nCombBins, comb_bin_center, comb_fit_res, 0, comb_fit_errs);
+    TGraphErrors *comb_fit_frac = new TGraphErrors(nBins, bin_center, comb_fit_res, 0, comb_fit_errs);
     comb_fit_frac->SetTitle("Fraction of background events from combined fit");
 
     fit_frac->SetMaximum(0.3);

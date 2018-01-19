@@ -70,6 +70,15 @@ void draw_background_frac(){
     TH1F *QCD_m = new TH1F("QCD_m", "MC Signal (qqbar, qglu, qbarglu)", nBins, m_bins);
     TH1F *diboson_cost = new TH1F("diboson_cost", "MC Signal (qqbar, qglu, qbarglu)", 40, -1,1);
     TH1F *QCD_cost = new TH1F("QCD_cost", "MC Signal (qqbar, qglu, qbarglu)", 40, -1,1);
+
+
+    TH1F *mc_pt = new TH1F("mc_pt", "MC signal", 40, 0, 1000);
+    TH1F *mc_nosig_pt = new TH1F("mc_nosig_pt", "MC signal", 40, 0, 1000);
+    TH1F *data_pt = new TH1F("data_pt", "MC signal", 40, 0, 1000);
+    TH1F *ttbar_pt = new TH1F("ttbar_pt", "MC signal", 40, 0, 1000);
+    TH1F *diboson_pt = new TH1F("diboson_pt", "MC signal", 40, 0, 1000);
+    TH1F *wt_pt = new TH1F("wt_pt", "MC signal", 40, 0, 1000);
+    TH1F *QCD_pt = new TH1F("QCD_pt", "MC signal", 40, 0, 1000);
     
     /*
     TH1F *ww_m = new TH1F("ww_m", "MC Signal (qqbar, qglu, qbarglu)", nBins, m_bins);
@@ -83,12 +92,15 @@ void draw_background_frac(){
     TH1F *wt_m = new TH1F("wt_m", "W top", nBins, m_bins);
     TH1F *wt_cost = new TH1F("wt_cost", "W top", 40, -1,1);
 
-    make_m_cost_hist(t_mc, mc_m, mc_cost, false, FLAG_ELECTRONS);
-    make_m_cost_hist(t_mc_nosig, mc_nosig_m, mc_nosig_cost, false, FLAG_ELECTRONS);
-    make_m_cost_hist(t_ttbar, ttbar_m, ttbar_cost, false, FLAG_ELECTRONS);
-    make_m_cost_hist(t_wt, wt_m, wt_cost, false, FLAG_ELECTRONS);
-    make_m_cost_hist(t_diboson, diboson_m, diboson_cost, false, FLAG_ELECTRONS);
-    Fakerate_est_el(t_WJets, t_QCD, t_WJets_mc, t_QCD_mc, QCD_m, QCD_cost);
+    int type = FLAG_ELECTRONS;
+    make_m_cost_pt_hist(t_mc, mc_m, mc_cost, mc_pt, false,type);
+    make_m_cost_pt_hist(t_mc_nosig, mc_nosig_m, mc_nosig_pt, mc_nosig_cost, false,type);
+    make_m_cost_pt_hist(t_ttbar, ttbar_m, ttbar_cost, ttbar_pt, false,type);
+    make_m_cost_pt_hist(t_diboson, diboson_m, diboson_cost, diboson_pt, false,type);
+    make_m_cost_pt_hist(t_wt, wt_m, wt_cost, wt_pt, false,type);
+    
+
+    Fakerate_est_el(t_WJets, t_QCD, t_WJets_mc, t_QCD_mc, QCD_m, QCD_cost, QCD_pt);
 
 
     /*
@@ -137,13 +149,11 @@ void draw_background_frac(){
                                        //pow(QCD_frac_unc[i-1],2) );
     }
     bin_center[nBins-1] = 800.;
-    Double_t fit_res[] = {0.104, 0.168, 0.225, 0.171, 0.162, 0.164};
-    Double_t fit_errs[] = {0.006, 0.009, 0.011, 0.014, 0.024, 0.037};
+    Double_t fit_res[] = {0.106, 0.172, 0.228, 0.173, 0.162, 0.163};
+    Double_t fit_errs[] = {0.006, 0.010, 0.011, 0.014, 0.024, 0.037};
 
-    Int_t nCombBins = 8;
-    Double_t comb_bin_center[] ={175., 225., 275., 350., 450., 550., 650., 800., 1000.};
-    Double_t comb_fit_res[] = {0.103, 0.168, 0.222, 0.220, 0.144, 0.164, 0.145, 0.165};
-    Double_t comb_fit_errs[] = {0.006, 0.010, 0.014, 0.014, 0.019, 0.031, 0.033, 0.037};
+    Double_t comb_fit_res[] = {0.105, 0.171, 0.230, 0.176, 0.162, 0.164};
+    Double_t comb_fit_errs[] = {0.006, 0.010, 0.011, 0.014, 0.024, 0.037};
 
     TGraphErrors *mc_nosig_frac = new TGraphErrors(nBins, bin_center, nosig_frac, 0, 0);
     mc_nosig_frac->SetTitle("MC no asym events (qq, gluglu, qbarqbar)");
@@ -166,7 +176,7 @@ void draw_background_frac(){
     TGraphErrors *fit_frac = new TGraphErrors(nBins, bin_center, fit_res, 0, fit_errs);
     fit_frac->SetTitle("Fraction of background events from ee fit");
 
-    TGraphErrors *comb_fit_frac = new TGraphErrors(nCombBins, comb_bin_center, comb_fit_res, 0, comb_fit_errs);
+    TGraphErrors *comb_fit_frac = new TGraphErrors(nBins, bin_center, comb_fit_res, 0, comb_fit_errs);
     comb_fit_frac->SetTitle("Fraction of background events from combined fit");
 
     fit_frac->SetMaximum(0.4);
