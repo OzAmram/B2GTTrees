@@ -109,7 +109,7 @@ void MuMu_reco_background_batch()
     tout->SetDirectory(0);
     Double_t cm_m, xF, cost_r, mu1_pt, mu2_pt, mu1_eta, mu2_eta, jet1_pt, jet2_pt, deltaC, jet1_eta, jet2_eta, gen_weight,
              jet1_cmva, jet1_csv, jet2_cmva, jet2_csv;
-    Double_t bcdef_HLT_SF, bcdef_iso_SF, bcdef_id_SF, gh_HLT_SF, gh_iso_SF, gh_id_SF,
+    Double_t bcdef_HLT_SF, bcdef_iso_SF, bcdef_id_SF, gh_HLT_SF, gh_iso_SF, gh_id_SF, bcdef_trk_SF, gh_trk_SF,
              jet1_b_weight, jet2_b_weight, pu_SF;
     Int_t nJets, jet1_flavour, jet2_flavour, pu_NtrueInt;
     Float_t met_pt;
@@ -139,6 +139,8 @@ void MuMu_reco_background_batch()
     tout->Branch("gh_HLT_SF", &gh_HLT_SF);
     tout->Branch("gh_iso_SF", &gh_iso_SF);
     tout->Branch("gh_id_SF", &gh_id_SF);
+    tout->Branch("gh_trk_SF", &gh_trk_SF);
+    tout->Branch("bcdef_trk_SF", &bcdef_trk_SF);
     tout->Branch("jet1_b_weight", &jet1_b_weight);
     tout->Branch("jet2_b_weight", &jet2_b_weight);
     tout->Branch("nJets", &nJets, "nJets/I");
@@ -370,6 +372,9 @@ void MuMu_reco_background_batch()
 
                         gh_iso_SF = get_SF(mu1_pt, mu1_eta, runs_gh.ISO_SF) * get_SF(mu2_pt, mu2_eta, runs_gh.ISO_SF);
                         gh_id_SF = get_SF(mu1_pt, mu1_eta, runs_gh.ID_SF) * get_SF(mu2_pt, mu2_eta, runs_gh.ID_SF);
+
+                        bcdef_trk_SF = get_Mu_trk_SF(abs(mu1_eta), runs_bcdef.TRK_SF) * get_Mu_trk_SF(abs(mu2_eta), runs_bcdef.TRK_SF);
+                        gh_trk_SF = get_Mu_trk_SF(abs(mu1_eta), runs_gh.TRK_SF) * get_Mu_trk_SF(abs(mu2_eta), runs_gh.TRK_SF);
 
                         pu_SF = get_pileup_SF(pu_NtrueInt, pu_SFs.pileup_ratio);
 

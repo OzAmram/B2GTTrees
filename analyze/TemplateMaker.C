@@ -99,14 +99,18 @@ static Double_t get_new_fakerate_prob(Double_t pt, Double_t eta, TH2D *h){
     prob += err * variation;
     //printf("prob: %.2f \n", prob);
     if(prob < 0.001 || prob >= 0.99){
-        printf("Warning: %.2f Rate for pt %.0f, eta %1.1f! \n", prob, pt, eta);
+        printf("Warning: %.2f Rate for pt %.0f, eta %1.1f! \n"
+                "err %.2f varr %.2f \n",
+                 prob, pt, eta, err, variation);
         ybin -=1;
         prob = h->GetBinContent(xbin, ybin);
+        err = h->GetBinError(xbin, ybin);
+        prob += err * variation;
         if(prob < 0.001) printf("Tried 1 lower pt bin and still 0 fakerate \n");
     }
 
     prob = min(prob, 0.98);
-    prob = max(prob, 0.05);
+    prob = max(prob, 0.02);
     //printf("Efficiency is %f \n", eff);
     return prob;
 }
