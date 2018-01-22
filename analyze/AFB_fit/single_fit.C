@@ -31,7 +31,7 @@ Float_t xf_bins[] = {0., 0.05, 0.1, 0.15, 0.25, 1.0};
 int n_m_bins = 1;
 int n_cost_bins = 10;
 Float_t cost_bins[] = {-1.0, -.8, -.6, -.4, -.2, 0., 0.2, 0.4, 0.6, 0.8, 1.0};
-Double_t alphas[6] = {0.0981, 0.0703, 0.0480, 0.0386, 0.0148, 0.0180};
+Double_t alphas[6] = {0.095, 0.0703, 0.0480, 0.0386, 0.0148, 0.0180};
 Double_t alpha = alphas[5];
 
 int FLAG = FLAG_ELECTRONS;

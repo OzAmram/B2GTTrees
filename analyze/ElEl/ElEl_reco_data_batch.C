@@ -10,7 +10,7 @@
 
 const double root2 = sqrt(2);
 const char* filename("SingleElectron_files_aug29.txt");
-const TString fout_name("output_files/SingleElectron_data_sep22.root");
+const TString fout_name("output_files/SingleElectron_data_jan22.root");
 
 const bool data_2016 = true;
 
@@ -32,7 +32,7 @@ void ElEl_reco_data_batch()
     tout->SetDirectory(0);
     Double_t cm_m, xF, cost_r, el1_pt, el2_pt, el1_eta, el2_eta, jet1_pt, jet2_pt,
              jet1_cmva, jet1_eta, jet2_cmva, jet2_eta;
-    Int_t nJets, pu_NTrueInt;
+    Int_t nJets, pu_NtrueInt;
     Float_t met_pt;
     TLorentzVector el_p, el_m, cm, q1, q2;
     tout->Branch("m", &cm_m, "m/D");
@@ -52,7 +52,7 @@ void ElEl_reco_data_batch()
     tout->Branch("jet2_CMVA", &jet2_cmva, "jet2_CMVA/D");
     tout->Branch("met_pt", &met_pt, "met_Pt/F");
     tout->Branch("nJets", &nJets, "nJets/I");
-    tout->Branch("pu_NTrueInt", &pu_NTrueInt);
+    tout->Branch("pu_NtrueInt", &pu_NtrueInt);
 
 
 

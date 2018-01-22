@@ -39,16 +39,15 @@ Float_t cost_bins[] = {-1.0, -.8, -.6, -.4, -.2, 0., 0.2, 0.4, 0.6, 0.8, 1.0};
 //int n_cost_bins = 14;
 //Float_t cost_bins[] = {-1.0, -.857, -.714, -.571, -.429, -0.286, -.143,  0., 0.143, .286, 0.429, 0.571, 0.714, 0.857, 1.0};
 int n_m_bins = 6;
-Float_t m_bins[] = {150,200,250,350,500,700,100000};
-//Double_t alphas[6] = {0.08, 0.06, 0.035, 0.032, 0.005, 0.01};
-Double_t alphas[6] = {0.0981, 0.0703, 0.0480, 0.0386, 0.0148, 0.0180};
-//Double_t alphas[6] = {0.11, 0.08, 0.06, 0.045, 0.025, 0.025};
+Float_t m_bins[] = {150,200,   250,    350,    500,    700, 100000};
+Double_t alphas[6] = {0.095, 0.08695, 0.0762, 0.112, 0.065, 0.0605};
+Double_t alpha_unc[6] = {0.015, 0.015, 0.015, 0.03,   0.02, 0.015};
 Double_t alpha;
 
 
-//int FLAG = FLAG_ELECTRONS;
-int FLAG = FLAG_MUONS;
-const TString fout_name("AFB_fit/fit_results/MuMu_fit_jan12_nominal.root");
+int FLAG = FLAG_ELECTRONS;
+//int FLAG = FLAG_MUONS;
+const TString fout_name("AFB_fit/fit_results/ElEl_fit_jan18_nominal.root");
 
 
 float m_low;
