@@ -16,8 +16,8 @@ const double root2 = sqrt(2);
 double Ebeam = 6500.;
 double Pbeam = sqrt(Ebeam*Ebeam - 0.938*0.938);
 
-char *filename("combined_back_files_aug29.txt");
-const TString fout_name("output_files/MuMu_combined_back_sep13.root");
+char *filename("WT_files_aug29.txt");
+const TString fout_name("output_files/MuMu_WT_jan22.root");
 const double alpha = 0.05;
 const bool PRINT=false;
 
