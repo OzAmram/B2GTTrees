@@ -31,12 +31,12 @@ int type = FLAG_ELECTRONS;
 
 void draw_cmp(){
     setTDRStyle();
-    TFile *f_data = TFile::Open("../analyze/output_files/SingleElectron_data_sep22.root");
+    TFile *f_data = TFile::Open("../analyze/output_files/SingleElectron_data_jan22.root");
     TTree *t_data = (TTree *)f_data->Get("T_data");
-    TFile *f_mc = TFile::Open("../analyze/output_files/ElEl_DY_nov25.root");
+    TFile *f_mc = TFile::Open("../analyze/output_files/ElEl_DY_jan22.root");
     TTree *t_mc = (TTree *)f_mc->Get("T_data");
     TTree *t_mc_nosig = (TTree *)f_mc->Get("T_back");
-    TFile *f_ttbar = TFile::Open("../analyze/output_files/ElEl_TTbar_sep25.root");
+    TFile *f_ttbar = TFile::Open("../analyze/output_files/ElEl_TTbar_jan22.root");
     TTree *t_ttbar = (TTree *)f_ttbar->Get("T_data");
 
     TFile *f_QCD = TFile::Open("../analyze/output_files/ElEl_QCD_est_nov2.root");
@@ -51,10 +51,10 @@ void draw_cmp(){
     TFile *f_QCD_mc = TFile::Open("../analyze/FakeRate/root_files/ElEl_fakerate_QCD_MC_dec4.root");
     TTree *t_QCD_mc = (TTree *)f_QCD_mc->Get("T_data");
 
-    TFile *f_diboson = TFile::Open("../analyze/output_files/ElEl_diboson_sep25.root");
+    TFile *f_diboson = TFile::Open("../analyze/output_files/ElEl_diboson_jan22.root");
     TTree *t_diboson = (TTree *)f_diboson->Get("T_data");
 
-    TFile *f_wt = TFile::Open("../analyze/output_files/ElEl_WT_sep25.root");
+    TFile *f_wt = TFile::Open("../analyze/output_files/ElEl_WT_jan22.root");
     TTree *t_wt = (TTree *)f_wt->Get("T_data");
     TH1F *data_m = new TH1F("data_m", "Data Dimuon Mass Distribution", 30, 150, 2000);
 

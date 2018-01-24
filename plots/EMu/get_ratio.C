@@ -27,20 +27,23 @@
 
 
 void get_ratio(){
-    int type = FLAG_ELECTRONS;
     /*
+    int type = FLAG_MUONS;
     TFile *f_data = TFile::Open("../analyze/output_files/EMu_SingleMuon_data_nov3.root");
     TTree *t_data = (TTree *)f_data->Get("T_data");
 
-    TFile *f_mc = TFile::Open("../analyze/output_files/EMu_background_mu_nov3.root");
+    TFile *f_mc = TFile::Open("../analyze/output_files/EMu_combined_back_Mu_jan22.root");
     TTree *t_mc = (TTree *)f_mc->Get("T_data");
     */
                                 
+    /*
+    int type = FLAG_ELECTRONS;
     TFile *f_data = TFile::Open("../analyze/output_files/EMu_SingleElectron_data_nov3.root");
     TTree *t_data = (TTree *)f_data->Get("T_data");
 
-    TFile *f_mc = TFile::Open("../analyze/output_files/EMu_background_El_nov3.root");
+    TFile *f_mc = TFile::Open("../analyze/output_files/EMu_combined_back_El_jan22.root");
     TTree *t_mc = (TTree *)f_mc->Get("T_data");
+    */
 
      
     TH1F *data_m = new TH1F("data_m", "WJets", 30, 150, 2000);
