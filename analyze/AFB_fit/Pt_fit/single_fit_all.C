@@ -23,7 +23,7 @@
 //#include"Minuit2/Minuit2Minimizer.h"
 #include "Math/Functor.h"
 //#include "../TemplateMaker_systematics.C"
-#include "../TemplateMaker.C"
+#include "../../TemplateMaker.C"
 
 
 
@@ -39,19 +39,27 @@ Float_t cost_bins[] = {-1.0, -.8, -.6, -.4, -.2, 0., 0.2, 0.4, 0.6, 0.8, 1.0};
 //int n_cost_bins = 14;
 //Float_t cost_bins[] = {-1.0, -.857, -.714, -.571, -.429, -0.286, -.143,  0., 0.143, .286, 0.429, 0.571, 0.714, 0.857, 1.0};
 int n_m_bins = 6;
+int n_pt_bins = 6;
 Float_t m_bins[] = {150,200,   250,    350,    500,    700, 100000};
-Double_t alphas[6] = {0.095, 0.08695, 0.0762, 0.112, 0.065, 0.0605};
+Double_t m_alphas[6] = {0.095, 0.08695, 0.0762, 0.112, 0.065, 0.0605};
 Double_t alpha_unc[6] = {0.015, 0.015, 0.015, 0.03,   0.02, 0.015};
+Float_t pt_bins[] =        {0.,25.,  50., 80.,   120.,   200., 10000.};
+Double_t pt_alphas[6] =    {0.007, 0.136, 0.337, 0.546, 0.776, 0.945};
+Double_t pt_alpha_unc[6] = {0.006, 0.015, 0.035, 0.05, 0.08, .15};
 Double_t alpha;
 
 
-//int FLAG = FLAG_ELECTRONS;
-int FLAG = FLAG_MUONS;
-const TString fout_name("AFB_fit/fit_results/MuMu_fit_jan24_nominal.root");
+//int FLAG1 = FLAG_ELECTRONS;
+int FLAG1 = FLAG_MUONS;
+const TString fout_name("AFB_fit/fit_results/MuMu_pt_fit_jan24_nominal.root");
+
+int FLAG2 = FLAG_PT_BINS;
+int n_bins = n_pt_bins;
+//int FLAG2 = FLAG_M_BINS;
 
 
-float m_low;
-float m_high;
+float var_low;
+float var_high;
 //alpha = 0.0981;
 
 bool print = true;
@@ -131,7 +139,7 @@ void fcn(int& npar, double* deriv, double& f, double par[], int flag){
 }
 
 void init(){
-    if(FLAG == FLAG_ELECTRONS){
+    if(FLAG1 == FLAG_ELECTRONS){
          f_mc = (TFile*) TFile::Open("output_files/ElEl_DY_jan22.root");
          t_mc = (TTree *) f_mc ->Get("T_data");
          t_nosig = (TTree *) f_mc ->Get("T_back");
@@ -206,13 +214,13 @@ void setup(){
     h_data->SetDirectory(0);
     printf("Generating templates \n");
 
-    gen_mc_template(t_mc, alpha, h_sym, h_asym, h_sym_count, m_low, m_high, FLAG);
+    gen_mc_template(t_mc, alpha, h_sym, h_asym, h_sym_count, var_low, var_high, FLAG1, FLAG2);
     TTree *ts[2] = {t_back, t_nosig};
 
-    gen_fakes_template(t_WJets, t_QCD, t_WJets_contam, t_QCD_contam, h_back, m_low, m_high, FLAG);
-    gen_combined_background_template(2, ts, h_back, m_low, m_high, FLAG);
+    gen_fakes_template(t_WJets, t_QCD, t_WJets_contam, t_QCD_contam, h_back, var_low, var_high, FLAG1, FLAG2);
+    gen_combined_background_template(2, ts, h_back, var_low, var_high, FLAG1, FLAG2);
 
-    nDataEvents = gen_data_template(t_data, h_data, &v_xF, &v_cost, m_low, m_high, FLAG);
+    nDataEvents = gen_data_template(t_data, h_data, &v_xF, &v_cost, var_low, var_high, FLAG1, FLAG2);
     //f_data->Close();
     //f_back->Close();
     //f_mc->Close();
@@ -233,26 +241,33 @@ void cleanup(){
 }
 void single_fit_all(){
     init();
-    Double_t AFB_fit[n_m_bins], AFB_fit_err[n_m_bins], r_back_fit[n_m_bins], r_back_fit_err[n_m_bins];
-    unsigned int nEvents[n_m_bins];
+    Double_t AFB_fit[n_bins], AFB_fit_err[n_bins], r_back_fit[n_bins], r_back_fit_err[n_bins];
+    unsigned int nEvents[n_bins];
     TTree *tout= new TTree("T_fit_res", "Tree with Fit Results");
     tout->SetDirectory(0);
 
     Double_t AFB, AFB_err, r_back, r_back_err;
 
-    tout->Branch("m_low", &m_low);
-    tout->Branch("m_high", &m_high);
+    tout->Branch("var_low", &var_low);
+    tout->Branch("var_high", &var_high);
     tout->Branch("nEvents", &nDataEvents);
     tout->Branch("AFB", &AFB);
     tout->Branch("AFB_err", &AFB_err);
     tout->Branch("r_back", &r_back);
     tout->Branch("r_back_err", &r_back_err);
 
-    for(int i=0; i<n_m_bins; i++){
+    for(int i=0; i<n_bins; i++){
         printf("Starting loop \n");
-        m_low = m_bins[i];
-        m_high = m_bins[i+1];
-        alpha = alphas[i];
+        if (FLAG2 == FLAG_M_BINS){
+            var_low = m_bins[i];
+            var_high = m_bins[i+1];
+            alpha = m_alphas[i];
+        }
+        else if (FLAG2 == FLAG_PT_BINS){
+            var_low = pt_bins[i];
+            var_high = pt_bins[i+1];
+            alpha = pt_alphas[i];
+        }
 
         setup();
 
@@ -262,11 +277,11 @@ void single_fit_all(){
 
 
 
-        float AFB_start = 0.6;
+        float AFB_start = 0.5;
         float AFB_start_error = 0.1;
         float AFB_max = 0.75;
-        float r_back_start = 0.12;
-        float r_back_start_error = 0.04;
+        float r_back_start = 0.2;
+        float r_back_start_error = 0.1;
         float r_back_max = 0.6;
 
         TVirtualFitter * minuit = TVirtualFitter::Fitter(0,2);
@@ -304,9 +319,15 @@ void single_fit_all(){
     TFile *fout = TFile::Open(fout_name, "RECREATE");
     fout->cd();
     tout->Write();
-    for(int i=0; i<n_m_bins; i++){
-        printf("\n Fit on M=[%.0f, %.0f], %i Events: AFB = %0.3f +/- %0.3f r_back = %0.3f +/- %0.3f \n", 
-                    m_bins[i], m_bins[i+1], nEvents[i], AFB_fit[i], AFB_fit_err[i], r_back_fit[i], r_back_fit_err[i]);
+    for(int i=0; i<n_bins; i++){
+        if (FLAG2 == FLAG_M_BINS){
+            printf("\n Fit on M=[%.0f, %.0f], %i Events: AFB = %0.3f +/- %0.3f r_back = %0.3f +/- %0.3f \n", 
+                        m_bins[i], m_bins[i+1], nEvents[i], AFB_fit[i], AFB_fit_err[i], r_back_fit[i], r_back_fit_err[i]);
+        }
+        if (FLAG2 == FLAG_PT_BINS){
+            printf("\n Fit on pt=[%.0f, %.0f], %i Events: AFB = %0.3f +/- %0.3f r_back = %0.3f +/- %0.3f \n", 
+                        pt_bins[i], pt_bins[i+1], nEvents[i], AFB_fit[i], AFB_fit_err[i], r_back_fit[i], r_back_fit_err[i]);
+        }
 
     }
     printf("fit results written to %s \n", fout_name.Data());

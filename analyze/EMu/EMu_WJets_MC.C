@@ -1,4 +1,6 @@
 
+
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
@@ -20,8 +22,8 @@ const double root2 = sqrt(2);
 double Ebeam = 6500.;
 double Pbeam = sqrt(Ebeam*Ebeam - 0.938*0.938);
 
-char *filename("combined_back_files_aug29.txt");
-const TString fout_name("output_files/EMu_background_combined_back_Mu_jan22.root");
+char *filename("non_QCD_files_aug29.txt");
+const TString fout_name("output_files/EMu_WJets_MC_jan24.root");
 const bool PRINT=false;
 
 
@@ -89,7 +91,7 @@ void compute_norms(Double_t *norms, unsigned int *nFiles){
 
 
 
-void EMu_background_check_Mu()
+void EMu_WJets_MC()
 {
 
     Double_t norms[MAX_SAMPLES]; // computed normalizations to apply to each event in a sample (based on xsection and total weight)
@@ -120,10 +122,13 @@ void EMu_background_check_Mu()
     Float_t met_pt;
     Int_t nJets, jet1_flavour, jet2_flavour;
     TLorentzVector mu, el, cm, q1, q2;
+    Int_t iso_lep;
+    //iso_lep: 0 = muon, 1 = electron
     tout->Branch("mu1_pt", &mu1_pt, "mu1_pt/D");
     tout->Branch("mu1_eta", &mu1_eta, "mu1_eta/D");
     tout->Branch("el1_pt", &el1_pt, "el1_pt/D");
     tout->Branch("el1_eta", &el1_eta, "el1_eta/D");
+    tout->Branch("iso_lep", &iso_lep);
     tout->Branch("el", "TLorentzVector", &el);
     tout->Branch("mu", "TLorentzVector", &mu);
     tout->Branch("jet1_pt", &jet1_pt, "jet1_pt/D");
@@ -208,7 +213,7 @@ void EMu_background_check_Mu()
             Float_t el_Pt[MU_SIZE], el_Eta[MU_SIZE], el_Phi[MU_SIZE], el_E[MU_SIZE],
                     el_Charge[MU_SIZE];
 
-            Int_t el_IDMedium[EL_SIZE];
+            Int_t el_IDMedium[EL_SIZE], el_IDMedium_NoIso[EL_SIZE];
 
             Float_t jet_Pt[JET_SIZE], jet_Eta[JET_SIZE], jet_Phi[JET_SIZE], jet_E[JET_SIZE],
                     jet_CSV[JET_SIZE], jet_CMVA[JET_SIZE], jet_partonflavour[JET_SIZE];
@@ -269,18 +274,20 @@ void EMu_background_check_Mu()
                 t1->GetEntry(i);
                 if(mu_size > MU_SIZE) printf("WARNING: MU_SIZE TOO LARGE \n");
                 if(met_size != 1) printf("WARNING: Met size not equal to 1\n");
-                bool good_trigger = HLT_IsoMu || HLT_IsoTkMu;
-                if(good_trigger &&
-                        mu_size >= 1 && el_size >=1 && 
+                bool good_trigger = HLT_El;
+                if( mu_size >= 1 && el_size >=1 && 
                         ((abs(mu_Charge[0] - el_Charge[0])) > 0.01) &&
-                        mu_IsTightMuon[0] && el_IDMedium[0] && 
-                        el_Pt[0] > 10. && mu_Pt[0] > 26. &&
+                        mu_IsTightMuon[0] && el_IDMedium_NoIso[0] && 
+                        el_Pt[0] > 10. && mu_Pt[0] > 10. &&
+                        (el_Pt[0] >= 29. || mu_Pt[0] >= 26.) &&
                         abs(mu_Eta[0]) < 2.4 && abs(el_Eta[0]) < 2.5){ 
 
                     //See https://twiki.cern.ch/twiki/bin/viewauth/CMS/SWGuideMuonIdRun2 for iso cuts
                     float iso_0 = (mu_SumChargedHadronPt[0] + max(0., mu_SumNeutralHadronPt[0] + mu_SumPhotonPt[0] - 0.5 * mu_SumPUPt[0]))/mu_Pt[0];
                     const float tight_iso = 0.15;
                     const float loose_iso = 0.25;
+                    bool mu_iso = iso_0 < tight_iso;
+                    bool one_iso = (mu_iso ^ el_IDMedium[0]);
 
                     mu.SetPtEtaPhiE(mu_Pt[0], mu_Eta[0], mu_Phi[0], mu_E[0]);
                     el.SetPtEtaPhiE(el_Pt[0], el_Eta[0], el_Phi[0], el_E[0]);
@@ -309,7 +316,10 @@ void EMu_background_check_Mu()
                     }
                     bool no_bjets = has_no_bjets(nJets, jet1_pt, jet2_pt, jet1_cmva, jet2_cmva);
 
-                    if (no_bjets && (met_pt < 50) && (cm_m >=150.) && iso_0 < tight_iso){
+
+                    if (no_bjets && (met_pt < 50) && (cm_m >=150.) && one_iso){
+                        if(mu_iso) iso_lep = 0;
+                        else iso_lep = 1;
                         if(PRINT) sprintf(out_buff + strlen(out_buff),"Event %i \n", i);
 
                         nJets =0;

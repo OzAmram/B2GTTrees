@@ -20,8 +20,8 @@ const double root2 = sqrt(2);
 double Ebeam = 6500.;
 double Pbeam = sqrt(Ebeam*Ebeam - 0.938*0.938);
 
-char *filename("WJets_files_aug29.txt");
-const TString fout_name("output_files/EMu_background_WJets_El_nov8.root");
+char *filename("combined_back_files_aug29.txt");
+const TString fout_name("output_files/EMu_combined_back_El_jan22.root");
 const bool PRINT=false;
 
 
@@ -116,6 +116,7 @@ void EMu_background_check_El()
     Double_t bcdef_HLT_SF, bcdef_iso_SF, bcdef_id_SF, gh_HLT_SF, gh_iso_SF, gh_id_SF,
              el_id_SF, el_reco_SF, btag_weight, jet1_b_weight, jet2_b_weight, pu_SF, el_HLT_SF;
     Float_t met_pt;
+    Double_t bcdef_trk_SF, gh_trk_SF;
     Int_t nJets, jet1_flavour, jet2_flavour;
     Bool_t mu_trigger;
     TLorentzVector mu, el, cm, q1, q2;
@@ -144,6 +145,8 @@ void EMu_background_check_El()
     tout->Branch("gh_iso_SF", &gh_iso_SF);
     tout->Branch("gh_id_SF", &gh_id_SF);
     tout->Branch("el_id_SF", &el_id_SF);
+    tout->Branch("gh_trk_SF", &gh_trk_SF);
+    tout->Branch("bcdef_trk_SF", &bcdef_trk_SF);
     tout->Branch("el_reco_SF", &el_reco_SF);
     tout->Branch("el_HLT_SF", &el_HLT_SF);
     tout->Branch("jet1_b_weight", &jet1_b_weight);
@@ -351,8 +354,11 @@ void EMu_background_check_El()
                         gh_id_SF = get_SF(mu1_pt, mu1_eta, runs_gh.ID_SF);
 
                         el_id_SF = get_el_SF(el1_pt, el1_eta, el_SF.ID_SF);
-                        el_HLT_SF = get_HLT_SF_1mu(el1_pt, el1_eta, el_SF.HLT_SF);
+                        el_HLT_SF = get_HLT_SF_1el(el1_pt, el1_eta, el_SF.HLT_SF);
                         el_reco_SF = get_el_SF(el1_pt, el1_eta, el_SF.RECO_SF);
+
+                        bcdef_trk_SF = get_Mu_trk_SF(abs(mu1_eta), runs_bcdef.TRK_SF);
+                        gh_trk_SF = get_Mu_trk_SF(abs(mu1_eta), runs_gh.TRK_SF);
 
                         pu_SF = get_pileup_SF(pu_NtrueInt, pu_SFs.pileup_ratio);
 

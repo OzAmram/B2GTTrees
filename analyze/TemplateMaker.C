@@ -665,7 +665,10 @@ void gen_fakes_template(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_contam,
         }
     }
     printf("Total Fakerate weight Weight is %.2f \n", h->Integral());
-    if(h->Integral() < 0.) h->Scale(0.);
+    if(h->Integral() < 0.){
+        h->Scale(0.);
+        printf("zeroing Fakes template \n");
+    }
     return;
 }
 

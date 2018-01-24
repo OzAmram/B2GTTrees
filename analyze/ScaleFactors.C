@@ -122,6 +122,29 @@ Double_t get_HLT_SF_1mu(Double_t mu1_pt, Double_t mu1_eta, TH2D *h_SF){
     return result;
 }
 
+Double_t get_HLT_SF_1el(Double_t el1_pt, Double_t el1_eta, TH2D *h_SF){
+    //get HLT SF for event with just 1 elon
+    //stay in range of histogram
+    if (el1_pt >= 350.) el1_pt = 350.;
+    el1_eta = abs(el1_eta);
+    TAxis *x_ax_SF =  h_SF->GetXaxis();
+    TAxis *y_ax_SF =  h_SF->GetYaxis();
+    int xbin1_SF = x_ax_SF->FindBin(el1_eta);
+    int ybin1_SF = y_ax_SF->FindBin(el1_pt);
+
+
+    Double_t SF1 = h_SF->GetBinContent(xbin1_SF, ybin1_SF);
+
+    Double_t result = SF1;
+    if(result < 0.01) printf("0 HLT SF for Pt %.1f, Eta %1.2f \n", el1_pt, el1_eta);
+    if(TMath::IsNaN(result)){ 
+        printf("Nan HLT SF for Pt %.1f, Eta %1.2f \n", el1_pt, el1_eta);
+        result = 1;
+    }
+    //printf("Result, SF1 = (%0.3f, %0.3f) \n", result, SF1);
+    return result;
+}
+
 Double_t get_HLT_SF(Double_t mu1_pt, Double_t mu1_eta, Double_t mu2_pt, Double_t mu2_eta, TH2D *h_SF, TH2D *h_MC_EFF){
     //Get HLT SF for event with 2 Muons
     //stay in range of histogram
