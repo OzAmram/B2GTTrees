@@ -47,7 +47,7 @@ Double_t alpha;
 
 //int FLAG = FLAG_ELECTRONS;
 int FLAG = FLAG_MUONS;
-const TString fout_name("AFB_fit/fit_results/MuMu_fit_jan24_nominal.root");
+const TString fout_name("AFB_fit/fit_results/MuMu_fit_jan25_test.root");
 
 
 float m_low;

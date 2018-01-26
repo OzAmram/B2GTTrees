@@ -48,7 +48,7 @@ Double_t pt_alphas[6] =    {0.007, 0.136, 0.337, 0.546, 0.776, 0.945};
 Double_t pt_alpha_unc[6] = {0.006, 0.015, 0.035, 0.05, 0.08, .15};
 Double_t alpha;
 
-const TString fout_name("AFB_fit/fit_results/combined_pt_fit_jan18_test.root");
+const TString fout_name("AFB_fit/fit_results/combined_pt_fit_jan24_nominal.root");
 
 
 int FLAG2 = FLAG_PT_BINS;
@@ -240,7 +240,7 @@ void setup(){
     TTree *elel_ts[2] = {t_elel_back, t_elel_nosig};
 
     gen_fakes_template(t_elel_WJets, t_elel_QCD, t_elel_WJets_contam, t_elel_QCD_contam, h_elel_back, var_low, var_high, FLAG_ELECTRONS,FLAG2);
-    gen_combined_background_template(2, elel_ts, h_elel_back, var_low, var_high, FLAG_ELECTRONS);
+    gen_combined_background_template(2, elel_ts, h_elel_back, var_low, var_high, FLAG_ELECTRONS, FLAG2);
 
     nElEl_DataEvents = gen_data_template(t_elel_data, h_elel_data,  &v_elel_xF, &v_elel_cost, var_low, var_high, FLAG_ELECTRONS,FLAG2);
 

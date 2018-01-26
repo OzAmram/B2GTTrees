@@ -37,6 +37,11 @@ typedef struct {
     TH1D *pileup_ratio;
 } pileup_SFs;
 
+typedef struct {
+    TH1D *pileup_up;
+    TH1D *pileup_down;
+} pileup_systematics;
+
 typedef struct{
     TH2D *ID_SF;
     TH2D *RECO_SF;
@@ -55,9 +60,19 @@ Double_t get_pileup_SF(Int_t n_int, TH1D *h){
     return result;
 }
 
-Double_t get_Mu_trk_SF(Double_t eta, TGraphAsymmErrors *h){
+Double_t get_Mu_trk_SF(Double_t eta, TGraphAsymmErrors *h, int systematic = 0){
     eta = abs(eta);
     Double_t result = h->Eval(eta);
+    
+    if(systematic !=0){
+        TAxis* x_ax =  h->GetXaxis();
+        int xbin = x_ax->FindBin(eta);
+        Double_t err =0;
+        if(systematic ==1) err = h->GetErrorYhigh(xbin);
+        if(systematic == -1) err = h->GetErrorYhigh(xbin);
+        err = sqrt(err*err + 0.01*0.01);
+        result += err*systematic;
+    }
 
     //if(result < 0.0001) printf("0 pileup SF for %i vertices\n", n_int);
     return result;
@@ -81,7 +96,7 @@ void get_pdf_avg_std_dev(Float_t pdf_Weights[100], Float_t *pdf_avg, Float_t *pd
 
 
 
-Double_t get_SF(Double_t pt, Double_t eta, TH2D *h){
+Double_t get_SF(Double_t pt, Double_t eta, TH2D *h, int systematic = 0){
     //stay in range of histogram
     if (pt >= 100) pt = 100.;
     if (pt <= 20) pt = 20.;
@@ -92,6 +107,12 @@ Double_t get_SF(Double_t pt, Double_t eta, TH2D *h){
     int ybin = y_ax->FindBin(std::abs(eta));
 
     Double_t result = h->GetBinContent(xbin, ybin);
+    if(systematic != 0){
+        Double_t err = h->GetBinError(xbin, ybin);
+        err = sqrt(err*err + 0.01*0.01);
+        //printf("SF is %.3f +/- %.3f \n", result, err);
+        result += (systematic * err);
+    }
     if(result < 0.001){ 
         printf("0 muon id SF for Pt %.1f, Eta %1.2f \n", pt, eta);
         result = 1;
@@ -145,7 +166,7 @@ Double_t get_HLT_SF_1el(Double_t el1_pt, Double_t el1_eta, TH2D *h_SF){
     return result;
 }
 
-Double_t get_HLT_SF(Double_t mu1_pt, Double_t mu1_eta, Double_t mu2_pt, Double_t mu2_eta, TH2D *h_SF, TH2D *h_MC_EFF){
+Double_t get_HLT_SF(Double_t mu1_pt, Double_t mu1_eta, Double_t mu2_pt, Double_t mu2_eta, TH2D *h_SF, TH2D *h_MC_EFF, int systematic = 0){
     //Get HLT SF for event with 2 Muons
     //stay in range of histogram
     if (mu1_pt >= 350.) mu1_pt = 350.;
@@ -162,6 +183,16 @@ Double_t get_HLT_SF(Double_t mu1_pt, Double_t mu1_eta, Double_t mu2_pt, Double_t
 
     Double_t SF1 = h_SF->GetBinContent(xbin1_SF, ybin1_SF);
     Double_t SF2 = h_SF->GetBinContent(xbin2_SF, ybin2_SF);
+    if(systematic != 0){
+        Double_t SF1_err = h_SF->GetBinError(xbin1_SF, ybin1_SF);
+        Double_t SF2_err = h_SF->GetBinError(xbin2_SF, ybin2_SF);
+        SF1_err = sqrt(SF1_err*SF1_err + 0.005*0.005);
+        SF2_err = sqrt(SF1_err*SF1_err + 0.005*0.005);
+        //printf("SF is %.3f +/- %.3f \n", SF1, SF1_err);
+        //printf("SF is %.3f +/- %.3f \n", SF2, SF2_err);
+        SF1 += SF1_err * systematic;
+        SF2 += SF2_err * systematic;
+    }
 
 
     TAxis *x_ax_MC_EFF =  h_MC_EFF->GetXaxis();
@@ -185,7 +216,8 @@ Double_t get_HLT_SF(Double_t mu1_pt, Double_t mu1_eta, Double_t mu2_pt, Double_t
     return result;
 }
 
-Double_t get_el_HLT_SF(Double_t el1_pt, Double_t el1_eta, Double_t el2_pt, Double_t el2_eta, TH2D *h_SF, TH2D *h_MC_EFF){
+Double_t get_el_HLT_SF(Double_t el1_pt, Double_t el1_eta, Double_t el2_pt, Double_t el2_eta, 
+        TH2D *h_SF, TH2D *h_MC_EFF, int systematic = 0){
     //Get HLT SF for event with 2 elons
     //stay in range of histogram
     if (el1_pt >= 350.) el1_pt = 350.;
@@ -200,6 +232,15 @@ Double_t get_el_HLT_SF(Double_t el1_pt, Double_t el1_eta, Double_t el2_pt, Doubl
 
     Double_t SF1 = h_SF->GetBinContent(xbin1_SF, ybin1_SF);
     Double_t SF2 = h_SF->GetBinContent(xbin2_SF, ybin2_SF);
+
+    if(systematic != 0){
+        Double_t SF1_err = h_SF->GetBinError(xbin1_SF, ybin1_SF);
+        Double_t SF2_err = h_SF->GetBinError(xbin2_SF, ybin2_SF);
+        SF1_err = sqrt(SF1_err*SF1_err + 0.005*0.005);
+        SF2_err = sqrt(SF1_err*SF1_err + 0.005*0.005);
+        SF1 += SF1_err * systematic;
+        SF2 += SF2_err * systematic;
+    }
 
 
     TAxis *x_ax_MC_EFF =  h_MC_EFF->GetXaxis();
@@ -224,7 +265,7 @@ Double_t get_el_HLT_SF(Double_t el1_pt, Double_t el1_eta, Double_t el2_pt, Doubl
 }
 
 
-Double_t get_el_SF(Double_t pt, Double_t eta, TH2D *h){
+Double_t get_el_SF(Double_t pt, Double_t eta, TH2D *h, int systematic = 0){
     if( pt <= 25.) pt = 25;
     if (pt >= 150.) pt = 149.;
     TAxis* x_ax =  h->GetXaxis();
@@ -232,8 +273,14 @@ Double_t get_el_SF(Double_t pt, Double_t eta, TH2D *h){
     TAxis *y_ax =  h->GetYaxis();
     int xbin = x_ax->FindBin(eta);
     int ybin = y_ax->FindBin(pt);
-
     Double_t result = h->GetBinContent(xbin, ybin);
+    if(systematic != 0){
+        Double_t err = h->GetBinError(xbin, ybin);
+        err =abs(err);
+        //Systematics already included for ELectrons
+        result += (systematic * err);
+    }
+
     if(result < 0.01){
         printf("0 el SF for Pt %.1f, Eta %1.2f \n", pt, eta);
         result = 1;
@@ -481,6 +528,36 @@ void setup_el_SF(el_SFs *sf){
     TH2D *h_hltmc = (TH2D *) subdir9->Get("EGamma_EffMC2D")->Clone();
     h_hltmc->SetDirectory(0);
     sf->HLT_MC_EFF = h_hltmc;
+    f9->Close();
     
+}
+
+void setup_pileup_systematic(pileup_systematics *pu_sys){
+
+    TFile *f7 = TFile::Open("SFs/DataPileupHistogram_69200.root");
+    TH1D * pileup_data_nom = (TH1D *) f7->Get("pileup")->Clone();
+    //pileup_data_nom->Scale(1./pileup_data_nom->Integral());
+    pileup_data_nom->SetDirectory(0);
+
+    TFile *f8 = TFile::Open("SFs/DataPileupHistogram_66017.root");
+    TH1D * pileup_data_up = (TH1D *) f8->Get("pileup")->Clone();
+    //pileup_data_up->Scale(1./pileup_data_up->Integral());
+    pileup_data_up->SetDirectory(0);
+
+    TFile *f9 = TFile::Open("SFs/DataPileupHistogram_72383.root");
+    TH1D * pileup_data_down = (TH1D *) f9->Get("pileup")->Clone();
+    //pileup_data_down->Scale(1./pileup_data_down->Integral());
+    pileup_data_down->SetDirectory(0);
+
+    //Printf(" Ints are %.4e %.4e %.4e \n", pileup_data_nom->Integral(), pileup_data_up->Integral(), pileup_data_down->Integral());
+    pu_sys->pileup_up = (TH1D *) pileup_data_nom->Clone();
+    pu_sys->pileup_down = (TH1D *) pileup_data_nom->Clone();
+    pu_sys->pileup_up->Divide(pileup_data_up, pileup_data_nom);
+    pu_sys->pileup_down->Divide(pileup_data_down, pileup_data_nom);
+    pu_sys->pileup_up->SetDirectory(0);
+    pu_sys->pileup_down->SetDirectory(0);
+    f7->Close();
+    f8->Close();
+    f9->Close();
 }
 

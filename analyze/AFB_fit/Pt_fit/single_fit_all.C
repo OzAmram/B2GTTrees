@@ -49,9 +49,9 @@ Double_t pt_alpha_unc[6] = {0.006, 0.015, 0.035, 0.05, 0.08, .15};
 Double_t alpha;
 
 
-//int FLAG1 = FLAG_ELECTRONS;
-int FLAG1 = FLAG_MUONS;
-const TString fout_name("AFB_fit/fit_results/MuMu_pt_fit_jan24_nominal.root");
+int FLAG1 = FLAG_ELECTRONS;
+//int FLAG1 = FLAG_MUONS;
+const TString fout_name("AFB_fit/fit_results/ElEl_pt_fit_jan24_nominal.root");
 
 int FLAG2 = FLAG_PT_BINS;
 int n_bins = n_pt_bins;
