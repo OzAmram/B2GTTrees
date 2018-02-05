@@ -40,11 +40,11 @@ Float_t cost_bins[] = {-1.0, -.8, -.6, -.4, -.2, 0., 0.2, 0.4, 0.6, 0.8, 1.0};
 //Float_t cost_bins[] = {-1.0, -.857, -.714, -.571, -.429, -0.286, -.143,  0., 0.143, .286, 0.429, 0.571, 0.714, 0.857, 1.0};
 int n_m_bins = 6;
 Float_t m_bins[] = {150,200,   250,    350,    500,    700, 100000};
-Double_t alphas[6] = {0.095, 0.08695, 0.0762, 0.112, 0.065, 0.0605};
-Double_t alpha_unc[6] = {0.015, 0.015, 0.015, 0.03,   0.02, 0.015};
+Double_t alphas[6] = {0.109, 0.078, 0.0762, 0.112, 0.065, 0.06};
+Double_t alpha_unc[6] = {0.015, 0.015, 0.02, 0.03,   0.02, 0.02};
 Double_t alpha;
 
-const TString fout_name("AFB_fit/fit_results/combined_fit_jan24_nominal.root");
+const TString fout_name("AFB_fit/fit_results/m_bins/combined_fit_jan31_nominal.root");
 
 //int n_xf_bins = 4;
 //float xf_max = 1.0;
@@ -73,10 +73,10 @@ TH2F *h_mumu_mc_count, *h_mumu_sym_count;
 TAxis *x_ax, *y_ax, *z_ax;
 
 //MC templates
-TFile* f_elel_mc = (TFile*) TFile::Open("output_files/ElEl_DY_jan22.root");
+TFile* f_elel_mc = (TFile*) TFile::Open("output_files/ElEl_DY_jan30.root");
 TTree *t_elel_mc = (TTree *) f_elel_mc ->Get("T_data");
 TTree *t_elel_nosig = (TTree *) f_elel_mc ->Get("T_back");
-TFile* f_elel_back = (TFile*) TFile::Open("output_files/ElEl_combined_back_jan22.root");
+TFile* f_elel_back = (TFile*) TFile::Open("output_files/ElEl_combined_back_jan30.root");
 TTree *t_elel_back = (TTree *) f_elel_back ->Get("T_data");
 
 TFile *f_elel_data = TFile::Open("output_files/SingleElectron_data_jan22.root");
@@ -292,8 +292,8 @@ void combined_fit_all(){
 
     Double_t AFB, AFB_err, r_elel_back, r_elel_back_err, r_mumu_back, r_mumu_back_err;
 
-    tout->Branch("m_low", &m_low);
-    tout->Branch("m_high", &m_high);
+    tout->Branch("var_low", &m_low);
+    tout->Branch("var_high", &m_high);
     tout->Branch("nElElEvents", &nElEl_DataEvents);
     tout->Branch("nMuMuEvents", &nMuMu_DataEvents);
     tout->Branch("AFB", &AFB);

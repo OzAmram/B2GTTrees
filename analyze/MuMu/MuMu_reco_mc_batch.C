@@ -17,7 +17,7 @@ double Ebeam = 6500.;
 double Pbeam = sqrt(Ebeam*Ebeam - 0.938*0.938);
 
 char *filename("DY_files_dec7.txt");
-const TString fout_name("output_files/MuMu_DY_jan16.root");
+const TString fout_name("output_files/MuMu_DY_jan31.root");
 const bool PRINT=false;
 
 const bool data_2016 = true;
@@ -121,6 +121,7 @@ void MuMu_reco_mc_batch()
     Bool_t is_tau_event;
     Float_t met_pt;
     TLorentzVector mu_p, mu_m, cm, gen_mu_p_vec, gen_mu_m_vec;
+    Float_t scale_Weights[10], pdf_weights[100];
 
     t_signal->Branch("m", &cm_m, "m/D");
     t_signal->Branch("xF", &xF, "xF/D");
@@ -162,6 +163,7 @@ void MuMu_reco_mc_batch()
     t_signal->Branch("mu_RF_down", &mu_RF_down);
     t_signal->Branch("pdf_up", &pdf_up);
     t_signal->Branch("pdf_down", &pdf_down);
+    t_signal->Branch("pdf_weights", &pdf_weights, "pdf_weights[100]/F");
     t_signal->Branch("nJets", &nJets, "nJets/I");
     t_signal->Branch("jet1_flavour", &jet1_flavour, "jet1_flavour/I");
     t_signal->Branch("jet2_flavour", &jet2_flavour, "jet2_flavour/I");
@@ -280,7 +282,6 @@ void MuMu_reco_mc_batch()
             Float_t jet_Pt[JET_SIZE], jet_Eta[JET_SIZE], jet_Phi[JET_SIZE], jet_E[JET_SIZE],
                     jet_CSV[JET_SIZE], jet_CMVA[JET_SIZE], jet_partonflavour[JET_SIZE];
 
-            Float_t scale_Weights[10], pdf_Weights[100];
 
             Float_t evt_Gen_Weight;
 
@@ -323,7 +324,7 @@ void MuMu_reco_mc_batch()
             t1->SetBranchAddress("pu_NtrueInt",&pu_NtrueInt);
 
             t1->SetBranchAddress("scale_Weights", &scale_Weights);
-            t1->SetBranchAddress("pdf_Weights", &pdf_Weights);
+            t1->SetBranchAddress("pdf_Weights", &pdf_weights);
 
 
             t1->SetBranchAddress("gen_Mom0ID", &gen_Mom0ID);
@@ -739,7 +740,7 @@ void MuMu_reco_mc_batch()
 
                         Float_t pdf_avg, pdf_std_dev;
 
-                        get_pdf_avg_std_dev(pdf_Weights, &pdf_avg, &pdf_std_dev);
+                        get_pdf_avg_std_dev(pdf_weights, &pdf_avg, &pdf_std_dev);
 
                         pdf_up = pdf_avg + pdf_std_dev;
                         pdf_down = pdf_avg - pdf_std_dev;

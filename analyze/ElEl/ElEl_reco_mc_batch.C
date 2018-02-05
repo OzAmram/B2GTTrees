@@ -17,7 +17,7 @@ double Ebeam = 6500.;
 double Pbeam = sqrt(Ebeam*Ebeam - 0.938*0.938);
 
 char *filename("DY_files_dec7.txt");
-const TString fout_name("output_files/ElEl_DY_jan22.root");
+const TString fout_name("output_files/ElEl_DY_jan31.root");
 const double alpha = 0.05;
 const bool PRINT=false;
 
@@ -120,6 +120,8 @@ void ElEl_reco_mc_batch()
     Float_t met_pt;
     TLorentzVector el_p, el_m, cm, q1, q2;
 
+    Float_t scale_Weights[10], pdf_weights[100];
+
     t_signal->Branch("m", &cm_m, "m/D");
     t_signal->Branch("xF", &xF, "xF/D");
     t_signal->Branch("cost", &cost_r, "cost/D");
@@ -150,6 +152,7 @@ void ElEl_reco_mc_batch()
     t_signal->Branch("mu_RF_down", &mu_RF_down);
     t_signal->Branch("pdf_up", &pdf_up);
     t_signal->Branch("pdf_down", &pdf_down);
+    t_signal->Branch("pdf_weights", &pdf_weights, "pdf_weights[100]/F");
     t_signal->Branch("el_id_SF", &el_id_SF);
     t_signal->Branch("el_reco_SF", &el_reco_SF);
     t_signal->Branch("el_HLT_SF", &el_HLT_SF);
@@ -266,7 +269,6 @@ void ElEl_reco_mc_batch()
 
             Float_t evt_Gen_Weight;
 
-            Float_t scale_Weights[10], pdf_Weights[100];
 
             Int_t HLT_El;
             t1->SetBranchAddress("el_size", &el_size); //number of els in the event
@@ -301,7 +303,7 @@ void ElEl_reco_mc_batch()
             t1->SetBranchAddress("pu_NtrueInt",&pu_NtrueInt);
 
             t1->SetBranchAddress("scale_Weights", &scale_Weights);
-            t1->SetBranchAddress("pdf_Weights", &pdf_Weights);
+            t1->SetBranchAddress("pdf_Weights", &pdf_weights);
 
 
             t1->SetBranchAddress("gen_Mom0ID", &gen_Mom0ID);
@@ -747,7 +749,7 @@ void ElEl_reco_mc_batch()
 
                         Float_t pdf_avg, pdf_std_dev;
 
-                        get_pdf_avg_std_dev(pdf_Weights, &pdf_avg, &pdf_std_dev);
+                        get_pdf_avg_std_dev(pdf_weights, &pdf_avg, &pdf_std_dev);
 
                         pdf_up = pdf_avg + pdf_std_dev;
                         pdf_down = pdf_avg - pdf_std_dev;

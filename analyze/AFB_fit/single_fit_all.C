@@ -22,8 +22,8 @@
 #include "TSystem.h"
 //#include"Minuit2/Minuit2Minimizer.h"
 #include "Math/Functor.h"
-//#include "../TemplateMaker_systematics.C"
-#include "../TemplateMaker.C"
+#include "../TemplateMaker_systematics.C"
+//#include "../TemplateMaker.C"
 
 
 
@@ -40,14 +40,16 @@ Float_t cost_bins[] = {-1.0, -.8, -.6, -.4, -.2, 0., 0.2, 0.4, 0.6, 0.8, 1.0};
 //Float_t cost_bins[] = {-1.0, -.857, -.714, -.571, -.429, -0.286, -.143,  0., 0.143, .286, 0.429, 0.571, 0.714, 0.857, 1.0};
 int n_m_bins = 6;
 Float_t m_bins[] = {150,200,   250,    350,    500,    700, 100000};
-Double_t alphas[6] = {0.095, 0.08695, 0.0762, 0.112, 0.065, 0.0605};
-Double_t alpha_unc[6] = {0.015, 0.015, 0.015, 0.03,   0.02, 0.015};
+Double_t alphas[6] = {0.109, 0.078, 0.0762, 0.112, 0.065, 0.06};
+Double_t alpha_unc[6] = {0.015, 0.015, 0.02, 0.03,   0.02, 0.02};
 Double_t alpha;
 
 
 //int FLAG = FLAG_ELECTRONS;
 int FLAG = FLAG_MUONS;
-const TString fout_name("AFB_fit/fit_results/MuMu_fit_jan25_test.root");
+bool do_both = true;
+const TString mumu_fout_name("AFB_fit/fit_results/m_bins/MuMu_fit_jan31_test.root");
+const TString elel_fout_name("AFB_fit/fit_results/m_bins/ElEl_fit_jan31_test.root");
 
 
 float m_low;
@@ -69,8 +71,11 @@ TAxis *x_ax, *y_ax, *z_ax;
 
 
 
-TFile *f_mc, *f_back, *f_data, *f_QCD, *f_WJets, *f_WJets_contam, *f_QCD_contam;
-TTree *t_mc, *t_back, *t_data, *t_QCD, *t_WJets, *t_WJets_contam, *t_QCD_contam, *t_nosig;
+TFile *f_elel_mc, *f_elel_back, *f_elel_data, *f_elel_QCD, *f_elel_WJets, *f_elel_WJets_contam, *f_elel_QCD_contam;
+TTree *t_elel_mc, *t_elel_back, *t_elel_data, *t_elel_QCD, *t_elel_WJets, *t_elel_WJets_contam, *t_elel_QCD_contam, *t_elel_nosig;
+
+TFile *f_mumu_mc, *f_mumu_back, *f_mumu_data, *f_mumu_QCD, *f_mumu_WJets, *f_mumu_WJets_contam, *f_mumu_QCD_contam;
+TTree *t_mumu_mc, *t_mumu_back, *t_mumu_data, *t_mumu_QCD, *t_mumu_WJets, *t_mumu_WJets_contam, *t_mumu_QCD_contam, *t_mumu_nosig;
 
 
 vector<double> v_xF;
@@ -132,48 +137,48 @@ void fcn(int& npar, double* deriv, double& f, double par[], int flag){
 
 void init(){
     if(FLAG == FLAG_ELECTRONS){
-         f_mc = (TFile*) TFile::Open("output_files/ElEl_DY_jan22.root");
-         t_mc = (TTree *) f_mc ->Get("T_data");
-         t_nosig = (TTree *) f_mc ->Get("T_back");
-         f_back = (TFile*) TFile::Open("output_files/ElEl_combined_back_jan22.root");
-         t_back = (TTree *) f_back ->Get("T_data");
+        f_elel_mc = (TFile*) TFile::Open("output_files/ElEl_DY_jan30.root");
+        t_elel_mc = (TTree *) f_elel_mc ->Get("T_data");
+        t_elel_nosig = (TTree *) f_elel_mc ->Get("T_back");
+        f_elel_back = (TFile*) TFile::Open("output_files/ElEl_combined_back_jan30.root");
+        t_elel_back = (TTree *) f_elel_back ->Get("T_data");
 
-         f_data = TFile::Open("output_files/SingleElectron_data_jan22.root");
-         t_data = (TTree *)f_data->Get("T_data"); 
+        f_elel_data = TFile::Open("output_files/SingleElectron_data_jan22.root");
+        t_elel_data = (TTree *)f_elel_data->Get("T_data"); 
 
-         f_QCD = TFile::Open("../analyze/output_files/ElEl_QCD_est_nov2.root");
-         t_QCD = (TTree *)f_QCD->Get("T_data");
+        f_elel_QCD = TFile::Open("../analyze/output_files/ElEl_QCD_est_nov2.root");
+        t_elel_QCD = (TTree *)f_elel_QCD->Get("T_data");
 
-         f_WJets = TFile::Open("../analyze/output_files/ElEl_WJets_est_nov2.root");
-         t_WJets = (TTree *)f_WJets->Get("T_data");
+        f_elel_WJets = TFile::Open("../analyze/output_files/ElEl_WJets_est_nov2.root");
+        t_elel_WJets = (TTree *)f_elel_WJets->Get("T_data");
 
-         f_WJets_contam = TFile::Open("../analyze/FakeRate/root_files/ElEl_fakerate_WJets_MC_dec4.root");
-         t_WJets_contam = (TTree *)f_WJets_contam->Get("T_data");
+        f_elel_WJets_contam = TFile::Open("../analyze/FakeRate/root_files/ElEl_fakerate_WJets_MC_dec4.root");
+        t_elel_WJets_contam = (TTree *)f_elel_WJets_contam->Get("T_data");
 
-         f_QCD_contam = TFile::Open("../analyze/FakeRate/root_files/ElEl_fakerate_QCD_MC_dec4.root");
-         t_QCD_contam = (TTree *)f_QCD_contam->Get("T_data");
+        f_elel_QCD_contam = TFile::Open("../analyze/FakeRate/root_files/ElEl_fakerate_QCD_MC_dec4.root");
+        t_elel_QCD_contam = (TTree *)f_elel_QCD_contam->Get("T_data");
     }
     else{
-         f_mc = (TFile*) TFile::Open("output_files/MuMu_DY_jan16.root");
-         t_mc = (TTree *) f_mc ->Get("T_data");
-         t_nosig = (TTree *) f_mc ->Get("T_back");
-         f_back = (TFile*) TFile::Open("output_files/MuMu_combined_back_jan22.root");
-         t_back = (TTree *) f_back ->Get("T_data");
+        f_mumu_mc = (TFile*) TFile::Open("output_files/MuMu_DY_jan16.root");
+        t_mumu_mc = (TTree *) f_mumu_mc ->Get("T_data");
+        t_mumu_nosig = (TTree *) f_mumu_mc ->Get("T_back");
+        f_mumu_back = (TFile*) TFile::Open("output_files/MuMu_combined_back_jan22.root");
+        t_mumu_back = (TTree *) f_mumu_back ->Get("T_data");
 
-         f_data = TFile::Open("output_files/SingleMuon_data_jan22.root");
-         t_data = (TTree *)f_data->Get("T_data"); 
+        f_mumu_data = TFile::Open("output_files/SingleMuon_data_jan22.root");
+        t_mumu_data = (TTree *)f_mumu_data->Get("T_data"); 
 
-         f_QCD = TFile::Open("../analyze/output_files/MuMu_QCD_est_nov2.root");
-         t_QCD = (TTree *)f_QCD->Get("T_data");
+        f_mumu_QCD = TFile::Open("../analyze/output_files/MuMu_QCD_est_nov2.root");
+        t_mumu_QCD = (TTree *)f_mumu_QCD->Get("T_data");
 
-         f_WJets = TFile::Open("../analyze/output_files/MuMu_WJets_est_Nov2.root");
-         t_WJets = (TTree *)f_WJets->Get("T_data");
+        f_mumu_WJets = TFile::Open("../analyze/output_files/MuMu_WJets_est_Nov2.root");
+        t_mumu_WJets = (TTree *)f_mumu_WJets->Get("T_data");
 
-         f_WJets_contam = TFile::Open("../analyze/FakeRate/root_files/MuMu_fakerate_Wjets_MC_dec4.root");
-         t_WJets_contam = (TTree *)f_WJets_contam->Get("T_data");
+        f_mumu_WJets_contam = TFile::Open("../analyze/FakeRate/root_files/MuMu_fakerate_Wjets_MC_dec4.root");
+        t_mumu_WJets_contam = (TTree *)f_mumu_WJets_contam->Get("T_data");
 
-         f_QCD_contam = TFile::Open("../analyze/FakeRate/root_files/MuMu_fakerate_QCD_MC_dec4.root");
-         t_QCD_contam = (TTree *)f_QCD_contam->Get("T_data");
+        f_mumu_QCD_contam = TFile::Open("../analyze/FakeRate/root_files/MuMu_fakerate_QCD_MC_dec4.root");
+        t_mumu_QCD_contam = (TTree *)f_mumu_QCD_contam->Get("T_data");
     }
     return;
 }
@@ -206,13 +211,24 @@ void setup(){
     h_data->SetDirectory(0);
     printf("Generating templates \n");
 
-    gen_mc_template(t_mc, alpha, h_sym, h_asym, h_sym_count, m_low, m_high, FLAG);
-    TTree *ts[2] = {t_back, t_nosig};
+    if(FLAG == FLAG_MUONS){
+        gen_mc_template(t_mumu_mc, alpha, h_sym, h_asym, h_sym_count, m_low, m_high, FLAG);
+        TTree *ts[2] = {t_mumu_back, t_mumu_nosig};
 
-    gen_fakes_template(t_WJets, t_QCD, t_WJets_contam, t_QCD_contam, h_back, m_low, m_high, FLAG);
-    gen_combined_background_template(2, ts, h_back, m_low, m_high, FLAG);
+        gen_fakes_template(t_mumu_WJets, t_mumu_QCD, t_mumu_WJets_contam, t_mumu_QCD_contam, h_back, m_low, m_high, FLAG);
+        gen_combined_background_template(2, ts, h_back, m_low, m_high, FLAG);
 
-    nDataEvents = gen_data_template(t_data, h_data, &v_xF, &v_cost, m_low, m_high, FLAG);
+        nDataEvents = gen_data_template(t_mumu_data, h_data, &v_xF, &v_cost, m_low, m_high, FLAG);
+    }
+    if(FLAG == FLAG_ELECTRONS){
+        gen_mc_template(t_elel_mc, alpha, h_sym, h_asym, h_sym_count, m_low, m_high, FLAG);
+        TTree *ts[2] = {t_elel_back, t_elel_nosig};
+
+        gen_fakes_template(t_elel_WJets, t_elel_QCD, t_elel_WJets_contam, t_elel_QCD_contam, h_back, m_low, m_high, FLAG);
+        gen_combined_background_template(2, ts, h_back, m_low, m_high, FLAG);
+
+        nDataEvents = gen_data_template(t_elel_data, h_data, &v_xF, &v_cost, m_low, m_high, FLAG);
+    }
     //f_data->Close();
     //f_back->Close();
     //f_mc->Close();
@@ -240,8 +256,8 @@ void single_fit_all(){
 
     Double_t AFB, AFB_err, r_back, r_back_err;
 
-    tout->Branch("m_low", &m_low);
-    tout->Branch("m_high", &m_high);
+    tout->Branch("var_low", &m_low);
+    tout->Branch("var_high", &m_high);
     tout->Branch("nEvents", &nDataEvents);
     tout->Branch("AFB", &AFB);
     tout->Branch("AFB_err", &AFB_err);
@@ -301,15 +317,31 @@ void single_fit_all(){
 
         cleanup();
     }
-    TFile *fout = TFile::Open(fout_name, "RECREATE");
+    TFile *fout;
+    if(FLAG == FLAG_MUONS) fout = TFile::Open(mumu_fout_name, "RECREATE");
+    if(FLAG == FLAG_ELECTRONS) fout = TFile::Open(elel_fout_name, "RECREATE");
     fout->cd();
     tout->Write();
+    if(do_both){
+        
+        do_both = false;
+        FLAG = 1 - FLAG;
+        printf("Starting 2nd run \n");
+        single_fit_all();
+        FLAG = 1 - FLAG;
+    }
+
+    if(FLAG == FLAG_MUONS){
+        printf("MuMu fit results, written out to %s \n" , mumu_fout_name.Data());
+    }
+    if(FLAG == FLAG_ELECTRONS){
+        printf("ElEl fit results, written out to %s \n" , elel_fout_name.Data());
+    }
     for(int i=0; i<n_m_bins; i++){
         printf("\n Fit on M=[%.0f, %.0f], %i Events: AFB = %0.3f +/- %0.3f r_back = %0.3f +/- %0.3f \n", 
                     m_bins[i], m_bins[i+1], nEvents[i], AFB_fit[i], AFB_fit_err[i], r_back_fit[i], r_back_fit_err[i]);
 
     }
-    printf("fit results written to %s \n", fout_name.Data());
 
 }
 

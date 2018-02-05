@@ -17,7 +17,7 @@ double Ebeam = 6500.;
 double Pbeam = sqrt(Ebeam*Ebeam - 0.938*0.938);
 
 char *filename("combined_back_files_aug29.txt");
-const TString fout_name("output_files/ElEl_combined_back_jan22.root");
+const TString fout_name("output_files/ElEl_combined_back_jan30.root");
 const double alpha = 0.05;
 const bool PRINT=false;
 
