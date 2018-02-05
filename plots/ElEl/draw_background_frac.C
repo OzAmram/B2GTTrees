@@ -31,7 +31,7 @@ void draw_background_frac(){
     setTDRStyle();
     TFile *f_data = TFile::Open("../analyze/output_files/SingleElectron_data_jan22.root");
     TTree *t_data = (TTree *)f_data->Get("T_data");
-    TFile *f_mc = TFile::Open("../analyze/output_files/ElEl_DY_jan22.root");
+    TFile *f_mc = TFile::Open("../analyze/output_files/ElEl_DY_jan30.root");
     TTree *t_mc = (TTree *)f_mc->Get("T_data");
     TTree *t_mc_nosig = (TTree *)f_mc->Get("T_back");
     TFile *f_ttbar = TFile::Open("../analyze/output_files/ElEl_TTbar_jan22.root");
@@ -149,10 +149,10 @@ void draw_background_frac(){
                                        //pow(QCD_frac_unc[i-1],2) );
     }
     bin_center[nBins-1] = 800.;
-    Double_t fit_res[] = {0.106, 0.172, 0.228, 0.173, 0.162, 0.163};
-    Double_t fit_errs[] = {0.006, 0.010, 0.011, 0.014, 0.024, 0.037};
+    Double_t fit_res[] = {0.101, 0.159, 0.213, 0.185, 0.179, 0.184};
+    Double_t fit_errs[] = {0.005, 0.008, 0.010, 0.013, 0.024, 0.036};
 
-    Double_t comb_fit_res[] = {0.105, 0.171, 0.230, 0.176, 0.162, 0.164};
+    Double_t comb_fit_res[] = {0.100, 0.159, 0.215, 0.188, 0.179, 0.185};
     Double_t comb_fit_errs[] = {0.006, 0.010, 0.011, 0.014, 0.024, 0.037};
 
     TGraphErrors *mc_nosig_frac = new TGraphErrors(nBins, bin_center, nosig_frac, 0, 0);

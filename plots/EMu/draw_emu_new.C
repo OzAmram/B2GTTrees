@@ -7,9 +7,11 @@
 #include <algorithm>
 #include <vector>
 
+
 #include "TROOT.h"
 #include "TFile.h"
 #include "TObject.h"
+#include "TRatioPlot.h"
 #include "TH1F.h"
 #include "TProfile.h"
 #include "TStyle.h"
@@ -20,99 +22,17 @@
 #include "TFitter.h"
 #include "TSystem.h"
 #include "Math/Functor.h"
-#include "../analyze/TemplateMaker.C"
-#include "tdrstyle.C"
-#include "CMS_lumi.C"
+#include "../../analyze/TemplateMaker.C"
+#include "../tdrstyle.C"
+#include "../CMS_lumi.C"
 
 
 
-Double_t count_tree(TTree *t1,  TH1F* h, Double_t m_low, Double_t m_high, bool is_data=false){
-    //count events in the tree
-    Long64_t size  =  t1->GetEntries();
-    Int_t nJets;
-    Double_t m, xF, cost, mu1_pt, mu2_pt, jet1_cmva, jet2_cmva, gen_weight;
-    Double_t jet1_pt, jet2_pt;
-    Double_t bcdef_HLT_SF, bcdef_iso_SF, bcdef_id_SF;
-    Double_t gh_HLT_SF, gh_iso_SF, gh_id_SF, el_id_SF;
-    Double_t jet1_b_weight, jet2_b_weight;
-    Float_t cost_pt, met_pt;
-    TLorentzVector *el=0; 
-    TLorentzVector *mu=0;
-    TLorentzVector cm;
-    t1->SetBranchAddress("met_pt", &met_pt);
-    t1->SetBranchAddress("nJets", &nJets);
-    t1->SetBranchAddress("jet2_CMVA", &jet2_cmva);
-    t1->SetBranchAddress("jet1_CMVA", &jet1_cmva);
-    t1->SetBranchAddress("jet1_pt", &jet1_pt);
-    t1->SetBranchAddress("jet2_pt", &jet2_pt);
-    t1->SetBranchAddress("el", &el);
-    t1->SetBranchAddress("mu", &mu);
-    if(!is_data){
-        t1->SetBranchAddress("gen_weight", &gen_weight);
-        t1->SetBranchAddress("bcdef_HLT_SF", &bcdef_HLT_SF);
-        t1->SetBranchAddress("bcdef_iso_SF", &bcdef_iso_SF);
-        t1->SetBranchAddress("bcdef_id_SF", &bcdef_id_SF);
-        t1->SetBranchAddress("gh_HLT_SF", &gh_HLT_SF);
-        t1->SetBranchAddress("gh_iso_SF", &gh_iso_SF);
-        t1->SetBranchAddress("gh_id_SF", &gh_id_SF);
-        t1->SetBranchAddress("el_id_SF", &el_id_SF);
-        t1->SetBranchAddress("jet1_b_weight", &jet1_b_weight);
-        t1->SetBranchAddress("jet2_b_weight", &jet2_b_weight);
-    }
-    jet1_cmva = -1.;
-    jet2_cmva = -1.;
-    Double_t count = 0;
-    Double_t bcdef_count = 0;
-    Double_t gh_count = 0;
-
-    Double_t med_btag = 0.4432;
-    for (int i=0; i<size; i++) {
-        t1->GetEntry(i);
-        cm = *el + *mu;
-        m = cm.M();
-        bool no_bjets = has_no_bjets(nJets, jet1_pt, jet2_pt, jet1_cmva, jet2_cmva);
-        if(m > m_low && m < m_high && no_bjets && met_pt < 50.){
-            if(is_data){
-                count += 1;
-                h->Fill(m);
-            }
-            else{
-                Double_t bcdef_weight = gen_weight * bcdef_HLT_SF * bcdef_iso_SF * bcdef_id_SF
-                                        *el_id_SF;
-                Double_t gh_weight = gen_weight * gh_HLT_SF * gh_iso_SF * gh_id_SF
-                                    *el_id_SF;
-                if (nJets >= 1){
-                    bcdef_weight *= jet1_b_weight;
-                    gh_weight *= jet1_b_weight;
-                }
-                if (nJets >= 2){
-                    bcdef_weight *= jet2_b_weight;
-                    gh_weight *= jet2_b_weight;
-                }
-                //printf("%.2e %.2e \n", bcdef_weight, gh_weight);
-                bcdef_count += bcdef_weight;
-                gh_count += gh_weight;
-                h->Fill(m, bcdef_weight*bcdef_lumi*1000 + gh_weight*gh_lumi*1000);
-            }
-
-            
-        }
-    }
-    if(!is_data){
-        bcdef_count *= bcdef_lumi*1000;
-        gh_count *= gh_lumi*1000;
-        count = bcdef_count + gh_count;
-        //count = count * (bcdef_lumi + gh_lumi)*1000;
-    }
-
-    //printf("%f \n", count);
-    return count;
-}
 
 
 void draw_emu_new(){
     setTDRStyle();
-    TFile *f_data = TFile::Open("../analyze/output_files/EMu_data_jun21.root");
+    TFile *f_data = TFile::Open("../analyze/output_files/EMu_SingleMuon_data_nov3.root");
     TTree *t_data = (TTree *)f_data->Get("T_data");
 
                                 
@@ -120,7 +40,7 @@ void draw_emu_new(){
     TTree *t_ttbar = (TTree *)f_ttbar->Get("T_data");
 
     TFile *f_DYToLL = TFile::Open("../analyze/output_files/EMu_DY_jun26.root");
-    TTree *t_DYToLL = (TTree *)f_DYToLL->Get("T_data");
+    TTree *t_dy = (TTree *)f_DYToLL->Get("T_data");
 
     TFile *f_diboson = TFile::Open("../analyze/output_files/EMu_diboson_jun26.root");
     TTree *t_diboson = (TTree *)f_diboson->Get("T_data");
@@ -128,35 +48,34 @@ void draw_emu_new(){
     TFile *f_wt = TFile::Open("../analyze/output_files/EMu_WT_jun26.root");
     TTree *t_wt = (TTree *)f_wt->Get("T_data");
 
+    TFile *f_QCD = TFile::Open("../analyze/output_files/EMu_QCD_fakerate_est_jan24.root");
+    TTree *t_QCD = (TTree *)f_QCD->Get("T_data");
+
+    TFile *f_WJets = TFile::Open("../analyze/output_files/EMu_WJets_fakerate_est_jan24.root");
+    TTree *t_WJets = (TTree *)f_WJets->Get("T_data");
+
+    TFile *f_WJets_mc = TFile::Open("../analyze/output_files/EMu_WJets_MC_jan24.root");
+    TTree *t_WJets_mc = (TTree *)f_WJets_mc->Get("T_data");
+
     TH1F *data_m = new TH1F("data_m", "MC Signal (qqbar, qglu, qbarglu)", 30, 150, 1000);
     TH1F *ttbar_m = new TH1F("ttbar_m", "MC Signal (qqbar, qglu, qbarglu)", 30, 150, 1000);
     TH1F *diboson_m = new TH1F("diboson_m", "MC Signal (qqbar, qglu, qbarglu)", 30, 150, 1000);
     TH1F *wt_m = new TH1F("wt_m", "MC Signal (qqbar, qglu, qbarglu)", 30, 150, 1000);
     TH1F *dy_m = new TH1F("dy_m", "MC Signal (qqbar, qglu, qbarglu)", 30, 150, 1000);
+    TH1F *qcd_m = new TH1F("qcd_m", "MC Signal (qqbar, qglu, qbarglu)", 30, 150, 1000);
 
     Double_t m_low = 150;
     Double_t m_high = 10000;
-    Double_t data_count = count_tree(t_data, data_m, m_low, m_high, true);
-    Double_t ttbar_count = count_tree(t_ttbar, ttbar_m, m_low, m_high);
-    Double_t diboson_count = count_tree(t_diboson, diboson_m, m_low, m_high) ;
-    Double_t wt_count = count_tree(t_wt, wt_m, m_low, m_high);
-    Double_t DYToLL_count = count_tree(t_DYToLL, dy_m, m_low, m_high);
 
-    printf("M low = %.0f, M high = %.0f \n", m_low, m_high);
-    printf("Data count %.0f \n", data_count);
-    printf("TTbar count %.0f \n", ttbar_count);
-    printf("Diboson count %.0f \n", diboson_count);
-    printf("wt count %.0f \n", wt_count);
-    printf("DYToLL count %.0f \n", DYToLL_count);
-    //Double_t ratio = (data_count - diboson_count - DYToLL_count - wt_count )/ttbar_count;
-    //Double_t unc = sqrt((data_count + DYToLL_count + wt_count) *(1/ttbar_count/ttbar_count) 
-            //+ ratio*ratio/ttbar_count);
-    Double_t denom = ttbar_count + diboson_count + wt_count;
-    Double_t num = data_count - DYToLL_count;
-    Double_t ratio = (data_count - DYToLL_count)/(ttbar_count + diboson_count + wt_count);
-    Double_t unc = sqrt((data_count + DYToLL_count) *pow(1/denom,2) +
-            (ttbar_count + diboson_count + wt_count)*pow(num/denom/denom,2));
-    printf("Ratio=(data - DYToLL)/(TTbar + tW + diboson) is %1.3f +/- %1.3f \n", ratio, unc);
+    type  = FLAG_MUONS;
+
+    make_emu_m_hist(t_data, data_m, true, type);
+    make_emu_m_hist(t_ttbar, ttbar_m, false, type);
+    make_emu_m_hist(t_diboson, diboson_m, false, type);
+    make_emu_m_hist(t_wt, wt_m, false, type);
+    make_emu_m_hist(t_dy, dy_m, false, type);
+    Fakerate_est_emu(t_WJets, t_QCD,t_WJets_mc, qcd_m, type);
+
 
 
 
@@ -164,11 +83,14 @@ void draw_emu_new(){
     ttbar_m->SetFillColor(kBlue);
     wt_m->SetFillColor(kOrange+7); 
     diboson_m->SetFillColor(kGreen+3);
+    qcd_m->SetFillColor(kRed -7);
 
     THStack *m_stack = new THStack("m_stack", "EMu Mass Distribution: Data vs MC ; m_{e#mu} (GeV)");
-    m_stack->Add(ttbar_m);
-    m_stack->Add(wt_m);
     m_stack->Add(diboson_m);
+    m_stack->Add(wt_m);
+    m_stack->Add(qcd_m);
+    m_stack->Add(ttbar_m);
+    m_stack->Add(qcd_m);
     m_stack->Add(dy_m);
 
 

@@ -33,7 +33,7 @@ void draw_cmp(){
     setTDRStyle();
     TFile *f_data = TFile::Open("../analyze/output_files/SingleElectron_data_jan22.root");
     TTree *t_data = (TTree *)f_data->Get("T_data");
-    TFile *f_mc = TFile::Open("../analyze/output_files/ElEl_DY_jan22.root");
+    TFile *f_mc = TFile::Open("../analyze/output_files/ElEl_DY_jan30.root");
     TTree *t_mc = (TTree *)f_mc->Get("T_data");
     TTree *t_mc_nosig = (TTree *)f_mc->Get("T_back");
     TFile *f_ttbar = TFile::Open("../analyze/output_files/ElEl_TTbar_jan22.root");

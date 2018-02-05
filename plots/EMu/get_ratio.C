@@ -27,21 +27,21 @@
 
 
 void get_ratio(){
-    /*
     int type = FLAG_MUONS;
     TFile *f_data = TFile::Open("../analyze/output_files/EMu_SingleMuon_data_nov3.root");
     TTree *t_data = (TTree *)f_data->Get("T_data");
 
     TFile *f_mc = TFile::Open("../analyze/output_files/EMu_combined_back_Mu_jan22.root");
     TTree *t_mc = (TTree *)f_mc->Get("T_data");
-    */
                                 
+    /*
     int type = FLAG_ELECTRONS;
     TFile *f_data = TFile::Open("../analyze/output_files/EMu_SingleElectron_data_nov3.root");
     TTree *t_data = (TTree *)f_data->Get("T_data");
 
     TFile *f_mc = TFile::Open("../analyze/output_files/EMu_combined_back_El_jan22.root");
     TTree *t_mc = (TTree *)f_mc->Get("T_data");
+    */
 
     TFile *f_QCD = TFile::Open("../analyze/output_files/EMu_QCD_fakerate_est_jan24.root");
     TTree *t_QCD = (TTree *)f_QCD->Get("T_data");
@@ -66,7 +66,7 @@ void get_ratio(){
     Double_t fake_count = qcd_m->Integral();
     Double_t mc_count = mc_m->Integral();
 
-    Double_t fake_unc = 0.3 * fake_count;
+    Double_t fake_unc = 0.35 * fake_count;
     Double_t mc_unc = sqrt(mc_count);
 
     printf("Data count %.0f \n", data_count);
@@ -75,7 +75,7 @@ void get_ratio(){
     Double_t ratio = data_count / (mc_count + fake_count);
     Double_t unc = sqrt( (data_count/(mc_count + fake_count)/(mc_count + fake_count)) +  
                           pow(data_count/(mc_count + fake_count)/(mc_count + fake_count), 2) * (fake_unc*fake_unc + mc_unc*mc_unc));
-    printf("Ratio is %1.2f +/- %1.2f \n", ratio, unc);
+    printf("Ratio is %1.3f +/- %1.3f \n", ratio, unc);
     return;
 }
 

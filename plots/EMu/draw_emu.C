@@ -85,7 +85,7 @@ Double_t count_tree(TTree *t1,  bool is_data=false){
 
 
 void draw_emu(){
-    TFile *f_data = TFile::Open("../analyze/output_files/EMu_data_jun07.root");
+    TFile *f_data = TFile::Open("../analyze/output_files/EMu_SingleMuon_data_nov3.root");
     TTree *t_data = (TTree *)f_data->Get("T_data");
 
                                 
@@ -100,6 +100,15 @@ void draw_emu(){
 
     TFile *f_wt = TFile::Open("../analyze/output_files/EMu_WT_jun21.root");
     TTree *t_wt = (TTree *)f_wt->Get("T_data");
+
+    TFile *f_QCD = TFile::Open("../analyze/output_files/EMu_QCD_fakerate_est_jan24.root");
+    TTree *t_QCD = (TTree *)f_QCD->Get("T_data");
+
+    TFile *f_WJets = TFile::Open("../analyze/output_files/EMu_WJets_fakerate_est_jan24.root");
+    TTree *t_WJets = (TTree *)f_WJets->Get("T_data");
+
+    TFile *f_WJets_mc = TFile::Open("../analyze/output_files/EMu_WJets_MC_jan24.root");
+    TTree *t_WJets_mc = (TTree *)f_WJets_mc->Get("T_data");
 
 
 
