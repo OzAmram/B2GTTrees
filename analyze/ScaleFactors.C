@@ -318,24 +318,29 @@ Double_t btag_eff(Double_t pt, Double_t eta,TH2D *mc_eff){
     return eff;
 }
 
-Double_t get_btag_weight(Double_t pt, Double_t eta, Float_t flavour, BTag_effs btag_effs, BTag_readers b_readers){
+Double_t get_btag_weight(Double_t pt, Double_t eta, Float_t flavour, BTag_effs btag_effs, BTag_readers b_readers, int systematic = 0){
     //compute weighting from btagging scale factors
 
     Double_t weight, bjet_SF;
 
+    char *sys;
+    if (systematic == 0) sys = "central";
+    if (systematic == 1) sys = "up";
+    if (systematic == -1) sys = "down";
+
     if(std::abs(flavour - 5.) < 0.01){ //bjet
-        bjet_SF = b_readers.b_reader.eval_auto_bounds("central", BTagEntry::FLAV_B, eta, pt);
+        bjet_SF = b_readers.b_reader.eval_auto_bounds(sys, BTagEntry::FLAV_B, eta, pt);
         weight = btag_weight_helper(pt, eta, bjet_SF, btag_effs.b_eff);
         //printf("B jet, SF is %0.3f, weight is %.4f \n", bjet_SF, weight);
 
     }
     else if (std::abs(flavour - 4.) < 0.01){ //cjet
-        bjet_SF = b_readers.c_reader.eval_auto_bounds("central", BTagEntry::FLAV_C, eta, pt);
+        bjet_SF = b_readers.c_reader.eval_auto_bounds(sys, BTagEntry::FLAV_C, eta, pt);
         weight = btag_weight_helper(pt, eta, bjet_SF, btag_effs.c_eff);
         //printf("C jet, SF is %0.3f, weight is %.4f \n", bjet_SF, weight);
     }
     else{ //udsg jet
-        bjet_SF = b_readers.udsg_reader.eval_auto_bounds("central", BTagEntry::FLAV_UDSG, eta,pt);
+        bjet_SF = b_readers.udsg_reader.eval_auto_bounds(sys, BTagEntry::FLAV_UDSG, eta,pt);
         weight = btag_weight_helper(pt, eta, bjet_SF, btag_effs.udsg_eff);
         //printf("UDSG jet, SF is %0.3f, weight is %.4f \n", bjet_SF, weight);
     }
@@ -392,14 +397,20 @@ Double_t get_emu_btag_weight(Double_t pt1, Double_t eta1, Float_t flavour1, Doub
 
 
 
-void setup_SFs(mu_SFs *runs_BCDEF, mu_SFs *runs_GH, BTag_readers *btag_r, BTag_effs *b_effs, pileup_SFs *pu_SF){
+void setup_SFs(mu_SFs *runs_BCDEF, mu_SFs *runs_GH, BTag_readers *btag_r, BTag_effs *b_effs, pileup_SFs *pu_SF, int btag_systematic=0){
     TH1::AddDirectory(kFALSE);
     BTagCalibration calib("csvv1", "SFs/cMVAv2_Moriond17_B_H.csv");
-    btag_r->b_reader = BTagCalibrationReader(BTagEntry::OP_MEDIUM, "central");
+    
+    char *sys;
+    if (btag_systematic == 0) sys = "central";
+    if (btag_systematic == 1) sys = "up";
+    if (btag_systematic == -1) sys = "down";
+
+    btag_r->b_reader = BTagCalibrationReader(BTagEntry::OP_MEDIUM, sys);
     btag_r->b_reader.load(calib, BTagEntry::FLAV_B, "ttbar");
-    btag_r->c_reader = BTagCalibrationReader(BTagEntry::OP_MEDIUM, "central");
+    btag_r->c_reader = BTagCalibrationReader(BTagEntry::OP_MEDIUM, sys);
     btag_r->c_reader.load(calib, BTagEntry::FLAV_C, "ttbar");
-    btag_r->udsg_reader = BTagCalibrationReader(BTagEntry::OP_MEDIUM, "central");
+    btag_r->udsg_reader = BTagCalibrationReader(BTagEntry::OP_MEDIUM, sys);
     btag_r->udsg_reader.load(calib, BTagEntry::FLAV_UDSG, "incl");
 
     TFile *f0 = TFile::Open("SFs/BTag_efficiency_may24.root");

@@ -181,7 +181,8 @@ int gen_data_template(TTree *t1, TH2F* h, vector<double> *v_xF, vector<double> *
 
 
 int gen_mc_template(TTree *t1, Double_t alpha, TH2F* h_sym, TH2F *h_asym, TH2F *h_count, 
-        Double_t var_low, Double_t var_high, int flag1 = FLAG_MUONS, int flag2 = FLAG_M_BINS){
+        Double_t var_low, Double_t var_high, int flag1 = FLAG_MUONS, int flag2 = FLAG_M_BINS,
+        int pdf_sys = -1){
     Long64_t nEntries  =  t1->GetEntries();
     //printf("size is %i \n", nEntries);
 
@@ -193,16 +194,17 @@ int gen_mc_template(TTree *t1, Double_t alpha, TH2F* h_sym, TH2F *h_asym, TH2F *
     Double_t gh_HLT_SF, gh_iso_SF, gh_id_SF;
     Double_t gh_trk_SF, bcdef_trk_SF;
     Double_t el_id_SF, el_reco_SF, pu_SF, el_HLT_SF;
-    Double_t jet1_pt, jet2_pt, jet1_b_weight, jet2_b_weight;
+    Double_t jet1_pt, jet2_pt, jet1_b_weight, jet2_b_weight, jet1_eta, jet2_eta;
     Double_t mu1_pt, mu1_eta, mu2_pt, mu2_eta;
     Double_t el1_pt, el1_eta, el2_pt, el2_eta;
     Double_t mu_R_up, mu_R_down, mu_F_up, mu_F_down, 
              mu_RF_up, mu_RF_down, pdf_up, pdf_down;
     Float_t cost_pt, met_pt;
+    Float_t pdf_weights[100];
     TLorentzVector *lep_p=0;
     TLorentzVector *lep_m=0;
     Double_t pt;
-    Int_t nJets, pu_NtrueInt;
+    Int_t nJets, pu_NtrueInt, jet1_flavour, jet2_flavour;
     t1->SetBranchAddress("m", &m);
     t1->SetBranchAddress("xF", &xF);
     t1->SetBranchAddress("cost", &cost);
@@ -226,6 +228,11 @@ int gen_mc_template(TTree *t1, Double_t alpha, TH2F* h_sym, TH2F *h_asym, TH2F *
     t1->SetBranchAddress("pdf_up", &pdf_up);
     t1->SetBranchAddress("pdf_down", &pdf_down);
     t1->SetBranchAddress("pu_NtrueInt", &pu_NtrueInt);
+    t1->SetBranchAddress("jet1_eta", &jet1_eta);
+    t1->SetBranchAddress("jet2_eta", &jet2_eta);
+    t1->SetBranchAddress("jet1_flavour", &jet1_flavour);
+    t1->SetBranchAddress("jet2_flavour", &jet2_flavour);
+    if(pdf_sys >=0) t1->SetBranchAddress("pdf_weights", &pdf_weights);
     int n = 0;
 
     //SYSTEMATICS 
@@ -240,6 +247,8 @@ int gen_mc_template(TTree *t1, Double_t alpha, TH2F* h_sym, TH2F *h_asym, TH2F *
     Double_t pu_SF_sys = 1;
     pileup_systematics pu_sys;
     if(do_pileup_sys != 0) setup_pileup_systematic(&pu_sys); 
+
+    int do_btag_sys = 0;
 
 
     if(flag1 == FLAG_MUONS){
@@ -269,9 +278,10 @@ int gen_mc_template(TTree *t1, Double_t alpha, TH2F* h_sym, TH2F *h_asym, TH2F *
         BTag_readers b_reader;
         BTag_effs btag_effs;
         //separate SFs for runs BCDEF and GH
-        if(do_SF_sys){
-            setup_SFs(&runs_bcdef, &runs_gh, &b_reader, &btag_effs, &pu_SFs);
+        if(do_SF_sys || (do_btag_sys !=0)){
+            setup_SFs(&runs_bcdef, &runs_gh, &b_reader, &btag_effs, &pu_SFs, do_btag_sys);
         }
+       
 
         for (int i=0; i<nEntries; i++) {
             t1->GetEntry(i);
@@ -292,6 +302,8 @@ int gen_mc_template(TTree *t1, Double_t alpha, TH2F* h_sym, TH2F *h_asym, TH2F *
                 //printf("systematic is %.2f \n", *systematic * pu_SF_sys);
                 gen_weight *= *systematic * pu_SF_sys;
 
+                if(pdf_sys >=0) gen_weight *= pdf_weights[pdf_sys];
+
                 if(do_SF_sys){
                     bcdef_HLT_SF = get_HLT_SF(mu1_pt, mu1_eta, mu2_pt, mu2_eta, runs_bcdef.HLT_SF, runs_bcdef.HLT_MC_EFF);
                     gh_HLT_SF = get_HLT_SF(mu1_pt, mu1_eta, mu2_pt, mu2_eta, runs_gh.HLT_SF, runs_gh.HLT_MC_EFF);
@@ -304,6 +316,10 @@ int gen_mc_template(TTree *t1, Double_t alpha, TH2F* h_sym, TH2F *h_asym, TH2F *
 
                     bcdef_trk_SF = get_Mu_trk_SF(abs(mu1_eta), runs_bcdef.TRK_SF) * get_Mu_trk_SF(abs(mu2_eta), runs_bcdef.TRK_SF);
                     gh_trk_SF = get_Mu_trk_SF(abs(mu1_eta), runs_gh.TRK_SF) * get_Mu_trk_SF(abs(mu2_eta), runs_gh.TRK_SF);
+                }
+                if(do_btag_sys != 0){
+                    jet1_b_weight = get_btag_weight(jet1_pt, jet1_eta, (Float_t) jet1_flavour , btag_effs, b_reader, do_btag_sys);
+                    jet2_b_weight = get_btag_weight(jet2_pt, jet2_eta, (Float_t) jet2_flavour , btag_effs, b_reader, do_btag_sys);
                 }
 
 
@@ -353,6 +369,14 @@ int gen_mc_template(TTree *t1, Double_t alpha, TH2F* h_sym, TH2F *h_asym, TH2F *
         if(do_SF_sys){
             setup_el_SF(&el_SF);
         }
+        mu_SFs runs_bcdef, runs_gh;
+        pileup_SFs pu_SFs;
+        BTag_readers b_reader;
+        BTag_effs btag_effs;
+        //separate SFs for runs BCDEF and GH
+        if(do_btag_sys !=0){
+            setup_SFs(&runs_bcdef, &runs_gh, &b_reader, &btag_effs, &pu_SFs, do_btag_sys);
+        }
         for (int i=0; i<nEntries; i++) {
             t1->GetEntry(i);
             bool no_bjets = has_no_bjets(nJets, jet1_pt, jet2_pt, jet1_cmva, jet2_cmva);
@@ -372,10 +396,16 @@ int gen_mc_template(TTree *t1, Double_t alpha, TH2F* h_sym, TH2F *h_asym, TH2F *
                 //printf("systematic is %.2f \n", *systematic * pu_SF_sys);
                 gen_weight *= *systematic * pu_SF_sys;
 
+                if(pdf_sys >=0) gen_weight *= pdf_weights[pdf_sys];
+
                 if(do_SF_sys){
                     el_id_SF = get_el_SF(el1_pt, el1_eta, el_SF.ID_SF) * get_el_SF(el2_pt, el2_eta, el_SF.ID_SF);
                     el_reco_SF = get_el_SF(el1_pt, el1_eta, el_SF.RECO_SF) * get_el_SF(el2_pt, el2_eta, el_SF.RECO_SF);
                     el_HLT_SF = get_el_HLT_SF(el1_pt, el1_eta, el2_pt, el2_eta, el_SF.HLT_SF, el_SF.HLT_MC_EFF);
+                }
+                if(do_btag_sys != 0){
+                    jet1_b_weight = get_btag_weight(jet1_pt, jet1_eta,(Float_t) jet1_flavour , btag_effs, b_reader, do_btag_sys);
+                    jet2_b_weight = get_btag_weight(jet2_pt, jet2_eta,(Float_t) jet2_flavour , btag_effs, b_reader, do_btag_sys);
                 }
 
 
@@ -748,6 +778,7 @@ void gen_fakes_template(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_contam,
         h->Scale(0.);
         printf("zeroing Fakes template \n");
     }
+    //h->Scale(0.5);
     return;
 }
 

@@ -28,9 +28,6 @@
 
 #define FLAG_MUONS  0
 #define FLAG_ELECTRONS  1
-#define FLAG_QCD  2
-#define FLAG_WJETS  3
-#define FLAG_NORMAL 4
 
 #define FLAG_M_BINS 0
 #define FLAG_PT_BINS 1
@@ -101,7 +98,7 @@ static Double_t get_new_fakerate_prob(Double_t pt, Double_t eta, TH2D *h){
     if(prob < 0.001 || prob >= 0.99){
         printf("Warning: %.2f Rate for pt %.0f, eta %1.1f! \n"
                 "err %.2f varr %.2f \n",
-                 prob, pt, eta, err, variation);
+                prob, pt, eta, err, variation);
         ybin -=1;
         prob = h->GetBinContent(xbin, ybin);
         err = h->GetBinError(xbin, ybin);
@@ -249,8 +246,8 @@ int gen_mc_template(TTree *t1, Double_t alpha, TH2F* h_sym, TH2F *h_asym, TH2F *
                 pt = cm.Pt();
             }
             bool pass = ((flag2 == FLAG_M_BINS && m >= var_low && m <= var_high) ||
-                        (flag2 == FLAG_PT_BINS && m >= 150. && pt >= var_low && pt <= var_high))
-                        && met_pt < 50.  && no_bjets;
+                    (flag2 == FLAG_PT_BINS && m >= 150. && pt >= var_low && pt <= var_high))
+                && met_pt < 50.  && no_bjets;
             if(pass){
                 reweight = (4./3.)*cost_st*(2. + alpha)/
                     (1. + cost_st*cost_st + alpha*(1.- cost_st*cost_st));
@@ -307,8 +304,8 @@ int gen_mc_template(TTree *t1, Double_t alpha, TH2F* h_sym, TH2F *h_asym, TH2F *
                 pt = cm.Pt();
             }
             bool pass = ((flag2 == FLAG_M_BINS && m >= var_low && m <= var_high) ||
-                        (flag2 == FLAG_PT_BINS && m >= 150. && pt >= var_low && pt <= var_high))
-                        && met_pt < 50.  && no_bjets;
+                    (flag2 == FLAG_PT_BINS && m >= 150. && pt >= var_low && pt <= var_high))
+                && met_pt < 50.  && no_bjets;
             if(pass){
                 reweight = (4./3.)*cost_st*(2. + alpha)/
                     (1. + cost_st*cost_st + alpha*(1.- cost_st*cost_st));
@@ -405,8 +402,8 @@ int gen_background_template(TTree *t1, TH2F* h, TH2F* h_count,
                 pt = cm.Pt();
             }
             bool pass = ((flag2 == FLAG_M_BINS && m >= var_low && m <= var_high) ||
-                        (flag2 == FLAG_PT_BINS && m >= 150. && pt >= var_low && pt <= var_high))
-                        && met_pt < 50.  && no_bjets;
+                    (flag2 == FLAG_PT_BINS && m >= 150. && pt >= var_low && pt <= var_high))
+                && met_pt < 50.  && no_bjets;
             if(pass){
 
                 Double_t bcdef_weight = gen_weight *pu_SF * bcdef_HLT_SF * bcdef_iso_SF * bcdef_id_SF * bcdef_trk_SF;
@@ -444,8 +441,8 @@ int gen_background_template(TTree *t1, TH2F* h, TH2F* h_count,
                 pt = cm.Pt();
             }
             bool pass = ((flag2 == FLAG_M_BINS && m >= var_low && m <= var_high) ||
-                        (flag2 == FLAG_PT_BINS && m >= 150. && pt >= var_low && pt <= var_high))
-                        && met_pt < 50.  && no_bjets;
+                    (flag2 == FLAG_PT_BINS && m >= 150. && pt >= var_low && pt <= var_high))
+                && met_pt < 50.  && no_bjets;
             if(pass){
 
 
@@ -568,8 +565,8 @@ void gen_fakes_template(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_contam,
                     pt = cm.Pt();
                 }
                 bool pass = ((flag2 == FLAG_M_BINS && m >= var_low && m <= var_high) ||
-                            (flag2 == FLAG_PT_BINS && m >= 150. && pt >= var_low && pt <= var_high))
-                            && met_pt < 50.  && no_bjets;
+                        (flag2 == FLAG_PT_BINS && m >= 150. && pt >= var_low && pt <= var_high))
+                    && met_pt < 50.  && no_bjets;
 
                 if(pass){
                     //if(l==3) printf("Evt fr %.2e \n", evt_fakerate);
@@ -668,8 +665,8 @@ void gen_fakes_template(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_contam,
                     pt = cm.Pt();
                 }
                 bool pass = ((flag2 == FLAG_M_BINS && m >= var_low && m <= var_high) ||
-                            (flag2 == FLAG_PT_BINS && m >= 150. && pt >= var_low && pt <= var_high))
-                            && met_pt < 50.  && no_bjets;
+                        (flag2 == FLAG_PT_BINS && m >= 150. && pt >= var_low && pt <= var_high))
+                    && met_pt < 50.  && no_bjets;
                 if(pass){
                     //if(l==3) printf("Evt fr %.2e \n", evt_fakerate);
                     //if(l==3) printf("cost, fr %.2f %.2e \n", cost, evt_fakerate);
@@ -745,8 +742,8 @@ int gen_combined_background_template(int nTrees, TTree **ts, TH2F* h,
                     pt = cm.Pt();
                 }
                 bool pass = ((flag2 == FLAG_M_BINS && m >= var_low && m <= var_high) ||
-                            (flag2 == FLAG_PT_BINS && m >= 150. && pt >= var_low && pt <= var_high))
-                            && met_pt < 50.  && no_bjets;
+                        (flag2 == FLAG_PT_BINS && m >= 150. && pt >= var_low && pt <= var_high))
+                    && met_pt < 50.  && no_bjets;
 
                 if(pass){
 
@@ -779,8 +776,8 @@ int gen_combined_background_template(int nTrees, TTree **ts, TH2F* h,
                     pt = cm.Pt();
                 }
                 bool pass = ((flag2 == FLAG_M_BINS && m >= var_low && m <= var_high) ||
-                            (flag2 == FLAG_PT_BINS && m >= 150. && pt >= var_low && pt <= var_high))
-                            && met_pt < 50.  && no_bjets;
+                        (flag2 == FLAG_PT_BINS && m >= 150. && pt >= var_low && pt <= var_high))
+                    && met_pt < 50.  && no_bjets;
                 if(pass){
 
 
@@ -870,7 +867,7 @@ void make_emu_m_hist(TTree *t1, TH1F *h_m, bool is_data = false, int flag1 = FLA
                     gh_weight *= gh_HLT_SF;
                 }
                 else evt_weight *= el_HLT_SF;
-                
+
                 if (nJets >= 1){
                     evt_weight *= jet1_b_weight;
                 }
@@ -894,7 +891,7 @@ void make_emu_m_hist(TTree *t1, TH1F *h_m, bool is_data = false, int flag1 = FLA
     }
 }
 
-void make_m_cost_pt_hist(TTree *t1, TH1F *h_m, TH1F *h_cost, TH1F *h_pt, bool is_data=false, int flag1 = FLAG_MUONS, int flag2 = FLAG_NORMAL){
+void make_m_cost_pt_hist(TTree *t1, TH1F *h_m, TH1F *h_cost, TH1F *h_pt, bool is_data=false, int flag1 = FLAG_MUONS){
     //read event data
     Long64_t size  =  t1->GetEntries();
     Double_t m, xF, cost, mu1_pt, mu2_pt, jet1_cmva, jet2_cmva, gen_weight;
@@ -935,104 +932,100 @@ void make_m_cost_pt_hist(TTree *t1, TH1F *h_m, TH1F *h_cost, TH1F *h_pt, bool is
         TH2D *h_pt_gh = (TH2D *)h_pt->Clone("h_pt_gh");
         t1->SetBranchAddress("mu_p", &mu_p);
         t1->SetBranchAddress("mu_m", &mu_m);
-        if(flag2 == FLAG_NORMAL){
-            if(!is_data){
-                t1->SetBranchAddress("bcdef_HLT_SF", &bcdef_HLT_SF);
-                t1->SetBranchAddress("bcdef_iso_SF", &bcdef_iso_SF);
-                t1->SetBranchAddress("bcdef_id_SF", &bcdef_id_SF);
-                t1->SetBranchAddress("gh_HLT_SF", &gh_HLT_SF);
-                t1->SetBranchAddress("gh_iso_SF", &gh_iso_SF);
-                t1->SetBranchAddress("gh_id_SF", &gh_id_SF);
-                t1->SetBranchAddress("gh_trk_SF", &gh_trk_SF);
-                t1->SetBranchAddress("bcdef_trk_SF", &bcdef_trk_SF);
-            }
-            for (int i=0; i<size; i++) {
-                t1->GetEntry(i);
-                bool no_bjets = has_no_bjets(nJets, jet1_pt, jet2_pt, jet1_cmva, jet2_cmva);
+        if(!is_data){
+            t1->SetBranchAddress("bcdef_HLT_SF", &bcdef_HLT_SF);
+            t1->SetBranchAddress("bcdef_iso_SF", &bcdef_iso_SF);
+            t1->SetBranchAddress("bcdef_id_SF", &bcdef_id_SF);
+            t1->SetBranchAddress("gh_HLT_SF", &gh_HLT_SF);
+            t1->SetBranchAddress("gh_iso_SF", &gh_iso_SF);
+            t1->SetBranchAddress("gh_id_SF", &gh_id_SF);
+            t1->SetBranchAddress("gh_trk_SF", &gh_trk_SF);
+            t1->SetBranchAddress("bcdef_trk_SF", &bcdef_trk_SF);
+        }
+        for (int i=0; i<size; i++) {
+            t1->GetEntry(i);
+            bool no_bjets = has_no_bjets(nJets, jet1_pt, jet2_pt, jet1_cmva, jet2_cmva);
 
-                if(m >= 150. && met_pt < 50. && no_bjets){
-                    cm = *mu_p + *mu_m;
-                    Double_t pt = cm.Pt();
-                    if(is_data){
-                        h_m->Fill(m);
-                        h_cost->Fill(cost);
-                        h_pt->Fill(pt);
-                    }
-                    else{
-                        Double_t bcdef_weight = gen_weight *pu_SF * bcdef_HLT_SF * bcdef_iso_SF * bcdef_id_SF * bcdef_trk_SF;
-                        Double_t gh_weight = gen_weight *pu_SF * gh_HLT_SF * gh_iso_SF * gh_id_SF * gh_trk_SF;
-                        if (nJets >= 1){
-                            bcdef_weight *= jet1_b_weight;
-                            gh_weight *= jet1_b_weight;
-                        }
-                        if (nJets >= 2){
-                            bcdef_weight *= jet2_b_weight;
-                            gh_weight *= jet2_b_weight;
-                        }
-                        //Double_t weight = gen_weight;
-                        h_m_bcdef->Fill(m,bcdef_weight);
-                        h_m_gh->Fill(m,gh_weight);
-                        h_cost_bcdef->Fill(cost,bcdef_weight);
-                        h_cost_gh->Fill(cost,gh_weight);
-                        h_pt_bcdef->Fill(pt,bcdef_weight);
-                        h_pt_gh->Fill(pt,gh_weight);
-                    }
-
-
+            if(m >= 150. && met_pt < 50. && no_bjets){
+                cm = *mu_p + *mu_m;
+                Double_t pt = cm.Pt();
+                if(is_data){
+                    h_m->Fill(m);
+                    h_cost->Fill(cost);
+                    h_pt->Fill(pt);
                 }
+                else{
+                    Double_t bcdef_weight = gen_weight *pu_SF * bcdef_HLT_SF * bcdef_iso_SF * bcdef_id_SF * bcdef_trk_SF;
+                    Double_t gh_weight = gen_weight *pu_SF * gh_HLT_SF * gh_iso_SF * gh_id_SF * gh_trk_SF;
+                    if (nJets >= 1){
+                        bcdef_weight *= jet1_b_weight;
+                        gh_weight *= jet1_b_weight;
+                    }
+                    if (nJets >= 2){
+                        bcdef_weight *= jet2_b_weight;
+                        gh_weight *= jet2_b_weight;
+                    }
+                    //Double_t weight = gen_weight;
+                    h_m_bcdef->Fill(m,bcdef_weight);
+                    h_m_gh->Fill(m,gh_weight);
+                    h_cost_bcdef->Fill(cost,bcdef_weight);
+                    h_cost_gh->Fill(cost,gh_weight);
+                    h_pt_bcdef->Fill(pt,bcdef_weight);
+                    h_pt_gh->Fill(pt,gh_weight);
+                }
+
+
             }
-            if(!is_data){
-                h_m_bcdef ->Scale(bcdef_lumi * 1000);
-                h_cost_bcdef ->Scale(bcdef_lumi * 1000);
-                h_pt_bcdef ->Scale(bcdef_lumi * 1000);
-                h_m_gh ->Scale(gh_lumi * 1000);
-                h_cost_gh ->Scale(gh_lumi * 1000);
-                h_pt_gh ->Scale(gh_lumi * 1000);
-                h_m->Add(h_m_bcdef, h_m_gh);
-                h_cost->Add(h_cost_bcdef, h_cost_gh);
-                h_pt->Add(h_pt_bcdef, h_pt_gh);
-            }
+        }
+        if(!is_data){
+            h_m_bcdef ->Scale(bcdef_lumi * 1000);
+            h_cost_bcdef ->Scale(bcdef_lumi * 1000);
+            h_pt_bcdef ->Scale(bcdef_lumi * 1000);
+            h_m_gh ->Scale(gh_lumi * 1000);
+            h_cost_gh ->Scale(gh_lumi * 1000);
+            h_pt_gh ->Scale(gh_lumi * 1000);
+            h_m->Add(h_m_bcdef, h_m_gh);
+            h_cost->Add(h_cost_bcdef, h_cost_gh);
+            h_pt->Add(h_pt_bcdef, h_pt_gh);
         }
     }
     else if(flag1==FLAG_ELECTRONS) {
         t1->SetBranchAddress("el_p", &el_p);
         t1->SetBranchAddress("el_m", &el_m);
-        if(flag2 == FLAG_NORMAL){
-            if(!is_data) t1->SetBranchAddress("el_id_SF", &el_id_SF);
-            if(!is_data) t1->SetBranchAddress("el_reco_SF", &el_reco_SF);
-            if(!is_data) t1->SetBranchAddress("el_HLT_SF", &el_HLT_SF);
-            for (int i=0; i<size; i++) {
-                t1->GetEntry(i);
-                bool no_bjets = has_no_bjets(nJets, jet1_pt, jet2_pt, jet1_cmva, jet2_cmva);
-                if(m >= 150 && met_pt < 50.  && no_bjets){
-                    TLorentzVector cm = *el_p + *el_m;
-                    Double_t pt = cm.Pt();
-                    if(is_data){
-                        h_m->Fill(m);
-                        h_cost->Fill(cost);
-                        h_pt->Fill(pt);
-                    }
-                    else{
+        if(!is_data) t1->SetBranchAddress("el_id_SF", &el_id_SF);
+        if(!is_data) t1->SetBranchAddress("el_reco_SF", &el_reco_SF);
+        if(!is_data) t1->SetBranchAddress("el_HLT_SF", &el_HLT_SF);
+        for (int i=0; i<size; i++) {
+            t1->GetEntry(i);
+            bool no_bjets = has_no_bjets(nJets, jet1_pt, jet2_pt, jet1_cmva, jet2_cmva);
+            if(m >= 150 && met_pt < 50.  && no_bjets){
+                TLorentzVector cm = *el_p + *el_m;
+                Double_t pt = cm.Pt();
+                if(is_data){
+                    h_m->Fill(m);
+                    h_cost->Fill(cost);
+                    h_pt->Fill(pt);
+                }
+                else{
 
-                        Double_t evt_weight = gen_weight *pu_SF * el_id_SF * el_reco_SF * el_HLT_SF;
-                        if (nJets >= 1){
-                            evt_weight *= jet1_b_weight;
-                        }
-                        if (nJets >= 2){
-                            evt_weight *= jet2_b_weight;
-                        }
-                        h_m->Fill(m, evt_weight);
-                        h_cost->Fill(cost, evt_weight);
-                        h_pt->Fill(pt, evt_weight);
+                    Double_t evt_weight = gen_weight *pu_SF * el_id_SF * el_reco_SF * el_HLT_SF;
+                    if (nJets >= 1){
+                        evt_weight *= jet1_b_weight;
                     }
+                    if (nJets >= 2){
+                        evt_weight *= jet2_b_weight;
+                    }
+                    h_m->Fill(m, evt_weight);
+                    h_cost->Fill(cost, evt_weight);
+                    h_pt->Fill(pt, evt_weight);
                 }
             }
-            if(!is_data){
-                Double_t el_lumi = 1000*tot_lumi;
-                h_m->Scale(el_lumi);
-                h_cost->Scale(el_lumi);
-                h_pt->Scale(el_lumi);
-            }
+        }
+        if(!is_data){
+            Double_t el_lumi = 1000*tot_lumi;
+            h_m->Scale(el_lumi);
+            h_cost->Scale(el_lumi);
+            h_pt->Scale(el_lumi);
         }
     }
 

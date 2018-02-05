@@ -22,8 +22,8 @@
 #include "TSystem.h"
 //#include"Minuit2/Minuit2Minimizer.h"
 #include "Math/Functor.h"
-//#include "../../TemplateMaker_systematics.C"
-#include "../../TemplateMaker.C"
+#include "../../TemplateMaker_systematics.C"
+//#include "../../TemplateMaker.C"
 
 
 
@@ -48,13 +48,14 @@ Double_t pt_alphas[6] =    {0.007, 0.136, 0.337, 0.546, 0.776, 0.945};
 Double_t pt_alpha_unc[6] = {0.006, 0.015, 0.035, 0.05, 0.08, .15};
 Double_t alpha;
 
-const TString fout_name("AFB_fit/fit_results/pt_bins/combined_pt_fit_jan31_nominal.root");
+const TString fout_name("AFB_fit/fit_results/pt_bins/combined_m_fit_feb2_pdf_sys.root");
+Int_t N_PDFS = 100;
 
 
-int FLAG2 = FLAG_PT_BINS;
-int n_bins = n_pt_bins;
-//int FLAG2 = FLAG_M_BINS;
-//int n_bins = n_m_bins;
+//int FLAG2 = FLAG_PT_BINS;
+//int n_bins = n_pt_bins;
+int FLAG2 = FLAG_M_BINS;
+int n_bins = n_m_bins;
 
 
 
@@ -289,24 +290,25 @@ void cleanup(){
     printf("Finishing cleanup\n");
 }
 void combined_fit_all(){
-    Double_t AFB_fit[n_bins], AFB_fit_err[n_bins], r_elel_back_fit[n_bins], r_elel_back_fit_err[n_bins], 
-             r_mumu_back_fit[n_bins], r_mumu_back_fit_err[n_bins];
+    Double_t AFB_fit[N_PDFS], AFB_fit_err[N_PDFS], r_elel_back_fit[N_PDFS], r_elel_back_fit_err[N_PDFS], 
+             r_mumu_back_fit[N_PDFS], r_mumu_back_fit_err[N_PDFS];
 
     TTree *tout= new TTree("T_fit_res", "Tree with Fit Results");
     tout->SetDirectory(0);
 
     Double_t AFB, AFB_err, r_elel_back, r_elel_back_err, r_mumu_back, r_mumu_back_err;
 
+    tout->Branch("N_PDFS", &N_PDFS);
     tout->Branch("var_low", &var_low);
     tout->Branch("var_high", &var_high);
     tout->Branch("nElElEvents", &nElEl_DataEvents);
     tout->Branch("nMuMuEvents", &nMuMu_DataEvents);
-    tout->Branch("AFB", &AFB);
-    tout->Branch("AFB_err", &AFB_err);
-    tout->Branch("r_elel_back", &r_elel_back);
-    tout->Branch("r_elel_back_err", &r_elel_back_err);
-    tout->Branch("r_mumu_back", &r_mumu_back);
-    tout->Branch("r_mumu_back_err", &r_mumu_back_err);
+    tout->Branch("AFB", &AFB_fit, "AFB_fit[N_PDFS]/F");
+    tout->Branch("AFB_err", &AFB_fit_err, "AFB_fit_err[N_PDFS]/F");
+    tout->Branch("r_elel_back", &r_elel_back_fit, "r_elel_back_fit[N_PDFS]/F");
+    tout->Branch("r_elel_back_err", &r_elel_back_fit_err, "r_elel_back_fit_err[N_PDFS]/F");
+    tout->Branch("r_mumu_back", &r_mumu_back_fit, "r_mumu_back_fit[N_PDFS]/F");
+    tout->Branch("r_mumu_back_err", &r_mumu_back_fit_err, "r_mumu_back_fit_err[N_PDFS]/F");
 
     unsigned int nElElEvents[n_bins];
     unsigned int nMuMuEvents[n_bins];
@@ -328,6 +330,13 @@ void combined_fit_all(){
         }
 
         setup();
+        nElElEvents[i] = nElEl_DataEvents;
+        nMuMuEvents[i] = nMuMu_DataEvents;
+        for(int j = 0; j < N_PDFS; j++){
+
+            printf("generating new MC template with new pdf \n");
+            gen_mc_template(t_mumu_mc, alpha, h_mumu_sym, h_mumu_asym, h_mumu_sym_count, var_low, var_high, FLAG_MUONS,FLAG2, j);
+            gen_mc_template(t_elel_mc, alpha, h_elel_sym, h_elel_asym, h_elel_sym_count, var_low, var_high, FLAG_ELECTRONS, FLAG2, j);
 
         /*
            printf("ElEL: Integrals are %f %f %f %f  \n", h_elel_data->Integral(), h_elel_sym->Integral(), 
@@ -340,47 +349,38 @@ void combined_fit_all(){
 
 
 
-        float AFB_start = 0.5;
-        float AFB_start_error = 0.1;
-        float AFB_max = 0.75;
-        float r_back_start = 0.2;
-        float r_back_start_error = 0.1;
-        float r_back_max = 0.6;
+            float AFB_start = 0.5;
+            float AFB_start_error = 0.1;
+            float AFB_max = 0.75;
+            float r_back_start = 0.2;
+            float r_back_start_error = 0.1;
+            float r_back_max = 0.6;
 
-        TVirtualFitter * minuit = TVirtualFitter::Fitter(0,3);
-        minuit->SetFCN(fcn);
-        minuit->SetParameter(0,"AFB", AFB_start, AFB_start_error, -AFB_max, AFB_max);
-        minuit->SetParameter(1,"r_elel_back", r_elel_back_starts[i], r_back_start_error, 0, r_back_max);
-        minuit->SetParameter(2,"r_mumu_back", r_mumu_back_starts[i], r_back_start_error, 0, r_back_max);
-        Double_t arglist[100];
-        arglist[0] = 10000.;
-        minuit->ExecuteCommand("MIGRAD", arglist,0);
-        Double_t up = 1.0;
-        minuit->SetErrorDef(up);
-        arglist[0] = 0.;
-        minuit->ExecuteCommand("MINOS", arglist, 0);
-
-
+            TVirtualFitter * minuit = TVirtualFitter::Fitter(0,3);
+            minuit->SetFCN(fcn);
+            minuit->SetParameter(0,"AFB", AFB_start, AFB_start_error, -AFB_max, AFB_max);
+            minuit->SetParameter(1,"r_elel_back", r_elel_back_starts[i], r_back_start_error, 0, r_back_max);
+            minuit->SetParameter(2,"r_mumu_back", r_mumu_back_starts[i], r_back_start_error, 0, r_back_max);
+            Double_t arglist[100];
+            arglist[0] = 10000.;
+            minuit->ExecuteCommand("MIGRAD", arglist,0);
+            Double_t up = 1.0;
+            minuit->SetErrorDef(up);
+            arglist[0] = 0.;
+            minuit->ExecuteCommand("MINOS", arglist, 0);
 
 
-        AFB_fit[i] = minuit->GetParameter(0); 
-        AFB_fit_err[i] = minuit->GetParError(0);
-        r_elel_back_fit[i] = minuit->GetParameter(1); 
-        r_elel_back_fit_err[i] = minuit->GetParError(1);
-        r_mumu_back_fit[i] = minuit->GetParameter(2); 
-        r_mumu_back_fit_err[i] = minuit->GetParError(2);
 
-        nElElEvents[i] = nElEl_DataEvents;
-        nMuMuEvents[i] = nMuMu_DataEvents;
 
-        AFB= AFB_fit[i];
-        AFB_err = AFB_fit_err[i];
+            AFB_fit[j] = minuit->GetParameter(0); 
+            AFB_fit_err[j] = minuit->GetParError(0);
+            r_elel_back_fit[j] = minuit->GetParameter(1); 
+            r_elel_back_fit_err[j] = minuit->GetParError(1);
+            r_mumu_back_fit[j] = minuit->GetParameter(2); 
+            r_mumu_back_fit_err[j] = minuit->GetParError(2);
+        }
 
-        r_elel_back= r_elel_back_fit[i];
-        r_elel_back_err = r_elel_back_fit_err[i];
 
-        r_mumu_back= r_mumu_back_fit[i];
-        r_mumu_back_err = r_mumu_back_fit_err[i];
         tout->Fill();
 
         cleanup();
@@ -388,18 +388,7 @@ void combined_fit_all(){
     TFile *fout = TFile::Open(fout_name, "RECREATE");
     fout->cd();
     tout->Write();
-    for(int i=0; i<n_bins; i++){
-        if(FLAG2 == FLAG_M_BINS){
-            printf("\n Fit on M=[%.0f, %.0f], %i ElEl Events, %i MuMu Events: AFB = %0.3f +/- %0.3f r_elel_back = %0.3f +/- %0.3f r_mumu_back =%0.3f +/- %0.3f \n", 
-                    m_bins[i], m_bins[i+1], nElElEvents[i], nMuMuEvents[i], AFB_fit[i], AFB_fit_err[i], r_elel_back_fit[i], r_elel_back_fit_err[i], r_mumu_back_fit[i], r_mumu_back_fit_err[i]);
-        }
-        else if(FLAG2 == FLAG_PT_BINS){
-            printf("\n Fit on Pt=[%.0f, %.0f], %i ElEl Events, %i MuMu Events: AFB = %0.3f +/- %0.3f r_elel_back = %0.3f +/- %0.3f r_mumu_back =%0.3f +/- %0.3f \n", 
-                    pt_bins[i], pt_bins[i+1], nElElEvents[i], nMuMuEvents[i], AFB_fit[i], AFB_fit_err[i], r_elel_back_fit[i], r_elel_back_fit_err[i], r_mumu_back_fit[i], r_mumu_back_fit_err[i]);
-        }
-
-    }
-    printf("fit results written to %s \n", fout_name.Data());
+    printf("combined fit results, written out to %s \n" , fout_name.Data());
 
 }
 
