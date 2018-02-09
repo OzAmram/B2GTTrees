@@ -248,6 +248,7 @@ int gen_mc_template(TTree *t1, Double_t alpha, TH2F* h_sym, TH2F *h_asym, TH2F *
     pileup_systematics pu_sys;
     if(do_pileup_sys != 0) setup_pileup_systematic(&pu_sys); 
 
+    // do_btag_sys: 0 = nominal, 1= var up, -1 = var down
     int do_btag_sys = 0;
 
 
@@ -778,7 +779,8 @@ void gen_fakes_template(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_contam,
         h->Scale(0.);
         printf("zeroing Fakes template \n");
     }
-    //h->Scale(0.5);
+    //if(flag1 == FLAG_MUONS) h->Scale(1.5);
+    //if(flag1 == FLAG_ELECTRONS) h->Scale(1.25);
     return;
 }
 

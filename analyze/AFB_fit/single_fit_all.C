@@ -30,6 +30,8 @@
 int n_xf_bins = 4;
 float xf_max = 1.0;
 Float_t xf_bins[] = {0., 0.05, 0.1, 0.20, 1.0};
+//int n_cost_bins = 6;
+//Float_t cost_bins[] = {-1.0, -.67, -.33, 0., 0.33, 0.67, 1.0};
 //int n_cost_bins = 8;
 //Float_t cost_bins[] = {-1.0, -.75, -.5, -.25, 0., 0.25, 0.5,  0.75, 1.0};
 int n_cost_bins = 10;
@@ -48,8 +50,8 @@ Double_t alpha;
 //int FLAG = FLAG_ELECTRONS;
 int FLAG = FLAG_MUONS;
 bool do_both = true;
-const TString mumu_fout_name("AFB_fit/fit_results/m_bins/MuMu_fit_jan31_test.root");
-const TString elel_fout_name("AFB_fit/fit_results/m_bins/ElEl_fit_jan31_test.root");
+const TString mumu_fout_name("AFB_fit/fit_results/m_bins/MuMu_fit_feb6_bin_down_down.root");
+const TString elel_fout_name("AFB_fit/fit_results/m_bins/ElEl_fit_feb6_bin_down_down.root");
 
 
 float m_low;
@@ -229,6 +231,14 @@ void setup(){
 
         nDataEvents = gen_data_template(t_elel_data, h_data, &v_xF, &v_cost, m_low, m_high, FLAG);
     }
+    printf("\n\n\n Printing MC counts in each bin:\n");
+    for(int i=0; i<n_xf_bins; i++){
+        for(int j=0; j<n_cost_bins; j++){
+            printf("%.0f ", h_sym_count->GetBinContent(i,j));
+        }
+        printf("\n");
+    }
+
     //f_data->Close();
     //f_back->Close();
     //f_mc->Close();

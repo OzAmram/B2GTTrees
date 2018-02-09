@@ -35,7 +35,7 @@ Float_t xf_bins[] = {0., 0.05, 0.1, 0.20, 1.0};
 int n_cost_bins = 10;
 Float_t cost_bins[] = {-1.0, -.8, -.6, -.4, -.2, 0., 0.2, 0.4, 0.6, 0.8, 1.0};
 //int n_cost_bins = 12;
-//Float_t cost_bins[] = {-1.0, -.8333, -.6667, -.5, -.3333, -0.1667, 0., 0.1667, 0.3333, 0.5, 0.6667, 0.8333, 1.0};
+//Float_t cost_bins[] = {-1.0, -0.8333, -0.6667, -0.5, -0.3333, -0.1667, 0., 0.1667, 0.3333, 0.5, 0.6667, 0.8333, 1.0};
 //int n_cost_bins = 14;
 //Float_t cost_bins[] = {-1.0, -.857, -.714, -.571, -.429, -0.286, -.143,  0., 0.143, .286, 0.429, 0.571, 0.714, 0.857, 1.0};
 int n_m_bins = 6;
@@ -44,7 +44,7 @@ Double_t alphas[6] = {0.109, 0.078, 0.0762, 0.112, 0.065, 0.06};
 Double_t alpha_unc[6] = {0.015, 0.015, 0.02, 0.03,   0.02, 0.02};
 Double_t alpha;
 
-const TString fout_name("AFB_fit/fit_results/m_bins/combined_fit_jan31_nominal.root");
+const TString fout_name("AFB_fit/fit_results/m_bins/combined_fit_feb6_btag_up.root");
 
 //int n_xf_bins = 4;
 //float xf_max = 1.0;
