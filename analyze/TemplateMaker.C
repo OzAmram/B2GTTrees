@@ -148,6 +148,7 @@ int gen_data_template(TTree *t1, TH2F* h, vector<double> *v_xF, vector<double> *
         bool no_bjets = has_no_bjets(nJets, jet1_pt, jet2_pt, jet1_cmva, jet2_cmva);
         if(flag2 == FLAG_M_BINS){
             if(m >= var_low && m <= var_high && met_pt < 50. && no_bjets){
+                if(m> 2000.) printf("m %.0f \n", m);
                 n++;
                 h->Fill(xF, cost, 1); 
                 v_xF->push_back(xF);
@@ -169,7 +170,7 @@ int gen_data_template(TTree *t1, TH2F* h, vector<double> *v_xF, vector<double> *
 
     }
 
-    h->Scale(1./h->Integral());
+    //h->Scale(1./h->Integral());
     t1->ResetBranchAddresses();
     return nEvents;
 }

@@ -341,6 +341,8 @@ void draw_cmp(){
     //c_cost_cut->cd();
 
     TCanvas *c_pt = new TCanvas("c_pt", "Histograms", 200, 10, 900, 700);
+    TPad *pt_pad1 = new TPad("pad1", "pad1", 0.,0.3,0.98,1.);
+    pt_pad1->SetBottomMargin(0);
     c_pt->cd();
     pt_stack->Draw("hist");
     data_pt->SetMarkerStyle(kFullCircle);
@@ -362,6 +364,47 @@ void draw_cmp(){
     leg3->AddEntry(ttbar_m, "t#bar{t}", "f");
     leg3->Draw();
 
+    TPad *pt_pad2 = new TPad("pt_pad2", "pad2", 0.,0,.98,0.3);
+    //pad2->SetTopMargin(0);
+    pt_pad2->SetBottomMargin(0.2);
+    pt_pad2->Draw();
+    pt_pad2->cd();
+    TList *pt_stackHists = pt_stack->GetHists();
+    TH1* pt_mc_sum = (TH1*)pt_stackHists->At(0)->Clone();
+    pt_mc_sum->Reset();
+
+    for (int i=0;i<pt_stackHists->GetSize();++i) {
+      pt_mc_sum->Add((TH1*)pt_stackHists->At(i));
+    }
+    auto pt_ratio = (TH1F *) data_pt->Clone("h_pt_ratio");
+    pt_ratio->SetMinimum(0.7);
+    pt_ratio->SetMaximum(1.3);
+    pt_ratio->Sumw2();
+    pt_ratio->SetStats(0);
+    pt_ratio->Divide(pt_mc_sum);
+    pt_ratio->SetMarkerStyle(21);
+    pt_ratio->Draw("ep");
+    TLine *l2 = new TLine(0,1,2000,1);
+    l2->SetLineStyle(2);
+    l2->Draw();
+    c_pt->cd();
+
+    pt_ratio->SetTitle("");
+    // Y axis pt_ratio plot settings
+   pt_ratio->GetYaxis()->SetTitle("Data/MC");
+   pt_ratio->GetYaxis()->SetNdivisions(505);
+   pt_ratio->GetYaxis()->SetTitleSize(20);
+   pt_ratio->GetYaxis()->SetTitleFont(43);
+   pt_ratio->GetYaxis()->SetTitleOffset(1.2);
+   pt_ratio->GetYaxis()->SetLabelFont(43); // Absolute font size in pixel (precision 3)
+   pt_ratio->GetYaxis()->SetLabelSize(15);
+   // X axis pt_ratio plot settings
+   pt_ratio->GetXaxis()->SetTitle("dilepton Pt (GeV)");
+   pt_ratio->GetXaxis()->SetTitleSize(20);
+   pt_ratio->GetXaxis()->SetTitleFont(43);
+   pt_ratio->GetXaxis()->SetTitleOffset(3.);
+   pt_ratio->GetXaxis()->SetLabelFont(43); // Absolute font size in pixel (precision 3)
+   pt_ratio->GetXaxis()->SetLabelSize(20);
     CMS_lumi(c_pt, iPeriod, 11 );
     c_pt->Update();
 
