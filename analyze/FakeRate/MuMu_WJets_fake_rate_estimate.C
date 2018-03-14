@@ -11,7 +11,7 @@
 
 const double root2 = sqrt(2);
 const char* filename("SingleMuon_files_sep25.txt");
-const TString fout_name("output_files/MuMu_WJets_est_Nov2.root");
+const TString fout_name("output_files/MuMu_WJets_est_mar13.root");
 
 const bool data_2016 = true;
 
@@ -221,7 +221,7 @@ void MuMu_WJets_fake_rate_estimate()
                 }
                 bool no_bjets = has_no_bjets(nJets, jet1_pt, jet2_pt, jet1_cmva, jet2_cmva);
                 bool one_iso = (iso_0 < tight_iso) ^ (iso_1 < tight_iso);
-                if (one_iso && cm_m >=25. && no_bjets && met_pt < 50.){
+                if (one_iso && cm_m >=150. && no_bjets && met_pt < 50.){
                     xF = abs(2.*cm.Pz()/13000.); 
 
                     // compute Colins soper angle with formula

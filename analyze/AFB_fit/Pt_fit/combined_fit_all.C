@@ -24,6 +24,7 @@
 #include "Math/Functor.h"
 //#include "../../TemplateMaker_systematics.C"
 #include "../../TemplateMaker.C"
+#include "../root_files.h"
 
 
 
@@ -76,49 +77,6 @@ TH2F *h_mumu_mc_count, *h_mumu_sym_count;
 //define axis globally for convinience 
 TAxis *x_ax, *y_ax, *z_ax;
 
-//MC templates
-TFile* f_elel_mc = (TFile*) TFile::Open("output_files/ElEl_DY_jan30.root");
-TTree *t_elel_mc = (TTree *) f_elel_mc ->Get("T_data");
-TTree *t_elel_nosig = (TTree *) f_elel_mc ->Get("T_back");
-TFile* f_elel_back = (TFile*) TFile::Open("output_files/ElEl_combined_back_jan30.root");
-TTree *t_elel_back = (TTree *) f_elel_back ->Get("T_data");
-
-TFile *f_elel_data = TFile::Open("output_files/SingleElectron_data_jan22.root");
-TTree *t_elel_data = (TTree *)f_elel_data->Get("T_data"); 
-
-TFile *f_elel_QCD = TFile::Open("../analyze/output_files/ElEl_QCD_est_nov2.root");
-TTree *t_elel_QCD = (TTree *)f_elel_QCD->Get("T_data");
-
-TFile *f_elel_WJets = TFile::Open("../analyze/output_files/ElEl_WJets_est_nov2.root");
-TTree *t_elel_WJets = (TTree *)f_elel_WJets->Get("T_data");
-
-TFile *f_elel_WJets_contam = TFile::Open("../analyze/FakeRate/root_files/ElEl_fakerate_WJets_MC_dec4.root");
-TTree *t_elel_WJets_contam = (TTree *)f_elel_WJets_contam->Get("T_data");
-
-TFile *f_elel_QCD_contam = TFile::Open("../analyze/FakeRate/root_files/ElEl_fakerate_QCD_MC_dec4.root");
-TTree *t_elel_QCD_contam = (TTree *)f_elel_QCD_contam->Get("T_data");
-////////////////////////////////////////
-
-TFile* f_mumu_mc = (TFile*) TFile::Open("output_files/MuMu_DY_jan16.root");
-TTree *t_mumu_mc = (TTree *) f_mumu_mc ->Get("T_data");
-TTree *t_mumu_nosig = (TTree *) f_mumu_mc ->Get("T_back");
-TFile* f_mumu_back = (TFile*) TFile::Open("output_files/MuMu_combined_back_jan22.root");
-TTree *t_mumu_back = (TTree *) f_mumu_back ->Get("T_data");
-
-TFile *f_mumu_data = TFile::Open("output_files/SingleMuon_data_jan22.root");
-TTree *t_mumu_data = (TTree *)f_mumu_data->Get("T_data"); 
-
-TFile *f_mumu_QCD = TFile::Open("../analyze/output_files/MuMu_QCD_est_nov2.root");
-TTree *t_mumu_QCD = (TTree *)f_mumu_QCD->Get("T_data");
-
-TFile *f_mumu_WJets = TFile::Open("../analyze/output_files/MuMu_WJets_est_Nov2.root");
-TTree *t_mumu_WJets = (TTree *)f_mumu_WJets->Get("T_data");
-
-TFile *f_mumu_WJets_contam = TFile::Open("../analyze/FakeRate/root_files/MuMu_fakerate_Wjets_MC_dec4.root");
-TTree *t_mumu_WJets_contam = (TTree *)f_mumu_WJets_contam->Get("T_data");
-
-TFile *f_mumu_QCD_contam = TFile::Open("../analyze/FakeRate/root_files/MuMu_fakerate_QCD_MC_dec4.root");
-TTree *t_mumu_QCD_contam = (TTree *)f_mumu_QCD_contam->Get("T_data");
 
 
 
@@ -292,6 +250,7 @@ void combined_fit_all(){
     Double_t AFB_fit[n_bins], AFB_fit_err[n_bins], r_elel_back_fit[n_bins], r_elel_back_fit_err[n_bins], 
              r_mumu_back_fit[n_bins], r_mumu_back_fit_err[n_bins];
 
+    init();
     TTree *tout= new TTree("T_fit_res", "Tree with Fit Results");
     tout->SetDirectory(0);
 

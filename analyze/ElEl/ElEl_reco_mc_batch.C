@@ -17,7 +17,7 @@ double Ebeam = 6500.;
 double Pbeam = sqrt(Ebeam*Ebeam - 0.938*0.938);
 
 char *filename("DY_files_dec7.txt");
-const TString fout_name("output_files/ElEl_DY_jan31.root");
+const TString fout_name("output_files/ElEl_DY_mar8.root");
 const double alpha = 0.05;
 const bool PRINT=false;
 
