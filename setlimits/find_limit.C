@@ -1,8 +1,8 @@
 
-#include "lhe_reader.C"
+#include "madgraph_lhe_reader.C"
 
-//Double_t AFB_SM[6] =  {0.620,  0.615, 0.603, 0.590, 0.586, 0.588};
-Double_t AFB_SM[6] = {0.65, 0.66, 0.65, 0.62, 0.61, 0.60};
+Double_t AFB_SM[6] =  {0.620,  0.615, 0.603, 0.590, 0.586, 0.588};
+//Double_t AFB_SM[6] = {0.65, 0.66, 0.65, 0.62, 0.61, 0.60};
 Double_t AFB_unc[6] = {0.014, 0.020,0.021,0.028,0.045, 0.063};
 
 Double_t test_stat(Double_t *x, Double_t *params){
@@ -82,8 +82,8 @@ Double_t test_Zp(Double_t M_Zp){
 
 
 void find_limit(){
-    Double_t m_start = 1800.;
-    Double_t m_max = 10000.;
+    Double_t m_start = 2200.;
+    Double_t m_max = 2600.;
     Double_t m_step = 50.;
     Double_t alpha = 0.05;
     Double_t pval = 0.;
