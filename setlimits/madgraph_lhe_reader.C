@@ -31,12 +31,13 @@ struct eventcm {          //!< useful info in various frames
 
 // Main program  
 
-Double_t get_AFB(Double_t M_Zp, int m_bin)
+Double_t get_AFB(int Zp_mass, int m_bin, bool print = false)
     //reweight PYTHIA samples to get AFB for given Zprime mass at a given
     //dilepton mass
 {
     // Local variables 
     int i, j, k, iqk=0, iqb=0, itq=0, itb=0, ig1=0, ig2=0, ijt, njet=0, npflavor=0, nevent, nfit;
+    int iqk_extra = 0; iqb_extra=0;
     int nqqb=0, ngg=0, itbq, itbb, itqk, itqb, itlp, itnu;
     int nup, idrup; 
     float xwgtup, scalup, aqedup, aqcdup;
@@ -50,15 +51,16 @@ Double_t get_AFB(Double_t M_Zp, int m_bin)
 
     // Construct file name to analyze
 
-    strcpy(infile, "Zprime_m200.lhe");
+    //strcpy(infile, "Zprime_m200.lhe");
     Float_t m_bins[] = {150,200,   250,    350,    500,    700, 100000};
     const double m_low = m_bins[m_bin];
     const double m_high =m_bins[m_bin + 1];
-    sprintf(infile, "lhe_files/Zprime_m%.0f.lhe", m_low);
+    int run_num =m_bin;
+    //sprintf(infile, "lhe_files/MG5_condor_files/Zp_events_M235_bin%i.lhe", run_num);
+    sprintf(infile, "lhe_files/MG5_condor_files/Zp_events_M%i_bin%i.lhe", Zp_mass, run_num);
     //printf("Opening file %s \n", infile);
     //printf("M bins from %.0f to %.0f \n", m_low, m_high);
 
-    Double_t M_Zp_nom = 3000.; //mass of Z_p samples were generated at
 
 
         // Make sure file is available 
@@ -80,6 +82,7 @@ Double_t get_AFB(Double_t M_Zp, int m_bin)
     double Pbeam = sqrt(Ebeam*Ebeam - 0.938*0.938);
 
     nevent=0; nfit=0;
+    int event_num =0;
     int nTotal =0;
     int nFail =0;
     Double_t nF = 0, nB = 0;
@@ -88,6 +91,7 @@ Double_t get_AFB(Double_t M_Zp, int m_bin)
 
     while (fscanf(ifp,"%s", inp1) !=EOF) {
         if(strcmp(inp1,"<event>") == 0) {
+            event_num++;
 
 
             // event found
@@ -102,6 +106,8 @@ Double_t get_AFB(Double_t M_Zp, int m_bin)
             std::vector<particle> up;
 
             iqk = -1; iqb = -1; itq = -1; itb = -1; ig1 = -1; ig2 = -1; ijt = -1;
+            iqk_extra = -1;
+            iqb_extra = -1; //in case event with 2 quarks or 2 anti quarks
             njet = 0; npflavor = 0; nqqb = 0; ngg = 0;
             int qtype = 0; // type of quark, uct = 0 , dsb = 1
 
@@ -118,30 +124,44 @@ Double_t get_AFB(Double_t M_Zp, int m_bin)
             // first, flag the stable final particles	   
             for(i=0; i<nup; ++i) {
                 if(up[i].mother[0] == 0 && up[i].mother[1] == 0) {
-                    if(up[i].id == 1 || (up[i].id == 2 || (up[i].id == 3 || (up[i].id == 4 || up[i].id == 5)))) {iqk = i; npflavor += up[i].id; continue;}
-                    if(up[i].id == -1 || (up[i].id == -2 || (up[i].id == -3|| (up[i].id == -4 || up[i].id == -5)))) {iqb = i; npflavor += up[i].id; continue;}
+                    if(up[i].id == 1 || (up[i].id == 2 || (up[i].id == 3 || (up[i].id == 4 || up[i].id == 5)))) {
+                        if(iqk == -1) iqk = i; 
+                        else{ 
+                            iqk_extra = i;
+                            //printf("Found double quark event \n");
+                        }
+                        continue;
+                    }
+                    if(up[i].id == -1 || (up[i].id == -2 || (up[i].id == -3|| (up[i].id == -4 || up[i].id == -5)))) {
+                        if (iqb == -1) iqb = i; 
+                        else{ 
+                            iqb_extra = i;
+                            //printf("Found double quark event \n");
+                        }
+                        continue;
+                    }
                     if(ig1 == -1) {ig1 = i;} else {ig2 = i;}
                     continue;
                 }
-                if(up[i].mother[0] == 3 && (up[i].mother[1] == 0 || up[i].mother[1] == 3)) {
-                    //printf("Hi \n");
-                    //itq = mu- itb = mu + 
-                    if(up[i].id == 13) {itq = i; continue;}
-                    if(up[i].id == -13) {itb = i; continue;}
-                    ijt = i;
-                    continue;
-                }
+                if(up[i].id == 13) {itq = i; continue;}
+                if(up[i].id == -13) {itb = i; continue;}
 
             }
 
 
 
-            if(iqk == -1 && iqb == -1){
-                printf("no quarks \n");
+            if(((iqk == -1) && (ig1 == -1 && iqb_extra == -1)) ||
+               ((iqb == -1) && (ig1 == -1 && iqk_extra ==-1)) ||
+                ((iqk == -1 && iqb == -1) && (ig2 == -1)) )   {
+                printf("unable to determine initial state for event %i \n", event_num);
+                printf("indices are %i %i %i %i \n", iqk, iqb, ig1, ig2);
+                printf("printing particles \n");
+                for(i=0; i<nup; i++){
+                    printf("%d %d %d %d \n", up[i].id, up[i].status, up[i].mother[0], up[i].mother[1]);
+                }
                 nFail++;
                 continue;
             }
-            //          if(npflavor != 0) continue;
             if(itq == -1 || itb == -1){
                 printf("no mus \n");
                 nFail++;
@@ -160,14 +180,13 @@ Double_t get_AFB(Double_t M_Zp, int m_bin)
             TLorentzVector tb(up[itb].p[0], up[itb].p[1], up[itb].p[2], up[itb].p[3]);
             TLorentzVector p1(0., 0., Pbeam, Ebeam);
             TLorentzVector p2(0., 0., -Pbeam, Ebeam);
-            if(iqk > -1) {
-                if(up[iqk].p[2] < 0.) {
-                    TLorentzVector p = p1;
-                    p1 = p2;
-                    p2 = p;
-                }
-            } else {
-                if(up[iqb].p[2] > 0.) {
+            if(iqk > -1 && up[iqk].p[2] < 0.) {
+                TLorentzVector p = p1;
+                p1 = p2;
+                p2 = p;
+            }
+            else {
+                if(iqb > -1 && up[iqb].p[2] > 0.) {
                     TLorentzVector p = p1;
                     p1 = p2;
                     p2 = p;
@@ -179,12 +198,13 @@ Double_t get_AFB(Double_t M_Zp, int m_bin)
             Double_t pt = cm.Pt();
             nTotal++;
 
+            //printf("M is %.0f \n", cm.M());
             if(cm.M() >= m_low && cm.M() <= m_high){
                 ++nevent;
                 // Invariant mass of pair
                 double mass = cm.M();
 
-                double xF = 2.*cm.Pz()/1300.;
+                double xF = 2.*cm.Pz()/13000.;
 
                 // Boost everything into the t-tbar rest frame
 
@@ -205,17 +225,13 @@ Double_t get_AFB(Double_t M_Zp, int m_bin)
                 tq.RotateUz(pzu);
                 double costcs = tq.CosTheta();
 
-                Double_t weight_nom = Zp_xsec(cm.M(), costcs, M_Zp_nom, qtype);
-                Double_t weight_new = Zp_xsec(cm.M(), costcs, M_Zp, qtype);
 
-                Double_t reweight = weight_new/weight_nom;
-                //printf("reweight %.3f \n", reweight);
 
 
                 if(costcs > 0.){ 
-                    nF+= reweight;} 
+                    nF+= 1.;} 
                 else {
-                    nB += reweight;}
+                    nB += 1.;}
 
 
 
@@ -230,12 +246,13 @@ Double_t get_AFB(Double_t M_Zp, int m_bin)
     Double_t AFB = ((nF - nB))/((nF+nB));
     Double_t dAFB = (1.-AFB*AFB)/sqrt((nF+nB));
 
-    bool print = false;
+    //bool print = false;
     if(print){
         printf( "A_FB count = %.3f +- %.3f\n" 
                 "%i events failed to id \n",
                 AFB, dAFB, nFail);
         printf("Selected  %d out of %i events\n", nevent, nTotal);
+        printf("\n");
     }
 
 
