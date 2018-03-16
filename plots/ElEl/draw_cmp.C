@@ -24,41 +24,17 @@
 #include "../../analyze/TemplateMaker.C"
 #include "../tdrstyle.C"
 #include "../CMS_lumi.C"
+#include "root_files.h"
 
+const int type = FLAG_ELECTRONS;
 
-int type = FLAG_ELECTRONS;
 
 
 void draw_cmp(){
     setTDRStyle();
-    TFile *f_data = TFile::Open("../analyze/output_files/SingleElectron_data_jan22.root");
-    TTree *t_data = (TTree *)f_data->Get("T_data");
-    TFile *f_mc = TFile::Open("../analyze/output_files/ElEl_DY_jan30.root");
-    TTree *t_mc = (TTree *)f_mc->Get("T_data");
-    TTree *t_mc_nosig = (TTree *)f_mc->Get("T_back");
-    TFile *f_ttbar = TFile::Open("../analyze/output_files/ElEl_TTbar_jan22.root");
-    TTree *t_ttbar = (TTree *)f_ttbar->Get("T_data");
+    init();
 
-    TFile *f_QCD = TFile::Open("../analyze/output_files/ElEl_QCD_est_nov2.root");
-    TTree *t_QCD = (TTree *)f_QCD->Get("T_data");
-
-    TFile *f_WJets = TFile::Open("../analyze/output_files/ElEl_WJets_est_nov2.root");
-    TTree *t_WJets = (TTree *)f_WJets->Get("T_data");
-
-    TFile *f_WJets_mc = TFile::Open("../analyze/FakeRate/root_files/ElEl_fakerate_WJets_MC_dec4.root");
-    TTree *t_WJets_mc = (TTree *)f_WJets_mc->Get("T_data");
-
-    TFile *f_QCD_mc = TFile::Open("../analyze/FakeRate/root_files/ElEl_fakerate_QCD_MC_dec4.root");
-    TTree *t_QCD_mc = (TTree *)f_QCD_mc->Get("T_data");
-
-    TFile *f_diboson = TFile::Open("../analyze/output_files/ElEl_diboson_jan22.root");
-    TTree *t_diboson = (TTree *)f_diboson->Get("T_data");
-
-    TFile *f_wt = TFile::Open("../analyze/output_files/ElEl_WT_jan22.root");
-    TTree *t_wt = (TTree *)f_wt->Get("T_data");
-    TH1F *data_m = new TH1F("data_m", "Data Dimuon Mass Distribution", 30, 150, 2000);
-
-
+    TH1F *data_m = new TH1F("data_m", "Data Dielectron Mass Distribution", 30, 150, 2000);
     TH1F *mc_pt = new TH1F("mc_pt", "MC signal", 40, 0, 1000);
     TH1F *mc_nosig_pt = new TH1F("mc_nosig_pt", "MC signal", 40, 0, 1000);
     TH1F *data_pt = new TH1F("data_pt", "MC signal", 40, 0, 1000);
@@ -75,7 +51,6 @@ void draw_cmp(){
     diboson_pt->SetFillColor(kGreen+3);
     QCD_pt->SetFillColor(kRed -7);
     wt_pt->SetFillColor(kOrange+7); 
-
 
     TH1F *mc_m = new TH1F("mc_m", "MC Signal (qqbar, qglu, qbarglu)", 30, 150, 2000);
     mc_m->SetFillColor(kRed+1);
@@ -108,9 +83,6 @@ void draw_cmp(){
 
 
 
-    TH1F *wt_m = new TH1F("wt_m", "tw + #bar{t}w", 30, 150, 2000);
-    TH1F *wt_cost = new TH1F("wt_cost", "tw + #bar{t}w", 40, -1,1);
-
     TH1F *diboson_m = new TH1F("diboson_m", "DiBoson (WW, WZ, ZZ)", 30, 150, 2000);
     TH1F *diboson_cost = new TH1F("diboson_cost", "DiBoson (WW, WZ,ZZ)", 40, -1,1);
 
@@ -120,18 +92,37 @@ void draw_cmp(){
     TH1F *WJets_m = new TH1F("WJets_m", "WJets", 30, 150, 2000);
     TH1F *WJets_cost = new TH1F("WJets_cost", "WJets", 40, -1,1);
 
+    TH1F *wt_m = new TH1F("wt_m", "tw + #bar{t}w", 30, 150, 2000);
+    TH1F *wt_cost = new TH1F("wt_cost", "tw + #bar{t}w", 40, -1,1);
+
+
     wt_m->SetFillColor(kOrange+7); 
     wt_cost->SetFillColor(kOrange+7); 
+    diboson_m->SetFillColor(kGreen+3);
+    diboson_cost->SetFillColor(kGreen + 3);
+    QCD_m->SetFillColor(kRed -7);
+    QCD_cost->SetFillColor(kRed -7);
 
-    make_m_cost_pt_hist(t_data, data_m, data_cost, data_pt, true,type);
-    make_m_cost_pt_hist(t_mc, mc_m, mc_cost, mc_pt, false,type);
-    make_m_cost_pt_hist(t_mc_nosig, mc_nosig_m, mc_nosig_pt, mc_nosig_cost, false,type);
-    make_m_cost_pt_hist(t_ttbar, ttbar_m, ttbar_cost, ttbar_pt, false,type);
-    make_m_cost_pt_hist(t_diboson, diboson_m, diboson_cost, diboson_pt, false,type);
-    make_m_cost_pt_hist(t_wt, wt_m, wt_cost, wt_pt, false,type);
-    
+    make_m_cost_pt_hist(t_data, data_m, data_cost, data_pt, true, type);
+    make_m_cost_pt_hist(t_mc, mc_m, mc_cost, mc_pt, false, type);
+    make_m_cost_pt_hist(t_mc_nosig, mc_nosig_m, mc_nosig_cost, mc_nosig_pt, false, type);
+    make_m_cost_pt_hist(t_ttbar, ttbar_m, ttbar_cost, ttbar_pt, false, type);
+    make_m_cost_pt_hist(t_wt, wt_m, wt_cost, wt_pt, false, type);
+    make_m_cost_pt_hist(t_diboson, diboson_m, diboson_cost, diboson_pt, false, type);
 
     Fakerate_est_el(t_WJets, t_QCD, t_WJets_mc, t_QCD_mc, QCD_m, QCD_cost, QCD_pt);
+
+
+
+
+    Double_t EMu_ratio= 1.05;
+    ttbar_m->Scale(EMu_ratio);
+    ttbar_cost->Scale(EMu_ratio);
+    diboson_m->Scale(EMu_ratio);
+    diboson_cost->Scale(EMu_ratio);
+    wt_m->Scale(EMu_ratio);
+    wt_cost->Scale(EMu_ratio);
+
 
     int nBins_x = QCD_m->GetXaxis()->GetNbins();
     int nBins_y = QCD_cost->GetYaxis()->GetNbins();
@@ -147,29 +138,6 @@ void draw_cmp(){
         }
     }
 
-    /*
-    make_m_cost_hist(t_QCD, QCD_m, QCD_cost, true, type, FLAG_QCD);
-    
-    make_m_cost_hist(t_WJets, WJets_m, WJets_cost, true, type, FLAG_WJETS);
-    QCD_m->Add(WJets_m);
-    QCD_cost->Add(WJets_cost);
-    */
-    
-    Double_t EMu_ratio = 1.05;
-    ttbar_m->Scale(EMu_ratio);
-    ttbar_cost->Scale(EMu_ratio);
-    diboson_m->Scale(EMu_ratio);
-    diboson_cost->Scale(EMu_ratio);
-    wt_m->Scale(EMu_ratio);
-    wt_cost->Scale(EMu_ratio);
-
-    diboson_m->SetFillColor(kGreen+3);
-    diboson_cost->SetFillColor(kGreen + 3);
-    
-    QCD_m->SetFillColor(kRed -7);
-    QCD_cost->SetFillColor(kRed -7);
-
-    //QCD_m->Scale(0.000001);
 
     //mc_m->Draw();
     
@@ -216,7 +184,7 @@ void draw_cmp(){
     m_stack->Add(mc_m);
 
 
-    THStack *cost_stack = new THStack("cost_stack", "Cos(#theta) Distribution: Data vs MC; ee Cos(#theta)_{r}");
+    THStack *cost_stack = new THStack("cost_stack", "Cos(#theta) Distribution: Data vs MC; ElEl Cos(#theta)_{r}");
     cost_stack->Add(ttbar_cost);
     cost_stack->Add(QCD_cost);
     cost_stack->Add(wt_cost);
@@ -261,7 +229,8 @@ void draw_cmp(){
     c_m->cd();
     TPad *pad2 = new TPad("pad2", "pad2", 0.,0,.98,0.3);
     //pad2->SetTopMargin(0);
-    pad2->SetBottomMargin(0.3);
+    pad2->SetBottomMargin(0.2);
+    pad2->SetGridy();
     pad2->Draw();
     pad2->cd();
 
@@ -275,8 +244,8 @@ void draw_cmp(){
       m_mc_sum->Add((TH1*)stackHists->At(i));
     }
     auto ratio = (TH1F *) data_m->Clone("h_ratio");
-    ratio->SetMinimum(0.5);
-    ratio->SetMaximum(1.5);
+    ratio->SetMinimum(0.75);
+    ratio->SetMaximum(1.25);
     ratio->Sumw2();
     ratio->SetStats(0);
     ratio->Divide(m_mc_sum);
@@ -297,8 +266,8 @@ void draw_cmp(){
    ratio->GetYaxis()->SetLabelFont(43); // Absolute font size in pixel (precision 3)
    ratio->GetYaxis()->SetLabelSize(15);
    // X axis ratio plot settings
-   ratio->GetXaxis()->SetTitle("M_{ee} (GeV)");
-   ratio->GetXaxis()->SetTitleSize(30);
+   ratio->GetXaxis()->SetTitle("M_{#el#el} (GeV)");
+   ratio->GetXaxis()->SetTitleSize(20);
    ratio->GetXaxis()->SetTitleFont(43);
    ratio->GetXaxis()->SetTitleOffset(3.);
    ratio->GetXaxis()->SetLabelFont(43); // Absolute font size in pixel (precision 3)
@@ -308,25 +277,20 @@ void draw_cmp(){
     int iPeriod = 4; 
     CMS_lumi(pad1, iPeriod, 33 );
 
-    /*
-    TCanvas *c_m2 = new TCanvas("c_m2", "Ratio test", 900, 700);
-    auto rp = new TRatioPlot(data_m, m_mc_sum);
-    rp->fHistDrawProxy = m_stack;
-    c_m2->SetTicks(0,1);
-    rp->Draw();
-    c1->Update();
-    */
 
 
     TCanvas *c_cost = new TCanvas("c_cost", "Histograms", 200, 10, 900, 700);
+    TPad *cost_pad1 = new TPad("pad1c", "pad1", 0.,0.3,0.98,1.);
+    cost_pad1->SetBottomMargin(0);
     //c_cost->SetLogy();
-    c_cost->cd();
+    cost_pad1->Draw();
+    cost_pad1->cd();
     cost_stack->Draw("hist");
     data_cost->SetMarkerStyle(kFullCircle);
     data_cost->SetMarkerColor(1);
-    //cost_stack->SetMaximum(3000);
+    cost_stack->SetMinimum(1);
     data_cost->Draw("P E same");
-    c_cost->Update();
+    cost_pad1->Update();
     TLegend *leg2 = new TLegend(0.5, 0.65, 0.75, 0.8);
     leg2->AddEntry(data_m, "data", "p");
     leg2->AddEntry(mc_m, "DY (q#bar{q}, qg #bar{q}g)", "f");
@@ -339,6 +303,50 @@ void draw_cmp(){
 
     CMS_lumi(c_cost, iPeriod, 11 );
     c_cost->Update();
+
+    c_cost->cd();
+    TPad *cost_pad2 = new TPad("cost_pad2", "pad2", 0.,0,.98,0.3);
+    //pad2->SetTopMargin(0);
+    cost_pad2->SetBottomMargin(0.2);
+    cost_pad2->SetGridy();
+    cost_pad2->Draw();
+    cost_pad2->cd();
+    TList *cost_stackHists = cost_stack->GetHists();
+    TH1* cost_mc_sum = (TH1*)cost_stackHists->At(0)->Clone();
+    cost_mc_sum->Reset();
+
+    for (int i=0;i<cost_stackHists->GetSize();++i) {
+      cost_mc_sum->Add((TH1*)cost_stackHists->At(i));
+    }
+    auto cost_ratio = (TH1F *) data_cost->Clone("h_cost_ratio");
+    cost_ratio->SetMinimum(0.7);
+    cost_ratio->SetMaximum(1.3);
+    cost_ratio->Sumw2();
+    cost_ratio->SetStats(0);
+    cost_ratio->Divide(cost_mc_sum);
+    cost_ratio->SetMarkerStyle(21);
+    cost_ratio->Draw("ep");
+    TLine *l2 = new TLine(0,1,2000,1);
+    l2->SetLineStyle(2);
+    l2->Draw();
+    c_cost->cd();
+
+    cost_ratio->SetTitle("");
+    // Y axis cost_ratio plot settings
+   cost_ratio->GetYaxis()->SetTitle("Data/MC");
+   cost_ratio->GetYaxis()->SetNdivisions(505);
+   cost_ratio->GetYaxis()->SetTitleSize(20);
+   cost_ratio->GetYaxis()->SetTitleFont(43);
+   cost_ratio->GetYaxis()->SetTitleOffset(1.2);
+   cost_ratio->GetYaxis()->SetLabelFont(43); // Absolute font size in pixel (precision 3)
+   cost_ratio->GetYaxis()->SetLabelSize(15);
+   // X axis cost_ratio plot settings
+   cost_ratio->GetXaxis()->SetTitle("dielectron Cos(#theta)_{r} (GeV)");
+   cost_ratio->GetXaxis()->SetTitleSize(20);
+   cost_ratio->GetXaxis()->SetTitleFont(43);
+   cost_ratio->GetXaxis()->SetTitleOffset(3.);
+   cost_ratio->GetXaxis()->SetLabelFont(43); // Absolute font size in pixel (precision 3)
+   cost_ratio->GetXaxis()->SetLabelSize(20);
     /*
     leg = new TLegend(0.1,0.6,0.5,0.9);
     leg->AddEntry(h_cost1, "No extra cuts", "f");
@@ -349,17 +357,9 @@ void draw_cmp(){
     //TCanvas *c_cost_cut = new TCanvas("c_cost_cut", "Histograms", 200, 10, 900, 700);
     //c_cost_cut->cd();
 
-/*
-    TCanvas *c_met_pt = new TCanvas("c_met_pt", "Histograms", 200, 10, 900, 700);
-    c_met_pt->cd();
-    h_met_pt->SetFillColor(35);
-    h_met_pt->Draw();
-    c_met_pt->Update();
-    TH1F *met_pt_int = h_integral(h_met_pt, "met_pt_int");
-
-
-*/
     TCanvas *c_pt = new TCanvas("c_pt", "Histograms", 200, 10, 900, 700);
+    TPad *pt_pad1 = new TPad("pad1", "pad1", 0.,0.3,0.98,1.);
+    pt_pad1->SetBottomMargin(0);
     c_pt->cd();
     pt_stack->Draw("hist");
     data_pt->SetMarkerStyle(kFullCircle);
@@ -381,8 +381,50 @@ void draw_cmp(){
     leg3->AddEntry(ttbar_m, "t#bar{t}", "f");
     leg3->Draw();
 
+    TPad *pt_pad2 = new TPad("pt_pad2", "pad2", 0.,0,.98,0.3);
+    //pad2->SetTopMargin(0);
+    pt_pad2->SetBottomMargin(0.2);
+    pt_pad2->SetGridy();
+    pt_pad2->Draw();
+    pt_pad2->cd();
+    TList *pt_stackHists = pt_stack->GetHists();
+    TH1* pt_mc_sum = (TH1*)pt_stackHists->At(0)->Clone();
+    pt_mc_sum->Reset();
+
+    for (int i=0;i<pt_stackHists->GetSize();++i) {
+      pt_mc_sum->Add((TH1*)pt_stackHists->At(i));
+    }
+    auto pt_ratio = (TH1F *) data_pt->Clone("h_pt_ratio");
+    pt_ratio->SetMinimum(0.7);
+    pt_ratio->SetMaximum(1.3);
+    pt_ratio->Sumw2();
+    pt_ratio->SetStats(0);
+    pt_ratio->Divide(pt_mc_sum);
+    pt_ratio->SetMarkerStyle(21);
+    pt_ratio->Draw("ep");
+    c_pt->cd();
+
+    pt_ratio->SetTitle("");
+    // Y axis pt_ratio plot settings
+   pt_ratio->GetYaxis()->SetTitle("Data/MC");
+   pt_ratio->GetYaxis()->SetNdivisions(505);
+   pt_ratio->GetYaxis()->SetTitleSize(20);
+   pt_ratio->GetYaxis()->SetTitleFont(43);
+   pt_ratio->GetYaxis()->SetTitleOffset(1.2);
+   pt_ratio->GetYaxis()->SetLabelFont(43); // Absolute font size in pixel (precision 3)
+   pt_ratio->GetYaxis()->SetLabelSize(15);
+   // X axis pt_ratio plot settings
+   pt_ratio->GetXaxis()->SetTitle("dielectron pt (GeV)");
+   pt_ratio->GetXaxis()->SetTitleSize(20);
+   pt_ratio->GetXaxis()->SetTitleFont(43);
+   pt_ratio->GetXaxis()->SetTitleOffset(3.);
+   pt_ratio->GetXaxis()->SetLabelFont(43); // Absolute font size in pixel (precision 3)
+   pt_ratio->GetXaxis()->SetLabelSize(20);
     CMS_lumi(c_pt, iPeriod, 11 );
     c_pt->Update();
+
+
+
 
  
 }

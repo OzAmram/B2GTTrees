@@ -1130,7 +1130,7 @@ void Fakerate_est_mu(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_contam, TTree 
 
 
 
-            if(met_pt < 50.  && no_bjets){
+            if(m>= 150. && met_pt < 50.  && no_bjets){
                 //if(l==3) printf("Evt rate %.2e \n", evt_fakerate);
                 TLorentzVector cm = *mu_p + *mu_m;
 
@@ -1227,7 +1227,7 @@ void Fakerate_est_el(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_MC, TTree *t_Q
 
 
 
-            if(met_pt < 50.  && no_bjets){
+            if(m >= 150. && met_pt < 50.  && no_bjets){
                 //if(l==3) printf("Evt fr %.2e \n", evt_fakerate);
                 //if(l==3) printf("cost, fr %.2f %.2e \n", cost, evt_fakerate);
                 TLorentzVector cm = *el_p + *el_m;

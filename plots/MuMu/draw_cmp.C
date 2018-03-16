@@ -184,7 +184,7 @@ void draw_cmp(){
     m_stack->Add(mc_m);
 
 
-    THStack *cost_stack = new THStack("cost_stack", "Cos(#theta) Distribution: Data vs MC;Cos(#theta)_{r}");
+    THStack *cost_stack = new THStack("cost_stack", "Cos(#theta) Distribution: Data vs MC; MuMu Cos(#theta)_{r}");
     cost_stack->Add(ttbar_cost);
     cost_stack->Add(QCD_cost);
     cost_stack->Add(wt_cost);
@@ -230,6 +230,7 @@ void draw_cmp(){
     TPad *pad2 = new TPad("pad2", "pad2", 0.,0,.98,0.3);
     //pad2->SetTopMargin(0);
     pad2->SetBottomMargin(0.2);
+    pad2->SetGridy();
     pad2->Draw();
     pad2->cd();
 
@@ -276,25 +277,20 @@ void draw_cmp(){
     int iPeriod = 4; 
     CMS_lumi(pad1, iPeriod, 33 );
 
-    /*
-    TCanvas *c_m2 = new TCanvas("c_m2", "Ratio test", 900, 700);
-    auto rp = new TRatioPlot(data_m, m_mc_sum);
-    rp->fHistDrawProxy = m_stack;
-    c_m2->SetTicks(0,1);
-    rp->Draw();
-    c1->Update();
-    */
 
 
     TCanvas *c_cost = new TCanvas("c_cost", "Histograms", 200, 10, 900, 700);
+    TPad *cost_pad1 = new TPad("pad1c", "pad1", 0.,0.3,0.98,1.);
+    cost_pad1->SetBottomMargin(0);
     //c_cost->SetLogy();
-    c_cost->cd();
+    cost_pad1->Draw();
+    cost_pad1->cd();
     cost_stack->Draw("hist");
     data_cost->SetMarkerStyle(kFullCircle);
     data_cost->SetMarkerColor(1);
-    //cost_stack->SetMaximum(3000);
+    cost_stack->SetMinimum(1);
     data_cost->Draw("P E same");
-    c_cost->Update();
+    cost_pad1->Update();
     TLegend *leg2 = new TLegend(0.5, 0.65, 0.75, 0.8);
     leg2->AddEntry(data_m, "data", "p");
     leg2->AddEntry(mc_m, "DY (q#bar{q}, qg #bar{q}g)", "f");
@@ -307,6 +303,50 @@ void draw_cmp(){
 
     CMS_lumi(c_cost, iPeriod, 11 );
     c_cost->Update();
+
+    c_cost->cd();
+    TPad *cost_pad2 = new TPad("cost_pad2", "pad2", 0.,0,.98,0.3);
+    //pad2->SetTopMargin(0);
+    cost_pad2->SetBottomMargin(0.2);
+    cost_pad2->SetGridy();
+    cost_pad2->Draw();
+    cost_pad2->cd();
+    TList *cost_stackHists = cost_stack->GetHists();
+    TH1* cost_mc_sum = (TH1*)cost_stackHists->At(0)->Clone();
+    cost_mc_sum->Reset();
+
+    for (int i=0;i<cost_stackHists->GetSize();++i) {
+      cost_mc_sum->Add((TH1*)cost_stackHists->At(i));
+    }
+    auto cost_ratio = (TH1F *) data_cost->Clone("h_cost_ratio");
+    cost_ratio->SetMinimum(0.7);
+    cost_ratio->SetMaximum(1.3);
+    cost_ratio->Sumw2();
+    cost_ratio->SetStats(0);
+    cost_ratio->Divide(cost_mc_sum);
+    cost_ratio->SetMarkerStyle(21);
+    cost_ratio->Draw("ep");
+    TLine *l2 = new TLine(0,1,2000,1);
+    l2->SetLineStyle(2);
+    l2->Draw();
+    c_cost->cd();
+
+    cost_ratio->SetTitle("");
+    // Y axis cost_ratio plot settings
+   cost_ratio->GetYaxis()->SetTitle("Data/MC");
+   cost_ratio->GetYaxis()->SetNdivisions(505);
+   cost_ratio->GetYaxis()->SetTitleSize(20);
+   cost_ratio->GetYaxis()->SetTitleFont(43);
+   cost_ratio->GetYaxis()->SetTitleOffset(1.2);
+   cost_ratio->GetYaxis()->SetLabelFont(43); // Absolute font size in pixel (precision 3)
+   cost_ratio->GetYaxis()->SetLabelSize(15);
+   // X axis cost_ratio plot settings
+   cost_ratio->GetXaxis()->SetTitle("dimuon Cos(#theta)_{r} (GeV)");
+   cost_ratio->GetXaxis()->SetTitleSize(20);
+   cost_ratio->GetXaxis()->SetTitleFont(43);
+   cost_ratio->GetXaxis()->SetTitleOffset(3.);
+   cost_ratio->GetXaxis()->SetLabelFont(43); // Absolute font size in pixel (precision 3)
+   cost_ratio->GetXaxis()->SetLabelSize(20);
     /*
     leg = new TLegend(0.1,0.6,0.5,0.9);
     leg->AddEntry(h_cost1, "No extra cuts", "f");
@@ -320,7 +360,8 @@ void draw_cmp(){
     TCanvas *c_pt = new TCanvas("c_pt", "Histograms", 200, 10, 900, 700);
     TPad *pt_pad1 = new TPad("pad1", "pad1", 0.,0.3,0.98,1.);
     pt_pad1->SetBottomMargin(0);
-    c_pt->cd();
+    pt_pad1->Draw();
+    pt_pad1->cd();
     pt_stack->Draw("hist");
     data_pt->SetMarkerStyle(kFullCircle);
     data_pt->SetMarkerColor(1);
@@ -344,6 +385,7 @@ void draw_cmp(){
     TPad *pt_pad2 = new TPad("pt_pad2", "pad2", 0.,0,.98,0.3);
     //pad2->SetTopMargin(0);
     pt_pad2->SetBottomMargin(0.2);
+    pt_pad2->SetGridy();
     pt_pad2->Draw();
     pt_pad2->cd();
     TList *pt_stackHists = pt_stack->GetHists();
@@ -361,9 +403,6 @@ void draw_cmp(){
     pt_ratio->Divide(pt_mc_sum);
     pt_ratio->SetMarkerStyle(21);
     pt_ratio->Draw("ep");
-    TLine *l2 = new TLine(0,1,2000,1);
-    l2->SetLineStyle(2);
-    l2->Draw();
     c_pt->cd();
 
     pt_ratio->SetTitle("");
@@ -376,7 +415,7 @@ void draw_cmp(){
    pt_ratio->GetYaxis()->SetLabelFont(43); // Absolute font size in pixel (precision 3)
    pt_ratio->GetYaxis()->SetLabelSize(15);
    // X axis pt_ratio plot settings
-   pt_ratio->GetXaxis()->SetTitle("dilepton Pt (GeV)");
+   pt_ratio->GetXaxis()->SetTitle("dimuon pt (GeV)");
    pt_ratio->GetXaxis()->SetTitleSize(20);
    pt_ratio->GetXaxis()->SetTitleFont(43);
    pt_ratio->GetXaxis()->SetTitleOffset(3.);
