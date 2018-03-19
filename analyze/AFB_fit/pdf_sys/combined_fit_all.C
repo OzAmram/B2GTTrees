@@ -49,7 +49,7 @@ Double_t pt_alphas[6] =    {0.007, 0.136, 0.337, 0.546, 0.776, 0.945};
 Double_t pt_alpha_unc[6] = {0.006, 0.015, 0.035, 0.05, 0.08, .15};
 Double_t alpha;
 
-const TString fout_name("AFB_fit/fit_results/pt_bins/combined_m_fit_feb2_pdf_sys.root");
+const TString fout_name("AFB_fit/fit_results/m_bins/combined_m_fit_mar16_pdf_sys.root");
 Int_t N_PDFS = 100;
 
 

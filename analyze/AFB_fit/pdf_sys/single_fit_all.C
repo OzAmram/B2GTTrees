@@ -52,8 +52,8 @@ Double_t alpha;
 
 int FLAG1 = FLAG_ELECTRONS;
 //int FLAG1 = FLAG_MUONS;
-const TString mumu_fout_name("AFB_fit/fit_results/MuMu_m_fit_feb2_pdf_sys.root");
-const TString elel_fout_name("AFB_fit/fit_results/ElEl_m_fit_feb2_pdf_sys.root");
+const TString mumu_fout_name("AFB_fit/fit_results/m_bins/MuMu_m_fit_mar16_pdf_sys.root");
+const TString elel_fout_name("AFB_fit/fit_results/m_bins/ElEl_m_fit_mar16_pdf_sys.root");
 
 bool do_both = true;
 Int_t N_PDFS = 100;
@@ -82,11 +82,6 @@ TAxis *x_ax, *y_ax, *z_ax;
 
 
 
-TFile *f_elel_mc, *f_elel_back, *f_elel_data, *f_elel_QCD, *f_elel_WJets, *f_elel_WJets_contam, *f_elel_QCD_contam;
-TTree *t_elel_mc, *t_elel_back, *t_elel_data, *t_elel_QCD, *t_elel_WJets, *t_elel_WJets_contam, *t_elel_QCD_contam, *t_elel_nosig;
-
-TFile *f_mumu_mc, *f_mumu_back, *f_mumu_data, *f_mumu_QCD, *f_mumu_WJets, *f_mumu_WJets_contam, *f_mumu_QCD_contam;
-TTree *t_mumu_mc, *t_mumu_back, *t_mumu_data, *t_mumu_QCD, *t_mumu_WJets, *t_mumu_WJets_contam, *t_mumu_QCD_contam, *t_mumu_nosig;
 
 
 vector<double> v_xF;
