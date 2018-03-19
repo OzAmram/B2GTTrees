@@ -362,6 +362,10 @@ int gen_mc_template(TTree *t1, Double_t alpha, TH2F* h_sym, TH2F *h_asym, TH2F *
     else if (flag1 == FLAG_ELECTRONS) {
         t1->SetBranchAddress("el_p", &lep_p);
         t1->SetBranchAddress("el_m", &lep_m);
+        t1->SetBranchAddress("el1_pt", &el1_pt);
+        t1->SetBranchAddress("el1_eta", &el1_eta);
+        t1->SetBranchAddress("el2_pt", &el2_pt);
+        t1->SetBranchAddress("el2_eta", &el2_eta);
         t1->SetBranchAddress("el_id_SF", &el_id_SF);
         t1->SetBranchAddress("el_HLT_SF", &el_HLT_SF);
         t1->SetBranchAddress("el_reco_SF", &el_reco_SF);
@@ -779,8 +783,8 @@ void gen_fakes_template(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_contam,
         h->Scale(0.);
         printf("zeroing Fakes template \n");
     }
-    //if(flag1 == FLAG_MUONS) h->Scale(1.5);
-    //if(flag1 == FLAG_ELECTRONS) h->Scale(1.25);
+    //if(flag1 == FLAG_MUONS) h->Scale(0.5);
+    //if(flag1 == FLAG_ELECTRONS) h->Scale(0.7);
     return;
 }
 

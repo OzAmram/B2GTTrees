@@ -26,33 +26,13 @@
 
 
 
-int n_xf_bins = 5;
-float xf_max = 1.0;
-Float_t xf_bins[] = {0., 0.02, 0.04, 0.08, 0.13, 1.0};
-//int n_cost_bins = 4;
-//Float_t cost_bins[] = {-1.0, -.5, 0., 0.5, 1.0};
-//int n_cost_bins = 6;
-//Float_t cost_bins[] = {-1.0, -.67, -.33, 0., 0.33, 0.67, 1.0};
-//int n_cost_bins = 8;
-//Float_t cost_bins[] = {-1.0, -.75, -.5, -.25, 0., 0.25, 0.5,  0.75, 1.0};
-//int n_cost_bins = 10;
-//Float_t cost_bins[] = {-1.0, -.8, -.6, -.4, -.2, 0., 0.2, 0.4, 0.6, 0.8, 1.0};
-//int n_cost_bins = 12;
-//Float_t cost_bins[] = {-1.0, -.8333, -.6667, -.5, -.3333, -0.1667, 0., 0.1667, 0.3333, 0.5, 0.6667, 0.8333, 1.0};
-int n_cost_bins = 14;
-Float_t cost_bins[] = {-1.0, -.857, -.714, -.571, -.429, -0.286, -.143,  0., 0.143, .286, 0.429, 0.571, 0.714, 0.857, 1.0};
-int n_m_bins = 6;
-Float_t m_bins[] = {150,200,   250,    350,    500,    700, 100000};
-Double_t alphas[6] = {0.109, 0.078, 0.0762, 0.112, 0.065, 0.06};
-Double_t alpha_unc[6] = {0.015, 0.015, 0.02, 0.03,   0.02, 0.02};
-Double_t alpha;
 
 
 //int FLAG = FLAG_ELECTRONS;
 int FLAG = FLAG_MUONS;
 bool do_both = true;
-const TString mumu_fout_name("AFB_fit/fit_results/m_bins/MuMu_fit_feb12_test.root");
-const TString elel_fout_name("AFB_fit/fit_results/m_bins/ElEl_fit_feb12_test.root");
+const TString mumu_fout_name("AFB_fit/fit_results/m_bins/MuMu_fit_mu_HLT_up_mar19.root");
+const TString elel_fout_name("AFB_fit/fit_results/m_bins/ElEl_fit_el_HLT_up_mar19.root");
 
 
 float m_low;
@@ -138,6 +118,14 @@ void fcn(int& npar, double* deriv, double& f, double par[], int flag){
 void setup(){
     //setup global variables
     //TH1::SetDefaultSumw2(kTRUE);
+    if(m_low <= m_bins[n_m_bins-2] ){
+        n_xf_bins = n_xf_bins_v1;
+        xf_bins = xf_bins_v1;
+    }
+    else{
+        n_xf_bins = n_xf_bins_v2;
+        xf_bins = xf_bins_v2;
+    }
     printf("Starting setup \n");
     h_mc_count = new TH2F("h_mc_count", "Events in bins for MC templates",
             n_xf_bins, xf_bins, n_cost_bins, cost_bins);

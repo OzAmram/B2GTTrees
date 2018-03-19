@@ -20,30 +20,14 @@
 #include "TSystem.h"
 //#include"Minuit2/Minuit2Minimizer.h"
 #include "Math/Functor.h"
-//#include "../TemplateMaker_systematics.C"
-#include "../TemplateMaker.C"
+#include "../TemplateMaker_systematics.C"
+//#include "../TemplateMaker.C"
 #include "root_files.h"
 
 
 
-int n_xf_bins = 4;
-float xf_max = 1.0;
-Float_t xf_bins[] = {0., 0.05, 0.1, 0.20, 1.0};
-//int n_cost_bins = 8;
-//Float_t cost_bins[] = {-1.0, -.75, -.5, -.25, 0., 0.25, 0.5,  0.75, 1.0};
-int n_cost_bins = 10;
-Float_t cost_bins[] = {-1.0, -.8, -.6, -.4, -.2, 0., 0.2, 0.4, 0.6, 0.8, 1.0};
-//int n_cost_bins = 12;
-//Float_t cost_bins[] = {-1.0, -0.8333, -0.6667, -0.5, -0.3333, -0.1667, 0., 0.1667, 0.3333, 0.5, 0.6667, 0.8333, 1.0};
-//int n_cost_bins = 14;
-//Float_t cost_bins[] = {-1.0, -.857, -.714, -.571, -.429, -0.286, -.143,  0., 0.143, .286, 0.429, 0.571, 0.714, 0.857, 1.0};
-int n_m_bins = 6;
-Float_t m_bins[] = {150,200,   250,    350,    500,    700, 100000};
-Double_t alphas[6] = {0.109, 0.078, 0.0762, 0.112, 0.065, 0.06};
-Double_t alpha_unc[6] = {0.015, 0.015, 0.02, 0.03,   0.02, 0.02};
-Double_t alpha;
 
-const TString fout_name("AFB_fit/fit_results/m_bins/test.root");
+const TString fout_name("AFB_fit/fit_results/m_bins/combined_fit_el_HLT_up_mar19.root");
 
 //int n_xf_bins = 4;
 //float xf_max = 1.0;
@@ -167,6 +151,14 @@ void fcn(int& npar, double* deriv, double& f, double par[], int flag){
 void setup(){
     //setup global variables
     //TH1::SetDefaultSumw2(kTRUE);
+    if(m_low <= m_bins[n_m_bins-2] ){
+        n_xf_bins = n_xf_bins_v1;
+        xf_bins = xf_bins_v1;
+    }
+    else{
+        n_xf_bins = n_xf_bins_v2;
+        xf_bins = xf_bins_v2;
+    }
     h_elel_mc_count = new TH2F("h_elel_mc_count", "Events in bins for MC templates",
             n_xf_bins, xf_bins, n_cost_bins, cost_bins);
     h_elel_mc_count->SetDirectory(0);
