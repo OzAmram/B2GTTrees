@@ -88,17 +88,26 @@ void make_4vec_hists(TTree *t1, kin_hists *k, bool is_data=false){
                 //change definitition of obs for different observables
 
 
-                if(mu_p->Pt() > mu_m->Pt()) obs = *mu_p;
-                else obs = *mu_m;
-                obs.SetPxPyPzE(mu_p->Px(), mu_p->Py(), mu_p->Pz(), mu_p->E());
+                //if(mu_p->Pt() > mu_m->Pt()) obs = *mu_p;
+                //else obs = *mu_m;
+                //obs.SetPxPyPzE(mu_p->Px(), mu_p->Py(), mu_p->Pz(), mu_p->E());
                 //obs = cm;
                 
 
                 if(is_data){
-                    k->m_hist->Fill(obs.M());
-                    k->pt_hist->Fill(obs.Pt());
-                    k->eta_hist->Fill(obs.Eta());
-                    k->phi_hist->Fill(obs.Phi());
+                    //k->m_hist->Fill(obs.E());
+                    //k->pt_hist->Fill(obs.Pt());
+                    //k->eta_hist->Fill(obs.Eta());
+                    //k->phi_hist->Fill(obs.Phi());
+                    k->m_hist->Fill(mu_p->E());
+                    k->pt_hist->Fill(mu_p->Pt());
+                    k->eta_hist->Fill(mu_p->Eta());
+                    k->phi_hist->Fill(mu_p->Phi());
+
+                    k->m_hist->Fill(mu_m->E());
+                    k->pt_hist->Fill(mu_m->Pt());
+                    k->eta_hist->Fill(mu_m->Eta());
+                    k->phi_hist->Fill(mu_m->Phi());
                 }
                 else{
                     Double_t bcdef_weight = gen_weight *pu_SF * bcdef_HLT_SF * bcdef_iso_SF * bcdef_id_SF * bcdef_trk_SF;
@@ -110,10 +119,20 @@ void make_4vec_hists(TTree *t1, kin_hists *k, bool is_data=false){
                     if (nJets >= 2){
                         combined_weight *= jet2_b_weight;
                     }
-                    k->m_hist->Fill(obs.M(), combined_weight);
-                    k->pt_hist->Fill(obs.Pt(), combined_weight);
-                    k->eta_hist->Fill(obs.Eta(), combined_weight);
-                    k->phi_hist->Fill(obs.Phi(), combined_weight);
+                    //k->m_hist->Fill(obs.E(), combined_weight);
+                    //k->pt_hist->Fill(obs.Pt(), combined_weight);
+                    //k->eta_hist->Fill(obs.Eta(), combined_weight);
+                    //k->phi_hist->Fill(obs.Phi(), combined_weight);
+
+                    k->m_hist->Fill(mu_p->E(), combined_weight);
+                    k->pt_hist->Fill(mu_p->Pt(), combined_weight);
+                    k->eta_hist->Fill(mu_p->Eta(), combined_weight);
+                    k->phi_hist->Fill(mu_p->Phi(), combined_weight);
+
+                    k->m_hist->Fill(mu_m->E(), combined_weight);
+                    k->pt_hist->Fill(mu_m->Pt(), combined_weight);
+                    k->eta_hist->Fill(mu_m->Eta(), combined_weight);
+                    k->phi_hist->Fill(mu_m->Phi(), combined_weight);
 
                 }
 
@@ -125,121 +144,10 @@ void make_4vec_hists(TTree *t1, kin_hists *k, bool is_data=false){
     t1->ResetBranchAddresses();
 }
 
-void make_fakes_4vec_hists(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_contam, TTree *t_QCD_contam, kin_hists *k){
-    FakeRate FR;
-    //TH2D *FR;
-    setup_new_mu_fakerate(&FR);
-    //FR.h->Print();
-    for (int l=0; l<=3; l++){
-        printf("l=%i\n", l);
-        TTree *t;
-        if (l==0) t = t_WJets;
-        if (l==1) t = t_QCD;
-        if (l==2) t = t_WJets_contam;
-        if (l==3) t = t_QCD_contam;
-        Double_t m, xF, cost, jet1_cmva, jet2_cmva, gen_weight;
-        Double_t bcdef_HLT_SF, bcdef_iso_SF, bcdef_id_SF;
-        Double_t gh_HLT_SF, gh_iso_SF, gh_id_SF;
-        Double_t jet1_pt, jet2_pt, jet1_b_weight, jet2_b_weight, pu_SF;
-        Double_t evt_fakerate, mu1_fakerate, mu2_fakerate, mu1_eta, mu1_pt, mu2_eta, mu2_pt;
-        TLorentzVector *mu_p = 0;
-        TLorentzVector *mu_m = 0;
-        TLorentzVector obs;
-        Int_t iso_mu;
-        Bool_t double_muon_trig;
-        Float_t met_pt;
-        Int_t nJets;
-        nJets = 2;
-        pu_SF=1;
-        t->SetBranchAddress("m", &m);
-        t->SetBranchAddress("xF", &xF);
-        t->SetBranchAddress("cost", &cost);
-        t->SetBranchAddress("met_pt", &met_pt);
-        t->SetBranchAddress("jet2_CMVA", &jet2_cmva);
-        t->SetBranchAddress("jet1_CMVA", &jet1_cmva);
-        t->SetBranchAddress("jet1_pt", &jet1_pt);
-        t->SetBranchAddress("jet2_pt", &jet2_pt);
-        //t1->SetBranchAddress("evt_fakerate", &evt_fakerate);
-        //t1->SetBranchAddress("mu_fakerate", &mu1_fakerate);
-        t->SetBranchAddress("mu1_pt", &mu1_pt);
-        t->SetBranchAddress("mu2_pt", &mu2_pt);
-        t->SetBranchAddress("mu1_eta", &mu1_eta);
-        t->SetBranchAddress("mu2_eta", &mu2_eta);
-        t->SetBranchAddress("nJets", &nJets);
-        t->SetBranchAddress("mu_p", &mu_p);
-        t->SetBranchAddress("mu_m", &mu_m);
-        if(l==0 || l==2 ){
-            t->SetBranchAddress("iso_muon", &iso_mu);
-        }
-        if(l==2 || l==3){
-            t->SetBranchAddress("gen_weight", &gen_weight);
-            t->SetBranchAddress("jet1_b_weight", &jet1_b_weight);
-            t->SetBranchAddress("jet2_b_weight", &jet2_b_weight);
-            t->SetBranchAddress("pu_SF", &pu_SF);
-            t->SetBranchAddress("bcdef_HLT_SF", &bcdef_HLT_SF);
-            t->SetBranchAddress("bcdef_iso_SF", &bcdef_iso_SF);
-            t->SetBranchAddress("bcdef_id_SF", &bcdef_id_SF);
-            t->SetBranchAddress("gh_HLT_SF", &gh_HLT_SF);
-            t->SetBranchAddress("gh_iso_SF", &gh_iso_SF);
-            t->SetBranchAddress("gh_id_SF", &gh_id_SF);
-        }
-
-        Long64_t size  =  t->GetEntries();
-        for (int i=0; i<size; i++) {
-            t->GetEntry(i);
-            bool no_bjets = has_no_bjets(nJets, jet1_pt, jet2_pt, jet1_cmva, jet2_cmva);
-            if(l==0){
-                if(iso_mu ==0) mu1_fakerate = get_new_fakerate_prob(mu1_pt, mu1_eta, FR.h);
-                if(iso_mu ==1) mu1_fakerate = get_new_fakerate_prob(mu2_pt, mu2_eta, FR.h);
-                evt_fakerate = mu1_fakerate/(1-mu1_fakerate);
-            }
-            if(l==1){
-                mu1_fakerate = get_new_fakerate_prob(mu1_pt, mu1_eta, FR.h);
-                mu2_fakerate = get_new_fakerate_prob(mu2_pt, mu2_eta, FR.h);
-                evt_fakerate = -(mu1_fakerate/(1-mu1_fakerate)) * (mu2_fakerate/(1-mu2_fakerate));
-            }
-            if(l==2){
-                Double_t bcdef_weight = gen_weight * bcdef_HLT_SF *  bcdef_id_SF * bcdef_iso_SF;
-                Double_t gh_weight = gen_weight * gh_HLT_SF * gh_id_SF * gh_iso_SF;
-                Double_t mc_weight = (bcdef_weight *bcdef_lumi + gh_weight * gh_lumi) * 1000;
-                if(iso_mu ==0) mu1_fakerate = get_new_fakerate_prob(mu1_pt, mu1_eta, FR.h);
-                if(iso_mu ==1) mu1_fakerate = get_new_fakerate_prob(mu2_pt, mu2_eta, FR.h);
-                evt_fakerate = -(mu1_fakerate * mc_weight)/(1-mu1_fakerate);
-            }
-            if(l==3){
-                Double_t bcdef_weight = gen_weight * bcdef_HLT_SF *  bcdef_id_SF;
-                Double_t gh_weight = gen_weight * gh_HLT_SF * gh_id_SF;
-                Double_t mc_weight = (bcdef_weight *bcdef_lumi + gh_weight * gh_lumi) * 1000;
-                mu1_fakerate = get_new_fakerate_prob(mu1_pt, mu1_eta, FR.h);
-                mu2_fakerate = get_new_fakerate_prob(mu2_pt, mu2_eta, FR.h);
-                evt_fakerate = mc_weight * (mu1_fakerate/(1-mu1_fakerate)) * (mu2_fakerate/(1-mu2_fakerate));
-            }
-
-
-
-            if( m>=150. && met_pt < 50.  && no_bjets){
-                //if(l==3) printf("Evt rate %.2e \n", evt_fakerate);
-                TLorentzVector cm = *mu_p + *mu_m;
-
-                //change obs definition for different observables
-                //obs = cm;
-                //obs.SetPxPyPzE(mu_p->Px(), mu_p->Py(), mu_p->Pz(), mu_p->E());
-
-                if(mu_p->Pt() > mu_m->Pt()) obs = *mu_p;
-                else obs = *mu_m;
-
-                k->m_hist->Fill(obs.M(), evt_fakerate);
-                k->pt_hist->Fill(obs.Pt(), evt_fakerate);
-                k->eta_hist->Fill(obs.Eta(), evt_fakerate);
-                k->phi_hist->Fill(obs.Phi(), evt_fakerate);
-            }
-        }
-    }
-}
 
 void setup_kin_hists(kin_hists *k1, char name[20]){
 
-    Double_t m_min = 150.;
+    Double_t m_min = 0.;
     Double_t m_max = 2000.;
     int m_bins = 50;
 
@@ -247,13 +155,13 @@ void setup_kin_hists(kin_hists *k1, char name[20]){
     Double_t pt_max = 700.;
     int pt_bins = 35;
     
-    Double_t eta_min = -10.;
-    Double_t eta_max = 10.;
-    int eta_bins = 50;
+    Double_t eta_min = -3.;
+    Double_t eta_max = 3.;
+    int eta_bins = 30;
 
     Double_t phi_min = -4.0;
     Double_t phi_max = 4.0;
-    int phi_bins = 50;
+    int phi_bins = 30;
     char m_name[40], pt_name[40], eta_name[40], phi_name[40];
 
     sprintf(m_name, "%s_m_hist", name);
@@ -312,18 +220,16 @@ void do_emu_scaling(kin_hists *k){
 
 
 void make_plots(char name[80], kin_hists *k_data, kin_hists *k_mc, kin_hists *k_mc_nosig, 
-                                   kin_hists *k_ttbar, kin_hists *k_fakes, kin_hists *k_diboson, 
-                                   kin_hists *k_wt){
+                                   kin_hists *k_ttbar,  kin_hists *k_diboson, kin_hists *k_wt){
 
     setcolors(k_data, kBlack);
     setcolors(k_mc, kRed+1);
     setcolors(k_mc_nosig, kMagenta);
     setcolors(k_ttbar, kBlue);
     setcolors(k_diboson, kGreen+3);
-    setcolors(k_fakes, kRed-7);
     setcolors(k_wt, kOrange+7);
     char m_label[80], pt_label[80], eta_label[80], phi_label[80];
-    sprintf(m_label, "%s Mass (Gev)", name);
+    sprintf(m_label, "%s E (Gev)", name);
     sprintf(pt_label, "%s Pt (Gev)", name);
     sprintf(eta_label, "%s #eta", name);
     sprintf(phi_label, "%s #phi", name);
@@ -334,9 +240,9 @@ void make_plots(char name[80], kin_hists *k_data, kin_hists *k_mc, kin_hists *k_
 
     char *labels[] = {m_label, pt_label, eta_label, phi_label};
 
-    kin_hists *kins[] = {k_mc_nosig, k_wt, k_diboson, k_fakes, k_ttbar, k_mc};
+    kin_hists *kins[] = {k_mc_nosig, k_wt, k_diboson, k_ttbar, k_mc};
 
-    for(int i=0; i<6; i++){
+    for(int i=0; i<5; i++){
         kins[i]->m_hist->Print();
         m_stack->Add(kins[i]->m_hist);
         pt_stack->Add(kins[i]->pt_hist);
@@ -349,7 +255,6 @@ void make_plots(char name[80], kin_hists *k_data, kin_hists *k_mc, kin_hists *k_
     TLegend *leg1 = new TLegend(0.15, 0.75, 0.35, 0.9);
     leg1->AddEntry(k_data->m_hist, "data", "p");
     leg1->AddEntry(k_mc->m_hist, "DY (q#bar{q}, qg #bar{q}g)", "f");
-    leg1->AddEntry(k_fakes->m_hist, "QCD + WJets", "f");
     leg1->AddEntry(k_ttbar->m_hist, "t#bar{t}", "f");
     leg1->AddEntry(k_diboson->m_hist, "WW + WZ + ZZ", "f");
     leg1->AddEntry(k_wt->m_hist, "tW + #bar{t}W", "f");
@@ -443,13 +348,12 @@ void make_plots(char name[80], kin_hists *k_data, kin_hists *k_mc, kin_hists *k_
 }
 void draw_kinematics(){
     init(); 
-    kin_hists k_data, k_mc, k_mc_nosig, k_ttbar, k_fakes, k_diboson, k_wt;
+    kin_hists k_data, k_mc, k_mc_nosig, k_ttbar, k_diboson, k_wt;
 
     setup_kin_hists(&k_data, "data");
     setup_kin_hists(&k_mc, "mc");
     setup_kin_hists(&k_mc_nosig, "mc_nosig");
     setup_kin_hists(&k_ttbar, "ttbar");
-    setup_kin_hists(&k_fakes, "fakes");
     setup_kin_hists(&k_diboson, "diboson");
     setup_kin_hists(&k_wt, "wt");
 
@@ -461,7 +365,6 @@ void draw_kinematics(){
     make_4vec_hists(t_ttbar, &k_ttbar);
     make_4vec_hists(t_diboson, &k_diboson);
     make_4vec_hists(t_wt, &k_wt);
-    //make_fakes_4vec_hists(t_WJets, t_QCD,t_WJets_mc, t_QCD_mc, &k_fakes);
 
     printf("doing emu scaling \n");
 
@@ -470,7 +373,7 @@ void draw_kinematics(){
     do_emu_scaling(&k_wt);
 
     printf("making plots \n");
-    make_plots("Mu1", &k_data, &k_mc, &k_mc_nosig, &k_ttbar, &k_fakes, &k_diboson, &k_wt);
+    make_plots("Muon", &k_data, &k_mc, &k_mc_nosig, &k_ttbar,&k_diboson, &k_wt);
 
     return;
 }

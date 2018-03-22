@@ -24,38 +24,14 @@
 #include "../../analyze/TemplateMaker.C"
 #include "../tdrstyle.C"
 #include "../CMS_lumi.C"
+#include "root_files.h"
 
 
 
 void draw_background_frac(){
     setTDRStyle();
 
-    TFile *f_data = TFile::Open("../analyze/output_files/SingleMuon_data_jan22.root");
-    TTree *t_data = (TTree *)f_data->Get("T_data");
-    TFile *f_mc = TFile::Open("../analyze/output_files/MuMu_DY_jan16.root");
-    TTree *t_mc = (TTree *)f_mc->Get("T_data");
-    TTree *t_mc_nosig = (TTree *)f_mc->Get("T_back");
-    TFile *f_ttbar = TFile::Open("../analyze/output_files/MuMu_TTbar_jan22.root");
-    TTree *t_ttbar = (TTree *)f_ttbar->Get("T_data");
-
-    TFile *f_QCD = TFile::Open("../analyze/output_files/MuMu_QCD_est_nov2.root");
-    TTree *t_QCD = (TTree *)f_QCD->Get("T_data");
-
-    TFile *f_WJets = TFile::Open("../analyze/output_files/MuMu_WJets_est_Nov2.root");
-    TTree *t_WJets = (TTree *)f_WJets->Get("T_data");
-
-    TFile *f_WJets_mc = TFile::Open("../analyze/FakeRate/root_files/MuMu_fakerate_Wjets_MC_dec4.root");
-    TTree *t_WJets_mc = (TTree *)f_WJets_mc->Get("T_data");
-
-    TFile *f_QCD_mc = TFile::Open("../analyze/FakeRate/root_files/MuMu_fakerate_QCD_MC_dec4.root");
-    TTree *t_QCD_mc = (TTree *)f_QCD_mc->Get("T_data");
-
-    TFile *f_diboson = TFile::Open("../analyze/output_files/MuMu_diboson_jan22.root");
-    TTree *t_diboson = (TTree *)f_diboson->Get("T_data");
-
-    TFile *f_wt = TFile::Open("../analyze/output_files/MuMu_WT_jan22.root");
-    TTree *t_wt = (TTree *)f_wt->Get("T_data");
-
+    init();
     int nBins = 6;
 
     Double_t m_bins[] = {150,200,250,350,500,700, 10000};
@@ -143,10 +119,10 @@ void draw_background_frac(){
         back_frac_unc[i-1] = sqrt(pow(0.02*(back_frac[i-1]-QCD_frac[i-1]),2) + pow(QCD_frac_unc[i-1],2));
     }
     bin_center[nBins-1] = 850;
-    Double_t fit_res[] = {0.118, 0.180, 0.190, 0.193, 0.170, 0.119};
-    Double_t fit_errs[] = {0.009, 0.012, 0.012, 0.015, 0.027, 0.035};
+    Double_t fit_res[] = {0.109, 0.174, 0.185, 0.186, 0.166, 0.095};
+    Double_t fit_errs[] = {0.008, 0.012, 0.012, 0.015, 0.027, 0.033};
 
-    Double_t comb_fit_res[] = {0.120, 0.182, 0.188, 0.190, 0.168, 0.118};
+    Double_t comb_fit_res[] = {0.111, 0.175, 0.183, 0.184, 0.165, 0.093};
     Double_t comb_fit_errs[] = {0.008, 0.012, 0.012, 0.015, 0.027, 0.035};
 
     TGraphErrors *mc_nosig_frac = new TGraphErrors(nBins, bin_center, nosig_frac, 0, 0);
