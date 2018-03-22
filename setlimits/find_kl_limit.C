@@ -1,9 +1,11 @@
 
 #include "madgraph_lhe_reader.C"
 
-Double_t AFB_SM[6] =  {0.620,  0.615, 0.603, 0.590, 0.586, 0.588};
-//Double_t AFB_SM[6] = {0.65, 0.66, 0.65, 0.62, 0.61, 0.60};
+//Double_t AFB_SM[6] =  {0.620,  0.615, 0.603, 0.590, 0.586, 0.588};
+Double_t AFB_SM[6] = {0.60, 0.612, 0.603, 0.602, 0.60, 0.60};
 Double_t AFB_unc[6] = {0.014, 0.020,0.021,0.028,0.045, 0.063};
+//Double_t AFB_measured[6] = {0.615, 0.600, 0.612, 0.608, 0.552, 0.558};
+Double_t *AFB_measured = AFB_SM;
 
 Double_t test_stat(Double_t *x, Double_t *params){
     //6 x values are asymmetries in the 6 different mass bins
@@ -40,7 +42,6 @@ Double_t get_pval(TH1D *h, Double_t x){
 Double_t test_Zp(int M_Zp, Double_t cpl){
     //hard code measured AFB's + uncertainties and SM predictions for AFB
     //return pvalue for a given Zp mass
-    Double_t AFB_measured[6] = {0.615, 0.600, 0.612, 0.608, 0.552, 0.558};
 
 
     Double_t AFB_Zp[6];
@@ -82,9 +83,9 @@ Double_t test_Zp(int M_Zp, Double_t cpl){
 
 void find_kl_limit(){
     int m_start = 1000;
-    int m_max = 1300;
+    int m_max = 2000;
     int m_step = 50;
-    Double_t kl_start = 0.4;
+    Double_t kl_start = 0.3;
     Double_t kl_min = 0.05;
     Double_t kl_step = 0.05;
     Double_t alpha = 0.05;
