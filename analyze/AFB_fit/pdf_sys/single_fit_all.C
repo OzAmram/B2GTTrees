@@ -31,8 +31,8 @@
 
 int FLAG1 = FLAG_ELECTRONS;
 //int FLAG1 = FLAG_MUONS;
-const TString mumu_fout_name("AFB_fit/fit_results/m_bins/MuMu_m_fit_mar16_pdf_sys.root");
-const TString elel_fout_name("AFB_fit/fit_results/m_bins/ElEl_m_fit_mar16_pdf_sys.root");
+const TString mumu_fout_name("AFB_fit/fit_results/m_bins/MuMu_m_fit_mar19_pdf_sys.root");
+const TString elel_fout_name("AFB_fit/fit_results/m_bins/ElEl_m_fit_mar19_pdf_sys.root");
 
 bool do_both = true;
 Int_t N_PDFS = 100;

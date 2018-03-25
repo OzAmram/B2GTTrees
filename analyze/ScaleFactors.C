@@ -8,7 +8,7 @@
 
 #include "CondFormats/BTauObjects/interface/BTagCalibration.h"
 #include "CondTools/BTau/interface/BTagCalibrationReader.h"
-#include "SFs/RoccoR.h"
+#include "SFs/RoccoR.cc"
 
 
 

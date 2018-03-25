@@ -28,7 +28,7 @@
 
 
 
-const TString fout_name("AFB_fit/fit_results/pt_bins/combined_pt_fit_jan31_nominal.root");
+const TString fout_name("AFB_fit/fit_results/pt_bins/combined_pt_fit_mar19_nominal.root");
 
 
 int FLAG2 = FLAG_PT_BINS;

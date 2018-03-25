@@ -29,7 +29,7 @@
 
 
 
-const TString fout_name("AFB_fit/fit_results/m_bins/combined_m_fit_mar18_pdf_sys.root");
+const TString fout_name("AFB_fit/fit_results/m_bins/combined_m_fit_mar22_pdf_sys.root");
 Int_t N_PDFS = 100;
 
 
@@ -236,7 +236,7 @@ void cleanup(){
     printf("Finishing cleanup\n");
 }
 void combined_fit_all(){
-    Double_t AFB_fit[N_PDFS], AFB_fit_err[N_PDFS], r_elel_back_fit[N_PDFS], r_elel_back_fit_err[N_PDFS], 
+    Float_t AFB_fit[N_PDFS], AFB_fit_err[N_PDFS], r_elel_back_fit[N_PDFS], r_elel_back_fit_err[N_PDFS], 
              r_mumu_back_fit[N_PDFS], r_mumu_back_fit_err[N_PDFS];
     init();
     TTree *tout= new TTree("T_fit_res", "Tree with Fit Results");
@@ -324,6 +324,7 @@ void combined_fit_all(){
             r_elel_back_fit_err[j] = minuit->GetParError(1);
             r_mumu_back_fit[j] = minuit->GetParameter(2); 
             r_mumu_back_fit_err[j] = minuit->GetParError(2);
+            printf("AFB %.2f, elel back %.2f, mumu back %.2f \n", AFB_fit[j], r_elel_back_fit[j], r_mumu_back_fit[j]);
         }
 
 

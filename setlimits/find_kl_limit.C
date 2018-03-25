@@ -1,11 +1,12 @@
 
-#include "madgraph_lhe_reader.C"
+//#include "madgraph_lhe_reader.C"
+#include "read_AFBs_from_file.C"
 
 //Double_t AFB_SM[6] =  {0.620,  0.615, 0.603, 0.590, 0.586, 0.588};
 Double_t AFB_SM[6] = {0.60, 0.612, 0.603, 0.602, 0.60, 0.60};
 Double_t AFB_unc[6] = {0.014, 0.020,0.021,0.028,0.045, 0.063};
-//Double_t AFB_measured[6] = {0.615, 0.600, 0.612, 0.608, 0.552, 0.558};
-Double_t *AFB_measured = AFB_SM;
+Double_t AFB_measured[6] = {0.615, 0.600, 0.612, 0.608, 0.552, 0.558};
+//Double_t *AFB_measured = AFB_SM;
 
 Double_t test_stat(Double_t *x, Double_t *params){
     //6 x values are asymmetries in the 6 different mass bins
@@ -39,18 +40,22 @@ Double_t get_pval(TH1D *h, Double_t x){
 }
 
 
-Double_t test_Zp(int M_Zp, Double_t cpl){
+Double_t test_Zp(FILE *f1, int M_Zp, Double_t cpl){
     //hard code measured AFB's + uncertainties and SM predictions for AFB
     //return pvalue for a given Zp mass
 
 
     Double_t AFB_Zp[6];
-    //printf("AFBs are: ");
+
+    read_AFBs(f1, AFB_Zp, M_Zp, cpl);
+    /*
+    printf("AFBs are: ");
     for(int i = 0; i<6; i++){
-        AFB_Zp[i] =  get_AFB(M_Zp, cpl, i);
-        //printf("%.2f ", AFB_Zp[i]);
+        //AFB_Zp[i] =  get_AFB(M_Zp, cpl, i);
+        printf("%.2f ", AFB_Zp[i]);
     }
-    //printf("\n");
+    printf("\n");
+    */
 
     int n_trials = 50000;
 
@@ -83,36 +88,48 @@ Double_t test_Zp(int M_Zp, Double_t cpl){
 
 void find_kl_limit(){
     int m_start = 1000;
-    int m_max = 2000;
-    int m_step = 50;
-    Double_t kl_start = 0.3;
+    int m_max = 3300;
+    int m_step = 20;
+    int m;
+    Double_t kl_start = 0.4;
     Double_t kl_min = 0.05;
+    Double_t kl_max = 1.5;
     Double_t kl_step = 0.05;
     Double_t alpha = 0.05;
     Double_t pval = 0.;
-    Double_t m;
     Double_t kl;
-    vector<double> limits;
+    vector<Double_t> limits;
+    vector<int> ms;
+    FILE *f1;
+
+    f1 = fopen("AFBs.txt", "r");
+
     for(m = m_start; m <=m_max; m+=m_step){
-        for(kl = kl_start; kl >= kl_min; kl-=kl_step){
+        for(kl = kl_start; kl >= kl_min && kl <= kl_max; kl-=kl_step){
+            if(m > 2490. || m<1990.) m_step = 50;
+            else m_step = 20;
             //printf("%.2f kl \n", kl);
-            pval = test_Zp(m, kl);
+            pval = test_Zp(f1, m, kl);
             if (pval > alpha && kl < kl_start) break;
             else if(pval  > alpha){
                 printf("Started too low, changing kl start from %.2f to %.2f\n", kl_start, kl_start +2*kl_step);
                 kl_start = kl_start + 2*kl_step;
                 kl = kl_start;
+                printf("%i %.2f \n", m, kl);
             }
         }
         printf("Limit found!\n"
-               "For M = %.0f, kl=%.2f, pval is %0.3f \n", m, kl, pval);
+               "For M = %i, kl=%.2f, pval is %0.3f \n", m, kl, pval);
         limits.push_back(kl);
+        ms.push_back(m);
     }
     printf("\n\nLimits summary: \n");
     for(int i=0; i<limits.size(); i++){
         //limit is 1 step less than where we cross the boundary (last point we
         //can exlude)
-        printf("M=%i, kl < %.2f \n", m_start + i*m_step, limits[i] + kl_step);
+        
+        printf("M=%i, kl < %.2f \n", ms[i], limits[i] + kl_step);
+
     }
 
     return;

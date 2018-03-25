@@ -27,14 +27,8 @@
 
 
 
-const TString fout_name("AFB_fit/fit_results/m_bins/combined_fit_el_HLT_up_mar19.root");
+const TString fout_name("AFB_fit/fit_results/m_bins/combined_fit_mu_ID_up_mar24.root");
 
-//int n_xf_bins = 4;
-//float xf_max = 1.0;
-//Float_t xf_bins[] = {0., 0.04, 0.08, 0.14, 1.0};
-//float m_max = 1000.;
-//int n_cost_bins = 8;
-//Float_t cost_bins[] = {-1.0, -.75, -.5, -.25, 0., 0.25, 0.5, 0.75, 1.0};
 
 
 float m_low;

@@ -5,6 +5,7 @@
 #include <cstring>
 #include <algorithm>
 #include "TFile.h"
+#include "TRandom3.h"
 #include "../ScaleFactors.C"
 
 #define GEN_SIZE 4000
@@ -17,7 +18,7 @@ double Ebeam = 6500.;
 double Pbeam = sqrt(Ebeam*Ebeam - 0.938*0.938);
 
 char *filename("DY_files_mar19.txt");
-const TString fout_name("output_files/MuMu_DY_mar19.root");
+const TString fout_name("output_files/MuMu_DY_mar22_test.root");
 const bool PRINT=false;
 
 const bool data_2016 = true;
@@ -102,6 +103,9 @@ void MuMu_reco_mc_batch()
     pileup_SFs pu_SFs;
     BTag_readers b_reader;
     BTag_effs btag_effs;
+    //RoccoR  rc("rcdata.2016.v3"); //directory path as input for now; initialize only once, contains all variations
+    TRandom *rand = new TRandom3();
+
 
     //separate SFs for runs BCDEF and GH
     setup_SFs(&runs_bcdef, &runs_gh, &b_reader, &btag_effs, &pu_SFs);
@@ -276,7 +280,8 @@ void MuMu_reco_mc_batch()
 
             Float_t mu_Pt[MU_SIZE], mu_Eta[MU_SIZE], mu_Phi[MU_SIZE], mu_E[MU_SIZE], 
                     mu_Charge[MU_SIZE], mu_IsTightMuon[MU_SIZE];
-            Float_t mu_SumChargedHadronPt[MU_SIZE], mu_SumNeutralHadronPt[MU_SIZE], mu_SumPUPt[MU_SIZE], mu_SumPhotonPt[MU_SIZE];
+            Float_t mu_SumChargedHadronPt[MU_SIZE], mu_SumNeutralHadronPt[MU_SIZE], mu_SumPUPt[MU_SIZE], mu_SumPhotonPt[MU_SIZE],
+                    mu_NumberTrackerLayers[MU_SIZE];
 
 
             Float_t jet_Pt[JET_SIZE], jet_Eta[JET_SIZE], jet_Phi[JET_SIZE], jet_E[JET_SIZE],
@@ -298,6 +303,7 @@ void MuMu_reco_mc_batch()
             t1->SetBranchAddress("mu_SumNeutralHadronPt", &mu_SumNeutralHadronPt);
             t1->SetBranchAddress("mu_SumPUPt", &mu_SumPUPt);
             t1->SetBranchAddress("mu_SumPhotonPt", &mu_SumPhotonPt);
+            //t1->SetBranchAddress("mu_NumberTrackerLayers", &mu_NumberTrackerLayers);
 
             t1->SetBranchAddress("jetAK4CHS_size", &jet_size);
             t1->SetBranchAddress("jetAK4CHS_Pt", &jet_Pt);
@@ -363,19 +369,27 @@ void MuMu_reco_mc_batch()
                     float loose_iso = 0.25;
                     nNonIso++;
                     //only want events with 2 oppositely charged muons
+                    double mu_p_mcSF, mu_m_mcSF;
                     if(mu_Charge[0] >0){
                         mu_p.SetPtEtaPhiE(mu_Pt[0], mu_Eta[0], mu_Phi[0], mu_E[0]);
                         mu_m.SetPtEtaPhiE(mu_Pt[1], mu_Eta[1], mu_Phi[1], mu_E[1]);
+                        //mu_p_mcSF = rc.kScaleAndSmearMC(1, mu_Pt[0], mu_Eta[0], mu_Phi[0], 5, rand->Rndm(), rand->Rndm(), 0, 0);
+                        //mu_m_mcSF = rc.kScaleAndSmearMC(-1, mu_Pt[1], mu_Eta[1], mu_Phi[1], 5, rand->Rndm(), rand->Rndm(), 0, 0);
                     }
                     else{
                         mu_m.SetPtEtaPhiE(mu_Pt[0], mu_Eta[0], mu_Phi[0], mu_E[0]);
                         mu_p.SetPtEtaPhiE(mu_Pt[1], mu_Eta[1], mu_Phi[1], mu_E[1]);
+                        //mu_m_mcSF = rc.kScaleAndSmearMC(-1, mu_Pt[0], mu_Eta[0], mu_Phi[0], 5, rand->Rndm(), rand->Rndm(), 0, 0);
+                        //mu_p_mcSF = rc.kScaleAndSmearMC(1, mu_Pt[1], mu_Eta[1], mu_Phi[1], 5, rand->Rndm(), rand->Rndm(), 0, 0);
                     }
                     //printf("charges are %1f %1f \n", mu_Charge[0], mu_Charge[1]);
                     //printf("(pt, eta, phi,E) = %4.2f %4.2f %4.2f %4.2f \n", mu_Pt[0], mu_Eta[0], mu_Phi[0], mu_E[0]);
                     //printf("(pt, eta, phi,E) = %4.2f %4.2f %4.2f %4.2f \n", mu_Pt[1], mu_Eta[1], mu_Phi[1], mu_E[1]);
                     //mu_p.Print();
                     //mu_m.Print();
+                    //printf ("Momentum SFs are %.3f %.3f for Pts %.0f %.0f \n", mu_p_mcSF, mu_m_mcSF, mu_p.Pt(), mu_m.Pt());
+                   
+
 
                     cm = mu_p + mu_m;
                     cm_m = cm.M();

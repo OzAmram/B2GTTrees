@@ -22,6 +22,7 @@ Float_t cost_bins[] = {-1.0, -.8, -.6, -.4, -.2, 0., 0.2, 0.4, 0.6, 0.8, 1.0};
 //int n_cost_bins = 14;
 //Float_t cost_bins[] = {-1.0, -.857, -.714, -.571, -.429, -0.286, -.143,  0., 0.143, .286, 0.429, 0.571, 0.714, 0.857, 1.0};
 int n_m_bins = 6;
+int n_pt_bins = 6;
 Float_t m_bins[] = {150,200,   250,    350,    500,    700, 100000};
 Double_t alphas[6] = {0.109, 0.078, 0.0762, 0.112, 0.065, 0.06};
 Double_t alpha_unc[6] = {0.015, 0.015, 0.02, 0.03,   0.02, 0.02};
@@ -57,7 +58,7 @@ void init(){
     t_elel_QCD_contam = (TTree *)f_elel_QCD_contam->Get("T_data");
     ////////////////////////////////////////
 
-    f_mumu_mc = (TFile*) TFile::Open("output_files/MuMu_DY_jan16.root");
+    f_mumu_mc = (TFile*) TFile::Open("output_files/MuMu_DY_mar19.root");
     t_mumu_mc = (TTree *) f_mumu_mc ->Get("T_data");
     t_mumu_nosig = (TTree *) f_mumu_mc ->Get("T_back");
     f_mumu_back = (TFile*) TFile::Open("output_files/MuMu_combined_back_jan22.root");

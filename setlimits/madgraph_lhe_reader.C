@@ -57,7 +57,7 @@ Double_t get_AFB(int Zp_mass, Double_t cpl, int m_bin, bool print = false)
     const double m_high =m_bins[m_bin + 1];
     int run_num =m_bin +1;
     string base_dir("/uscms_data/d3/oamram/condor_jobs/condor_output");
-    if(cpl<1.0){
+    if(cpl< 0.99){
         //need to remove leading 0 in float
         unsigned int_cpl = (unsigned) 100 * (cpl + 0.005);
         sprintf(infile, (base_dir+"/Zp_M%i/Zp_events_M%i_kL.%2u_bin%i.lhe").c_str(), Zp_mass, Zp_mass, int_cpl, run_num);
@@ -77,7 +77,7 @@ Double_t get_AFB(int Zp_mass, Double_t cpl, int m_bin, bool print = false)
         ifp = fopen(infile, "r");
     if (ifp==NULL) {
         printf("can't find %s\n",infile);
-        return 1;
+        return -1.;
     }
 
     //  Book Histograms

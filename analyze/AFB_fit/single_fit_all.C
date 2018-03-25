@@ -31,8 +31,8 @@
 //int FLAG = FLAG_ELECTRONS;
 int FLAG = FLAG_MUONS;
 bool do_both = true;
-const TString mumu_fout_name("AFB_fit/fit_results/m_bins/MuMu_fit_mu_HLT_up_mar19.root");
-const TString elel_fout_name("AFB_fit/fit_results/m_bins/ElEl_fit_el_HLT_up_mar19.root");
+const TString mumu_fout_name("AFB_fit/fit_results/m_bins/MuMu_fit_mu_reco_up_mar24.root");
+const TString elel_fout_name("AFB_fit/fit_results/m_bins/ElEl_fit_el_reco_up_mar24.root");
 
 
 float m_low;
