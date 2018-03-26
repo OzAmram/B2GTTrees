@@ -239,7 +239,7 @@ int gen_mc_template(TTree *t1, Double_t alpha, TH2F* h_sym, TH2F *h_asym, TH2F *
     Double_t one = 1.0;
     Double_t *systematic = &one;
 
-    bool do_SF_sys = true;
+    bool do_SF_sys = false;
 
     //
     // do_pileup_sys: 0 = nominal, 1= var up, -1 = var down
@@ -315,8 +315,9 @@ int gen_mc_template(TTree *t1, Double_t alpha, TH2F* h_sym, TH2F *h_asym, TH2F *
                     bcdef_id_SF = get_SF(mu1_pt, mu1_eta, runs_bcdef.ID_SF) * get_SF(mu2_pt, mu2_eta, runs_bcdef.ID_SF);
                     gh_id_SF = get_SF(mu1_pt, mu1_eta, runs_gh.ID_SF) * get_SF(mu2_pt, mu2_eta, runs_gh.ID_SF);
 
-                    bcdef_trk_SF = get_Mu_trk_SF(abs(mu1_eta), runs_bcdef.TRK_SF) * get_Mu_trk_SF(abs(mu2_eta), runs_bcdef.TRK_SF,1.0);
-                    gh_trk_SF = get_Mu_trk_SF(abs(mu1_eta), runs_gh.TRK_SF) * get_Mu_trk_SF(abs(mu2_eta), runs_gh.TRK_SF,1.0);
+                    bcdef_trk_SF = get_Mu_trk_SF(abs(mu1_eta), runs_bcdef.TRK_SF) * get_Mu_trk_SF(abs(mu2_eta), runs_bcdef.TRK_SF);
+                    gh_trk_SF = get_Mu_trk_SF(abs(mu1_eta), runs_gh.TRK_SF) * get_Mu_trk_SF(abs(mu2_eta), runs_gh.TRK_SF);
+                    //bcdef_HLT_SF = gh_HLT_SF = bcdef_iso_SF = gh_iso_SF = bcdef_id_SF = gh_id_SF = bcdef_trk_SF = gh_trk_SF = 1.0;
                 }
                 if(do_btag_sys != 0){
                     jet1_b_weight = get_btag_weight(jet1_pt, jet1_eta, (Float_t) jet1_flavour , btag_effs, b_reader, do_btag_sys);
@@ -346,8 +347,8 @@ int gen_mc_template(TTree *t1, Double_t alpha, TH2F* h_sym, TH2F *h_asym, TH2F *
                 h_asym_gh->Fill(xF, cost, reweight * gh_weight);
                 h_asym_gh->Fill(xF, -cost, -reweight * gh_weight);
 
-                h_count->Fill(xF, cost, 1);
-                h_count->Fill(xF, -cost, 1);
+                if(bcdef_weight >0) h_count->Fill(xF, cost, 1);
+                if(bcdef_weight >0) h_count->Fill(xF, -cost, 1);
             }
         }
 
@@ -405,8 +406,10 @@ int gen_mc_template(TTree *t1, Double_t alpha, TH2F* h_sym, TH2F *h_asym, TH2F *
 
                 if(do_SF_sys){
                     el_id_SF = get_el_SF(el1_pt, el1_eta, el_SF.ID_SF) * get_el_SF(el2_pt, el2_eta, el_SF.ID_SF);
-                    el_reco_SF = get_el_SF(el1_pt, el1_eta, el_SF.RECO_SF) * get_el_SF(el2_pt, el2_eta, el_SF.RECO_SF,1.0);
-                    el_HLT_SF = get_el_HLT_SF(el1_pt, el1_eta, el2_pt, el2_eta, el_SF.HLT_SF, el_SF.HLT_MC_EFF);
+                    el_reco_SF = get_el_SF(el1_pt, el1_eta, el_SF.RECO_SF) * get_el_SF(el2_pt, el2_eta, el_SF.RECO_SF);
+                    el_HLT_SF = get_el_HLT_SF(el1_pt, el1_eta, el2_pt, el2_eta, el_SF.HLT_SF, el_SF.HLT_MC_EFF, -1);
+                    //el_id_SF = el_HLT_SF = el_reco_SF = 1.0;
+                    //el_HLT_SF = 1.0;
                 }
                 if(do_btag_sys != 0){
                     jet1_b_weight = get_btag_weight(jet1_pt, jet1_eta,(Float_t) jet1_flavour , btag_effs, b_reader, do_btag_sys);
@@ -429,8 +432,8 @@ int gen_mc_template(TTree *t1, Double_t alpha, TH2F* h_sym, TH2F *h_asym, TH2F *
                 h_asym->Fill(xF, cost, reweight * evt_weight);
                 h_asym->Fill(xF, -cost, -reweight * evt_weight);
 
-                h_count->Fill(xF, cost, 1);
-                h_count->Fill(xF, -cost, 1);
+                if (evt_weight >0) h_count->Fill(xF, cost, 1);
+                if (evt_weight >0) h_count->Fill(xF, -cost, 1);
             }
         }
         h_sym->Scale(1000*(bcdef_lumi + gh_lumi));
@@ -783,8 +786,8 @@ void gen_fakes_template(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_contam,
         h->Scale(0.);
         printf("zeroing Fakes template \n");
     }
-    //if(flag1 == FLAG_MUONS) h->Scale(0.5);
-    //if(flag1 == FLAG_ELECTRONS) h->Scale(0.7);
+    //if(flag1 == FLAG_MUONS) h->Scale(1.5);
+    //if(flag1 == FLAG_ELECTRONS) h->Scale(1.3);
     return;
 }
 

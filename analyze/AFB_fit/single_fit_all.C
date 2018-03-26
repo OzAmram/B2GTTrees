@@ -20,24 +20,23 @@
 #include "TSystem.h"
 //#include"Minuit2/Minuit2Minimizer.h"
 #include "Math/Functor.h"
-#include "../TemplateMaker_systematics.C"
+//#include "../TemplateMaker_systematics.C"
 #include "root_files.h"
-//#include "../TemplateMaker.C"
+#include "../TemplateMaker.C"
 
 
 
 
 
-//int FLAG = FLAG_ELECTRONS;
-int FLAG = FLAG_MUONS;
+int FLAG = FLAG_ELECTRONS;
+//int FLAG = FLAG_MUONS;
 bool do_both = true;
-const TString mumu_fout_name("AFB_fit/fit_results/m_bins/MuMu_fit_mu_reco_up_mar24.root");
-const TString elel_fout_name("AFB_fit/fit_results/m_bins/ElEl_fit_el_reco_up_mar24.root");
+const TString mumu_fout_name("AFB_fit/fit_results/m_bins/MuMu_fit_mu_SF_off_mar25.root");
+const TString elel_fout_name("AFB_fit/fit_results/m_bins/ElEl_fit_el_SF_off_mar25.root");
 
 
 float m_low;
 float m_high;
-//alpha = 0.0981;
 
 bool print = true;
 
@@ -118,14 +117,6 @@ void fcn(int& npar, double* deriv, double& f, double par[], int flag){
 void setup(){
     //setup global variables
     //TH1::SetDefaultSumw2(kTRUE);
-    if(m_low <= m_bins[n_m_bins-2] ){
-        n_xf_bins = n_xf_bins_v1;
-        xf_bins = xf_bins_v1;
-    }
-    else{
-        n_xf_bins = n_xf_bins_v2;
-        xf_bins = xf_bins_v2;
-    }
     printf("Starting setup \n");
     h_mc_count = new TH2F("h_mc_count", "Events in bins for MC templates",
             n_xf_bins, xf_bins, n_cost_bins, cost_bins);
@@ -167,6 +158,7 @@ void setup(){
 
         nDataEvents = gen_data_template(t_elel_data, h_data, &v_xF, &v_cost, m_low, m_high, FLAG);
     }
+    /*
     printf("\n\n\n Printing MC counts in each bin:\n");
     for(int i=1; i<=n_xf_bins; i++){
         for(int j=1; j<=n_cost_bins; j++){
@@ -174,6 +166,7 @@ void setup(){
         }
         printf("\n");
     }
+    */
 
     //f_data->Close();
     //f_back->Close();

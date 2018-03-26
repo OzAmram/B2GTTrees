@@ -31,8 +31,8 @@
 
 int FLAG1 = FLAG_ELECTRONS;
 //int FLAG1 = FLAG_MUONS;
-const TString mumu_fout_name("AFB_fit/fit_results/m_bins/MuMu_m_fit_mar19_pdf_sys.root");
-const TString elel_fout_name("AFB_fit/fit_results/m_bins/ElEl_m_fit_mar19_pdf_sys.root");
+const TString mumu_fout_name("AFB_fit/fit_results/m_bins/MuMu_m_fit_mar25_pdf_sys.root");
+const TString elel_fout_name("AFB_fit/fit_results/m_bins/ElEl_m_fit_mar25_pdf_sys.root");
 
 bool do_both = true;
 Int_t N_PDFS = 100;
@@ -125,14 +125,6 @@ void fcn(int& npar, double* deriv, double& f, double par[], int flag){
 void setup(){
     //setup global variables
     //TH1::SetDefaultSumw2(kTRUE);
-    if(var_low <= m_bins[n_m_bins-2] ){
-        n_xf_bins = n_xf_bins_v1;
-        xf_bins = xf_bins_v1;
-    }
-    else{
-        n_xf_bins = n_xf_bins_v2;
-        xf_bins = xf_bins_v2;
-    }
     printf("Starting setup \n");
     h_mc_count = new TH2F("h_mc_count", "Events in bins for MC templates",
             n_xf_bins, xf_bins, n_cost_bins, cost_bins);

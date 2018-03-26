@@ -25,7 +25,7 @@
 #include "../TemplateMaker.C"
 
 const int n_bins = 6;
-const int n_sys =8;
+const int n_sys =9;
 vector<double> v_AFB_nom, v_AFB_stat_unc;
 
 double get_var(Float_t vals[100]){
@@ -49,7 +49,7 @@ void eval_systematic(TTree *t, double *afb_var_up, double *afb_var_down){
     for(int i=0; i < n_bins; i++){
         t->GetEntry(i);
         double afb_diff = afb - v_AFB_nom[i];
-        if(std::isnan(afb_diff)) printf("hi \n");
+        if(std::isnan(afb_diff)) printf("WARNING nan sys \n");
         //if (abs(afb_diff) > 0.01) printf ("%.3f \n", afb_diff);
         afb_var_up[i] += pow((std::max(0., afb_diff)),2.);
         afb_var_down[i] += pow(std::max(0., -afb_diff),2.);
@@ -79,7 +79,7 @@ void eval_pdf_systematic(TTree *t, double *afb_var_up, double *afb_var_down){
     for(int i=0; i < n_bins; i++){
         t->GetEntry(i);
         double afb_err = get_var(afb);
-        printf("AFB err %.2f \n", afb_err);
+        printf("AFB err %.2e \n", afb_err);
 
         afb_var_up[i] += afb_err;
         afb_var_down[i] += afb_err;
@@ -107,148 +107,176 @@ void single_fit_systematics(){
     TTree *t_nom;
     bool output_file = true;
     FILE * fout;
-    if(output_file) fout = fopen("AFB_fit/systematics/ElEl_systematics_mar22.txt", "w");
-
-
-    string f_nominal("AFB_fit/fit_results/m_bins/ElEl_fit_nominal_mar19.root");
-    TFile *f1 = TFile ::Open(f_nominal.c_str());
-    t_nom  = (TTree *) f1->Get("T_fit_res");
-
-    string f_pdf_str = string("AFB_fit/fit_results/m_bins/ElEl_m_fit_mar19_pdf_sys.root"); 
-    TFile *f_pdf = TFile::Open(f_pdf_str.c_str());
-    TTree * t_pdf = (TTree *) f_pdf->Get("T_fit_res");
-
-    string f_bin_up_str = string("AFB_fit/fit_results/m_bins/ElEl_fit_bin_up_mar19.root"); 
-    TFile *f_bin_up = TFile::Open(f_bin_up_str.c_str());
-    TTree * t_bin_up = (TTree *) f_bin_up->Get("T_fit_res");
-    string f_bin_down_str = string("AFB_fit/fit_results/m_bins/ElEl_fit_bin_down_mar19.root"); 
-    TFile *f_bin_down = TFile::Open(f_bin_down_str.c_str());
-    TTree * t_bin_down = (TTree *) f_bin_down->Get("T_fit_res");
-
-
-    string f_alpha_up_str = string("AFB_fit/fit_results/m_bins/ElEl_fit_alpha_up_mar19.root"); 
-    TFile *f_alpha_up = TFile::Open(f_alpha_up_str.c_str());
-    TTree * t_alpha_up = (TTree *) f_alpha_up->Get("T_fit_res");
-    string f_alpha_down_str = string("AFB_fit/fit_results/m_bins/ElEl_fit_alpha_down_mar19.root"); 
-    TFile *f_alpha_down = TFile::Open(f_alpha_down_str.c_str());
-    TTree * t_alpha_down = (TTree *) f_alpha_down->Get("T_fit_res");
-
-
-    string f_emu_up_str = string("AFB_fit/fit_results/m_bins/ElEl_fit_emu_up_mar19.root"); 
-    TFile *f_emu_up = TFile::Open(f_emu_up_str.c_str());
-    TTree * t_emu_up = (TTree *) f_emu_up->Get("T_fit_res");
-    string f_emu_down_str = string("AFB_fit/fit_results/m_bins/ElEl_fit_emu_down_mar19.root"); 
-    TFile *f_emu_down = TFile::Open(f_emu_down_str.c_str());
-    TTree * t_emu_down = (TTree *) f_emu_down->Get("T_fit_res");
-
-
-    string f_fakes_up_str = string("AFB_fit/fit_results/m_bins/ElEl_fit_qcd_up_mar19.root"); 
-    TFile *f_fakes_up = TFile::Open(f_fakes_up_str.c_str());
-    TTree * t_fakes_up = (TTree *) f_fakes_up->Get("T_fit_res");
-    string f_fakes_down_str = string("AFB_fit/fit_results/m_bins/ElEl_fit_qcd_down_mar19.root"); 
-    TFile *f_fakes_down = TFile::Open(f_fakes_down_str.c_str());
-    TTree * t_fakes_down = (TTree *) f_fakes_down->Get("T_fit_res");
-
-
-    string f_btag_up_str = string("AFB_fit/fit_results/m_bins/ElEl_fit_btag_up_mar19.root"); 
-    TFile *f_btag_up = TFile::Open(f_btag_up_str.c_str());
-    TTree * t_btag_up = (TTree *) f_btag_up->Get("T_fit_res");
-    string f_btag_down_str = string("AFB_fit/fit_results/m_bins/ElEl_fit_btag_down_mar19.root"); 
-    TFile *f_btag_down = TFile::Open(f_btag_down_str.c_str());
-    TTree * t_btag_down = (TTree *) f_btag_down->Get("T_fit_res");
-
-    string f_pileup_up_str = string("AFB_fit/fit_results/m_bins/ElEl_fit_pu_up_mar19.root"); 
-    TFile *f_pileup_up = TFile::Open(f_pileup_up_str.c_str());
-    TTree * t_pileup_up = (TTree *) f_pileup_up->Get("T_fit_res");
-    string f_pileup_down_str = string("AFB_fit/fit_results/m_bins/ElEl_fit_pu_down_mar19.root"); 
-    TFile *f_pileup_down = TFile::Open(f_pileup_down_str.c_str());
-    TTree * t_pileup_down = (TTree *) f_pileup_down->Get("T_fit_res");
-
-    const int n_vars =6;
-    TTree *t_scale[n_vars];
-    string f_scale[n_vars];
-    f_scale[0] = string("AFB_fit/fit_results/m_bins/ElEl_fit_mu_RF_up_mar19.root");
-    f_scale[1] = string("AFB_fit/fit_results/m_bins/ElEl_fit_mu_RF_down_mar19.root");
-    f_scale[2] = string("AFB_fit/fit_results/m_bins/ElEl_fit_mu_F_up_mar19.root");
-    f_scale[3] = string("AFB_fit/fit_results/m_bins/ElEl_fit_mu_F_down_mar19.root");
-    f_scale[4] = string("AFB_fit/fit_results/m_bins/ElEl_fit_mu_R_up_mar19.root");
-    f_scale[5] = string("AFB_fit/fit_results/m_bins/ElEl_fit_mu_R_down_mar19.root");
-
-    const int n_SFs =6;
-    TTree *t_scale[n_SFs];
-    string f_scale[n_SFs];
     /*
-    if(output_file) fout = fopen("AFB_fit/systematics/MuMu_systematics_mar22.txt", "w");
+    if(output_file) fout = fopen("AFB_fit/systematics/ElEl_systematics_mar25.txt", "w");
 
 
-    string f_nominal("AFB_fit/fit_results/m_bins/MuMu_fit_nominal_mar19.root");
+    string f_nominal("AFB_fit/fit_results/m_bins/ElEl_fit_nominal_mar25.root");
     TFile *f1 = TFile ::Open(f_nominal.c_str());
     t_nom  = (TTree *) f1->Get("T_fit_res");
 
-    string f_pdf_str = string("AFB_fit/fit_results/m_bins/MuMu_m_fit_mar19_pdf_sys.root"); 
+    string f_pdf_str = string("AFB_fit/fit_results/m_bins/ElEl_m_fit_mar25_pdf_sys.root"); 
     TFile *f_pdf = TFile::Open(f_pdf_str.c_str());
     TTree * t_pdf = (TTree *) f_pdf->Get("T_fit_res");
 
-    string f_bin_up_str = string("AFB_fit/fit_results/m_bins/MuMu_fit_bin_up_mar19.root"); 
+    string f_bin_up_str = string("AFB_fit/fit_results/m_bins/ElEl_fit_bin_up_mar25.root"); 
     TFile *f_bin_up = TFile::Open(f_bin_up_str.c_str());
     TTree * t_bin_up = (TTree *) f_bin_up->Get("T_fit_res");
-    string f_bin_down_str = string("AFB_fit/fit_results/m_bins/MuMu_fit_bin_down_mar19.root"); 
+    string f_bin_down_str = string("AFB_fit/fit_results/m_bins/ElEl_fit_bin_down_mar25.root"); 
     TFile *f_bin_down = TFile::Open(f_bin_down_str.c_str());
     TTree * t_bin_down = (TTree *) f_bin_down->Get("T_fit_res");
 
 
-    string f_alpha_up_str = string("AFB_fit/fit_results/m_bins/MuMu_fit_alpha_up_mar19.root"); 
+    string f_alpha_up_str = string("AFB_fit/fit_results/m_bins/ElEl_fit_alpha_up_mar25.root"); 
     TFile *f_alpha_up = TFile::Open(f_alpha_up_str.c_str());
     TTree * t_alpha_up = (TTree *) f_alpha_up->Get("T_fit_res");
-    string f_alpha_down_str = string("AFB_fit/fit_results/m_bins/MuMu_fit_alpha_down_mar19.root"); 
+    string f_alpha_down_str = string("AFB_fit/fit_results/m_bins/ElEl_fit_alpha_down_mar25.root"); 
     TFile *f_alpha_down = TFile::Open(f_alpha_down_str.c_str());
     TTree * t_alpha_down = (TTree *) f_alpha_down->Get("T_fit_res");
 
 
-    string f_emu_up_str = string("AFB_fit/fit_results/m_bins/MuMu_fit_emu_up_mar19.root"); 
+    string f_emu_up_str = string("AFB_fit/fit_results/m_bins/ElEl_fit_emu_up_mar25.root"); 
     TFile *f_emu_up = TFile::Open(f_emu_up_str.c_str());
     TTree * t_emu_up = (TTree *) f_emu_up->Get("T_fit_res");
-    string f_emu_down_str = string("AFB_fit/fit_results/m_bins/MuMu_fit_emu_down_mar19.root"); 
+    string f_emu_down_str = string("AFB_fit/fit_results/m_bins/ElEl_fit_emu_down_mar25.root"); 
     TFile *f_emu_down = TFile::Open(f_emu_down_str.c_str());
     TTree * t_emu_down = (TTree *) f_emu_down->Get("T_fit_res");
 
 
-    string f_fakes_up_str = string("AFB_fit/fit_results/m_bins/MuMu_fit_qcd_up_mar19.root"); 
+    string f_fakes_up_str = string("AFB_fit/fit_results/m_bins/ElEl_fit_qcd_up_mar25.root"); 
     TFile *f_fakes_up = TFile::Open(f_fakes_up_str.c_str());
     TTree * t_fakes_up = (TTree *) f_fakes_up->Get("T_fit_res");
-    string f_fakes_down_str = string("AFB_fit/fit_results/m_bins/MuMu_fit_qcd_down_mar19.root"); 
+    string f_fakes_down_str = string("AFB_fit/fit_results/m_bins/ElEl_fit_qcd_down_mar25.root"); 
     TFile *f_fakes_down = TFile::Open(f_fakes_down_str.c_str());
     TTree * t_fakes_down = (TTree *) f_fakes_down->Get("T_fit_res");
 
 
-    string f_btag_up_str = string("AFB_fit/fit_results/m_bins/MuMu_fit_btag_up_mar19.root"); 
+    string f_btag_up_str = string("AFB_fit/fit_results/m_bins/ElEl_fit_btag_up_mar25.root"); 
     TFile *f_btag_up = TFile::Open(f_btag_up_str.c_str());
     TTree * t_btag_up = (TTree *) f_btag_up->Get("T_fit_res");
-    string f_btag_down_str = string("AFB_fit/fit_results/m_bins/MuMu_fit_btag_down_mar19.root"); 
+    string f_btag_down_str = string("AFB_fit/fit_results/m_bins/ElEl_fit_btag_down_mar25.root"); 
     TFile *f_btag_down = TFile::Open(f_btag_down_str.c_str());
     TTree * t_btag_down = (TTree *) f_btag_down->Get("T_fit_res");
 
-    string f_pileup_up_str = string("AFB_fit/fit_results/m_bins/MuMu_fit_pu_up_mar19.root"); 
+    string f_pileup_up_str = string("AFB_fit/fit_results/m_bins/ElEl_fit_pu_up_mar25.root"); 
     TFile *f_pileup_up = TFile::Open(f_pileup_up_str.c_str());
     TTree * t_pileup_up = (TTree *) f_pileup_up->Get("T_fit_res");
-    string f_pileup_down_str = string("AFB_fit/fit_results/m_bins/MuMu_fit_pu_down_mar19.root"); 
+    string f_pileup_down_str = string("AFB_fit/fit_results/m_bins/ElEl_fit_pu_down_mar25.root"); 
     TFile *f_pileup_down = TFile::Open(f_pileup_down_str.c_str());
     TTree * t_pileup_down = (TTree *) f_pileup_down->Get("T_fit_res");
 
     const int n_vars =6;
     TTree *t_scale[n_vars];
     string f_scale[n_vars];
-    f_scale[0] = string("AFB_fit/fit_results/m_bins/MuMu_fit_mu_RF_up_mar19.root");
-    f_scale[1] = string("AFB_fit/fit_results/m_bins/MuMu_fit_mu_RF_down_mar19.root");
-    f_scale[2] = string("AFB_fit/fit_results/m_bins/MuMu_fit_mu_F_up_mar19.root");
-    f_scale[3] = string("AFB_fit/fit_results/m_bins/MuMu_fit_mu_F_down_mar19.root");
-    f_scale[4] = string("AFB_fit/fit_results/m_bins/MuMu_fit_mu_R_up_mar19.root");
-    f_scale[5] = string("AFB_fit/fit_results/m_bins/MuMu_fit_mu_R_down_mar19.root");
+    f_scale[0] = string("AFB_fit/fit_results/m_bins/ElEl_fit_mu_RF_up_mar25.root");
+    f_scale[1] = string("AFB_fit/fit_results/m_bins/ElEl_fit_mu_RF_down_mar25.root");
+    f_scale[2] = string("AFB_fit/fit_results/m_bins/ElEl_fit_mu_F_up_mar25.root");
+    f_scale[3] = string("AFB_fit/fit_results/m_bins/ElEl_fit_mu_F_down_mar25.root");
+    f_scale[4] = string("AFB_fit/fit_results/m_bins/ElEl_fit_mu_R_up_mar25.root");
+    f_scale[5] = string("AFB_fit/fit_results/m_bins/ElEl_fit_mu_R_down_mar25.root");
+
+    const int n_SFs =1;
+    TTree *t_SF[n_SFs];
+    string f_SF[n_SFs];
+    f_SF[0] = string("AFB_fit/fit_results/m_bins/ElEl_fit_el_SF_off_mar25.root");
+    //f_SF[0] = string("AFB_fit/fit_results/m_bins/ElEl_fit_el_HLT_down_mar25.root");
+    //f_SF[1] = string("AFB_fit/fit_results/m_bins/ElEl_fit_el_HLT_up_mar25.root");
+    //f_SF[2] = string("AFB_fit/fit_results/m_bins/ElEl_fit_el_ID_up_mar25.root");
+    //f_SF[3] = string("AFB_fit/fit_results/m_bins/ElEl_fit_el_ID_down_mar25.root");
+    //f_SF[4] = string("AFB_fit/fit_results/m_bins/ElEl_fit_el_reco_down_mar25.root");
+    //f_SF[5] = string("AFB_fit/fit_results/m_bins/ElEl_fit_el_reco_up_mar25.root");
     */
+    if(output_file) fout = fopen("AFB_fit/systematics/MuMu_systematics_mar25.txt", "w");
+
+
+    string f_nominal("AFB_fit/fit_results/m_bins/MuMu_fit_nominal_mar25.root");
+    TFile *f1 = TFile ::Open(f_nominal.c_str());
+    t_nom  = (TTree *) f1->Get("T_fit_res");
+
+    string f_pdf_str = string("AFB_fit/fit_results/m_bins/MuMu_m_fit_mar25_pdf_sys.root"); 
+    TFile *f_pdf = TFile::Open(f_pdf_str.c_str());
+    TTree * t_pdf = (TTree *) f_pdf->Get("T_fit_res");
+
+    string f_bin_up_str = string("AFB_fit/fit_results/m_bins/MuMu_fit_bin_up_mar25.root"); 
+    TFile *f_bin_up = TFile::Open(f_bin_up_str.c_str());
+    TTree * t_bin_up = (TTree *) f_bin_up->Get("T_fit_res");
+    string f_bin_down_str = string("AFB_fit/fit_results/m_bins/MuMu_fit_bin_down_mar25.root"); 
+    TFile *f_bin_down = TFile::Open(f_bin_down_str.c_str());
+    TTree * t_bin_down = (TTree *) f_bin_down->Get("T_fit_res");
+
+
+    string f_alpha_up_str = string("AFB_fit/fit_results/m_bins/MuMu_fit_alpha_up_mar25.root"); 
+    TFile *f_alpha_up = TFile::Open(f_alpha_up_str.c_str());
+    TTree * t_alpha_up = (TTree *) f_alpha_up->Get("T_fit_res");
+    string f_alpha_down_str = string("AFB_fit/fit_results/m_bins/MuMu_fit_alpha_down_mar25.root"); 
+    TFile *f_alpha_down = TFile::Open(f_alpha_down_str.c_str());
+    TTree * t_alpha_down = (TTree *) f_alpha_down->Get("T_fit_res");
+
+
+    string f_emu_up_str = string("AFB_fit/fit_results/m_bins/MuMu_fit_emu_up_mar25.root"); 
+    TFile *f_emu_up = TFile::Open(f_emu_up_str.c_str());
+    TTree * t_emu_up = (TTree *) f_emu_up->Get("T_fit_res");
+    string f_emu_down_str = string("AFB_fit/fit_results/m_bins/MuMu_fit_emu_down_mar25.root"); 
+    TFile *f_emu_down = TFile::Open(f_emu_down_str.c_str());
+    TTree * t_emu_down = (TTree *) f_emu_down->Get("T_fit_res");
+
+
+    string f_fakes_up_str = string("AFB_fit/fit_results/m_bins/MuMu_fit_qcd_up_mar25.root"); 
+    TFile *f_fakes_up = TFile::Open(f_fakes_up_str.c_str());
+    TTree * t_fakes_up = (TTree *) f_fakes_up->Get("T_fit_res");
+    string f_fakes_down_str = string("AFB_fit/fit_results/m_bins/MuMu_fit_qcd_down_mar25.root"); 
+    TFile *f_fakes_down = TFile::Open(f_fakes_down_str.c_str());
+    TTree * t_fakes_down = (TTree *) f_fakes_down->Get("T_fit_res");
+
+
+    string f_btag_up_str = string("AFB_fit/fit_results/m_bins/MuMu_fit_btag_up_mar25.root"); 
+    TFile *f_btag_up = TFile::Open(f_btag_up_str.c_str());
+    TTree * t_btag_up = (TTree *) f_btag_up->Get("T_fit_res");
+    string f_btag_down_str = string("AFB_fit/fit_results/m_bins/MuMu_fit_btag_down_mar25.root"); 
+    TFile *f_btag_down = TFile::Open(f_btag_down_str.c_str());
+    TTree * t_btag_down = (TTree *) f_btag_down->Get("T_fit_res");
+
+    string f_pileup_up_str = string("AFB_fit/fit_results/m_bins/MuMu_fit_pu_up_mar25.root"); 
+    TFile *f_pileup_up = TFile::Open(f_pileup_up_str.c_str());
+    TTree * t_pileup_up = (TTree *) f_pileup_up->Get("T_fit_res");
+    string f_pileup_down_str = string("AFB_fit/fit_results/m_bins/MuMu_fit_pu_down_mar25.root"); 
+    TFile *f_pileup_down = TFile::Open(f_pileup_down_str.c_str());
+    TTree * t_pileup_down = (TTree *) f_pileup_down->Get("T_fit_res");
+
+    const int n_vars =6;
+    TTree *t_scale[n_vars];
+    string f_scale[n_vars];
+    f_scale[0] = string("AFB_fit/fit_results/m_bins/MuMu_fit_mu_RF_up_mar25.root");
+    f_scale[1] = string("AFB_fit/fit_results/m_bins/MuMu_fit_mu_RF_down_mar25.root");
+    f_scale[2] = string("AFB_fit/fit_results/m_bins/MuMu_fit_mu_F_up_mar25.root");
+    f_scale[3] = string("AFB_fit/fit_results/m_bins/MuMu_fit_mu_F_down_mar25.root");
+    f_scale[4] = string("AFB_fit/fit_results/m_bins/MuMu_fit_mu_R_up_mar25.root");
+    f_scale[5] = string("AFB_fit/fit_results/m_bins/MuMu_fit_mu_R_down_mar25.root");
+
+
+
+    const int n_SFs =1;
+    TTree *t_SF[n_SFs];
+    string f_SF[n_SFs];
+    f_SF[0] = string("AFB_fit/fit_results/m_bins/MuMu_fit_mu_SF_off_mar25.root");
+
+    //f_SF[0] = string("AFB_fit/fit_results/m_bins/MuMu_fit_mu_HLT_down_mar25.root");
+    //f_SF[1] = string("AFB_fit/fit_results/m_bins/MuMu_fit_mu_HLT_up_mar25.root");
+    //f_SF[2] = string("AFB_fit/fit_results/m_bins/MuMu_fit_mu_ID_up_mar25.root");
+    //f_SF[3] = string("AFB_fit/fit_results/m_bins/MuMu_fit_mu_ID_down_mar25.root");
+    //f_SF[4] = string("AFB_fit/fit_results/m_bins/MuMu_fit_mu_reco_down_mar25.root");
+    //f_SF[5] = string("AFB_fit/fit_results/m_bins/MuMu_fit_mu_reco_up_mar25.root");
+    //f_SF[6] = string("AFB_fit/fit_results/m_bins/MuMu_fit_mu_iso_down_mar25.root");
+    //f_SF[7] = string("AFB_fit/fit_results/m_bins/MuMu_fit_mu_iso_up_mar25.root");
 
     for(int i=0; i<n_vars; i++){
         TFile *f = TFile::Open(f_scale[i].c_str());
         t_scale[i] = (TTree *) f->Get("T_fit_res");
+    }
+
+    for(int i=0; i<n_SFs; i++){
+        TFile *f = TFile::Open(f_SF[i].c_str());
+        t_SF[i] = (TTree *) f->Get("T_fit_res");
     }
 
 
@@ -302,6 +330,11 @@ void single_fit_systematics(){
     for(int j=0; j<n_vars; j++){
         eval_scale_systematic(t_scale[j], afb_var_up[7], afb_var_down[7]);
     }
+    for(int j=0; j<n_SFs; j++){
+        //if(j==0) continue;
+        eval_systematic(t_SF[j], afb_var_up[8], afb_var_down[8]);
+        //printf("stds are %.3f %.3f \n", afb_var_up[8][0], afb_var_down[8][0]);
+    }
 
 
     combine_sys(n_sys, afb_up, afb_down, afb_var_up, afb_var_down);
@@ -318,6 +351,9 @@ void single_fit_systematics(){
         fprintf(fout, "%s %s \n", f_pileup_up_str.c_str(), f_pileup_down_str.c_str());
         for(int j=0; j<n_vars; j++){
             fprintf(fout, "%s \n", f_scale[j].c_str());
+        }
+        for(int j=0; j<n_SFs; j++){
+            fprintf(fout, "%s \n", f_SF[j].c_str());
         }
     }
 

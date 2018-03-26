@@ -20,20 +20,19 @@
 #include "TSystem.h"
 //#include"Minuit2/Minuit2Minimizer.h"
 #include "Math/Functor.h"
-#include "../TemplateMaker_systematics.C"
-//#include "../TemplateMaker.C"
+//#include "../TemplateMaker_systematics.C"
+#include "../TemplateMaker.C"
 #include "root_files.h"
 
 
 
 
-const TString fout_name("AFB_fit/fit_results/m_bins/combined_fit_mu_ID_up_mar24.root");
+const TString fout_name("AFB_fit/fit_results/m_bins/combined_fit_mu_SF_off_mar25.root");
 
 
 
 float m_low;
 float m_high;
-//alpha = 0.0981;
 
 bool print = true;
 
@@ -94,7 +93,7 @@ void fcn(int& npar, double* deriv, double& f, double par[], int flag){
         if(elel_prob > 1) printf("Warning prob is too big \n");
         if(print && p_elel_sym < 1e-20){
             elel_misses++;
-            //printf(" Warning p_sym is 0 or negative! for elel bin xf: %0.2f cost: %1.2f \n", v_elel_xF[i], v_elel_cost[i]);
+            printf(" Warning p_sym is 0 or negative! for elel bin xf: %0.2f cost: %1.2f \n", v_elel_xF[i], v_elel_cost[i]);
             if(p_elel_back < 1e-20) printf("p_back Is also 0 or negative! \n");
             if(elel_prob < 1e-20) printf("Warning prob is also 0 or negative! \n");
             p_elel_sym = 1e-20;
@@ -132,7 +131,7 @@ void fcn(int& npar, double* deriv, double& f, double par[], int flag){
     f = -2.0 * lnL;
     if(print) {
         printf("ElEl: %i misses out of %i events \n\n\n", elel_misses, nElEl_DataEvents);
-        printf("MuMu: %i misses out of %i events \n\n\n", elel_misses, nMuMu_DataEvents);
+        printf("MuMu: %i misses out of %i events \n\n\n", mumu_misses, nMuMu_DataEvents);
         print = false;
     }
 
@@ -145,14 +144,6 @@ void fcn(int& npar, double* deriv, double& f, double par[], int flag){
 void setup(){
     //setup global variables
     //TH1::SetDefaultSumw2(kTRUE);
-    if(m_low <= m_bins[n_m_bins-2] ){
-        n_xf_bins = n_xf_bins_v1;
-        xf_bins = xf_bins_v1;
-    }
-    else{
-        n_xf_bins = n_xf_bins_v2;
-        xf_bins = xf_bins_v2;
-    }
     h_elel_mc_count = new TH2F("h_elel_mc_count", "Events in bins for MC templates",
             n_xf_bins, xf_bins, n_cost_bins, cost_bins);
     h_elel_mc_count->SetDirectory(0);

@@ -29,7 +29,7 @@
 
 
 
-const TString fout_name("AFB_fit/fit_results/m_bins/combined_m_fit_mar22_pdf_sys.root");
+const TString fout_name("AFB_fit/fit_results/m_bins/combined_m_fit_mar25_pdf_sys.root");
 Int_t N_PDFS = 100;
 
 
@@ -155,14 +155,6 @@ void fcn(int& npar, double* deriv, double& f, double par[], int flag){
 void setup(){
     //setup global variables
     //TH1::SetDefaultSumw2(kTRUE);
-    if(var_low <= m_bins[n_m_bins-2] ){
-        n_xf_bins = n_xf_bins_v1;
-        xf_bins = xf_bins_v1;
-    }
-    else{
-        n_xf_bins = n_xf_bins_v2;
-        xf_bins = xf_bins_v2;
-    }
     h_elel_mc_count = new TH2F("h_elel_mc_count", "Events in bins for MC templates",
             n_xf_bins, xf_bins, n_cost_bins, cost_bins);
     h_elel_mc_count->SetDirectory(0);

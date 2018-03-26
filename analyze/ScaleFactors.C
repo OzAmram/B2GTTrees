@@ -68,10 +68,7 @@ Double_t get_Mu_trk_SF(Double_t eta, TGraphAsymmErrors *h, int systematic = 0){
     if(systematic !=0){
         TAxis* x_ax =  h->GetXaxis();
         int xbin = x_ax->FindBin(eta);
-        Double_t err =0;
-        if(systematic ==1) err = h->GetErrorYhigh(xbin);
-        if(systematic == -1) err = h->GetErrorYhigh(xbin);
-        err = sqrt(err*err + 0.01*0.01);
+        Double_t err =0.01;
         result += err*systematic;
     }
 
@@ -237,8 +234,10 @@ Double_t get_el_HLT_SF(Double_t el1_pt, Double_t el1_eta, Double_t el2_pt, Doubl
     if(systematic != 0){
         Double_t SF1_err = h_SF->GetBinError(xbin1_SF, ybin1_SF);
         Double_t SF2_err = h_SF->GetBinError(xbin2_SF, ybin2_SF);
-        SF1_err = sqrt(SF1_err*SF1_err + 0.005*0.005);
-        SF2_err = sqrt(SF1_err*SF1_err + 0.005*0.005);
+        //printf("%.3f %.3f \n", SF1_err, SF2_err);
+        //SF1_err = min(SF1_err, 0.001);
+        //SF2_err = min(SF2_err, 0.001);
+        SF1_err = SF2_err = 0.001;
         SF1 += SF1_err * systematic;
         SF2 += SF2_err * systematic;
     }
@@ -257,11 +256,12 @@ Double_t get_el_HLT_SF(Double_t el1_pt, Double_t el1_eta, Double_t el2_pt, Doubl
     Double_t result = (1 - (1-MC_EFF1*SF1)*(1-MC_EFF2*SF2))/
                       (1 - (1-MC_EFF1)*(1-MC_EFF2));
     if(result < 0.01) printf("0 HLT SF for Pt %.1f, Eta %1.2f \n", el1_pt, el1_eta);
+    
     if(TMath::IsNaN(result)){ 
         printf("Nan HLT SF for Pt %.1f, Eta %1.2f  %.2f %.2f %.2f %.2f \n", el1_pt, el1_eta, MC_EFF1, MC_EFF2, SF1, SF2);
         result = 1;
     }
-    //printf("Result, SF1 = (%0.3f, %0.3f) \n", result, SF1);
+    //if(abs(result -1.0) > 0.2) printf("Result, SF1 = (%0.3f, %0.3f) \n", result, SF1);
     return result;
 }
 
