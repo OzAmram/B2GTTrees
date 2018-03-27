@@ -4,9 +4,8 @@
 
 //Double_t AFB_SM[6] =  {0.620,  0.615, 0.603, 0.590, 0.586, 0.588};
 Double_t AFB_SM[6] = {0.60, 0.612, 0.603, 0.602, 0.60, 0.60};
-Double_t AFB_unc[6] = {0.014, 0.020,0.021,0.028,0.045, 0.063};
-Double_t AFB_measured[6] = {0.615, 0.600, 0.612, 0.608, 0.552, 0.558};
-//Double_t *AFB_measured = AFB_SM;
+Double_t AFB_unc[6] = {0.019, 0.023,0.023,0.029,0.046, 0.063};
+Double_t AFB_measured[6] = {0.611, 0.612, 0.614, 0.608, 0.559, 0.532};
 
 Double_t test_stat(Double_t *x, Double_t *params){
     //6 x values are asymmetries in the 6 different mass bins
@@ -40,7 +39,7 @@ Double_t get_pval(TH1D *h, Double_t x){
 }
 
 
-Double_t test_Zp(FILE *f1, int M_Zp, Double_t cpl){
+Double_t test_Zp(FILE *f1, int M_Zp, Double_t cpl, Double_t *AFB_test){
     //hard code measured AFB's + uncertainties and SM predictions for AFB
     //return pvalue for a given Zp mass
 
@@ -74,19 +73,20 @@ Double_t test_Zp(FILE *f1, int M_Zp, Double_t cpl){
     h_dist->Scale(1./n_trials);
     //printf("h_dist mean and std dev are %.2f %.2f \n", h_dist->GetMean(), h_dist->GetStdDev()); 
 
-    Double_t t_obs = test_stat(AFB_measured, AFB_Zp);
+    Double_t t_obs = test_stat(AFB_test, AFB_Zp);
     //printf("T_obs is %.2f \n", t_obs);
 
     Double_t pval = get_pval(h_dist, t_obs);
     //if pval < 0.05 we will reject Null hypothesis (of Zprime existiing)
 
-    //del h_dist; 
+    delete h_dist; 
     
     return pval;
 }
 
 
 void find_kl_limit(){
+    Double_t *AFB_test = AFB_measured;
     int m_start = 1000;
     int m_max = 3300;
     int m_step = 20;
@@ -109,7 +109,7 @@ void find_kl_limit(){
             if(m > 2490. || m<1990.) m_step = 50;
             else m_step = 20;
             //printf("%.2f kl \n", kl);
-            pval = test_Zp(f1, m, kl);
+            pval = test_Zp(f1, m, kl, AFB_test);
             if (pval > alpha && kl < kl_start) break;
             else if(pval  > alpha){
                 printf("Started too low, changing kl start from %.2f to %.2f\n", kl_start, kl_start +2*kl_step);
