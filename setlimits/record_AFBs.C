@@ -21,15 +21,15 @@ void record_AFB(FILE *fout, int M_Zp, Double_t cpl){
 
 
 void record_AFBs(){
-    int m_start = 1000;
-    int m_max = 2000;
-    int m_step = 50;
+    int m_start = 2600;
+    int m_max = 3500;
+    int m_step = 20;
 
     FILE *fout = fopen("AFBs.txt", "a");
     int m;
     Double_t kl_start = 0.1;
     Double_t kl_min = 0.05;
-    Double_t kl_max = 1.5;
+    Double_t kl_max = 2.3;
     Double_t kl_step = 0.05;
     Double_t alpha = 0.05;
     Double_t pval = 0.;
@@ -39,7 +39,7 @@ void record_AFBs(){
 
     for(m = m_start; m <=m_max; m+=m_step){
         for(kl = kl_start; kl <= kl_max; kl+=kl_step){
-            if(m%100 == 0) continue;
+            //if(m%100 == 0) continue;
             if(m > 2490) m_step = 50;
             //printf("%.2f kl \n", kl);
             record_AFB(fout, m, kl);
