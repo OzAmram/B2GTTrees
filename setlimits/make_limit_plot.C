@@ -4,7 +4,7 @@
 
 Double_t get_kl_limit(FILE *f1, int M_Zp, Double_t kl_start, Double_t *AFB_test){
     Double_t kl_min = 0.05;
-    Double_t kl_max = 1.5;
+    Double_t kl_max = 2.2;
     Double_t kl_step = 0.05;
     Double_t alpha = 0.05;
     Double_t pval = 0.;
@@ -24,6 +24,7 @@ Double_t get_kl_limit(FILE *f1, int M_Zp, Double_t kl_start, Double_t *AFB_test)
     }
 
     //cant find limit, return minimum
+    printf("Couldn't find limit for M=%i, returning kl_min \n", M_Zp);
     return kl_min;
 }
 Double_t get_var(int n_vals, Double_t *vals){
@@ -53,6 +54,7 @@ TGraph *makeAFillGraph(int len, Double_t *x, Double_t *y1, Double_t *y2, int lin
     vector<Double_t> g_x;
     vector<Double_t> g_y;
     for(int i =0; i<len; i++){
+        printf("filling in graph for m=%.2f \n", x[i]);
         g_x.push_back(x[i]);
         g_y.push_back(y1[i]);
     }
@@ -72,11 +74,11 @@ void make_limit_plot(){
     int n_trials = 200;
     int m_start = 1000;
     //int m_max = 1500;
-    int m_max = 3000;
+    int m_max = 3200;
     int m_step = 20;
     int m;
     int i=0;
-    Double_t kl_start = 1.5;
+    Double_t kl_start = 2.2;
     Double_t kl_min = 0.05;
     Double_t kl_step = 0.05;
     FILE *f1 = fopen("AFBs.txt", "r");
@@ -88,12 +90,16 @@ void make_limit_plot(){
              kl_limit_stds[n_m_bins];
 
     for(m = m_start; m <=m_max; m+=m_step){
-        if(m > 2490. || m<1990.) m_step = 50;
-        if(m > 2990.) m_step = 100;
+        printf("trying m=%i \n", m);
+        if(m > 2490 || m<1990) m_step = 50;
+        if(m > 2990) m_step = 100;
         else m_step = 20;
         Double_t meas_lim = get_kl_limit(f1, m, kl_start, AFB_measured);
         Double_t exp_lim  = get_kl_limit(f1, m, kl_start, AFB_SM);
-        if(meas_lim <= 0.09 || exp_lim <= 0.09 || meas_lim >=1.49 || exp_lim >= 1.49) continue;
+        if(meas_lim <= 0.09 || exp_lim <= 0.09 || meas_lim >=2.2 || exp_lim >= 2.2){
+            printf("bad lim for m=%i exp = %.2f meas = %.2f \n", m, exp_lim, meas_lim); 
+            continue;
+        }
         masses[i] = m;
         kl_limit[i] = meas_lim;
         kl_expected_lim[i] = exp_lim;
@@ -115,7 +121,7 @@ void make_limit_plot(){
     setTDRStyle();
     TGraph *meas = new TGraph(i, masses, kl_limit);    
     TGraph *exp = new TGraph(i, masses, kl_expected_lim);    
-    TGraph *one_sig = makeAFillGraph(i, masses, kl_expected_lim_down, kl_expected_lim_up, 0, 3, 1001);
+    TGraph *one_sig = makeAFillGraph(i, masses, kl_expected_lim_down, kl_expected_lim_up, 0, kGreen+1, 1001);
     TGraph *two_sig = makeAFillGraph(i, masses, kl_expected_lim_downdown, kl_expected_lim_upup, 0, kOrange, 1001);
 
     meas->SetLineColor(1);

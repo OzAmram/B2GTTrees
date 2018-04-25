@@ -212,7 +212,7 @@ void draw_pileup(){
     before_pad1->Draw();
     before_pad1->cd();
     pu_before_stack->Draw("hist");
-    pu_before_stack->GetXaxis()->SetRangeUser(0.,60.);
+    pu_before_stack->GetXaxis()->SetRangeUser(0.,50.);
     data_pu->SetMarkerStyle(kFullCircle);
     data_pu->SetMarkerColor(1);
     //pu_before_stack->SetMinimum(1);
@@ -265,7 +265,8 @@ void draw_pileup(){
    before_ratio->GetYaxis()->SetLabelFont(43); // Absolute font size in pixel (precision 3)
    before_ratio->GetYaxis()->SetLabelSize(15);
    // X axis before_ratio plot settings
-   before_ratio->GetXaxis()->SetTitle("Pileup before reweighting");
+   before_ratio->GetXaxis()->SetTitle("Number of vertices before reweighting");
+   before_ratio->GetXaxis()->SetRangeUser(0.,50.);
    before_ratio->GetXaxis()->SetTitleSize(20);
    before_ratio->GetXaxis()->SetTitleFont(43);
    before_ratio->GetXaxis()->SetTitleOffset(3.);
@@ -283,7 +284,7 @@ void draw_pileup(){
     after_pad1->Draw();
     after_pad1->cd();
     pu_after_stack->Draw("hist");
-    pu_after_stack->GetXaxis()->SetRangeUser(0.,60.);
+    pu_after_stack->GetXaxis()->SetRangeUser(0.,50.);
     data_pu->SetMarkerStyle(kFullCircle);
     data_pu->SetMarkerColor(1);
     //pu_after_stack->SetMinimum(1);
@@ -330,7 +331,7 @@ void draw_pileup(){
     after_ratio->Draw("ep");
     c_pu_after->cd();
 
-    after_ratio->SetTitle("");
+    after_ratio->SetTitle("Number of Vertices after reweighting");
     // Y axis after_ratio plot settings
    after_ratio->GetYaxis()->SetTitle("Data/MC");
    after_ratio->GetYaxis()->SetNdivisions(505);
@@ -340,7 +341,8 @@ void draw_pileup(){
    after_ratio->GetYaxis()->SetLabelFont(43); // Absolute font size in pixel (precision 3)
    after_ratio->GetYaxis()->SetLabelSize(15);
    // X axis after_ratio plot settings
-   after_ratio->GetXaxis()->SetTitle("dimuon after (GeV)");
+   after_ratio->GetXaxis()->SetTitle("Pileup after reweighting");
+   after_ratio->GetXaxis()->SetRangeUser(0.,50.);
    after_ratio->GetXaxis()->SetTitleSize(20);
    after_ratio->GetXaxis()->SetTitleFont(43);
    after_ratio->GetXaxis()->SetTitleOffset(3.);

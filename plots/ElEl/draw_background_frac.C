@@ -246,7 +246,6 @@ void draw_background_frac(){
     leg2->Draw();
 
     writeExtraText = true;
-    extraText = "Preliminary";
     //lumi_sqrtS = "";       // used with iPeriod = 0, e.g. for simulation-only plots (default is an empty string)
     int iPeriod = 4; 
     CMS_lumi(c3, iPeriod, 33 );

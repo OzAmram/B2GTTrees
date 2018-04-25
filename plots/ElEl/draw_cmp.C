@@ -266,7 +266,7 @@ void draw_cmp(){
    ratio->GetYaxis()->SetLabelFont(43); // Absolute font size in pixel (precision 3)
    ratio->GetYaxis()->SetLabelSize(15);
    // X axis ratio plot settings
-   ratio->GetXaxis()->SetTitle("M_{#el#el} (GeV)");
+   ratio->GetXaxis()->SetTitle("M_{ee} (GeV)");
    ratio->GetXaxis()->SetTitleSize(20);
    ratio->GetXaxis()->SetTitleFont(43);
    ratio->GetXaxis()->SetTitleOffset(3.);
@@ -301,7 +301,7 @@ void draw_cmp(){
     leg2->AddEntry(ttbar_m, "t#bar{t}", "f");
     leg2->Draw();
 
-    CMS_lumi(c_cost, iPeriod, 11 );
+    CMS_lumi(cost_pad1, iPeriod, 11 );
     c_cost->Update();
 
     c_cost->cd();

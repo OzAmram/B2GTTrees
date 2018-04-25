@@ -20,9 +20,10 @@
 #include "TFitter.h"
 #include "TSystem.h"
 #include "Math/Functor.h"
-#include "../analyze/TemplateMaker.C"
-#include "tdrstyle.C"
-#include "CMS_lumi.C"
+#include "../../analyze/TemplateMaker.C"
+#include "../tdrstyle.C"
+#include "../CMS_lumi.C"
+#include "root_files.h"
 
 
 
@@ -37,10 +38,9 @@ void draw_dilution(){
 
 
     //read event data
-    TFile* f_mc = (TFile*) TFile::Open("../analyze/output_files/DYToLL_mc_2016_jun13.root");
-    TTree *t1 = (TTree *) f_mc ->Get("T_data");
+    init();
 
-    Long64_t size  =  t1->GetEntries();
+    Long64_t size  =  t_mc->GetEntries();
 
     Double_t m, xF, cost, mu1_pt, mu2_pt, jet1_cmva, jet2_cmva, gen_weight, cost_st;
     Double_t bcdef_HLT_SF, bcdef_iso_SF, bcdef_id_SF;
@@ -50,28 +50,28 @@ void draw_dilution(){
     Int_t nJets;
     nJets = 2;
 
-    t1->SetBranchAddress("m", &m);
-    t1->SetBranchAddress("xF", &xF);
-    t1->SetBranchAddress("cost", &cost);
-    t1->SetBranchAddress("cost_st", &cost_st);
-    t1->SetBranchAddress("met_pt", &met_pt);
-    t1->SetBranchAddress("jet2_CMVA", &jet2_cmva);
-    t1->SetBranchAddress("jet1_CMVA", &jet1_cmva);
-    t1->SetBranchAddress("jet1_pt", &jet1_pt);
-    t1->SetBranchAddress("jet2_pt", &jet2_pt);
-    t1->SetBranchAddress("nJets", &nJets);
-    t1->SetBranchAddress("gen_weight", &gen_weight);
-    t1->SetBranchAddress("bcdef_HLT_SF", &bcdef_HLT_SF);
-    t1->SetBranchAddress("bcdef_iso_SF", &bcdef_iso_SF);
-    t1->SetBranchAddress("bcdef_id_SF", &bcdef_id_SF);
-    t1->SetBranchAddress("gh_HLT_SF", &gh_HLT_SF);
-    t1->SetBranchAddress("gh_iso_SF", &gh_iso_SF);
-    t1->SetBranchAddress("gh_id_SF", &gh_id_SF);
-    t1->SetBranchAddress("jet1_b_weight", &jet1_b_weight);
-    t1->SetBranchAddress("jet2_b_weight", &jet2_b_weight);
+    t_mc->SetBranchAddress("m", &m);
+    t_mc->SetBranchAddress("xF", &xF);
+    t_mc->SetBranchAddress("cost", &cost);
+    t_mc->SetBranchAddress("cost_st", &cost_st);
+    t_mc->SetBranchAddress("met_pt", &met_pt);
+    t_mc->SetBranchAddress("jet2_CMVA", &jet2_cmva);
+    t_mc->SetBranchAddress("jet1_CMVA", &jet1_cmva);
+    t_mc->SetBranchAddress("jet1_pt", &jet1_pt);
+    t_mc->SetBranchAddress("jet2_pt", &jet2_pt);
+    t_mc->SetBranchAddress("nJets", &nJets);
+    t_mc->SetBranchAddress("gen_weight", &gen_weight);
+    t_mc->SetBranchAddress("bcdef_HLT_SF", &bcdef_HLT_SF);
+    t_mc->SetBranchAddress("bcdef_iso_SF", &bcdef_iso_SF);
+    t_mc->SetBranchAddress("bcdef_id_SF", &bcdef_id_SF);
+    t_mc->SetBranchAddress("gh_HLT_SF", &gh_HLT_SF);
+    t_mc->SetBranchAddress("gh_iso_SF", &gh_iso_SF);
+    t_mc->SetBranchAddress("gh_id_SF", &gh_id_SF);
+    t_mc->SetBranchAddress("jet1_b_weight", &jet1_b_weight);
+    t_mc->SetBranchAddress("jet2_b_weight", &jet2_b_weight);
 
     for (int i=0; i<size; i++) {
-        t1->GetEntry(i);
+        t_mc->GetEntry(i);
         bool no_bjets = has_no_bjets(nJets, jet1_pt, jet2_pt, jet1_cmva, jet2_cmva);
 
         if(m >= 150. && met_pt < 50. && no_bjets){
@@ -151,7 +151,7 @@ void draw_dilution(){
     cmsTextOffset    = 0.2;  // only used in outOfFrame version
     */
     writeExtraText = true;
-    extraText = "Simulation Preliminary";
+    extraText = "Simulation Work in progress";
     lumi_sqrtS = "";       // used with iPeriod = 0, e.g. for simulation-only plots (default is an empty string)
     int iPeriod = 0; 
     CMS_lumi( c3, iPeriod, 11 );

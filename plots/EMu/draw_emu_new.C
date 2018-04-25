@@ -36,16 +36,16 @@ void draw_emu_new(){
     TTree *t_data = (TTree *)f_data->Get("T_data");
 
                                 
-    TFile *f_ttbar = TFile::Open("../analyze/output_files/EMu_ttbar_jun26.root");
+    TFile *f_ttbar = TFile::Open("../analyze/output_files/EMu_background_ttbar_Mu_mar29.root");
     TTree *t_ttbar = (TTree *)f_ttbar->Get("T_data");
 
-    TFile *f_DYToLL = TFile::Open("../analyze/output_files/EMu_DY_jun26.root");
+    TFile *f_DYToLL = TFile::Open("../analyze/output_files/EMu_background_DY_Mu_mar29.root");
     TTree *t_dy = (TTree *)f_DYToLL->Get("T_data");
 
-    TFile *f_diboson = TFile::Open("../analyze/output_files/EMu_diboson_jun26.root");
+    TFile *f_diboson = TFile::Open("../analyze/output_files/EMu_background_diboson_Mu_mar29.root");
     TTree *t_diboson = (TTree *)f_diboson->Get("T_data");
 
-    TFile *f_wt = TFile::Open("../analyze/output_files/EMu_WT_jun26.root");
+    TFile *f_wt = TFile::Open("../analyze/output_files/EMu_background_WT_Mu_mar29.root");
     TTree *t_wt = (TTree *)f_wt->Get("T_data");
 
     TFile *f_QCD = TFile::Open("../analyze/output_files/EMu_QCD_fakerate_est_jan24.root");
@@ -86,12 +86,11 @@ void draw_emu_new(){
     qcd_m->SetFillColor(kRed -7);
 
     THStack *m_stack = new THStack("m_stack", "EMu Mass Distribution: Data vs MC ; m_{e#mu} (GeV)");
+    m_stack->Add(dy_m);
     m_stack->Add(diboson_m);
     m_stack->Add(wt_m);
-    m_stack->Add(qcd_m);
     m_stack->Add(ttbar_m);
     m_stack->Add(qcd_m);
-    m_stack->Add(dy_m);
 
 
 
@@ -112,10 +111,11 @@ void draw_emu_new(){
     gStyle->SetLegendBorderSize(0);
     TLegend *leg1 = new TLegend(0.5, 0.65, 0.75, 0.8);
     leg1->AddEntry(data_m, "data", "p");
-    leg1->AddEntry(dy_m, "DY #rightarrow #tau#tau", "f");
-    leg1->AddEntry(diboson_m, "WW + WZ + ZZ", "f");
-    leg1->AddEntry(wt_m, "tW + #bar{t}W", "f");
     leg1->AddEntry(ttbar_m, "t#bar{t}", "f");
+    leg1->AddEntry(qcd_m, "QCD and W+Jets", "f");
+    leg1->AddEntry(wt_m, "tW + #bar{t}W", "f");
+    leg1->AddEntry(diboson_m, "WW + WZ + ZZ", "f");
+    leg1->AddEntry(dy_m, "DY #rightarrow #tau#tau", "f");
     leg1->Draw();
 
     //gPad->BuildLegend();

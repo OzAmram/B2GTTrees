@@ -74,7 +74,7 @@ Double_t test_Zp(FILE *f1, int M_Zp, Double_t cpl, Double_t *AFB_test){
     //printf("h_dist mean and std dev are %.2f %.2f \n", h_dist->GetMean(), h_dist->GetStdDev()); 
 
     Double_t t_obs = test_stat(AFB_test, AFB_Zp);
-    //printf("T_obs is %.2f \n", t_obs);
+    //prin2.2"T_obs is %.2f \n", t_obs);
 
     Double_t pval = get_pval(h_dist, t_obs);
     //if pval < 0.05 we will reject Null hypothesis (of Zprime existiing)
@@ -93,7 +93,7 @@ void find_kl_limit(){
     int m;
     Double_t kl_start = 0.4;
     Double_t kl_min = 0.05;
-    Double_t kl_max = 1.5;
+    Double_t kl_max = 2.2;
     Double_t kl_step = 0.05;
     Double_t alpha = 0.05;
     Double_t pval = 0.;

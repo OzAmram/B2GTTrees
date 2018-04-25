@@ -301,7 +301,6 @@ void draw_cmp(){
     leg2->AddEntry(ttbar_m, "t#bar{t}", "f");
     leg2->Draw();
 
-    CMS_lumi(c_cost, iPeriod, 11 );
     c_cost->Update();
 
     c_cost->cd();
@@ -347,6 +346,8 @@ void draw_cmp(){
    cost_ratio->GetXaxis()->SetTitleOffset(3.);
    cost_ratio->GetXaxis()->SetLabelFont(43); // Absolute font size in pixel (precision 3)
    cost_ratio->GetXaxis()->SetLabelSize(20);
+
+    CMS_lumi(cost_pad1, iPeriod, 11);
     /*
     leg = new TLegend(0.1,0.6,0.5,0.9);
     leg->AddEntry(h_cost1, "No extra cuts", "f");

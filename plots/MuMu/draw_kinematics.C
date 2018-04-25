@@ -91,7 +91,7 @@ void make_4vec_hists(TTree *t1, kin_hists *k, bool is_data=false){
                 //if(mu_p->Pt() > mu_m->Pt()) obs = *mu_p;
                 //else obs = *mu_m;
                 //obs.SetPxPyPzE(mu_p->Px(), mu_p->Py(), mu_p->Pz(), mu_p->E());
-                //obs = cm;
+                obs = cm;
                 
 
                 if(is_data){
@@ -346,6 +346,7 @@ void make_plots(char name[80], kin_hists *k_data, kin_hists *k_mc, kin_hists *k_
 
     return;
 }
+
 void draw_kinematics(){
     init(); 
     kin_hists k_data, k_mc, k_mc_nosig, k_ttbar, k_diboson, k_wt;
@@ -373,7 +374,7 @@ void draw_kinematics(){
     do_emu_scaling(&k_wt);
 
     printf("making plots \n");
-    make_plots("Muon", &k_data, &k_mc, &k_mc_nosig, &k_ttbar,&k_diboson, &k_wt);
+    make_plots("Muon_unbinned", &k_data, &k_mc, &k_mc_nosig, &k_ttbar,&k_diboson, &k_wt);
 
     return;
 }
