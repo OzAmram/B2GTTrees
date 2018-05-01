@@ -16,8 +16,8 @@ const double root2 = sqrt(2);
 double Ebeam = 6500.;
 double Pbeam = sqrt(Ebeam*Ebeam - 0.938*0.938);
 
-char *filename("DY_files_dec7.txt");
-const TString fout_name("output_files/ElEl_DY_mar8.root");
+char *filename("DY_files_unbinned_oct23.txt");
+const TString fout_name("output_files/ElEl_DY_april9_unbinned.root");
 const double alpha = 0.05;
 const bool PRINT=false;
 

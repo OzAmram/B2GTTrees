@@ -20,8 +20,8 @@
 #include "TSystem.h"
 //#include"Minuit2/Minuit2Minimizer.h"
 #include "Math/Functor.h"
-#include "../analyze/TemplateMaker.C"
-#include "../analyze/AFB_fit/root_files.h""
+#include "../TemplateMaker.C"
+#include "root_files.h"
 
 
 
@@ -61,7 +61,16 @@ Double_t get_prob(Double_t xF, Double_t cost, TH2F *h){
     return h->GetBinContent(xbin, ybin);
 }
 
-
+void print_hist(TH2F *h){
+    for(int i=1; i<= n_xf_bins; i++){
+        printf("\n");
+        for(int j=1; j<= n_cost_bins; j++){
+            printf("%.2e ",    h->GetBinContent(i,j));
+        }
+    }
+    printf("\n\n");
+    return;
+}
 
 void setup(){
     //setup global variables
@@ -120,17 +129,18 @@ void setup(){
 void compute_afb_shift(){
     Double_t AFB = 0.6;
     init();
-    f_m100_dilu = (TFile*) TFile::Open("dilus/M150_dilus.root");
+    f_m100_dilu = (TFile*) TFile::Open("../setlimits/dilus/M700_dilus.root");
     TH1F *utype_dilu = (TH1F *) f_m100_dilu ->Get("utype_dilu");
     TH1F *dtype_dilu = (TH1F *) f_m100_dilu ->Get("dtype_dilu");
     TH1F *mix_dilu = (TH1F *) f_m100_dilu ->Get("mix_dilu");
 
-    TH1F *h_dilu_ratio = (TH1F *)utype_dilu->Clone("h_dilu_ratio");
+    TH1F *h_dilu_ratio = (TH1F *)dtype_dilu->Clone("h_dilu_ratio");
     h_dilu_ratio->Divide(mix_dilu);
-    for(int i=0; i<1; i++){
+    //for(int i=0; i<=1; i++){
         printf("Starting loop \n");
-        m_low = m_bins[i];
-        m_high = m_bins[i+1];
+        int i=0;
+        m_low = m_bins[5];
+        m_high = m_bins[5+1];
         alpha = alphas[i];
 
         setup();
@@ -147,6 +157,11 @@ void compute_afb_shift(){
             }
         }
         g->Add(h_asym_dilu, AFB);
+        printf("printing g and then f \n");
+        print_hist(g);
+        printf("now f\n");
+        print_hist(f);
+
         TH2F* f_sqrd = (TH2F *) f->Clone("f2");
         f_sqrd->Multiply(f);
 
@@ -155,13 +170,14 @@ void compute_afb_shift(){
         M->Multiply(h_mumu_asym);
         M->Multiply(h_mumu_asym);
         Double_t M_int = M->Integral();
+        printf("M_int is %.2f \n", M_int);
 
         TH2F *A = (TH2F *) g->Clone("A");
         A->Multiply(h_mumu_asym);
-        A->Divide(h_mumu_asym);
+        A->Divide(f);
         Double_t delta_AFB = (1/M_int) * A->Integral();
         printf("For M_low %.0f, delta AFB %.2f \n", m_low, delta_AFB);
-    }
+    //}
 }
 
 
