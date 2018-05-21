@@ -97,6 +97,10 @@ void setup(){
 
 
     gen_mc_template(t_elel_mc, alpha, h_elel_sym, h_elel_asym, h_elel_sym_count, m_low, m_high, FLAG_ELECTRONS);
+    TTree *elel_ts[2] = {t_elel_back, t_elel_nosig};
+
+    gen_fakes_template(t_elel_WJets, t_elel_QCD, t_elel_WJets_contam, t_elel_QCD_contam, h_elel_back, m_low, m_high, FLAG_ELECTRONS);
+    gen_combined_background_template(2, elel_ts, h_elel_back, m_low, m_high, FLAG_ELECTRONS);
 
     h_mumu_mc_count = new TH2F("h_mumu_mc_count", "Events in bins for MC templates",
             n_xf_bins, xf_bins, n_cost_bins, cost_bins);
@@ -120,6 +124,9 @@ void setup(){
 
 
     gen_mc_template(t_mumu_mc, alpha, h_mumu_sym, h_mumu_asym, h_mumu_sym_count, m_low, m_high, FLAG_MUONS);
+    TTree *mumu_ts[2] = {t_mumu_back, t_mumu_nosig};
+    gen_fakes_template(t_mumu_WJets, t_mumu_QCD, t_mumu_WJets_contam, t_mumu_QCD_contam, h_mumu_back, m_low, m_high, FLAG_MUONS);
+    gen_combined_background_template(2, mumu_ts, h_mumu_back, m_low, m_high, FLAG_MUONS);
 
     printf("Finishing setup \n");
     return;
@@ -127,58 +134,86 @@ void setup(){
 
 
 void compute_afb_shift(){
-    Double_t AFB = 0.6;
-    init();
-    f_m100_dilu = (TFile*) TFile::Open("../setlimits/dilus/M700_dilus.root");
-    TH1F *utype_dilu = (TH1F *) f_m100_dilu ->Get("utype_dilu");
-    TH1F *dtype_dilu = (TH1F *) f_m100_dilu ->Get("dtype_dilu");
-    TH1F *mix_dilu = (TH1F *) f_m100_dilu ->Get("mix_dilu");
+    Double_t mumu_rbks[] = {0.109, 0.174, 0.185, 0.186, 0.166, 0.095};
+    Double_t elel_rbks[] = {0.087, 0.157, 0.210, 0.185, 0.176, 0.128};
+    Double_t AFBs[] = {0.611, 0.612, 0.614, 0.608, 0.559, 0.532};
+    Double_t AFB_shifts[6][11];
 
-    TH1F *h_dilu_ratio = (TH1F *)dtype_dilu->Clone("h_dilu_ratio");
-    h_dilu_ratio->Divide(mix_dilu);
-    //for(int i=0; i<=1; i++){
+    Double_t mumu_rbk, elel_rbk, AFB;
+    TH1F *utype_dilu, *dtype_dilu, *mix_dilu;
+
+    init();
+    for(int k=0; k<6; k++){
         printf("Starting loop \n");
-        int i=0;
-        m_low = m_bins[5];
-        m_high = m_bins[5+1];
-        alpha = alphas[i];
+        m_low = m_bins[k];
+        m_high = m_bins[k+1];
+        alpha = alphas[k];
+        mumu_rbk = mumu_rbks[k];
+        elel_rbk = elel_rbks[k];
+        AFB = AFBs[k];
 
         setup();
 
-        TH2F *f = (TH2F *) h_mumu_sym->Clone("f");
-        TH2F *g = (TH2F *) h_mumu_sym->Clone("f");
-        f->Add(h_mumu_asym, AFB);
-        TH2F *h_asym_dilu = (TH2F *) h_mumu_asym->Clone("h_mumu_asym_dilu");
-        for(int i=0; i<=n_xf_bins; i++){
-            for(int j=0; j<n_cost_bins; j++){
-                Double_t p = h_asym_dilu->GetBinContent(i,j);
-                Double_t dilu_ratio = h_dilu_ratio->GetBinContent(i);
-                h_asym_dilu->SetBinContent(i,j, p*dilu_ratio);
+        char f_in[100];
+        sprintf(f_in, "../setlimits/dilus/M%i_dilus.root", (int) m_low);
+        printf("Getting dilus from file %s \n", f_in);
+        auto f_dilu = (TFile*) TFile::Open(f_in);
+        TH1F *utype_dilu = (TH1F *) f_dilu ->Get("utype_dilu");
+        TH1F *dtype_dilu = (TH1F *) f_dilu ->Get("dtype_dilu");
+        TH1F *mix_dilu = (TH1F *) f_dilu ->Get("mix_dilu");
+
+        TH1F *h_dilu_ratio = new TH1F("dilu_ratio", "", n_xf_bins, xf_bins);
+        for(int l=0; l<=10; l++){
+            Float_t x = 0.1*((float) l);
+            for(int i=1; i<=n_xf_bins; i++){
+                Float_t u_dilu = utype_dilu->GetBinContent(i);
+                Float_t d_dilu = dtype_dilu->GetBinContent(i);
+                Float_t m_dilu = mix_dilu->GetBinContent(i);
+                Float_t ratio = (u_dilu*x + d_dilu*(1-x))/m_dilu;
+                h_dilu_ratio->SetBinContent(i,ratio);
             }
+
+            //TH1F *h_dilu_ratio = (TH1F *)dtype_dilu->Clone("h_dilu_ratio");
+            //h_dilu_ratio->Divide(mix_dilu);
+
+            Double_t a=0, m=0;
+            for(int i=1; i<=n_xf_bins; i++){
+                for(int j=1; j<=n_cost_bins; j++){
+                    Double_t p_mumu_asym = h_mumu_asym->GetBinContent(i,j);
+                    Double_t p_mumu_sym = h_mumu_sym->GetBinContent(i,j);
+                    Double_t p_mumu_bk = h_mumu_back->GetBinContent(i,j);
+
+                    Double_t p_elel_asym = h_elel_asym->GetBinContent(i,j);
+                    Double_t p_elel_sym = h_elel_sym->GetBinContent(i,j);
+                    Double_t p_elel_bk = h_elel_back->GetBinContent(i,j);
+
+                    Double_t dilu_ratio = h_dilu_ratio->GetBinContent(i);
+
+                    Double_t g = mumu_rbk*p_mumu_bk + (1.-p_mumu_bk) *(p_mumu_sym + AFB*dilu_ratio*p_mumu_asym) +
+                        elel_rbk*p_elel_bk + (1.-p_elel_bk) *(p_elel_sym + AFB*dilu_ratio*p_elel_asym);
+                    Double_t f = mumu_rbk*p_mumu_bk + (1.-p_mumu_bk) *(p_mumu_sym + AFB*p_mumu_asym) +
+                        elel_rbk*p_elel_bk + (1.-p_elel_bk) *(p_elel_sym + AFB*p_elel_asym);
+
+
+                    Double_t res = (g/f)*(p_mumu_asym + p_elel_asym);
+                    a+= res;
+                    m += (g/(f*f)) *pow((p_mumu_asym + p_elel_asym),2);
+                    //printf("g=%.2e f=%.2e a=%.2e m=%.2e \n", g,f,a,m);
+
+                }
+            }
+            Double_t delta_AFB = a/m;
+            AFB_shifts[k][l] = delta_AFB;
         }
-        g->Add(h_asym_dilu, AFB);
-        printf("printing g and then f \n");
-        print_hist(g);
-        printf("now f\n");
-        print_hist(f);
+    }
+    for(int k=0; k<6; k++){
+        printf("\nFor M_low %.0f, shifts are: ", m_bins[k]);
+        for(int l=0; l<=10; l++){
+            printf("%.3f  ", AFB_shifts[k][l]);
+        }
 
-        TH2F* f_sqrd = (TH2F *) f->Clone("f2");
-        f_sqrd->Multiply(f);
 
-        TH2F *M = (TH2F *) g->Clone("M");
-        M->Divide(f_sqrd);
-        M->Multiply(h_mumu_asym);
-        M->Multiply(h_mumu_asym);
-        Double_t M_int = M->Integral();
-        printf("M_int is %.2f \n", M_int);
+    }
 
-        TH2F *A = (TH2F *) g->Clone("A");
-        A->Multiply(h_mumu_asym);
-        A->Divide(f);
-        Double_t delta_AFB = (1/M_int) * A->Integral();
-        printf("For M_low %.0f, delta AFB %.2f \n", m_low, delta_AFB);
-    //}
 }
-
-
 
