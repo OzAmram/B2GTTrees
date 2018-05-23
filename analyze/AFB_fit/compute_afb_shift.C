@@ -176,7 +176,8 @@ void compute_afb_shift(){
             //TH1F *h_dilu_ratio = (TH1F *)dtype_dilu->Clone("h_dilu_ratio");
             //h_dilu_ratio->Divide(mix_dilu);
 
-            Double_t a=0, m=0;
+            TVectorD a(3);
+            TMatrixDSym m(3);
             for(int i=1; i<=n_xf_bins; i++){
                 for(int j=1; j<=n_cost_bins; j++){
                     Double_t p_mumu_asym = h_mumu_asym->GetBinContent(i,j);
@@ -189,20 +190,35 @@ void compute_afb_shift(){
 
                     Double_t dilu_ratio = h_dilu_ratio->GetBinContent(i);
 
-                    Double_t g = mumu_rbk*p_mumu_bk + (1.-p_mumu_bk) *(p_mumu_sym + AFB*dilu_ratio*p_mumu_asym) +
-                        elel_rbk*p_elel_bk + (1.-p_elel_bk) *(p_elel_sym + AFB*dilu_ratio*p_elel_asym);
-                    Double_t f = mumu_rbk*p_mumu_bk + (1.-p_mumu_bk) *(p_mumu_sym + AFB*p_mumu_asym) +
-                        elel_rbk*p_elel_bk + (1.-p_elel_bk) *(p_elel_sym + AFB*p_elel_asym);
+                    Double_t g = mumu_rbk*p_mumu_bk + (1.-mumu_rbk) *(p_mumu_sym + AFB*dilu_ratio*p_mumu_asym) +
+                        elel_rbk*p_elel_bk + (1.-elel_rbk) *(p_elel_sym + AFB*dilu_ratio*p_elel_asym);
+                    Double_t f = mumu_rbk*p_mumu_bk + (1.-mumu_rbk) *(p_mumu_sym + AFB*p_mumu_asym) +
+                        elel_rbk*p_elel_bk + (1.-elel_rbk) *(p_elel_sym + AFB*p_elel_asym);
 
 
-                    Double_t res = (g/f)*(p_mumu_asym + p_elel_asym);
-                    a+= res;
-                    m += (g/(f*f)) *pow((p_mumu_asym + p_elel_asym),2);
+                    Double_t df_dAFB = ((1-mumu_rbk)*p_mumu_asym + (1-elel_rbk)*p_elel_asym);
+                    Double_t res = (g/f)*df_dAFB;
+                    a(0)+= res;
+                    m(0,0) += (g/(f*f)) *pow(df_dAFB,2);
                     //printf("g=%.2e f=%.2e a=%.2e m=%.2e \n", g,f,a,m);
+                    Double_t df_delel = (p_elel_bk -(p_elel_sym + AFB*p_elel_asym));
+                    Double_t df_dmumu = (p_mumu_bk -(p_mumu_sym + AFB*p_mumu_asym));
+                    a(1) += (g/f) * df_delel;
+                    m(0,1) += (g/(f*f)) *df_dAFB*df_delel - (g/f) *p_elel_asym;
+                    m(1,0) += (g/(f*f)) *df_dAFB*df_delel - (g/f) *p_elel_asym;
+                    m(1,2) += (g/(f*f)) *df_dmumu*df_delel;
+                    m(2,1) += (g/(f*f)) *df_dmumu*df_delel;
+                    a(2) += (g/f) * df_dmumu;
+
+                    m(0,2) += (g/(f*f)) *df_dAFB*df_dmumu - (g/f) *p_mumu_asym;
+                    m(2,0) += (g/(f*f)) *df_dAFB*df_dmumu - (g/f) *p_mumu_asym;
+
 
                 }
             }
-            Double_t delta_AFB = a/m;
+            m.Invert();
+            //Double_t delta_AFB = (a(0)/m(0,0));
+            Double_t delta_AFB = m(0,0)*a(0) + m(0,1)*a(1) + m(0,2)*a(2);
             AFB_shifts[k][l] = delta_AFB;
         }
     }

@@ -74,9 +74,9 @@ int main(int argc, char *argv[])
 
     // Construct file name to analyze
 
-    strcpy(infile, "../Z_ew-BMNNPV/DY_mumu_m630/pwgevents.lhe");
+    strcpy(infile, "/uscms_data/d3/oamram/condor_jobs/condor_output/Zp_M2000/Zp_events_M2000_kL.80_bin6.lhe");
     TString fout_name("dilus/SM/M700_dilus.root");
-    bool write_out = true;
+    bool write_out = false;
     const double m_low = 700;
     const double m_high = 10000.;
     const double pt_low = 0.;

@@ -9,7 +9,7 @@ void record_AFB(FILE *fout, int M_Zp, Double_t cpl){
     Double_t AFB_Zp[6];
     //printf("AFBs are: ");
     for(int i = 0; i<6; i++){
-        AFB_Zp[i] =  get_AFB(M_Zp, cpl, i);
+        AFB_Zp[i] =  get_AFB(M_Zp, cpl, i, true, true);
         //if can't get a good AFB, don't record
         if(AFB_Zp[i] > 1.0 || AFB_Zp[i] <= 0.01) return; 
 
@@ -21,11 +21,11 @@ void record_AFB(FILE *fout, int M_Zp, Double_t cpl){
 
 
 void record_AFBs(){
-    int m_start = 2600;
-    int m_max = 3500;
-    int m_step = 20;
+    int m_start = 3000;
+    int m_max = 3600;
+    int m_step = 50;
 
-    FILE *fout = fopen("AFBs.txt", "a");
+    FILE *fout = fopen("corrected_AFBs.txt", "a");
     int m;
     Double_t kl_start = 0.1;
     Double_t kl_min = 0.05;

@@ -25,19 +25,28 @@ struct eventcm {          //!< useful info in various frames
     double xF;              //! Feynman x of ttbar pair
 } ;
 
+Double_t apply_AFB_correction(Double_t AFB, Double_t u_frac, int m_bin, bool print=false){
+    //slopes and intercepts from fits (As a function of uquark frac
+    Double_t m[6] = {0.296, 0.299, 0.341, 0.238, 0.278, 0.247};
+    Double_t b[6] = {0.766, 0.764, 0.725, 0.807, 0.776, 0.801};
+    //linear function to parameterize shift
+    Double_t corr_factor = m[m_bin]*u_frac + b[m_bin];
+    if(print) printf("Correcting AFB with a factor of %.2f \n", corr_factor);
+    return corr_factor * AFB;
+}
 
 
 
 
 // Main program  
 
-Double_t get_AFB(int Zp_mass, Double_t cpl, int m_bin, bool print = false)
+Double_t get_AFB(int Zp_mass, Double_t cpl, int m_bin, bool correct_AFB = false, bool print = false)
     //reweight PYTHIA samples to get AFB for given Zprime mass at a given
     //dilepton mass
 {
     // Local variables 
     int i, j, k, iqk=0, iqb=0, itq=0, itb=0, ig1=0, ig2=0, ijt, njet=0, npflavor=0, nevent, nfit;
-    int iqk_extra = 0; iqb_extra=0;
+    int iqk_extra = 0, iqb_extra=0;
     int nqqb=0, ngg=0, itbq, itbb, itqk, itqb, itlp, itnu;
     int nup, idrup; 
     float xwgtup, scalup, aqedup, aqcdup;
@@ -95,6 +104,7 @@ Double_t get_AFB(int Zp_mass, Double_t cpl, int m_bin, bool print = false)
     int nTotal =0;
     int nFail =0;
     Double_t nF = 0, nB = 0;
+    Double_t n_utype=0, n_dtype=0;
 
     // Scan throught file first for the beginning of an event record	
 
@@ -242,6 +252,9 @@ Double_t get_AFB(int Zp_mass, Double_t cpl, int m_bin, bool print = false)
                 else {
                     nB += 1.;}
 
+                 if(up[iqk].id % 2 == 0 || up[iqb].id % 2 == 0) //even id means u-type (unfilled will be -1)
+                     n_utype++;
+                 else n_dtype++;
 
 
             }
@@ -254,14 +267,23 @@ Double_t get_AFB(int Zp_mass, Double_t cpl, int m_bin, bool print = false)
 
     Double_t AFB = ((nF - nB))/((nF+nB));
     Double_t dAFB = (1.-AFB*AFB)/sqrt((nF+nB));
+    Double_t u_frac = n_utype/(n_utype + n_dtype);
+
+    if(correct_AFB)
+        //correct the predicted AFB to account for expected shift from
+        //different dilution factor
+        AFB = apply_AFB_correction(AFB, u_frac,m_bin, print);
 
     if(print){
         printf( "A_FB count = %.3f +- %.3f\n" 
+                "u-type frac is %.3f \n"
                 "%i events failed to id \n",
-                AFB, dAFB, nFail);
+                AFB, dAFB, u_frac, nFail);
+
         printf("Selected  %d out of %i events\n", nevent, nTotal);
         printf("\n");
     }
+
 
 
     return AFB;
