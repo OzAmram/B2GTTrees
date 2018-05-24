@@ -21,9 +21,9 @@ void record_AFB(FILE *fout, int M_Zp, Double_t cpl){
 
 
 void record_AFBs(){
-    int m_start = 3000;
-    int m_max = 3600;
-    int m_step = 50;
+    int m_start = 2000;
+    int m_max = 2400;
+    int m_step = 20;
 
     FILE *fout = fopen("corrected_AFBs.txt", "a");
     int m;
