@@ -236,10 +236,6 @@ int gen_mc_template(TTree *t1, Double_t alpha, TH2F* h_sym, TH2F *h_asym, TH2F *
         t1->SetBranchAddress("gh_iso_SF", &gh_iso_SF);
         t1->SetBranchAddress("gh_id_SF", &gh_id_SF);
         t1->SetBranchAddress("gh_trk_SF", &gh_trk_SF);
-        TH2D *h_sym_bcdef = (TH2D *) h_sym->Clone("h_sym_bcdef");
-        TH2D *h_sym_gh = (TH2D *)h_sym->Clone("h_sym_gh");
-        TH2D *h_asym_bcdef = (TH2D *)h_asym->Clone("h_asym_bcdef");
-        TH2D *h_asym_gh = (TH2D *)h_asym->Clone("h_asym_gh");
         for (int i=0; i<nEntries; i++) {
             t1->GetEntry(i);
             bool no_bjets = has_no_bjets(nJets, jet1_pt, jet2_pt, jet1_cmva, jet2_cmva);
@@ -267,30 +263,21 @@ int gen_mc_template(TTree *t1, Double_t alpha, TH2F* h_sym, TH2F *h_asym, TH2F *
                     bcdef_weight *= jet2_b_weight;
                     gh_weight *= jet2_b_weight;
                 }
+                Double_t final_weight = (bcdef_weight*bcdef_lumi + gh_weight*gh_lumi);
 
 
-                h_sym_bcdef->Fill(xF, cost, bcdef_weight); 
-                h_sym_bcdef->Fill(xF, -cost, bcdef_weight); 
-                h_sym_gh->Fill(xF, cost, gh_weight); 
-                h_sym_gh->Fill(xF, -cost, gh_weight); 
+                h_sym->Fill(xF, cost, final_weight); 
+                h_sym->Fill(xF, -cost, final_weight); 
 
-                h_asym_bcdef->Fill(xF, cost, reweight * bcdef_weight);
-                h_asym_bcdef->Fill(xF, -cost, -reweight * bcdef_weight);
-                h_asym_gh->Fill(xF, cost, reweight * gh_weight);
-                h_asym_gh->Fill(xF, -cost, -reweight * gh_weight);
+                h_asym->Fill(xF, cost, reweight * final_weight);
+                h_asym->Fill(xF, -cost, -reweight * final_weight);
 
                 h_count->Fill(xF, cost, 1);
                 h_count->Fill(xF, -cost, 1);
             }
         }
 
-        h_sym_bcdef->Scale(1000*bcdef_lumi);
-        h_sym_gh->Scale(1000*gh_lumi);
-        h_asym_bcdef->Scale(1000*bcdef_lumi);
-        h_asym_gh->Scale(1000*gh_lumi);
 
-        h_sym->Add(h_sym_bcdef, h_sym_gh);
-        h_asym->Add(h_asym_bcdef, h_asym_gh);
     }
     else if (flag1 == FLAG_ELECTRONS) {
         t1->SetBranchAddress("el_p", &lep_p);
