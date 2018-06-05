@@ -17,8 +17,8 @@ const double root2 = sqrt(2);
 double Ebeam = 6500.;
 double Pbeam = sqrt(Ebeam*Ebeam - 0.938*0.938);
 
-char *filename("DY_files_unbinned_oct23.txt");
-const TString fout_name("output_files/MuMu_DY_april9_unbinned.root");
+char *filename("DY_files_mar19.txt");
+const TString fout_name("output_files/MuMu_DY_zpeak_may29.root");
 const bool PRINT=false;
 
 const bool data_2016 = true;
@@ -394,7 +394,7 @@ void MuMu_reco_mc_batch()
                     cm = mu_p + mu_m;
                     cm_m = cm.M();
                     //met and cmva cuts to reduce ttbar background
-                    if (iso_0 < tight_iso && iso_1 < tight_iso && cm_m >= 150.){
+                    if (iso_0 < tight_iso && iso_1 < tight_iso && cm_m >= 100.){
                         if(PRINT) sprintf(out_buff + strlen(out_buff),"Event %i \n", i);
 
                         //GEN LEVEL

@@ -74,7 +74,7 @@ static void setup_new_mu_fakerate(FakeRate *FR){
     TDirectory *subdir = gDirectory;
     TH2D *h1 = (TH2D *) subdir->Get("h_rate_new")->Clone();
     h1->SetDirectory(0);
-    h1->Print();
+    //h1->Print();
     FR->h = h1;
     f0->Close();
 }
@@ -269,10 +269,6 @@ int gen_mc_template(TTree *t1, Double_t alpha, TH2F* h_sym, TH2F *h_asym, TH2F *
         t1->SetBranchAddress("gh_trk_SF", &gh_trk_SF);
 
 
-        TH2D *h_sym_bcdef = (TH2D *) h_sym->Clone("h_sym_bcdef");
-        TH2D *h_sym_gh = (TH2D *)h_sym->Clone("h_sym_gh");
-        TH2D *h_asym_bcdef = (TH2D *)h_asym->Clone("h_asym_bcdef");
-        TH2D *h_asym_gh = (TH2D *)h_asym->Clone("h_asym_gh");
 
         mu_SFs runs_bcdef, runs_gh;
         pileup_SFs pu_SFs;
@@ -337,28 +333,18 @@ int gen_mc_template(TTree *t1, Double_t alpha, TH2F* h_sym, TH2F *h_asym, TH2F *
                 }
 
 
-                h_sym_bcdef->Fill(xF, cost, bcdef_weight); 
-                h_sym_bcdef->Fill(xF, -cost, bcdef_weight); 
-                h_sym_gh->Fill(xF, cost, gh_weight); 
-                h_sym_gh->Fill(xF, -cost, gh_weight); 
+                Double_t final_weight = 1000*(bcdef_weight*bcdef_lumi + gh_weight*gh_lumi);
+                h_sym->Fill(xF, cost, final_weight); 
+                h_sym->Fill(xF, -cost, final_weight); 
 
-                h_asym_bcdef->Fill(xF, cost, reweight * bcdef_weight);
-                h_asym_bcdef->Fill(xF, -cost, -reweight * bcdef_weight);
-                h_asym_gh->Fill(xF, cost, reweight * gh_weight);
-                h_asym_gh->Fill(xF, -cost, -reweight * gh_weight);
+                h_asym->Fill(xF, cost, reweight * final_weight);
+                h_asym->Fill(xF, -cost, -reweight * final_weight);
 
-                if(bcdef_weight >0) h_count->Fill(xF, cost, 1);
-                if(bcdef_weight >0) h_count->Fill(xF, -cost, 1);
+                h_count->Fill(xF, cost, 1);
+                h_count->Fill(xF, -cost, 1);
             }
         }
 
-        h_sym_bcdef->Scale(1000*bcdef_lumi);
-        h_sym_gh->Scale(1000*gh_lumi);
-        h_asym_bcdef->Scale(1000*bcdef_lumi);
-        h_asym_gh->Scale(1000*gh_lumi);
-
-        h_sym->Add(h_sym_bcdef, h_sym_gh);
-        h_asym->Add(h_asym_bcdef, h_asym_gh);
     }
     else if (flag1 == FLAG_ELECTRONS) {
         t1->SetBranchAddress("el_p", &lep_p);
@@ -495,8 +481,6 @@ int gen_background_template(TTree *t1, TH2F* h, TH2F* h_count,
         t1->SetBranchAddress("gh_trk_SF", &gh_trk_SF);
         t1->SetBranchAddress("bcdef_trk_SF", &bcdef_trk_SF);
 
-        TH2D *h_bcdef = (TH2D *)h->Clone("h_back_bcdef");
-        TH2D *h_gh = (TH2D *)h->Clone("h_back_gh");
 
         for (int i=0; i<nEntries; i++) {
             t1->GetEntry(i);
@@ -520,16 +504,13 @@ int gen_background_template(TTree *t1, TH2F* h, TH2F* h_count,
                     bcdef_weight *= jet2_b_weight;
                     gh_weight *= jet2_b_weight;
                 }
-                h_bcdef->Fill(xF, cost, bcdef_weight);
-                h_gh->Fill(xF, cost, gh_weight);
+
+                Double_t final_weight = 1000*(bcdef_weight*bcdef_lumi + gh_weight*gh_lumi);
+                h->Fill(xF, cost, final_weight);
                 h_count ->Fill(xF, cost, 1);
                 nEvents++;
             }
         }
-        printf("N ttbar events %i \n", nEvents);
-        h_bcdef->Scale(bcdef_lumi*1000);
-        h_gh->Scale(gh_lumi*1000);
-        h->Add(h_bcdef, h_gh);
     }
     else if (flag1 == FLAG_ELECTRONS) {
         t1->SetBranchAddress("el_p", &lep_p);
@@ -582,7 +563,7 @@ void gen_fakes_template(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_contam,
         FakeRate FR;
         //TH2D *FR;
         setup_new_mu_fakerate(&FR);
-        FR.h->Print();
+        //FR.h->Print();
         for (int l=0; l<=3; l++){
             printf("l=%i\n", l);
             TTree *t;
@@ -837,8 +818,6 @@ int gen_combined_background_template(int nTrees, TTree **ts, TH2F* h,
             t1->SetBranchAddress("mu_p", &lep_p);
             t1->SetBranchAddress("mu_m", &lep_m);
 
-            TH2D *h_bcdef = (TH2D *)h->Clone("h_back_bcdef");
-            TH2D *h_gh = (TH2D *)h->Clone("h_back_gh");
 
             for (int i=0; i<nEntries; i++) {
                 t1->GetEntry(i);
@@ -1449,3 +1428,126 @@ void Fakerate_est_emu(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_MC, TH1F *h_m
     }
     printf("Total fakerate est is %.0f \n", h_m->Integral());
 }
+
+
+int gen_finite_mc_template(TTree *t1, TH2F* h_mc, TH2F *h_errs, TH2F *h_count,
+        Double_t var_low, Double_t var_high, int flag1 = FLAG_MUONS, int flag2 = FLAG_M_BINS){
+    Long64_t nEntries  =  t1->GetEntries();
+    //printf("size is %i \n", nEntries);
+
+    h_mc->Sumw2();
+    h_errs->Sumw2();
+
+    Double_t m, xF, cost, gen_weight, reweight, jet1_cmva, jet2_cmva, cost_st;
+    Double_t bcdef_HLT_SF, bcdef_iso_SF, bcdef_id_SF;
+    Double_t gh_HLT_SF, gh_iso_SF, gh_id_SF;
+    Double_t gh_trk_SF, bcdef_trk_SF;
+    Double_t el_id_SF, el_reco_SF, pu_SF, el_HLT_SF;
+    Double_t jet1_pt, jet2_pt, jet1_b_weight, jet2_b_weight;
+    Double_t mu_R_up, mu_R_down, mu_F_up, mu_F_down, 
+             mu_RF_up, mu_RF_down, pdf_up, pdf_down;
+    Float_t cost_pt, met_pt;
+    TLorentzVector *lep_p=0;
+    TLorentzVector *lep_m=0;
+    Double_t pt;
+    Int_t nJets;
+    t1->SetBranchAddress("m", &m);
+    t1->SetBranchAddress("xF", &xF);
+    t1->SetBranchAddress("cost", &cost);
+    t1->SetBranchAddress("cost_st", &cost_st);
+    t1->SetBranchAddress("jet1_CMVA", &jet1_cmva);
+    t1->SetBranchAddress("jet2_CMVA", &jet2_cmva);
+    t1->SetBranchAddress("met_pt", &met_pt);
+    t1->SetBranchAddress("jet1_pt", &jet1_pt);
+    t1->SetBranchAddress("jet2_pt", &jet2_pt);
+    t1->SetBranchAddress("nJets", &nJets);
+    t1->SetBranchAddress("gen_weight", &gen_weight);
+    t1->SetBranchAddress("jet1_b_weight", &jet1_b_weight);
+    t1->SetBranchAddress("jet2_b_weight", &jet2_b_weight);
+    t1->SetBranchAddress("pu_SF", &pu_SF);
+
+
+    if(flag1 == FLAG_MUONS){
+        t1->SetBranchAddress("mu_p", &lep_p);
+        t1->SetBranchAddress("mu_m", &lep_m);
+        t1->SetBranchAddress("bcdef_HLT_SF", &bcdef_HLT_SF);
+        t1->SetBranchAddress("bcdef_iso_SF", &bcdef_iso_SF);
+        t1->SetBranchAddress("bcdef_id_SF", &bcdef_id_SF);
+        t1->SetBranchAddress("bcdef_trk_SF", &bcdef_trk_SF);
+        t1->SetBranchAddress("gh_HLT_SF", &gh_HLT_SF);
+        t1->SetBranchAddress("gh_iso_SF", &gh_iso_SF);
+        t1->SetBranchAddress("gh_id_SF", &gh_id_SF);
+        t1->SetBranchAddress("gh_trk_SF", &gh_trk_SF);
+        for (int i=0; i<nEntries; i++) {
+            t1->GetEntry(i);
+            bool no_bjets = has_no_bjets(nJets, jet1_pt, jet2_pt, jet1_cmva, jet2_cmva);
+            if(flag2 == FLAG_PT_BINS){
+                TLorentzVector cm = *lep_p + *lep_m;
+                pt = cm.Pt();
+            }
+            bool pass = ((flag2 == FLAG_M_BINS && m >= var_low && m <= var_high) ||
+                    (flag2 == FLAG_PT_BINS && m >= 150. && pt >= var_low && pt <= var_high))
+                && met_pt < 50.  && no_bjets;
+            if(pass){
+
+
+                Double_t bcdef_weight = gen_weight * pu_SF * bcdef_HLT_SF * bcdef_iso_SF * bcdef_id_SF * bcdef_trk_SF;
+                Double_t gh_weight = gen_weight * pu_SF * gh_HLT_SF * gh_iso_SF * gh_id_SF * gh_trk_SF;
+                if (nJets >= 1){
+                    bcdef_weight *= jet1_b_weight;
+                    gh_weight *= jet1_b_weight;
+                }
+                if (nJets >= 2){
+                    bcdef_weight *= jet2_b_weight;
+                    gh_weight *= jet2_b_weight;
+                }
+                Double_t final_weight = 1000*(bcdef_weight*bcdef_lumi + gh_weight*gh_lumi);
+
+
+                h_mc->Fill(xF, cost, final_weight); 
+                h_errs->Fill(xF, cost, final_weight*final_weight); 
+                h_count->Fill(xF, cost, 1);
+            }
+        }
+
+
+    }
+    else if (flag1 == FLAG_ELECTRONS) {
+        t1->SetBranchAddress("el_p", &lep_p);
+        t1->SetBranchAddress("el_m", &lep_m);
+        t1->SetBranchAddress("el_id_SF", &el_id_SF);
+        t1->SetBranchAddress("el_HLT_SF", &el_HLT_SF);
+        t1->SetBranchAddress("el_reco_SF", &el_reco_SF);
+        for (int i=0; i<nEntries; i++) {
+            t1->GetEntry(i);
+            bool no_bjets = has_no_bjets(nJets, jet1_pt, jet2_pt, jet1_cmva, jet2_cmva);
+            if(flag2 == FLAG_PT_BINS){
+                TLorentzVector cm = *lep_p + *lep_m;
+                pt = cm.Pt();
+            }
+            bool pass = ((flag2 == FLAG_M_BINS && m >= var_low && m <= var_high) ||
+                    (flag2 == FLAG_PT_BINS && m >= 150. && pt >= var_low && pt <= var_high))
+                && met_pt < 50.  && no_bjets;
+            if(pass){
+
+
+                Double_t evt_weight = 1000*tot_lumi * gen_weight * el_id_SF *el_reco_SF * pu_SF * el_HLT_SF;
+                if (nJets >= 1){
+                    evt_weight *= jet1_b_weight;
+                }
+                if (nJets >= 2){
+                    evt_weight *= jet2_b_weight;
+                }
+
+
+                h_mc->Fill(xF, cost, evt_weight); 
+                h_errs->Fill(xF, cost, evt_weight*evt_weight); 
+                h_count->Fill(xF, cost, 1);
+            }
+        }
+
+    }
+
+    return 0;
+}
+

@@ -16,8 +16,8 @@ const double root2 = sqrt(2);
 double Ebeam = 6500.;
 double Pbeam = sqrt(Ebeam*Ebeam - 0.938*0.938);
 
-char *filename("combined_back_files_aug29.txt");
-const TString fout_name("output_files/MuMu_combined_back_jan22.root");
+char *filename("WT_files_aug29.txt");
+const TString fout_name("output_files/MuMu_WT_zpeak_may29.root");
 const double alpha = 0.05;
 const bool PRINT=false;
 
@@ -286,7 +286,7 @@ void MuMu_reco_background_batch()
                     cm = mu_p + mu_m;
                     cm_m = cm.M();
                     //met and cmva cuts to reduce ttbar background
-                    if (iso_0 < tight_iso && iso_1 < tight_iso && cm_m >=150.){
+                    if (iso_0 < tight_iso && iso_1 < tight_iso && cm_m >=50.){
                         if(PRINT) sprintf(out_buff + strlen(out_buff),"Event %i \n", i);
 
                         //RECO LEVEL

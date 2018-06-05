@@ -12,7 +12,7 @@
 
 const double root2 = sqrt(2);
 const char* filename("SingleElectron_files_aug29.txt");
-const TString fout_name("output_files/ElEl_QCD_est_nov2.root");
+const TString fout_name("output_files/ElEl_QCD_est_may29.root");
 
 const bool data_2016 = true;
 
@@ -204,7 +204,7 @@ void ElEl_QCD_fake_rate_estimate()
                 }
                 bool no_bjets = has_no_bjets(nJets, jet1_pt, jet2_pt, jet1_cmva, jet2_cmva);
                 
-                if (!el_IDMedium[0] && !el_IDMedium[1] && cm_m >=150. && no_bjets && met_pt < 50.){
+                if (!el_IDMedium[0] && !el_IDMedium[1] && cm_m >=50. && no_bjets && met_pt < 50.){
                     //both electrons FAIL ISO
                     xF = abs(2.*cm.Pz()/13000.); 
 

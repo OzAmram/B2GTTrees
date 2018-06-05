@@ -10,7 +10,7 @@
 
 const double root2 = sqrt(2);
 const char* filename("SingleElectron_files_aug29.txt");
-const TString fout_name("SameSign/output_files/SingleElectron_data_samesign_dec1.root");
+const TString fout_name("output_files/SingleElectron_data_samesign_may31.root");
 
 const bool data_2016 = true;
 
@@ -153,7 +153,7 @@ void ElEl_reco_data_batch()
 
                 cm = el_p + el_m;
                 cm_m = cm.M();
-                if (cm_m >=25.){
+                if (cm_m >=50.){
                     xF = abs(2.*cm.Pz()/13000.); 
 
                     // compute Colins soper angle with formula

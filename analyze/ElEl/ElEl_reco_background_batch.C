@@ -16,8 +16,8 @@ const double root2 = sqrt(2);
 double Ebeam = 6500.;
 double Pbeam = sqrt(Ebeam*Ebeam - 0.938*0.938);
 
-char *filename("combined_back_files_aug29.txt");
-const TString fout_name("output_files/ElEl_combined_back_mar8.root");
+char *filename("diboson_files_aug29.txt");
+const TString fout_name("output_files/ElEl_diboson_zpeak_may29.root");
 const double alpha = 0.05;
 const bool PRINT=false;
 
@@ -269,7 +269,7 @@ void ElEl_reco_background_batch()
                     cm = el_p + el_m;
                     cm_m = cm.M();
                     //met and cmva cuts to reduce ttbar background
-                    if (cm_m >=150.){
+                    if (cm_m >=50.){
                         if(PRINT) sprintf(out_buff + strlen(out_buff),"Event %i \n", i);
 
                         //RECO LEVEL

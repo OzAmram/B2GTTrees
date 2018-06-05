@@ -10,7 +10,7 @@
 
 const double root2 = sqrt(2);
 const char* filename("SingleElectron_files_aug29.txt");
-const TString fout_name("output_files/SingleElectron_data_jan22.root");
+const TString fout_name("output_files/SingleElectron_data_zpeak_may29.root");
 
 const bool data_2016 = true;
 
@@ -28,6 +28,8 @@ void ElEl_reco_data_batch()
 
 
 
+    TFile *fout = TFile::Open(fout_name, "RECREATE");
+    fout->cd();
     TTree *tout= new TTree("T_data", "Tree with reco events");
     tout->SetDirectory(0);
     Double_t cm_m, xF, cost_r, el1_pt, el2_pt, el1_eta, el2_eta, jet1_pt, jet2_pt,
@@ -153,7 +155,7 @@ void ElEl_reco_data_batch()
 
                 cm = el_p + el_m;
                 cm_m = cm.M();
-                if (cm_m >=150.){
+                if (cm_m >=50.){
                     xF = abs(2.*cm.Pz()/13000.); 
 
                     // compute Colins soper angle with formula
@@ -207,7 +209,7 @@ void ElEl_reco_data_batch()
     printf("Ran on data from %i Files and produced template with %i Events \n", 
             nFiles, nEvents );
     printf("Writing out put to %s \n", fout_name.Data());
-    TFile *fout = TFile::Open(fout_name, "RECREATE");
+    //TFile *fout = TFile::Open(fout_name, "RECREATE");
     fout->cd();
     tout->Write();
 

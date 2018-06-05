@@ -10,7 +10,7 @@
 
 const double root2 = sqrt(2);
 const char* filename("SingleMuon_files_sep25.txt");
-const TString fout_name("output_files/SingleMuon_data_jan22.root");
+const TString fout_name("output_files/SingleMuon_data_zpeak_may29.root");
 
 
 bool is_empty_line(const char *s) {
@@ -27,8 +27,10 @@ void MuMu_reco_data_batch()
 
 
 
+    TFile *fout = TFile::Open(fout_name, "RECREATE");
+    fout->cd();
     TTree *tout= new TTree("T_data", "Tree with reco events");
-    tout->SetDirectory(0);
+    //tout->SetDirectory(0);
     Double_t cm_m, xF, cost_r, mu1_pt, mu2_pt, mu1_eta, mu2_eta, jet1_pt, jet2_pt,
              jet1_cmva, jet1_eta, jet2_cmva, jet2_eta;
     Int_t nJets, pu_NtrueInt;
@@ -152,7 +154,7 @@ void MuMu_reco_data_batch()
 
                 cm = mu_p + mu_m;
                 cm_m = cm.M();
-                if (iso_0 < tight_iso && iso_1 < tight_iso && cm_m >=150.){
+                if (iso_0 < tight_iso && iso_1 < tight_iso && cm_m >=50.){
                     xF = abs(2.*cm.Pz()/13000.); 
 
                     // compute Colins soper angle with formula
@@ -207,7 +209,7 @@ void MuMu_reco_data_batch()
             nFiles, nEvents );
     printf("Writing out put to %s \n", fout_name.Data());
 
-    TFile *fout = TFile::Open(fout_name, "RECREATE");
+    //TFile *fout = TFile::Open(fout_name, "RECREATE");
     fout->cd();
     tout->Write();
 

@@ -380,8 +380,6 @@ int gen_background_template(TTree *t1, TH2F* h, TH2F* h_count,
         t1->SetBranchAddress("gh_trk_SF", &gh_trk_SF);
         t1->SetBranchAddress("bcdef_trk_SF", &bcdef_trk_SF);
 
-        TH2D *h_bcdef = (TH2D *)h->Clone("h_back_bcdef");
-        TH2D *h_gh = (TH2D *)h->Clone("h_back_gh");
 
         for (int i=0; i<nEntries; i++) {
             t1->GetEntry(i);
@@ -405,16 +403,12 @@ int gen_background_template(TTree *t1, TH2F* h, TH2F* h_count,
                     bcdef_weight *= jet2_b_weight;
                     gh_weight *= jet2_b_weight;
                 }
-                h_bcdef->Fill(xF, cost, bcdef_weight);
-                h_gh->Fill(xF, cost, gh_weight);
+                Double_t final_weight = 1000*(bcdef_weight*bcdef_lumi + gh_weight*gh_lumi);
+                h->Fill(xF, cost, final_weight);
                 h_count ->Fill(xF, cost, 1);
                 nEvents++;
             }
         }
-        printf("N ttbar events %i \n", nEvents);
-        h_bcdef->Scale(bcdef_lumi*1000);
-        h_gh->Scale(gh_lumi*1000);
-        h->Add(h_bcdef, h_gh);
     }
     else if (flag1 == FLAG_ELECTRONS) {
         t1->SetBranchAddress("el_p", &lep_p);
@@ -720,8 +714,6 @@ int gen_combined_background_template(int nTrees, TTree **ts, TH2F* h,
             t1->SetBranchAddress("mu_p", &lep_p);
             t1->SetBranchAddress("mu_m", &lep_m);
 
-            TH2D *h_bcdef = (TH2D *)h->Clone("h_back_bcdef");
-            TH2D *h_gh = (TH2D *)h->Clone("h_back_gh");
 
             for (int i=0; i<nEntries; i++) {
                 t1->GetEntry(i);

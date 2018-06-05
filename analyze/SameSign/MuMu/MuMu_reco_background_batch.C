@@ -17,7 +17,7 @@ double Ebeam = 6500.;
 double Pbeam = sqrt(Ebeam*Ebeam - 0.938*0.938);
 
 char *filename("diboson_files_aug29.txt");
-const TString fout_name("SameSign/output_files/MuMu_diboson_samesign_dec1.root");
+const TString fout_name("output_files/MuMu_diboson_samesign_may31.root");
 const double alpha = 0.05;
 const bool PRINT=false;
 
