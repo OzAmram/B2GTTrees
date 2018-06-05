@@ -360,7 +360,8 @@ void draw_cmp(){
     TCanvas *c_pt = new TCanvas("c_pt", "Histograms", 200, 10, 900, 700);
     TPad *pt_pad1 = new TPad("pad1", "pad1", 0.,0.3,0.98,1.);
     pt_pad1->SetBottomMargin(0);
-    c_pt->cd();
+    pt_pad1->Draw();
+    pt_pad1->cd();
     pt_stack->Draw("hist");
     data_pt->SetMarkerStyle(kFullCircle);
     data_pt->SetMarkerColor(1);
@@ -369,7 +370,7 @@ void draw_cmp(){
     data_pt->SetMinimum(1);
     data_pt->SetMaximum(100000);
     data_pt->Draw("P E same");
-    c_pt->SetLogy();
+    pt_pad1->SetLogy();
     c_pt->Update();
     TLegend *leg3 = new TLegend(0.5, 0.65, 0.75, 0.8);
     leg3->AddEntry(data_m, "data", "p");
@@ -381,6 +382,7 @@ void draw_cmp(){
     leg3->AddEntry(ttbar_m, "t#bar{t}", "f");
     leg3->Draw();
 
+    c_pt->cd();
     TPad *pt_pad2 = new TPad("pt_pad2", "pad2", 0.,0,.98,0.3);
     //pad2->SetTopMargin(0);
     pt_pad2->SetBottomMargin(0.2);
@@ -420,7 +422,7 @@ void draw_cmp(){
    pt_ratio->GetXaxis()->SetTitleOffset(3.);
    pt_ratio->GetXaxis()->SetLabelFont(43); // Absolute font size in pixel (precision 3)
    pt_ratio->GetXaxis()->SetLabelSize(20);
-    CMS_lumi(c_pt, iPeriod, 11 );
+    CMS_lumi(pt_pad1, iPeriod, 11 );
     c_pt->Update();
 
 

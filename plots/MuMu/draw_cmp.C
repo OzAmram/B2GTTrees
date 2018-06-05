@@ -371,18 +371,19 @@ void draw_cmp(){
     data_pt->SetMinimum(1);
     data_pt->SetMaximum(100000);
     data_pt->Draw("P E same");
-    c_pt->SetLogy();
+    pt_pad1->SetLogy();
     c_pt->Update();
     TLegend *leg3 = new TLegend(0.5, 0.65, 0.75, 0.8);
-    leg3->AddEntry(data_m, "data", "p");
-    leg3->AddEntry(mc_m, "DY (q#bar{q}, qg #bar{q}g)", "f");
-    leg3->AddEntry(mc_nosig_m, "DY no asymmety(gg, qq, #bar{q}#bar{q})", "f");
-    leg3->AddEntry(diboson_m, "WW + WZ + ZZ", "f");
-    leg3->AddEntry(wt_m, "tW + #bar{t}W", "f");
-    leg3->AddEntry(QCD_m, "QCD + WJets", "f");
-    leg3->AddEntry(ttbar_m, "t#bar{t}", "f");
+    leg3->AddEntry(data_pt, "data", "p");
+    leg3->AddEntry(mc_pt, "DY (q#bar{q}, qg #bar{q}g)", "f");
+    leg3->AddEntry(mc_nosig_pt, "DY no asymmety(gg, qq, #bar{q}#bar{q})", "f");
+    leg3->AddEntry(diboson_pt, "WW + WZ + ZZ", "f");
+    leg3->AddEntry(wt_pt, "tW + #bar{t}W", "f");
+    leg3->AddEntry(QCD_pt, "QCD + WJets", "f");
+    leg3->AddEntry(ttbar_pt, "t#bar{t}", "f");
     leg3->Draw();
 
+    c_pt->cd();
     TPad *pt_pad2 = new TPad("pt_pad2", "pad2", 0.,0,.98,0.3);
     //pad2->SetTopMargin(0);
     pt_pad2->SetBottomMargin(0.2);
@@ -422,7 +423,7 @@ void draw_cmp(){
    pt_ratio->GetXaxis()->SetTitleOffset(3.);
    pt_ratio->GetXaxis()->SetLabelFont(43); // Absolute font size in pixel (precision 3)
    pt_ratio->GetXaxis()->SetLabelSize(20);
-    CMS_lumi(c_pt, iPeriod, 11 );
+    CMS_lumi(pt_pad1, iPeriod, 11 );
     c_pt->Update();
 
 

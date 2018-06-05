@@ -159,8 +159,8 @@ Double_t SM_xsec(Double_t E, Double_t c_s, int qtype){
 
     Double_t norm = 1./128./TMath::Pi()/E/E;
 
-    term1 = (A_LL.Rho2() + A_RR.Rho2()) * pow(1. + c_s, 2);
-    term2 = (A_LR.Rho2() + A_LR.Rho2()) * pow(1. - c_s, 2);
+    Double_t term1 = (A_LL.Rho2() + A_RR.Rho2()) * pow(1. + c_s, 2);
+    Double_t term2 = (A_LR.Rho2() + A_LR.Rho2()) * pow(1. - c_s, 2);
 
     return norm * (term1 + term2);
 }
@@ -174,8 +174,8 @@ Double_t Zp_xsec(Double_t E, Double_t c_s, Double_t M_Zp, int qtype){
 
     Double_t norm = 1./128./TMath::Pi()/E/E;
 
-    term1 = (A_LL.Rho2() + A_RR.Rho2()) * pow(1. + c_s, 2);
-    term2 = (A_LR.Rho2() + A_LR.Rho2()) * pow(1. - c_s, 2);
+    Double_t term1 = (A_LL.Rho2() + A_RR.Rho2()) * pow(1. + c_s, 2);
+    Double_t term2 = (A_LR.Rho2() + A_LR.Rho2()) * pow(1. - c_s, 2);
 
     return norm * (term1 + term2);
 }

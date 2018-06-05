@@ -214,7 +214,7 @@ void draw_cost_xf(){
     */
 
     writeExtraText = true;
-    extraText = "Simulation Work in Progress";
+    extraText = "Preliminary Simulation";
     lumi_sqrtS = "";       // used with iPeriod = 0, e.g. for simulation-only plots (default is an empty string)
     int iPeriod = 0; 
     CMS_lumi( c3, iPeriod, 33 );

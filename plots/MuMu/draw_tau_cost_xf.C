@@ -20,9 +20,10 @@
 #include "TFitter.h"
 #include "TSystem.h"
 #include "Math/Functor.h"
-#include "../analyze/TemplateMaker.C"
-#include "tdrstyle.C"
-#include "CMS_lumi.C"
+#include "../../analyze/TemplateMaker.C"
+#include "../tdrstyle.C"
+#include "../CMS_lumi.C"
+#include "root_files.h"
 
 
 
@@ -118,10 +119,8 @@ void make_m_cost_xf_hist(TTree *t1, TH1F *h_cost_st, TH1F *h_cost, TH1F *h_xF, b
 }
 
 void draw_tau_cost_xf(){
+    init();
     setTDRStyle();
-    TFile *f_mc = TFile::Open("../analyze/output_files/DYToLL_mc_2016_jun21.root");
-    TTree *t_mc = (TTree *)f_mc->Get("T_data");
-    TTree *t_mc_nosig = (TTree *)f_mc->Get("T_back");
     int n_m_bins = 6; 
     Double_t m_bins[] = {150,200,250,350,500,700,1000}; 
 
@@ -214,9 +213,6 @@ void draw_tau_cost_xf(){
     cmsTextOffset    = 0.1;  // only used in outOfFrame version
     */
 
-    writeExtraText = true;
-    extraText = "Simulation Preliminary";
-    lumi_sqrtS = "";       // used with iPeriod = 0, e.g. for simulation-only plots (default is an empty string)
     int iPeriod = 0; 
     CMS_lumi( c3, iPeriod, 33 );
     CMS_lumi( c2, iPeriod, 11 );

@@ -89,20 +89,20 @@ void make_4vec_hists(TTree *t1, kin_hists *k, bool is_data=false){
                 
 
                 if(is_data){
-                    k->m_hist->Fill(obs.M());
-                    k->pt_hist->Fill(obs.Pt());
-                    k->eta_hist->Fill(obs.Eta());
-                    k->phi_hist->Fill(obs.Phi());
+                    //k->m_hist->Fill(obs.M());
+                    //k->pt_hist->Fill(obs.Pt());
+                    //k->eta_hist->Fill(obs.Eta());
+                    //k->phi_hist->Fill(obs.Phi());
 
-                    //k->m_hist->Fill(el_p->E());
-                    //k->pt_hist->Fill(el_p->Pt());
-                    //k->eta_hist->Fill(el_p->Eta());
-                    //k->phi_hist->Fill(el_p->Phi());
+                    k->m_hist->Fill(el_p->E());
+                    k->pt_hist->Fill(el_p->Pt());
+                    k->eta_hist->Fill(el_p->Eta());
+                    k->phi_hist->Fill(el_p->Phi());
 
-                    //k->m_hist->Fill(el_m->E());
-                    //k->pt_hist->Fill(el_m->Pt());
-                    //k->eta_hist->Fill(el_m->Eta());
-                    //k->phi_hist->Fill(el_m->Phi());
+                    k->m_hist->Fill(el_m->E());
+                    k->pt_hist->Fill(el_m->Pt());
+                    k->eta_hist->Fill(el_m->Eta());
+                    k->phi_hist->Fill(el_m->Phi());
                 }
                 else{
                     Double_t evt_weight = gen_weight *pu_SF * el_id_SF * el_reco_SF * el_HLT_SF * 1000. * tot_lumi;
@@ -112,20 +112,20 @@ void make_4vec_hists(TTree *t1, kin_hists *k, bool is_data=false){
                     if (nJets >= 2){
                         evt_weight *= jet2_b_weight;
                     }
-                    k->m_hist->Fill(obs.M(), evt_weight);
-                    k->pt_hist->Fill(obs.Pt(), evt_weight);
-                    k->eta_hist->Fill(obs.Eta(), evt_weight);
-                    k->phi_hist->Fill(obs.Phi(), evt_weight);
+                    //k->m_hist->Fill(obs.M(), evt_weight);
+                    //k->pt_hist->Fill(obs.Pt(), evt_weight);
+                    //k->eta_hist->Fill(obs.Eta(), evt_weight);
+                    //k->phi_hist->Fill(obs.Phi(), evt_weight);
 
-                    //k->m_hist->Fill(el_p->E(), evt_weight);
-                    //k->pt_hist->Fill(el_p->Pt(), evt_weight);
-                    //k->eta_hist->Fill(el_p->Eta(), evt_weight);
-                    //k->phi_hist->Fill(el_p->Phi(), evt_weight);
+                    k->m_hist->Fill(el_p->E(), evt_weight);
+                    k->pt_hist->Fill(el_p->Pt(), evt_weight);
+                    k->eta_hist->Fill(el_p->Eta(), evt_weight);
+                    k->phi_hist->Fill(el_p->Phi(), evt_weight);
 
-                    //k->m_hist->Fill(el_m->E(), evt_weight);
-                    //k->pt_hist->Fill(el_m->Pt(), evt_weight);
-                    //k->eta_hist->Fill(el_m->Eta(), evt_weight);
-                    //k->phi_hist->Fill(el_m->Phi(), evt_weight);
+                    k->m_hist->Fill(el_m->E(), evt_weight);
+                    k->pt_hist->Fill(el_m->Pt(), evt_weight);
+                    k->eta_hist->Fill(el_m->Eta(), evt_weight);
+                    k->phi_hist->Fill(el_m->Phi(), evt_weight);
 
                 }
 
@@ -367,7 +367,7 @@ void draw_kinematics(){
     do_emu_scaling(&k_wt);
 
     printf("making plots \n");
-    make_plots("ElEl_unbinned", &k_data, &k_mc, &k_mc_nosig, &k_ttbar, &k_diboson, &k_wt);
+    make_plots("El", &k_data, &k_mc, &k_mc_nosig, &k_ttbar, &k_diboson, &k_wt);
 
     return;
 }

@@ -67,7 +67,7 @@ void draw_emu_new(){
     Double_t m_low = 150;
     Double_t m_high = 10000;
 
-    type  = FLAG_MUONS;
+    int type  = FLAG_MUONS;
 
     make_emu_m_hist(t_data, data_m, true, type);
     make_emu_m_hist(t_ttbar, ttbar_m, false, type);

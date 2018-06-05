@@ -151,7 +151,7 @@ void draw_dilution(){
     cmsTextOffset    = 0.2;  // only used in outOfFrame version
     */
     writeExtraText = true;
-    extraText = "Simulation Work in progress";
+    extraText = "Simulation";
     lumi_sqrtS = "";       // used with iPeriod = 0, e.g. for simulation-only plots (default is an empty string)
     int iPeriod = 0; 
     CMS_lumi( c3, iPeriod, 11 );

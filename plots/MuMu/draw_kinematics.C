@@ -374,7 +374,7 @@ void draw_kinematics(){
     do_emu_scaling(&k_wt);
 
     printf("making plots \n");
-    make_plots("Muon_unbinned", &k_data, &k_mc, &k_mc_nosig, &k_ttbar,&k_diboson, &k_wt);
+    make_plots("Muon", &k_data, &k_mc, &k_mc_nosig, &k_ttbar,&k_diboson, &k_wt);
 
     return;
 }
