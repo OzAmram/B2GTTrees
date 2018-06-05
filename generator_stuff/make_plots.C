@@ -43,7 +43,7 @@ void make_hist_from_tree(TTree *t1, TH1F *h, Double_t xsec){
         t1->GetEntry(i);
         cm = *lep_pls + *lep_mns;
         //printf("M= %.2f \n", cm.M());
-        if(cm.M() >= 100.){
+        if(cm.M() >= 100. && cm.M() < 200.){
             nSelected++;
             h->Fill(cm.Pt(), evt_weight);
         }
@@ -68,7 +68,7 @@ void make_plots(){
     TFile *f_binned = TFile::Open("mass_binned_evts.root");
     TTree *t_binned = (TTree *)f_binned->Get("T_lhe");
 
-    TH1F *h_pt_un = new TH1F("h_pt_un", "", 10, 0, 200);
+    TH1F *h_pt_un = new TH1F("h_pt_un", "Binned vs. UnBinned DY Samples (100<M<200)", 10, 0, 200);
     TH1F *h_pt = new TH1F("h_pt", "", 10, 0, 200);
 
     make_hist_from_tree(t_unbinned, h_pt_un, 5941.0);
@@ -79,7 +79,7 @@ void make_plots(){
 
     TCanvas * c1 = new TCanvas("c1", "", 800, 800);
     TPad *pad1 = new TPad("pad1c", "pad1", 0.,0.3,0.98,1.);
-    pad1->SetBottomMargin(0);
+    pad1->SetBottomMargin(0.01);
     pad1->Draw();
     pad1->cd();
     h_pt->SetLineColor(kRed);
@@ -89,6 +89,10 @@ void make_plots(){
     h_pt_un->Draw("hist E");
     h_pt->Draw("hist E same");
 
+    TLegend *leg3 = new TLegend(0.5, 0.65, 0.75, 0.8);
+    leg3->AddEntry(h_pt, "DY Mass binned (M-100to200)", "l");
+    leg3->AddEntry(h_pt_un, "DY Unbinned (M-50)", "l");
+    leg3->Draw();
 
     c1->Update();
 
@@ -102,6 +106,7 @@ void make_plots(){
     auto h_ratio = (TH1F *) h_pt->Clone("h_ratio");
     h_ratio->Divide(h_pt_un);
     h_ratio->SetMarkerStyle(21);
+    h_ratio->SetLineColor(kBlack);
     h_ratio->Draw("ep");
     h_ratio->SetMinimum(0.7);
     h_ratio->SetMaximum(1.3);
@@ -114,7 +119,7 @@ void make_plots(){
     h_ratio->GetYaxis()->SetLabelFont(43); // Absolute font size in pixel (precision 3)
     h_ratio->GetYaxis()->SetLabelSize(15);
     //h axis cost_ratio plot settings
-    h_ratio->GetXaxis()->SetTitle("dilepton Pt (ee, #mu#mu, #tau#tau) (GeV)");
+    h_ratio->GetXaxis()->SetTitle("dilepton Mass (ee, #mu#mu, #tau#tau) (GeV)");
     h_ratio->GetXaxis()->SetTitleSize(20);
     h_ratio->GetXaxis()->SetTitleFont(43);
     h_ratio->GetXaxis()->SetTitleOffset(3.);
