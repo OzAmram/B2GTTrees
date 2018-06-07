@@ -74,7 +74,6 @@ static void setup_new_mu_fakerate(FakeRate *FR){
     TDirectory *subdir = gDirectory;
     TH2D *h1 = (TH2D *) subdir->Get("h_rate_new")->Clone();
     h1->SetDirectory(0);
-    //h1->Print();
     FR->h = h1;
     f0->Close();
 }
@@ -563,7 +562,6 @@ void gen_fakes_template(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_contam,
         FakeRate FR;
         //TH2D *FR;
         setup_new_mu_fakerate(&FR);
-        //FR.h->Print();
         for (int l=0; l<=3; l++){
             printf("l=%i\n", l);
             TTree *t;
@@ -669,7 +667,6 @@ void gen_fakes_template(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_contam,
         FakeRate FR;
         //TH2D *FR;
         setup_new_el_fakerate(&FR);
-        FR.h->Print();
         for (int l=0; l<=3; l++){
             TTree *t;
             if (l==0) t = t_WJets;
@@ -1127,7 +1124,6 @@ void Fakerate_est_mu(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_contam, TTree 
     FakeRate FR;
     //TH2D *FR;
     setup_new_mu_fakerate(&FR);
-    //FR.h->Print();
     for (int l=0; l<=3; l++){
         printf("l=%i\n", l);
         TTree *t;
@@ -1232,7 +1228,6 @@ void Fakerate_est_el(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_MC, TTree *t_Q
     FakeRate FR;
     //TH2D *FR;
     setup_new_el_fakerate(&FR);
-    //FR.h->Print();
     for (int l=0; l<=3; l++){
         TTree *t;
         if (l==0) t = t_WJets;
@@ -1332,7 +1327,6 @@ void Fakerate_est_emu(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_MC, TH1F *h_m
     //TH2D *FR;
     setup_new_el_fakerate(&el_FR);
     setup_new_mu_fakerate(&mu_FR);
-    //FR.h->Print();
     for (int l=0; l<=2; l++){
         TTree *t;
         if (l==0) t = t_WJets;
@@ -1430,12 +1424,15 @@ void Fakerate_est_emu(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_MC, TH1F *h_m
 }
 
 
-int gen_finite_mc_template(TTree *t1, TH2F* h_mc, TH2F *h_errs, TH2F *h_count,
+int gen_finite_mc_template(TTree *t1, TH2F* h_mc_corr, TH2F *h_mc_inc, TH2F *h_errs, TH2F *h_count,
         Double_t var_low, Double_t var_high, int flag1 = FLAG_MUONS, int flag2 = FLAG_M_BINS){
+    //h_mc_corr template where cost_st = cost
+    //h_mc_inc template where cost_st = -cost
     Long64_t nEntries  =  t1->GetEntries();
     //printf("size is %i \n", nEntries);
 
-    h_mc->Sumw2();
+    h_mc_corr->Sumw2();
+    h_mc_inc->Sumw2();
     h_errs->Sumw2();
 
     Double_t m, xF, cost, gen_weight, reweight, jet1_cmva, jet2_cmva, cost_st;
@@ -1504,9 +1501,10 @@ int gen_finite_mc_template(TTree *t1, TH2F* h_mc, TH2F *h_errs, TH2F *h_count,
                 Double_t final_weight = 1000*(bcdef_weight*bcdef_lumi + gh_weight*gh_lumi);
 
 
-                h_mc->Fill(xF, cost, final_weight); 
-                h_errs->Fill(xF, cost, final_weight*final_weight); 
-                h_count->Fill(xF, cost, 1);
+                if(cost* cost_st > 0) h_mc_corr->Fill(xF, cost_st, final_weight); 
+                else h_mc_inc->Fill(xF, cost_st, final_weight); 
+                h_errs->Fill(xF, cost_st, final_weight*final_weight); 
+                h_count->Fill(xF, cost_st, 1);
             }
         }
 
@@ -1540,9 +1538,14 @@ int gen_finite_mc_template(TTree *t1, TH2F* h_mc, TH2F *h_errs, TH2F *h_count,
                 }
 
 
-                h_mc->Fill(xF, cost, evt_weight); 
-                h_errs->Fill(xF, cost, evt_weight*evt_weight); 
-                h_count->Fill(xF, cost, 1);
+                if(cost * cost_st > 0) h_mc_corr->Fill(xF, cost_st, evt_weight); 
+                else h_mc_inc->Fill(xF, cost_st, evt_weight);
+                h_errs->Fill(xF, cost_st, evt_weight*evt_weight); 
+                h_count->Fill(xF, cost_st, 1);
+
+                //if(xF > 0.1 && cost_st < -0.8){
+                    //printf("Filling bin 4,0, weight is %.3e \n", evt_weight);
+                //}
             }
         }
 
