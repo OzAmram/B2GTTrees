@@ -25,7 +25,7 @@
 #include "../TemplateMaker.C"
 
 const int n_bins = 6;
-const int n_sys =9;
+const int n_sys =10;
 vector<double> v_AFB_nom, v_AFB_stat_unc;
 
 double get_var(Float_t vals[100]){
@@ -82,6 +82,25 @@ void eval_scale_systematic(TTree *t, double *afb_var_up, double *afb_var_down){
 
 }
 
+void eval_finite_mc_systematic(TTree *t_mc_fixed, TTree *t_mc, double *afb_var_up, double *afb_var_down){
+    Double_t afb_fixed_err;
+    Double_t afb_err;
+    t_mc_fixed->SetBranchAddress("AFB_err", &afb_fixed_err); 
+    t_mc->SetBranchAddress("AFB_err", &afb_err); 
+    for(int i=0; i < n_bins; i++){
+        t_mc_fixed->GetEntry(i);
+        t_mc->GetEntry(i);
+        double var_diff = abs(afb_fixed_err*afb_fixed_err - afb_err*afb_err);
+        printf("Fixed err = %.4f , err = %.4f \n", afb_fixed_err, afb_err);
+
+        afb_var_up[i] = var_diff;
+        afb_var_down[i] = var_diff;
+
+    }
+    return;
+}
+
+
 void eval_pdf_systematic(TTree *t, double *afb_var_up, double *afb_var_down){
     Float_t afb[100];
     float var_low, var_high;
@@ -117,7 +136,7 @@ void combined_systematics(){
     TTree *t_nom;
     bool output_file = true;
     FILE * fout;
-    if(output_file) fout = fopen("AFB_fit/systematics/Combined_systematics_mar25.txt", "w");
+    if(output_file) fout = fopen("AFB_fit/systematics/Combined_systematics_june14.txt", "w");
 
 
     string f_nominal("AFB_fit/fit_results/m_bins/combined_fit_nominal_mar25.root");
@@ -215,6 +234,16 @@ void combined_systematics(){
     f_SF[13] = string("AFB_fit/fit_results/m_bins/combined_fit_mu_iso_up_mar24.root");
     */
 
+    const int n_finite_mc=2;
+    TTree *t_finite_mc[n_finite_mc];
+    string f_finite_mc[n_finite_mc];
+    f_finite_mc[0] = string("AFB_fit/fit_results/m_bins/Combined_fit_finite_mc_stat_fixed_june14.root");
+    f_finite_mc[1] = string("AFB_fit/fit_results/m_bins/Combined_fit_finite_mc_stat_june14.root");
+    TFile *f_mc_fixed = TFile::Open(f_finite_mc[0].c_str());
+    TTree *t_mc_stat_fixed = (TTree *) f_mc_fixed->Get("T_fit_res");
+    TFile *f_mc = TFile::Open(f_finite_mc[1].c_str());
+    TTree *t_mc_stat = (TTree *) f_mc->Get("T_fit_res");
+
     for(int i=0; i<n_vars; i++){
         TFile *f = TFile::Open(f_scale[i].c_str());
         t_scale[i] = (TTree *) f->Get("T_fit_res");
@@ -273,7 +302,6 @@ void combined_systematics(){
 
     eval_systematic(t_pileup_up, afb_var_up[6], afb_var_down[6]);
     eval_systematic(t_pileup_down, afb_var_up[6], afb_var_down[6]);
-    printf("hi \n");
 
 
     for(int j=0; j<n_vars; j++){
@@ -285,6 +313,7 @@ void combined_systematics(){
         eval_systematic(t_SF[j], afb_var_up[8], afb_var_down[8]);
         //printf("stds are %.3f %.3f \n", sqrt(afb_var_up[8][3]), sqrt(afb_var_down[8][3]));
     }
+    eval_finite_mc_systematic(t_mc_stat_fixed, t_mc_stat, afb_var_up[9], afb_var_down[9]);
 
     combine_sys(n_sys, afb_up, afb_down, afb_var_up, afb_var_down);
 
@@ -304,6 +333,9 @@ void combined_systematics(){
         }
         for(int j=0; j<n_SFs; j++){
             fprintf(fout, "%s \n", f_SF[j].c_str());
+        }
+        for(int j=0; j<n_finite_mc; j++){
+            fprintf(fout, "%s \n", f_finite_mc[j].c_str());
         }
     }
 

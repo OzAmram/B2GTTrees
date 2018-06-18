@@ -10,7 +10,7 @@
 
 const double root2 = sqrt(2);
 const char* filename("SingleElectron_files_aug29.txt");
-const TString fout_name("output_files/SingleElectron_data_zpeak_may29.root");
+const TString fout_name("output_files/SingleElectron_data_zpeak_june15.root");
 
 const bool data_2016 = true;
 
@@ -31,7 +31,7 @@ void ElEl_reco_data_batch()
     TFile *fout = TFile::Open(fout_name, "RECREATE");
     fout->cd();
     TTree *tout= new TTree("T_data", "Tree with reco events");
-    tout->SetDirectory(0);
+    //tout->SetDirectory(0);
     Double_t cm_m, xF, cost_r, el1_pt, el2_pt, el1_eta, el2_eta, jet1_pt, jet2_pt,
              jet1_cmva, jet1_eta, jet2_cmva, jet2_eta;
     Int_t nJets, pu_NtrueInt;

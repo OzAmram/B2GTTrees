@@ -16,8 +16,8 @@ const double root2 = sqrt(2);
 double Ebeam = 6500.;
 double Pbeam = sqrt(Ebeam*Ebeam - 0.938*0.938);
 
-char *filename("DY_files_mar19.txt");
-const TString fout_name("output_files/ElEl_DY_zpeak_may29.root");
+char *filename("DY_files_unbinned_oct23.txt");
+const TString fout_name("output_files/ElEl_DY_zpeak_unbinned_june18.root");
 const double alpha = 0.05;
 const bool PRINT=false;
 
@@ -112,17 +112,18 @@ void ElEl_reco_mc_batch()
     TFile *fout = TFile::Open(fout_name, "RECREATE");
     TTree *t_signal= new TTree("T_data", "Tree with asym events (qq bar, qg)");
     Double_t cm_m, xF, cost_r, cost_st, el1_pt, el2_pt, el1_eta, el2_eta, jet1_pt, jet2_pt, jet1_eta, jet2_eta, deltaC, 
-             gen_weight, jet1_csv, jet1_cmva, jet2_csv, jet2_cmva;
+             gen_weight, jet1_csv, jet1_cmva, jet2_csv, jet2_cmva, gen_m;
     Double_t el_id_SF, el_reco_SF, jet1_b_weight, jet2_b_weight, pu_SF, el_HLT_SF;
     Double_t mu_R_up, mu_R_down, mu_F_up, mu_F_down, mu_RF_up, mu_RF_down, pdf_up, pdf_down;
     Int_t nJets, jet1_flavour, jet2_flavour, pu_NtrueInt;
     Bool_t is_tau_event;
     Float_t met_pt;
-    TLorentzVector el_p, el_m, cm, q1, q2;
+    TLorentzVector el_p, el_m, cm, q1, q2, gen_el_p_vec, gen_el_m_vec;
 
     Float_t scale_Weights[10], pdf_weights[100];
 
     t_signal->Branch("m", &cm_m, "m/D");
+    t_signal->Branch("gen_m", &gen_m, "m/D");
     t_signal->Branch("xF", &xF, "xF/D");
     t_signal->Branch("cost", &cost_r, "cost/D");
     t_signal->Branch("cost_st", &cost_st, "cost_st/D");
@@ -132,6 +133,8 @@ void ElEl_reco_mc_batch()
     t_signal->Branch("el2_eta", &el2_eta, "el2_eta/D");
     t_signal->Branch("el_m", "TLorentzVector", &el_m);
     t_signal->Branch("el_p", "TLorentzVector", &el_p);
+    t_signal->Branch("gen_el_m", "TLorentzVector", &gen_el_m_vec);
+    t_signal->Branch("gen_el_p", "TLorentzVector", &gen_el_p_vec);
     t_signal->Branch("jet1_pt", &jet1_pt, "jet1_pt/D");
     t_signal->Branch("jet1_eta", &jet1_eta, "jet1_eta/D");
     t_signal->Branch("jet1_CMVA", &jet1_cmva, "jet1_CMVA/D");
@@ -174,6 +177,8 @@ void ElEl_reco_mc_batch()
     t_back->Branch("el2_eta", &el2_pt, "el2_eta/D");
     t_back->Branch("el_m", "TLorentzVector", &el_m);
     t_back->Branch("el_p", "TLorentzVector", &el_p);
+    t_signal->Branch("gen_el_m", "TLorentzVector", &gen_el_m_vec);
+    t_signal->Branch("gen_el_p", "TLorentzVector", &gen_el_p_vec);
     t_back->Branch("jet1_pt", &jet1_pt, "jet1_pt/D");
     t_back->Branch("jet1_eta", &jet1_eta, "jet1_eta/D");
     t_back->Branch("jet1_CMVA", &jet1_cmva, "jet1_CMVA/D");
@@ -347,7 +352,7 @@ void ElEl_reco_mc_batch()
 
                     cm = el_p + el_m;
                     cm_m = cm.M();
-                    if (cm_m >= 50. && cm_m <= 100.){
+                    if (cm_m >= 50.){
                         if(PRINT) sprintf(out_buff + strlen(out_buff),"\n \n Event %i \n", i);
 
                         //GEN LEVEL
@@ -611,6 +616,10 @@ void ElEl_reco_mc_batch()
                                 nFailedID ++;
                             }
                         }
+                        gen_el_p_vec.SetPtEtaPhiE(gen_Pt[gen_el_p], gen_Eta[gen_el_p], gen_Phi[gen_el_p], gen_E[gen_el_p]);
+                        gen_el_m_vec.SetPtEtaPhiE(gen_Pt[gen_el_m], gen_Eta[gen_el_m], gen_Phi[gen_el_m], gen_E[gen_el_m]);
+                        TLorentzVector gen_cm = gen_el_p_vec + gen_el_m_vec;
+                        gen_m = gen_cm.M();
                         //RECO LEVEL
                         xF = abs(2.*cm.Pz()/13000.); 
 

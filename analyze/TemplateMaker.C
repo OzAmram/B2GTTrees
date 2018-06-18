@@ -13,6 +13,7 @@
 
 #include "TROOT.h"
 #include "TFile.h"
+#include "TTree.h"
 #include "TObject.h"
 #include "TH1F.h"
 #include "TProfile.h"
@@ -25,6 +26,7 @@
 #include "TSystem.h"
 #include "Math/Functor.h"
 
+using namespace std;
 
 #define FLAG_MUONS  0
 #define FLAG_ELECTRONS  1

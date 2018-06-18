@@ -139,7 +139,7 @@ genHtFilter = False
 process.TFileService = cms.Service("TFileService", fileName = cms.string(ttreeOutputLabel))
 
 ### B2GEdmExtraVarProducer
-from Analysis.B2GAnaFW.b2gedmntuples_cff import metFull, metFullClean, puppimetFull, genPart, electrons, muons, photons, photonjets, jetsAK4CHS, jetsAK4Puppi, jetsAK8CHS, jetsAK8Puppi, subjetsAK8CHS, subjetsAK8Puppi, genJetsAK8, genJetsAK8SoftDrop, eventInfo # metNoHF off since 76X
+from Analysis.B2GAnaFW.b2gedmntuples_cff import metFull, puppimetFull, genPart, electrons, muons, photons, photonjets, jetsAK4CHS, jetsAK4Puppi, jetsAK8CHS, jetsAK8Puppi, subjetsAK8CHS, subjetsAK8Puppi, genJetsAK8, genJetsAK8SoftDrop, eventInfo # metNoHF off since 76X
 
 # import DB content from sqlite
 
@@ -147,40 +147,40 @@ from Analysis.B2GAnaFW.b2gedmntuples_cff import metFull, metFullClean, puppimetF
 if usePrivateSQLite and not useMINIAOD:
     from CondCore.DBCommon.CondDBSetup_cfi import *
     process.jec = cms.ESSource("PoolDBESSource",CondDBSetup,
-		    connect = cms.string( "sqlite_file:"+JECloc+".db" ),
-		    toGet =  cms.VPSet(
-			    cms.PSet(
-				    record = cms.string("JetCorrectionsRecord"),
-				    tag = cms.string("JetCorrectorParametersCollection_"+Era+"_AK4PF"),
-				    label= cms.untracked.string("AK4PF")
-				    ),
-			    cms.PSet(
-				    record = cms.string("JetCorrectionsRecord"),
-				    tag = cms.string("JetCorrectorParametersCollection_"+Era+"_AK4PFchs"),
-				    label= cms.untracked.string("AK4PFchs")
-				    ),
-			    cms.PSet(
-				    record = cms.string("JetCorrectionsRecord"),
-				    tag = cms.string("JetCorrectorParametersCollection_"+Era+"_AK4PFPuppi"),
-				    label= cms.untracked.string("AK4PFPuppi")
-				    ),
-			    cms.PSet(
-				    record = cms.string("JetCorrectionsRecord"),
-				    tag = cms.string("JetCorrectorParametersCollection_"+Era+"_AK8PF"),
-				    label= cms.untracked.string("AK8PF")
-				    ),
-			    cms.PSet(
-				    record = cms.string("JetCorrectionsRecord"),
-				    tag = cms.string("JetCorrectorParametersCollection_"+Era+"_AK8PFchs"),
-				    label= cms.untracked.string("AK8PFchs")
-				    ),
-			    cms.PSet(
-				    record = cms.string("JetCorrectionsRecord"),
-				    tag = cms.string("JetCorrectorParametersCollection_"+Era+"_AK8PFPuppi"),
-				    label= cms.untracked.string("AK8PFPuppi")
-				    ),
-			    )
-		    )
+            connect = cms.string( "sqlite_file:"+JECloc+".db" ),
+            toGet =  cms.VPSet(
+                cms.PSet(
+                    record = cms.string("JetCorrectionsRecord"),
+                    tag = cms.string("JetCorrectorParametersCollection_"+Era+"_AK4PF"),
+                    label= cms.untracked.string("AK4PF")
+                    ),
+                cms.PSet(
+                    record = cms.string("JetCorrectionsRecord"),
+                    tag = cms.string("JetCorrectorParametersCollection_"+Era+"_AK4PFchs"),
+                    label= cms.untracked.string("AK4PFchs")
+                    ),
+                cms.PSet(
+                    record = cms.string("JetCorrectionsRecord"),
+                    tag = cms.string("JetCorrectorParametersCollection_"+Era+"_AK4PFPuppi"),
+                    label= cms.untracked.string("AK4PFPuppi")
+                    ),
+                cms.PSet(
+                    record = cms.string("JetCorrectionsRecord"),
+                    tag = cms.string("JetCorrectorParametersCollection_"+Era+"_AK8PF"),
+                    label= cms.untracked.string("AK8PF")
+                    ),
+                cms.PSet(
+                    record = cms.string("JetCorrectionsRecord"),
+                    tag = cms.string("JetCorrectorParametersCollection_"+Era+"_AK8PFchs"),
+                    label= cms.untracked.string("AK8PFchs")
+                    ),
+                cms.PSet(
+                    record = cms.string("JetCorrectionsRecord"),
+                    tag = cms.string("JetCorrectorParametersCollection_"+Era+"_AK8PFPuppi"),
+                    label= cms.untracked.string("AK8PFPuppi")
+                    ),
+                )
+            )
     process.es_prefer_jec = cms.ESPrefer("PoolDBESSource",'jec')
 
 # Revert back to CHS - 22 December 2016
@@ -212,8 +212,8 @@ if usePuppiMet:
     met_label  = "puppimetFull"
     met_prefix = puppimetFull.prefix
 else:
-    met_label  = "metFullClean"
-    met_prefix = metFullClean.prefix
+    met_label  = "metFull"
+    met_prefix = metFull.prefix
 
 process.extraVar = cms.EDProducer("B2GEdmExtraVarProducer",
     isData = cms.untracked.bool(isData),
@@ -244,22 +244,22 @@ process.extraVar = cms.EDProducer("B2GEdmExtraVarProducer",
     AK8SubjetKeys_label = cms.untracked.string(AK8sub_key),
     singleI = cms.untracked.vstring(
         # Event filters (these are automatically picked up)
-        "Flag_HBHENoiseFilter",
-        "Flag_HBHENoiseIsoFilter",
-        "Flag_CSCTightHaloFilter",
-        "Flag_CSCTightHaloTrkMuUnvetoFilter",
-        "Flag_CSCTightHalo2015Filter",
-        "Flag_globalTightHalo2016Filter",
-        "Flag_globalSuperTightHalo2016Filter",
-        "Flag_HcalStripHaloFilter",
-        "Flag_hcalLaserEventFilter",
+        #"Flag_HBHENoiseFilter",
+        #"Flag_HBHENoiseIsoFilter",
+        #"Flag_CSCTightHaloFilter",
+        #"Flag_CSCTightHaloTrkMuUnvetoFilter",
+        #"Flag_CSCTightHalo2015Filter",
+        #"Flag_globalTightHalo2016Filter",
+        #"Flag_globalSuperTightHalo2016Filter",
+        #"Flag_HcalStripHaloFilter",
+        #"Flag_hcalLaserEventFilter",
         "Flag_EcalDeadCellTriggerPrimitiveFilter",
         "Flag_EcalDeadCellBoundaryEnergyFilter",
         "Flag_goodVertices",
         "Flag_eeBadScFilter",
-        "Flag_ecalLaserCorrFilter",
+        #"Flag_ecalLaserCorrFilter",
         "Flag_trkPOGFilters",
-        "Flag_chargedHadronTrackResolutionFilter",
+        #"Flag_chargedHadronTrackResolutionFilter",
         "Flag_muonBadTrackFilter",
         "Flag_trkPOG_manystripclus53X",
         "Flag_trkPOG_toomanystripclus53X",
@@ -402,14 +402,14 @@ process.extraVar = cms.EDProducer("B2GEdmExtraVarProducer",
         #"HLT_Ele35_CaloIdVT_GsfTrkIdT_PFJet150_PFJet50",
         #"HLT_Ele45_CaloIdVT_GsfTrkIdT_PFJet200_PFJet50",
         # Dimuon triggers
-        "HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL",
-        "HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL", 
-        "HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ", 
-        "HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ",
+        #"HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL",
+        #"HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL", 
+        #"HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ", 
+        #"HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ",
         # Photon Triggers
-        "HLT_Photon22",
-        "HLT_Photon30",
-        "HLT_Photon36",
+        #"HLT_Photon22",
+        #"HLT_Photon30",
+        #"HLT_Photon36",
         # end of triggers
         # Event variables
         "evt_NGoodVtx",

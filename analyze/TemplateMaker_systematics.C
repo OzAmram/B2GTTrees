@@ -21,12 +21,15 @@
 #include "TPostScript.h"
 #include "TLorentzVector.h"
 #include "TVector3.h"
+#include "TH2.h"
+#include "TTree.h"
 #include "TFitter.h"
 #include "TSystem.h"
 #include "Math/Functor.h"
-#include "ScaleFactors.C"
+//#include "ScaleFactors.C"
 
 
+using namespace std;
 
 #define FLAG_MUONS  0
 #define FLAG_ELECTRONS  1
@@ -56,6 +59,18 @@ bool has_no_bjets(Int_t nJets, Double_t jet1_pt, Double_t jet2_pt,
     }
 }
 
+void print_hist(TH2 *h){
+    printf("\n");
+    int n_xf_bins = 5;
+    int n_cost_bins = 10;
+    for(int i=1; i<= n_xf_bins; i++){
+        for(int j=1; j<= n_cost_bins; j++){
+            printf("%.2e ",   (float) h->GetBinContent(i,j));
+        }
+        printf("\n");
+    }
+
+}
 typedef struct {
     TH2D *h;
 } FakeRate;
@@ -153,8 +168,12 @@ int gen_data_template(TTree *t1, TH2F* h, vector<double> *v_xF, vector<double> *
             if(m >= var_low && m <= var_high && met_pt < 50. && no_bjets){
                 n++;
                 h->Fill(xF, cost, 1); 
+                //printf("size %i \n", (int) v_cost->size());
+                //printf("xf\n");
                 v_xF->push_back(xF);
+                //printf("cost\n");
                 v_cost->push_back(cost);
+                //printf("end\n");
                 nEvents++;
             }
         }
@@ -187,6 +206,8 @@ int gen_mc_template(TTree *t1, Double_t alpha, TH2F* h_sym, TH2F *h_asym, TH2F *
 
     h_sym->Sumw2();
     h_asym->Sumw2();
+
+    //TH2F* h_reweights = (TH2F *) h_sym->Clone("h_rw");
 
     Double_t m, xF, cost, gen_weight, reweight, jet1_cmva, jet2_cmva, cost_st;
     Double_t bcdef_HLT_SF, bcdef_iso_SF, bcdef_id_SF;
@@ -338,7 +359,9 @@ int gen_mc_template(TTree *t1, Double_t alpha, TH2F* h_sym, TH2F *h_asym, TH2F *
 
                 h_asym->Fill(xF, cost, reweight * final_weight);
                 h_asym->Fill(xF, -cost, -reweight * final_weight);
+                //h_reweights->Fill(xF, fabs(cost), fabs(reweight));
 
+                //h_count->Fill(xF, fabs(cost), 1);
                 h_count->Fill(xF, cost, 1);
                 h_count->Fill(xF, -cost, 1);
             }
@@ -425,6 +448,8 @@ int gen_mc_template(TTree *t1, Double_t alpha, TH2F* h_sym, TH2F *h_asym, TH2F *
         h_asym->Scale(1000*(bcdef_lumi + gh_lumi));
 
     }
+    //h_reweights->Divide(h_count);
+    //print_hist(h_reweights);
 
     printf("N sym is %i \n", n);
     float norm = h_sym -> Integral();
@@ -1424,12 +1449,13 @@ void Fakerate_est_emu(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_MC, TH1F *h_m
 }
 
 
-int gen_finite_mc_template(TTree *t1, TH2F* h_mc_corr, TH2F *h_mc_inc, TH2F *h_errs, TH2F *h_count,
+int gen_finite_mc_template(TTree *t1, TH2F* h_mc_corr, TH2F *h_mc_inc, TH2F *h_errs, TH2F *h_count, TH3F *h_rw, Double_t alpha,
         Double_t var_low, Double_t var_high, int flag1 = FLAG_MUONS, int flag2 = FLAG_M_BINS){
     //h_mc_corr template where cost_st = cost
     //h_mc_inc template where cost_st = -cost
     Long64_t nEntries  =  t1->GetEntries();
     //printf("size is %i \n", nEntries);
+    //
 
     h_mc_corr->Sumw2();
     h_mc_inc->Sumw2();
@@ -1487,6 +1513,8 @@ int gen_finite_mc_template(TTree *t1, TH2F* h_mc_corr, TH2F *h_mc_inc, TH2F *h_e
                 && met_pt < 50.  && no_bjets;
             if(pass){
 
+                double reweight = (4./3.)*cost_st*(2. + alpha)/
+                    (1. + cost_st*cost_st + alpha*(1.- cost_st*cost_st));
 
                 Double_t bcdef_weight = gen_weight * pu_SF * bcdef_HLT_SF * bcdef_iso_SF * bcdef_id_SF * bcdef_trk_SF;
                 Double_t gh_weight = gen_weight * pu_SF * gh_HLT_SF * gh_iso_SF * gh_id_SF * gh_trk_SF;
@@ -1501,10 +1529,11 @@ int gen_finite_mc_template(TTree *t1, TH2F* h_mc_corr, TH2F *h_mc_inc, TH2F *h_e
                 Double_t final_weight = 1000*(bcdef_weight*bcdef_lumi + gh_weight*gh_lumi);
 
 
-                if(cost* cost_st > 0) h_mc_corr->Fill(xF, cost_st, final_weight); 
-                else h_mc_inc->Fill(xF, cost_st, final_weight); 
-                h_errs->Fill(xF, cost_st, final_weight*final_weight); 
-                h_count->Fill(xF, cost_st, 1);
+                if(cost* cost_st > 0) h_mc_corr->Fill(xF, fabs(cost_st), final_weight); 
+                else h_mc_inc->Fill(xF, fabs(cost_st), final_weight); 
+                h_errs->Fill(xF, fabs(cost_st), final_weight*final_weight); 
+                h_count->Fill(xF, fabs(cost_st), 1);
+                h_rw->Fill(xF, fabs(cost_st), fabs(reweight), final_weight);
             }
         }
 
@@ -1528,6 +1557,8 @@ int gen_finite_mc_template(TTree *t1, TH2F* h_mc_corr, TH2F *h_mc_inc, TH2F *h_e
                 && met_pt < 50.  && no_bjets;
             if(pass){
 
+                double reweight = (4./3.)*cost_st*(2. + alpha)/
+                    (1. + cost_st*cost_st + alpha*(1.- cost_st*cost_st));
 
                 Double_t evt_weight = 1000*tot_lumi * gen_weight * el_id_SF *el_reco_SF * pu_SF * el_HLT_SF;
                 if (nJets >= 1){
@@ -1538,10 +1569,11 @@ int gen_finite_mc_template(TTree *t1, TH2F* h_mc_corr, TH2F *h_mc_inc, TH2F *h_e
                 }
 
 
-                if(cost * cost_st > 0) h_mc_corr->Fill(xF, cost_st, evt_weight); 
-                else h_mc_inc->Fill(xF, cost_st, evt_weight);
-                h_errs->Fill(xF, cost_st, evt_weight*evt_weight); 
-                h_count->Fill(xF, cost_st, 1);
+                if(cost * cost_st > 0) h_mc_corr->Fill(xF, fabs(cost_st), evt_weight); 
+                else h_mc_inc->Fill(xF, fabs(cost_st), evt_weight);
+                h_errs->Fill(xF, fabs(cost_st), evt_weight*evt_weight); 
+                h_count->Fill(xF, fabs(cost_st), 1);
+                h_rw->Fill(xF, fabs(cost_st), fabs(reweight), evt_weight);
 
                 //if(xF > 0.1 && cost_st < -0.8){
                     //printf("Filling bin 4,0, weight is %.3e \n", evt_weight);
@@ -1553,4 +1585,5 @@ int gen_finite_mc_template(TTree *t1, TH2F* h_mc_corr, TH2F *h_mc_inc, TH2F *h_e
 
     return 0;
 }
+
 

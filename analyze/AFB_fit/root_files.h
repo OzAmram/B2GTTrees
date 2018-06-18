@@ -1,4 +1,5 @@
 #include "TROOT.h"
+#include "TTree.h"
 #include "TFile.h"
 
 TFile *f_elel_mc, *f_elel_back, *f_elel_data, *f_elel_QCD, *f_elel_WJets, *f_elel_WJets_contam, *f_elel_QCD_contam;

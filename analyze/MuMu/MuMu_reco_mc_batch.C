@@ -17,8 +17,8 @@ const double root2 = sqrt(2);
 double Ebeam = 6500.;
 double Pbeam = sqrt(Ebeam*Ebeam - 0.938*0.938);
 
-char *filename("DY_files_mar19.txt");
-const TString fout_name("output_files/MuMu_DY_zpeak_may29.root");
+char *filename("DY_files_unbinned_oct23.txt");
+const TString fout_name("output_files/MuMu_DY_zpeak_unbinned_june14.root");
 const bool PRINT=false;
 
 const bool data_2016 = true;
@@ -116,7 +116,7 @@ void MuMu_reco_mc_batch()
     TTree *t_signal= new TTree("T_data", "Tree with asym events (qq bar, qg)");
     //t_signal->SetDirectory(0);
     Double_t cm_m, xF, cost_r, cost_st, mu1_pt, mu2_pt, mu1_eta, mu2_eta, jet1_pt, jet2_pt, jet1_eta, jet2_eta, deltaC, 
-             gen_weight, jet1_csv, jet1_cmva, jet2_csv, jet2_cmva;
+             gen_weight, jet1_csv, jet1_cmva, jet2_csv, jet2_cmva, gen_m;
     Double_t bcdef_HLT_SF, bcdef_iso_SF, bcdef_id_SF, gh_HLT_SF, gh_iso_SF, gh_id_SF,
              bcdef_trk_SF, gh_trk_SF,
              jet1_b_weight, jet2_b_weight, pu_SF;
@@ -128,6 +128,7 @@ void MuMu_reco_mc_batch()
     Float_t scale_Weights[10], pdf_weights[100];
 
     t_signal->Branch("m", &cm_m, "m/D");
+    t_signal->Branch("gen_m", &gen_m, "m/D");
     t_signal->Branch("xF", &xF, "xF/D");
     t_signal->Branch("cost", &cost_r, "cost/D");
     t_signal->Branch("cost_st", &cost_st, "cost_st/D");
@@ -178,6 +179,7 @@ void MuMu_reco_mc_batch()
     TTree *t_back = new TTree("T_back", "Tree for events with no asym (qq, gg)");
     //t_back->SetDirectory(0);
     t_back->Branch("m", &cm_m, "m/D");
+    t_back->Branch("gen_m", &gen_m, "m/D");
     t_back->Branch("xF", &xF, "xF/D");
     t_back->Branch("cost", &cost_r, "cost/D");
     t_back->Branch("cost_st", &cost_st, "cost_st/D");
@@ -394,7 +396,7 @@ void MuMu_reco_mc_batch()
                     cm = mu_p + mu_m;
                     cm_m = cm.M();
                     //met and cmva cuts to reduce ttbar background
-                    if (iso_0 < tight_iso && iso_1 < tight_iso && cm_m >= 100.){
+                    if (iso_0 < tight_iso && iso_1 < tight_iso && cm_m >= 50.){
                         if(PRINT) sprintf(out_buff + strlen(out_buff),"Event %i \n", i);
 
                         //GEN LEVEL
@@ -619,9 +621,11 @@ void MuMu_reco_mc_batch()
                                 nFailedID ++;
                             }
                         }
-                        //RECO LEVEL
                         gen_mu_p_vec.SetPtEtaPhiE(gen_Pt[gen_mu_p], gen_Eta[gen_mu_p], gen_Phi[gen_mu_p], gen_E[gen_mu_p]);
                         gen_mu_m_vec.SetPtEtaPhiE(gen_Pt[gen_mu_m], gen_Eta[gen_mu_m], gen_Phi[gen_mu_m], gen_E[gen_mu_m]);
+                        TLorentzVector gen_cm = gen_mu_p_vec + gen_mu_m_vec;
+                        gen_m = gen_cm.M();
+                        //RECO LEVEL
                         xF = abs(2.*cm.Pz()/13000.); 
 
                         // compute Colins soper angle with formula

@@ -6,7 +6,8 @@ import os
 # Set to false, and define your own lists (eg. comment out unused vairables)
 getVariablesFromConfig = False
 
-from Analysis.B2GAnaFW.b2gedmntuples_cff import puppimetFull, metFull, metFullClean, genPart, electrons, muons, photons, photonjets, jetsAK4CHS, jetsAK4Puppi, jetsAK8CHS, subjetsAK8CHS, jetsAK8Puppi, subjetsAK8Puppi, genJetsAK8, genJetsAK8SoftDrop, eventInfo # metNoHF, subjetsCmsTopTag off since 76X
+from Analysis.B2GAnaFW.b2gedmntuples_cff import puppimetFull, metFull, genPart, electrons, muons, photons, photonjets, jetsAK4CHS, jetsAK4Puppi, jetsAK8CHS, subjetsAK8CHS, jetsAK8Puppi, subjetsAK8Puppi, genJetsAK8, genJetsAK8SoftDrop, eventInfo # metNoHF, subjetsCmsTopTag off since 76X
+
 
 if getVariablesFromConfig:
     
@@ -20,10 +21,6 @@ if getVariablesFromConfig:
         s = str(pset.tag).replace("cms.untracked.string('","").replace("')","")
         metFull_var.append(s)
 
-    metFullClean_var = cms.untracked.vstring()
-    for pset in metFullClean.variables:
-        s = str(pset.tag).replace("cms.untracked.string('","").replace("')","")
-        metFullClean_var.append(s)
 
     puppimetFull_var = cms.untracked.vstring()
     for pset in puppimetFull.variables:
@@ -111,7 +108,6 @@ else:
         #"uncorSumEt",
     )
     metFull_var          = copy.deepcopy(metNoHF_var)
-    metFullClean_var = copy.deepcopy(metNoHF_var)
     puppimetFull_var     = copy.deepcopy(metNoHF_var)
     
     basicVars = cms.untracked.vstring(
@@ -220,26 +216,26 @@ else:
     )
     
     photonVars = cms.untracked.vstring(
-        'SCEta',
-        'SCPhi',
-        'SCRawE',
-        'HasPixelSeed',
-        'ElectronVeto',
-        'SigmaIEtaIEta',
-        'SigmaIEtaIPhi',
-        'SigmaIPhiIPhi',
-        'E1x5',
-        'E5x5',
-        'HoverE',
-        'R9',
-        'ChargedHadronIso',
-        'PhotonIso',
-        'NeutralHadronIso',
-        'PhotonIsoEAcorrectedsp15',
-        'NeutralHadronIsoEAcorrectedsp15',
-        'PassLooseID',
-        'PassMediumID',
-        'PassTightID',
+        #'SCEta',
+        #'SCPhi',
+        #'SCRawE',
+        #'HasPixelSeed',
+        #'ElectronVeto',
+        #'SigmaIEtaIEta',
+        #'SigmaIEtaIPhi',
+        #'SigmaIPhiIPhi',
+        #'E1x5',
+        #'E5x5',
+        #'HoverE',
+        #'R9',
+        #'ChargedHadronIso',
+        #'PhotonIso',
+        #'NeutralHadronIso',
+        #'PhotonIsoEAcorrectedsp15',
+        #'NeutralHadronIsoEAcorrectedsp15',
+        #'PassLooseID',
+        #'PassMediumID',
+        #'PassTightID',
     )
     
     photonjetVars = cms.untracked.vstring(
@@ -499,12 +495,6 @@ B2GTTreeMaker = cms.EDAnalyzer("B2GTTreeMaker",
             prefix_in = metFull.prefix,
             prefix_out = cms.untracked.string("met_MuCleanOnly_"), # It is the "Out of the box" MET
             vectorF = metFull_var,
-        ),
-        cms.PSet(
-            label = cms.untracked.string("metFullClean"), # This is the mu/eg cleaned MET + recalc JEC
-            prefix_in = metFullClean.prefix,
-            prefix_out = cms.untracked.string("met_"),
-            vectorF = metFullClean_var,
         ),
         cms.PSet(
             label = cms.untracked.string("puppimetFull"),
