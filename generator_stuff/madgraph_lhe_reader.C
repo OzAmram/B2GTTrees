@@ -214,7 +214,8 @@ void fill_tree(string f_name, TTree *t1, bool print = false)
             q2_id = up[parton2].id;
             lep1_id = up[itq].id;
             lep2_id = up[itb].id;
-
+            
+            //BACKWARDS PLS AND MNS DEFINITIONS
             lep_pls.SetPxPyPzE(up[itq].p[0], up[itq].p[1], up[itq].p[2], up[itq].p[3]);
             lep_mns.SetPxPyPzE(up[itb].p[0], up[itb].p[1], up[itb].p[2], up[itb].p[3]);
             nevent++;

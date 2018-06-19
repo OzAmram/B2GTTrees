@@ -62,14 +62,14 @@ void make_hist_from_tree(TTree *t1, TH1F *h, Double_t xsec){
 
 void make_plots(){
     gStyle->SetOptStat(0);
-    TFile *f_unbinned = TFile::Open("mass_unbinned_evts.root");
+    TFile *f_unbinned = TFile::Open("mass_unbinned_2M.root");
     TTree *t_unbinned = (TTree *)f_unbinned->Get("T_lhe");
 
-    TFile *f_binned = TFile::Open("mass_binned_evts.root");
+    TFile *f_binned = TFile::Open("mass_binned_100k.root");
     TTree *t_binned = (TTree *)f_binned->Get("T_lhe");
 
-    TH1F *h_pt_un = new TH1F("h_pt_un", "Binned vs. UnBinned DY Samples (100<M<200)", 10, 0, 200);
-    TH1F *h_pt = new TH1F("h_pt", "", 10, 0, 200);
+    TH1F *h_pt_un = new TH1F("h_pt_un", "Binned vs. UnBinned DY Samples (100<M<200)", 20, 100, 200);
+    TH1F *h_pt = new TH1F("h_pt", "", 20, 100, 200);
 
     make_hist_from_tree(t_unbinned, h_pt_un, 5941.0);
     make_hist_from_tree(t_binned, h_pt, 226.6);
@@ -81,6 +81,7 @@ void make_plots(){
     TPad *pad1 = new TPad("pad1c", "pad1", 0.,0.3,0.98,1.);
     pad1->SetBottomMargin(0.01);
     pad1->Draw();
+    pad1->SetLogy();
     pad1->cd();
     h_pt->SetLineColor(kRed);
     h_pt_un->SetLineColor(kBlue);
@@ -108,8 +109,8 @@ void make_plots(){
     h_ratio->SetMarkerStyle(21);
     h_ratio->SetLineColor(kBlack);
     h_ratio->Draw("ep");
-    h_ratio->SetMinimum(0.7);
-    h_ratio->SetMaximum(1.3);
+    h_ratio->SetMinimum(0.);
+    h_ratio->SetMaximum(2.0);
 
     h_ratio->GetYaxis()->SetTitle("Binned/Unbinned");
     h_ratio->GetYaxis()->SetNdivisions(505);

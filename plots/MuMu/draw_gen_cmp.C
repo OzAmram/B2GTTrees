@@ -116,6 +116,93 @@ void make_m_cost_pt_gen_hist(TTree *t1, TH1F *h_m, TH1F *h_cost, TH1F *h_pt){
 
     t1->ResetBranchAddresses();
 }
+void make_reweighted_m_cost_pt_gen_hist(TTree *t1, TH1F *h_m, TH1F *h_cost, TH1F *h_pt, TH1F *h_rw){
+    //read event data
+    Long64_t size  =  t1->GetEntries();
+    Double_t m, xF, cost, mu1_pt, mu2_pt, jet1_cmva, jet2_cmva, gen_weight, cost_st;
+    Double_t bcdef_HLT_SF, bcdef_iso_SF, bcdef_id_SF;
+    Double_t gh_HLT_SF, gh_iso_SF, gh_id_SF, el_id_SF, el_reco_SF, el_HLT_SF;
+    Double_t bcdef_trk_SF, gh_trk_SF;
+    Double_t jet1_pt, jet2_pt, jet1_b_weight, jet2_b_weight, pu_SF;
+    TLorentzVector *gen_mu_p = 0;
+    TLorentzVector *gen_mu_m = 0;
+    TLorentzVector *gen_el_p = 0;
+    TLorentzVector *gen_el_m = 0;
+    TLorentzVector cm;
+    Float_t met_pt;
+    Int_t nJets;
+    nJets = 2;
+    pu_SF=1;
+    t1->SetBranchAddress("m", &m);
+    t1->SetBranchAddress("xF", &xF);
+    t1->SetBranchAddress("cost", &cost);
+    t1->SetBranchAddress("cost_st", &cost_st);
+    t1->SetBranchAddress("met_pt", &met_pt);
+    t1->SetBranchAddress("jet2_CMVA", &jet2_cmva);
+    t1->SetBranchAddress("jet1_CMVA", &jet1_cmva);
+    t1->SetBranchAddress("jet1_pt", &jet1_pt);
+    t1->SetBranchAddress("jet2_pt", &jet2_pt);
+    t1->SetBranchAddress("nJets", &nJets);
+    t1->SetBranchAddress("gen_weight", &gen_weight);
+    t1->SetBranchAddress("jet1_b_weight", &jet1_b_weight);
+    t1->SetBranchAddress("jet2_b_weight", &jet2_b_weight);
+    t1->SetBranchAddress("pu_SF", &pu_SF);
+    t1->SetBranchAddress("gen_mu_p", &gen_mu_p);
+    t1->SetBranchAddress("gen_mu_m", &gen_mu_m);
+    t1->SetBranchAddress("bcdef_HLT_SF", &bcdef_HLT_SF);
+    t1->SetBranchAddress("bcdef_iso_SF", &bcdef_iso_SF);
+    t1->SetBranchAddress("bcdef_id_SF", &bcdef_id_SF);
+    t1->SetBranchAddress("gh_HLT_SF", &gh_HLT_SF);
+    t1->SetBranchAddress("gh_iso_SF", &gh_iso_SF);
+    t1->SetBranchAddress("gh_id_SF", &gh_id_SF);
+    t1->SetBranchAddress("gh_trk_SF", &gh_trk_SF);
+    t1->SetBranchAddress("bcdef_trk_SF", &bcdef_trk_SF);
+    const double root2 = sqrt(2);
+    for (int i=0; i<size; i++) {
+        t1->GetEntry(i);
+        bool no_bjets = has_no_bjets(nJets, jet1_pt, jet2_pt, jet1_cmva, jet2_cmva);
+
+        if(m >= 150. && met_pt < 50. && no_bjets){
+            cm = *gen_mu_p + *gen_mu_m;
+            Double_t pt = cm.Pt();
+            double mu_p_pls = (gen_mu_p->E()+gen_mu_p->Pz())/root2;
+            double mu_p_min = (gen_mu_p->E()-gen_mu_p->Pz())/root2;
+            double mu_m_pls = (gen_mu_m->E()+gen_mu_m->Pz())/root2;
+            double mu_m_min = (gen_mu_m->E()-gen_mu_m->Pz())/root2;
+            double qt2 = cm.Px()*cm.Px()+cm.Py()*cm.Py();
+            double cm_m2 = cm.M2();
+            //cost_p = cos(theta)_r (reconstructed collins soper angle, sign
+            //may be 'wrong' if lepton pair direction is not the same as inital
+            //quark direction)
+            double gen_cost = 2*(mu_m_pls*mu_p_min - mu_m_min*mu_p_pls)/sqrt(cm_m2*(cm_m2 + qt2));
+            if(cost > 0) gen_cost = fabs(gen_cost);
+            else gen_cost = -fabs(gen_cost);
+
+            Double_t bcdef_weight = gen_weight *pu_SF * bcdef_HLT_SF * bcdef_iso_SF * bcdef_id_SF * bcdef_trk_SF;
+            Double_t gh_weight = gen_weight *pu_SF * gh_HLT_SF * gh_iso_SF * gh_id_SF * gh_trk_SF;
+            if (nJets >= 1){
+                bcdef_weight *= jet1_b_weight;
+                gh_weight *= jet1_b_weight;
+            }
+            if (nJets >= 2){
+                bcdef_weight *= jet2_b_weight;
+                gh_weight *= jet2_b_weight;
+            }
+            double final_weight = 1000.*(bcdef_weight*bcdef_lumi + gh_weight*gh_lumi);
+            //Double_t weight = gen_weight;
+            int rw_bin = h_rw->GetXaxis()->FindBin(pt);
+            float rw = h_rw->GetBinContent(rw_bin);
+            h_m->Fill(m, rw* final_weight);
+            h_cost->Fill(gen_cost, rw*final_weight);
+            h_pt->Fill(pt, rw*final_weight);
+
+
+        }
+    }
+    h_cost->Scale(1./h_cost->Integral());
+
+    t1->ResetBranchAddresses();
+}
 
 void make_ratio_plot(char title[80], TH1F* h1, char h1_label[80], TH1F* h2, char h2_label[80], char ratio_label[80], 
         char axis_label[80], bool logy=false){
@@ -193,11 +280,15 @@ void draw_gen_cmp(){
     setTDRStyle();
 
 
-
+    
 
     TH1F *binned_m = new TH1F("bin_m", "Binned MC", 40, 150.,1000.);
     TH1F *binned_cost = new TH1F("bin_cost", "Binned MC", 40, -1.,1.);
     TH1F *binned_pt = new TH1F("bin_pt", "Binned MC", 25, 0.,400.);
+
+    TH1F *binned_m_rw = new TH1F("bin_m_rw", "Binned MC", 40, 150.,1000.);
+    TH1F *binned_cost_rw = new TH1F("bin_cost_rw", "Binned MC", 40, -1.,1.);
+    TH1F *binned_pt_rw = new TH1F("bin_pt_rw", "Binned MC", 25, 0.,400.);
 
     TH1F *unbinned_m = new TH1F("unbin_m", "unbinned MC", 40, 150.,1000.);
     TH1F *unbinned_cost = new TH1F("unbin_cost", "unbinned MC", 40, -1.,1.);
@@ -220,6 +311,11 @@ void draw_gen_cmp(){
     
     make_m_cost_pt_gen_hist(t_mc_binned, binned_m, binned_cost, binned_pt);
     make_m_cost_pt_gen_hist(t_mc_unbinned, unbinned_m, unbinned_cost, unbinned_pt);
+
+    TH1F *h_rw = (TH1F *) unbinned_pt->Clone("rw");
+    h_rw->Divide(binned_pt);
+
+    make_reweighted_m_cost_pt_gen_hist(t_mc_binned, binned_m_rw, binned_cost_rw, binned_pt_rw, h_rw);
 
 
 
