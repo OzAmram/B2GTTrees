@@ -83,7 +83,7 @@ void fill_tree(string f_name, TTree *t1, bool print = false)
 
     ifp = fopen(f_name.c_str(), "r");
     if (ifp==NULL) {
-        printf("can't find %s\n",infile);
+        printf("can't find %s\n",f_name.c_str());
         return -1.;
     }
 

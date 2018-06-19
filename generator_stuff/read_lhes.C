@@ -39,11 +39,11 @@ void read_lhes(){
     delete t2;
     */
 
-    char base_str[80] = "/uscms_data/d3/oamram/condor_jobs/DY_jobs/condor_jobs_SEED_%i/cmsgrid_final.lhe";
-    char root_base[80] = "condor_files/mass_unbinned_100k_%i.root";
-    char root_file[80];
-    char file_str[80];
-    for(int i=1; i<= 20; i++){
+    char base_str[120] = "/uscms_data/d3/oamram/condor_jobs/DY_jobs/condor_jobs_binned_SEED_%i/cmsgrid_final.lhe";
+    char root_base[120] = "condor_files/mass_binned_100k_%i.root";
+    char root_file[120];
+    char file_str[120];
+    for(int i=1; i<= 2; i++){
         sprintf(file_str, base_str, i);
         sprintf(root_file, root_base, i);
         string f(file_str);
