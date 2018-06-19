@@ -10,18 +10,16 @@
 
 
 void read_lhes(){
-    /*
     TTree *t1 = new TTree("T_lhe", "Lhe event info for mass binned DY");
     t1->SetDirectory(0);
-    string f1("mass_binned.lhe");
+    string f1("powheg_m150.lhe");
     fill_tree(f1, t1, true);
 
-    TFile *fout1 = TFile::Open("mass_binned_evts.root", "RECREATE");
+    TFile *fout1 = TFile::Open("powheg_m150_evts.root", "RECREATE");
     fout1->cd();
     t1->Write();
     fout1->Close();
     delete t1;
-    */
 
 
 
@@ -39,6 +37,7 @@ void read_lhes(){
     delete t2;
     */
 
+    /*
     char base_str[120] = "/uscms_data/d3/oamram/condor_jobs/DY_jobs/condor_jobs_binned_SEED_%i/cmsgrid_final.lhe";
     char root_base[120] = "condor_files/mass_binned_100k_%i.root";
     char root_file[120];
@@ -56,6 +55,7 @@ void read_lhes(){
         fout->Close();
         delete t1;
     }
+    */
 
 
     return;
