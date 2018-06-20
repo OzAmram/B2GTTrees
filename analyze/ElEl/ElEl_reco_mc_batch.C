@@ -16,8 +16,8 @@ const double root2 = sqrt(2);
 double Ebeam = 6500.;
 double Pbeam = sqrt(Ebeam*Ebeam - 0.938*0.938);
 
-char *filename("DY_files_unbinned_oct23.txt");
-const TString fout_name("output_files/ElEl_DY_zpeak_unbinned_june18.root");
+char *filename("DY_files_june17.txt");
+const TString fout_name("output_files/ElEl_DY_zpeak_june19.root");
 const double alpha = 0.05;
 const bool PRINT=false;
 
@@ -100,11 +100,9 @@ void ElEl_reco_mc_batch()
 
     mu_SFs runs_bcdef, runs_gh;
     pileup_SFs pu_SFs;
-    BTag_readers b_reader;
-    BTag_effs btag_effs;
     el_SFs el_SF;
     //separate SFs for runs BCDEF and GH
-    setup_SFs(&runs_bcdef, &runs_gh, &b_reader, &btag_effs, &pu_SFs);
+    setup_SFs(&runs_bcdef, &runs_gh, &pu_SFs);
     setup_el_SF(&el_SF);
     printf("Retrieved Scale Factors \n\n");
 
@@ -145,8 +143,6 @@ void ElEl_reco_mc_batch()
     t_signal->Branch("deltaC", &deltaC, "deltaC/D");
     t_signal->Branch("gen_weight", &gen_weight, "gen_weight/D");
     t_signal->Branch("pu_SF", &pu_SF);
-    t_signal->Branch("jet1_b_weight", &jet1_b_weight);
-    t_signal->Branch("jet2_b_weight", &jet2_b_weight);
     t_signal->Branch("mu_R_up", &mu_R_up);
     t_signal->Branch("mu_R_down", &mu_R_down);
     t_signal->Branch("mu_F_up", &mu_F_up);
@@ -192,8 +188,6 @@ void ElEl_reco_mc_batch()
     t_back->Branch("el_id_SF", &el_id_SF);
     t_back->Branch("el_reco_SF", &el_reco_SF);
     t_back->Branch("el_HLT_SF", &el_HLT_SF);
-    t_back->Branch("jet1_b_weight", &jet1_b_weight);
-    t_back->Branch("jet2_b_weight", &jet2_b_weight);
     t_back->Branch("nJets", &nJets, "nJets/I");
     t_back->Branch("jet1_flavour", &jet1_flavour, "jet1_flavour/I");
     t_back->Branch("jet2_flavour", &jet2_flavour, "jet2_flavour/I");
@@ -710,7 +704,6 @@ void ElEl_reco_mc_batch()
                                     jet2_eta = jet_Eta[j];
                                     jet2_cmva = jet_CMVA[j];
                                     jet2_flavour = jet_partonflavour[j];
-                                    jet2_b_weight = get_btag_weight(jet_Pt[j], jet_Eta[j],jet_partonflavour[j],btag_effs, b_reader);
                                     nJets =2;
                                     break;
                                 }
@@ -719,27 +712,12 @@ void ElEl_reco_mc_batch()
                                     jet1_eta = jet_Eta[j];
                                     jet1_cmva = jet_CMVA[j];
                                     jet1_flavour = jet_partonflavour[j];
-                                    jet1_b_weight = get_btag_weight(jet_Pt[j], jet_Eta[j],jet_partonflavour[j],btag_effs, b_reader);
                                     nJets = 1;
                                 }
                             }
                         }
 
 
-                        /*
-                           if(jet_size >=2) nJets = 2;
-                           else nJets = jet_size;
-                           if(jet_size >=1 && jet_Pt[0] > 20. && std::abs(jet_Eta[0]) < 2.4){
-
-
-                           } 
-                           if(jet_size >=2 && jet_Pt[1] > 20. && std::abs(jet_Eta[1]) < 2.4){
-                           jet2_pt = jet_Pt[1];
-                           jet2_cmva = jet_CMVA[1];
-                           jet2_flavour = jet_partonflavour[1];
-                           jet2_b_weight = get_btag_weight(jet_Pt[1], jet_Eta[1],jet_partonflavour[1],btag_effs, b_reader);
-                           }
-                           */
 
 
                         //get el cut SFs

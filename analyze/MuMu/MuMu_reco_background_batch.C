@@ -5,7 +5,11 @@
 #include <cstring>
 #include <algorithm>
 #include "TFile.h"
+#include "TRandom3.h"
+#include "TTree.h"
+#include "TLorentzVector.h"
 #include "../ScaleFactors.C"
+#include "../RoccoR.cc"
 
 #define GEN_SIZE 300
 #define MU_SIZE 100
@@ -16,8 +20,8 @@ const double root2 = sqrt(2);
 double Ebeam = 6500.;
 double Pbeam = sqrt(Ebeam*Ebeam - 0.938*0.938);
 
-char *filename("WT_files_aug29.txt");
-const TString fout_name("output_files/MuMu_WT_zpeak_may29.root");
+char *filename("dy_test.txt");
+const TString fout_name("output_files/MuMu_back_test.root");
 const double alpha = 0.05;
 const bool PRINT=false;
 
@@ -96,14 +100,17 @@ void MuMu_reco_background_batch()
     compute_norms(norms, &nFiles);
     printf("Done with normalizations \n\n\n");
 
+    printf("Getting RC \n");
+    RoccoR  rc("rcdata.2016.v3"); //directory path as input for now; initialize only once, contains all variations
+    TRandom *rand = new TRandom3();
+
     mu_SFs runs_bcdef, runs_gh;
     pileup_SFs pu_SFs;
-    BTag_readers b_reader;
-    BTag_effs btag_effs;
     el_SFs el_SF;
     //separate SFs for runs BCDEF and GH
-    setup_SFs(&runs_bcdef, &runs_gh, &b_reader, &btag_effs, &pu_SFs);
+    setup_SFs(&runs_bcdef, &runs_gh, &pu_SFs);
     printf("Retrieved Scale Factors \n\n");
+
 
     TTree *tout= new TTree("T_data", "Tree with reco events");
     tout->SetDirectory(0);
@@ -111,6 +118,7 @@ void MuMu_reco_background_batch()
              jet1_cmva, jet1_csv, jet2_cmva, jet2_csv;
     Double_t bcdef_HLT_SF, bcdef_iso_SF, bcdef_id_SF, gh_HLT_SF, gh_iso_SF, gh_id_SF, bcdef_trk_SF, gh_trk_SF,
              jet1_b_weight, jet2_b_weight, pu_SF;
+    Double_t mu1_pt_corr, mu2_pt_corr;
     Int_t nJets, jet1_flavour, jet2_flavour, pu_NtrueInt;
     Float_t met_pt;
     TLorentzVector mu_p, mu_m, cm, q1, q2;
@@ -119,6 +127,8 @@ void MuMu_reco_background_batch()
     tout->Branch("cost", &cost_r, "cost/D");
     tout->Branch("mu1_pt", &mu1_pt, "mu1_pt/D");
     tout->Branch("mu2_pt", &mu2_pt, "mu2_pt/D");
+    tout->Branch("mu1_pt_corr", &mu1_pt_corr, "mu1_pt_corr/D");
+    tout->Branch("mu2_pt_corr", &mu2_pt_corr, "mu2_pt_corr/D");
     tout->Branch("mu1_eta", &mu1_eta, "mu1_eta/D");
     tout->Branch("mu2_eta", &mu2_eta, "mu2_eta/D");
     tout->Branch("mu_m", "TLorentzVector", &mu_m);
@@ -141,8 +151,6 @@ void MuMu_reco_background_batch()
     tout->Branch("gh_id_SF", &gh_id_SF);
     tout->Branch("gh_trk_SF", &gh_trk_SF);
     tout->Branch("bcdef_trk_SF", &bcdef_trk_SF);
-    tout->Branch("jet1_b_weight", &jet1_b_weight);
-    tout->Branch("jet2_b_weight", &jet2_b_weight);
     tout->Branch("nJets", &nJets, "nJets/I");
     tout->Branch("jet1_flavour", &jet1_flavour, "jet1_flavour/I");
     tout->Branch("jet2_flavour", &jet2_flavour, "jet2_flavour/I");
@@ -197,7 +205,8 @@ void MuMu_reco_background_batch()
 
             Float_t mu_Pt[MU_SIZE], mu_Eta[MU_SIZE], mu_Phi[MU_SIZE], mu_E[MU_SIZE], 
                     mu_Charge[MU_SIZE], mu_IsTightMuon[MU_SIZE];
-            Float_t mu_SumChargedHadronPt[MU_SIZE], mu_SumNeutralHadronPt[MU_SIZE], mu_SumPUPt[MU_SIZE], mu_SumPhotonPt[MU_SIZE];
+            Float_t mu_SumChargedHadronPt[MU_SIZE], mu_SumNeutralHadronPt[MU_SIZE], mu_SumPUPt[MU_SIZE], mu_SumPhotonPt[MU_SIZE],
+                    mu_NumberTrackerLayers[MU_SIZE];
 
 
             Float_t jet_Pt[JET_SIZE], jet_Eta[JET_SIZE], jet_Phi[JET_SIZE], jet_E[JET_SIZE],
@@ -218,6 +227,7 @@ void MuMu_reco_background_batch()
             t1->SetBranchAddress("mu_SumNeutralHadronPt", &mu_SumNeutralHadronPt);
             t1->SetBranchAddress("mu_SumPUPt", &mu_SumPUPt);
             t1->SetBranchAddress("mu_SumPhotonPt", &mu_SumPhotonPt);
+            t1->SetBranchAddress("mu_NumberTrackerLayers", &mu_NumberTrackerLayers);
 
             if(data_2016){
                 t1->SetBranchAddress("jetAK4CHS_size", &jet_size);
@@ -274,13 +284,15 @@ void MuMu_reco_background_batch()
                     float tight_iso = 0.15;
                     float loose_iso = 0.25;
                     //only want events with 2 oppositely charged muons
+                    double mu0_mcSF = rc.kScaleAndSmearMC(1, mu_Pt[0], mu_Eta[0], mu_Phi[0], (int) mu_NumberTrackerLayers[0], rand->Rndm(), rand->Rndm(), 0, 0);
+                    double mu1_mcSF = rc.kScaleAndSmearMC(-1, mu_Pt[1], mu_Eta[1], mu_Phi[1], (int) mu_NumberTrackerLayers[1], rand->Rndm(), rand->Rndm(), 0, 0);
                     if(mu_Charge[0] >0){
-                        mu_p.SetPtEtaPhiE(mu_Pt[0], mu_Eta[0], mu_Phi[0], mu_E[0]);
-                        mu_m.SetPtEtaPhiE(mu_Pt[1], mu_Eta[1], mu_Phi[1], mu_E[1]);
+                        mu_p.SetPtEtaPhiE(mu0_mcSF * mu_Pt[0], mu_Eta[0], mu_Phi[0], mu_E[0]);
+                        mu_m.SetPtEtaPhiE(mu1_mcSF * mu_Pt[1], mu_Eta[1], mu_Phi[1], mu_E[1]);
                     }
                     else{
-                        mu_m.SetPtEtaPhiE(mu_Pt[0], mu_Eta[0], mu_Phi[0], mu_E[0]);
-                        mu_p.SetPtEtaPhiE(mu_Pt[1], mu_Eta[1], mu_Phi[1], mu_E[1]);
+                        mu_m.SetPtEtaPhiE(mu0_mcSF * mu_Pt[0], mu_Eta[0], mu_Phi[0], mu_E[0]);
+                        mu_p.SetPtEtaPhiE(mu1_mcSF * mu_Pt[1], mu_Eta[1], mu_Phi[1], mu_E[1]);
                     }
 
                     cm = mu_p + mu_m;
@@ -332,7 +344,6 @@ void MuMu_reco_background_batch()
                                     jet2_eta = jet_Eta[j];
                                     jet2_cmva = jet_CMVA[j];
                                     jet2_flavour = jet_partonflavour[j];
-                                    jet2_b_weight = get_btag_weight(jet_Pt[j], jet_Eta[j],jet_partonflavour[j],btag_effs, b_reader);
                                     nJets =2;
                                     break;
                                 }
@@ -341,7 +352,6 @@ void MuMu_reco_background_batch()
                                     jet1_eta = jet_Eta[j];
                                     jet1_cmva = jet_CMVA[j];
                                     jet1_flavour = jet_partonflavour[j];
-                                    jet1_b_weight = get_btag_weight(jet_Pt[j], jet_Eta[j],jet_partonflavour[j],btag_effs, b_reader);
                                     nJets = 1;
                                 }
                             }
@@ -378,6 +388,8 @@ void MuMu_reco_background_batch()
 
                         pu_SF = get_pileup_SF(pu_NtrueInt, pu_SFs.pileup_ratio);
 
+                        mu1_pt_corr =mu1_pt *mu0_mcSF;
+                        mu2_pt_corr =mu2_pt * mu1_mcSF;
 
                         tout->Fill();
                         nEvents++;
