@@ -27,7 +27,7 @@
 
 
 
-const TString fout_name("AFB_fit/fit_results/m_bins/combined_fit_test_june08.root");
+const TString fout_name("AFB_fit/fit_results/m_bins/combined_fit_test_june20.root");
 
 
 

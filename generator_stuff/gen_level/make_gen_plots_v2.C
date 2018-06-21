@@ -6,12 +6,27 @@ void fill_gen_hist(TTree *t, TH1F *h_m, TH1F *h_pt){
     GenLoader *g = new GenLoader(t);
     bool got_lep1, got_lep2;
     TLorentzVector lep1, lep2;
+    int nEvents=0;
+    int nMiss = 0;
+    int nExtra = 0;
+    int ELECTRON = 11; 
+    int MUON = 13;
+    int PHOTON = 22;
+    int Z=23;
+    int GLUON = 21;
+    int TAU = 15;
+    int PROTON = 2212;
     for(int i =0; i<size; i++){
         got_lep1 = got_lep2 = false;
         g->load(i);
+        //printf("event %i \n", i);
         for (int j=0; j<g->fGens->GetEntriesFast(); ++j) {
             TGenParticle *p1 = (TGenParticle*)((*(g->fGens))[j]);
-            if((abs(p1->pdgId) == 11 || abs(p1->pdgId) == 13) && p1->status == 23) {
+            if(p1->parent < 0) continue;
+            TGenParticle *par = (TGenParticle*)((*(g->fGens))[p1->parent]);
+            if((abs(p1->pdgId) == 11 || abs(p1->pdgId) == 13  || abs(p1->pdgId) == 15) &&
+                    ((par->pdgId == PHOTON || par->pdgId==Z) || (p1->status == 23 && par->pdgId != PROTON))) {
+                //printf("ID = %i, parID = %i, parStatus = %i , status = %i \n", p1->pdgId, par->pdgId, par->status, p1->status);
                 if(!got_lep1){
                     got_lep1 = true;
                     lep1.SetPtEtaPhiM(p1->pt, p1->eta, p1->phi, p1->mass);
@@ -20,19 +35,28 @@ void fill_gen_hist(TTree *t, TH1F *h_m, TH1F *h_pt){
                     got_lep2 = true;
                     lep2.SetPtEtaPhiM(p1->pt, p1->eta, p1->phi, p1->mass);
                 }
-                else{printf("Extra lepton! \n");}
+                else{
+                    //printf("Extra lepton! \n");
+                    nExtra++;
+                }
             }
         }
         if(got_lep1 && got_lep2){
             TLorentzVector cm = lep1 + lep2;
-            if(cm.M() > 100.){
+            if(cm.M() > 100. && cm.M() < 200.){
+                nEvents++;
                 h_m->Fill(cm.M(), g->fGenInfo->weight);
                 h_pt->Fill(cm.Pt(), g->fGenInfo->weight);
             }
         }
+        else{
+            nMiss++;
+            //printf("Didn't get leps \n");
+        }
     }
     h_m->Scale(1./h_m->Integral());
     h_pt->Scale(1./h_pt->Integral());
+    printf("nEvents = %i nMiss  = %i nExtra = %i \n", nEvents, nMiss, nExtra);
     return;
 }
 
@@ -106,17 +130,17 @@ void make_ratio_plot(char title[80], TH1F* h1, char h1_label[80], TH1F* h2, char
 
 void make_gen_plots_v2(){
     gStyle->SetOptStat(0);
-    TFile *f_unbinned = TFile::Open("DY_M50_gen.root");
+    TFile *f_unbinned = TFile::Open("DY_M50_gen_v2.root");
     TTree *t_unbinned = (TTree *)f_unbinned->Get("Events");
 
     TFile *f_binned = TFile::Open("DY_M100_gen.root");
     TTree *t_binned = (TTree *)f_binned->Get("Events");
 
     TH1F *h_unbin_m = new TH1F("h_unbin_m", "", 20, 100, 200);
-    TH1F *h_unbin_pt = new TH1F("h_unbin_pt", "", 40, 0, 400);
+    TH1F *h_unbin_pt = new TH1F("h_unbin_pt", "", 20, 0, 400);
 
     TH1F *h_bin_m = new TH1F("h_bin_m", "", 20, 100, 200);
-    TH1F *h_bin_pt = new TH1F("h_bin_pt", "", 40, 0, 400);
+    TH1F *h_bin_pt = new TH1F("h_bin_pt", "", 20, 0, 400);
     fill_gen_hist(t_unbinned, h_unbin_m, h_unbin_pt);
     fill_gen_hist(t_binned, h_bin_m, h_bin_pt);
 

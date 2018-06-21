@@ -22,6 +22,8 @@
 #include "TVector3.h"
 #include "TFitter.h"
 #include "TSystem.h"
+#include "TH2D.h"
+#include "TLegend.h"
 #include "Math/Functor.h"
 #include "../../analyze/TemplateMaker.C"
 #include "../tdrstyle.C"
@@ -34,8 +36,10 @@ TFile *f_data, *f_mc, *f_mc_nosig, *f_ttbar, *f_QCD, *f_WJets, *f_WJets_mc, *f_Q
 TTree *t_data, *t_mc, *t_mc_nosig, *t_ttbar, *t_QCD, *t_WJets, *t_WJets_mc, *t_QCD_mc, *t_diboson, *t_wt;
 
 void make_m_cost_pt_gen_hist(TTree *t1, TH1F *h_m, TH1F *h_cost, TH1F *h_pt){
+    printf("making gen_Hist \n");
     //read event data
     Long64_t size  =  t1->GetEntries();
+    printf("Size is %i \n", (int) size);
     Double_t m, xF, cost, mu1_pt, mu2_pt, jet1_cmva, jet2_cmva, gen_weight, cost_st;
     Double_t bcdef_HLT_SF, bcdef_iso_SF, bcdef_id_SF;
     Double_t gh_HLT_SF, gh_iso_SF, gh_id_SF, el_id_SF, el_reco_SF, el_HLT_SF;
@@ -61,21 +65,11 @@ void make_m_cost_pt_gen_hist(TTree *t1, TH1F *h_m, TH1F *h_cost, TH1F *h_pt){
     t1->SetBranchAddress("jet2_pt", &jet2_pt);
     t1->SetBranchAddress("nJets", &nJets);
     t1->SetBranchAddress("gen_weight", &gen_weight);
-    t1->SetBranchAddress("jet1_b_weight", &jet1_b_weight);
-    t1->SetBranchAddress("jet2_b_weight", &jet2_b_weight);
-    t1->SetBranchAddress("pu_SF", &pu_SF);
     t1->SetBranchAddress("gen_mu_p", &gen_mu_p);
     t1->SetBranchAddress("gen_mu_m", &gen_mu_m);
-    t1->SetBranchAddress("bcdef_HLT_SF", &bcdef_HLT_SF);
-    t1->SetBranchAddress("bcdef_iso_SF", &bcdef_iso_SF);
-    t1->SetBranchAddress("bcdef_id_SF", &bcdef_id_SF);
-    t1->SetBranchAddress("gh_HLT_SF", &gh_HLT_SF);
-    t1->SetBranchAddress("gh_iso_SF", &gh_iso_SF);
-    t1->SetBranchAddress("gh_id_SF", &gh_id_SF);
-    t1->SetBranchAddress("gh_trk_SF", &gh_trk_SF);
-    t1->SetBranchAddress("bcdef_trk_SF", &bcdef_trk_SF);
     const double root2 = sqrt(2);
     for (int i=0; i<size; i++) {
+        //printf("%i \n", i);
         t1->GetEntry(i);
         bool no_bjets = has_no_bjets(nJets, jet1_pt, jet2_pt, jet1_cmva, jet2_cmva);
 
@@ -95,17 +89,7 @@ void make_m_cost_pt_gen_hist(TTree *t1, TH1F *h_m, TH1F *h_cost, TH1F *h_pt){
             if(cost > 0) gen_cost = fabs(gen_cost);
             else gen_cost = -fabs(gen_cost);
 
-            Double_t bcdef_weight = gen_weight *pu_SF * bcdef_HLT_SF * bcdef_iso_SF * bcdef_id_SF * bcdef_trk_SF;
-            Double_t gh_weight = gen_weight *pu_SF * gh_HLT_SF * gh_iso_SF * gh_id_SF * gh_trk_SF;
-            if (nJets >= 1){
-                bcdef_weight *= jet1_b_weight;
-                gh_weight *= jet1_b_weight;
-            }
-            if (nJets >= 2){
-                bcdef_weight *= jet2_b_weight;
-                gh_weight *= jet2_b_weight;
-            }
-            double final_weight = 1000.*(bcdef_weight*bcdef_lumi + gh_weight*gh_lumi);
+            double final_weight = 1000.*tot_lumi*gen_weight;
             //Double_t weight = gen_weight;
             h_m->Fill(m,final_weight);
             h_cost->Fill(gen_cost, final_weight);
@@ -209,7 +193,7 @@ void fill_gen_hist(TTree *t, TH1F *h_m, TH1F *h_pt){
         }
         if(got_lep1 && got_lep2){
             TLorentzVector cm = lep1 + lep2;
-            if(cm.M() > 100.){
+            if(cm.M() > 150.){
                 h_m->Fill(cm.M(), g->fGenInfo->weight);
                 h_pt->Fill(cm.Pt(), g->fGenInfo->weight);
             }
@@ -221,21 +205,7 @@ void fill_gen_hist(TTree *t, TH1F *h_m, TH1F *h_pt){
 }
 
 void draw_4way_cmp(){
-    TFile *f_unbinned = TFile::Open("../generator_stuff/gen_level/DY_M50_gen.root");
-    TTree *t_unbinned = (TTree *)f_unbinned->Get("Events");
-
-    TFile *f_binned = TFile::Open("../generator_stuff/gen_level/DY_M100_gen.root");
-    TTree *t_binned = (TTree *)f_binned->Get("Events");
-
-    TH1F *h_unbin_m = new TH1F("h_unbin_m", "", 20, 100, 200);
-    TH1F *h_unbin_pt = new TH1F("h_unbin_pt", "", 25, 0, 400);
-
-    TH1F *h_bin_m = new TH1F("h_bin_m", "", 20, 100, 200);
-    TH1F *h_bin_pt = new TH1F("h_bin_pt", "", 25, 0, 400);
-    fill_gen_hist(t_unbinned, h_unbin_m, h_unbin_pt);
-    fill_gen_hist(t_binned, h_bin_m, h_bin_pt);
-
-    TFile *f_mc_unbinned = TFile::Open("../analyze/output_files/MuMu_DY_zpeak_unbinned_june14.root");
+    TFile *f_mc_unbinned = TFile::Open("../analyze/output_files/MuMu_DY_april9_unbinned.root");
     TTree *t_mc_unbinned = (TTree *)f_mc_unbinned->Get("T_data");
 
     TFile *f_mc_binned = TFile::Open("../analyze/output_files/MuMu_DY_zpeak_june14.root");
@@ -247,12 +217,33 @@ void draw_4way_cmp(){
 
     TH1F *binned_m = new TH1F("bin_m", "Binned MC", 40, 150.,1000.);
     TH1F *binned_cost = new TH1F("bin_cost", "Binned MC", 40, -1.,1.);
-    TH1F *binned_pt = new TH1F("bin_pt", "Binned MC", 25, 0.,400.);
+    TH1F *binned_pt = new TH1F("bin_pt", "Binned MC", 20, 0.,400.);
 
 
     TH1F *unbinned_m = new TH1F("unbin_m", "unbinned MC", 40, 150.,1000.);
     TH1F *unbinned_cost = new TH1F("unbin_cost", "unbinned MC", 40, -1.,1.);
-    TH1F *unbinned_pt = new TH1F("unbin_pt", "unbinned MC", 25, 0.,400.);
+    TH1F *unbinned_pt = new TH1F("unbin_pt", "unbinned MC", 20, 0.,400.);
+
+    printf("making full hists \n");
+    make_m_cost_pt_gen_hist(t_mc_binned, binned_m, binned_cost, binned_pt);
+    make_m_cost_pt_gen_hist(t_mc_unbinned, unbinned_m, unbinned_cost, unbinned_pt);
+    printf("bakc from hists \n");
+    binned_pt->Scale(1./binned_pt->Integral());
+    unbinned_pt->Scale(1./unbinned_pt->Integral());
+    TFile *f_unbinned = TFile::Open("../generator_stuff/gen_level/DY_M50_gen.root");
+    TTree *t_unbinned = (TTree *)f_unbinned->Get("Events");
+
+    TFile *f_binned = TFile::Open("../generator_stuff/gen_level/DY_M100_gen.root");
+    TTree *t_binned = (TTree *)f_binned->Get("Events");
+
+    TH1F *h_unbin_m = new TH1F("h_unbin_m", "", 20, 100, 200);
+    TH1F *h_unbin_pt = new TH1F("h_unbin_pt", "", 20, 0, 400);
+
+    printf("making gen hists \n");
+    TH1F *h_bin_m = new TH1F("h_bin_m", "", 20, 100, 200);
+    TH1F *h_bin_pt = new TH1F("h_bin_pt", "", 20, 0, 400);
+    fill_gen_hist(t_unbinned, h_unbin_m, h_unbin_pt);
+    fill_gen_hist(t_binned, h_bin_m, h_bin_pt);
 
 
     binned_pt->SetLineColor(kRed);
@@ -265,12 +256,9 @@ void draw_4way_cmp(){
     h_unbin_pt->SetLineColor(kBlack);
     h_unbin_pt->SetLineWidth(3);
     
-    make_m_cost_pt_gen_hist(t_mc_binned, binned_m, binned_cost, binned_pt);
-    make_m_cost_pt_gen_hist(t_mc_unbinned, unbinned_m, unbinned_cost, unbinned_pt);
-    binned_pt->Scale(1./binned_pt->Integral());
-    unbinned_pt->Scale(1./unbinned_m->Integral());
 
 
+    printf("drawing\n");
     TCanvas *c = new TCanvas("c_m", "Histograms", 200, 10, 900, 700);
     c->SetLogy();
     binned_pt->Draw("hist E");
@@ -283,7 +271,7 @@ void draw_4way_cmp(){
 
 
     gStyle->SetLegendBorderSize(0);
-    TLegend *leg1 = new TLegend(0.25, 0.05, 0.4, 0.2);
+    TLegend *leg1 = new TLegend(0.25, 0.2, 0.4, 0.4);
     leg1->AddEntry(unbinned_pt, "DY-M50 FULL", "l");
     leg1->AddEntry(binned_pt, "DY-M100 FULL", "l");
     leg1->AddEntry(h_bin_pt, "DY-M50 GEN", "l");
@@ -293,6 +281,26 @@ void draw_4way_cmp(){
     c->Print("4way_cmp.pdf");
 
 
+    TCanvas *c2 = new TCanvas("c_m", "Histograms", 200, 10, 900, 700);
+    c2->SetLogy();
+    binned_m->Draw("hist E");
+    //m_stack->SetMaximum(65000);
+    gStyle->SetEndErrorSize(4);
+    unbinned_m->Draw("hist E same");
+    h_unbin_m->Draw("hist E same");
+    h_bin_m->Draw("hist E same");
+    h_unbin_m->Draw("hist E same");
+
+
+    gStyle->SetLegendBorderSize(0);
+    TLegend *leg2 = new TLegend(0.25, 0.2, 0.4, 0.4);
+    leg2->AddEntry(unbinned_pt, "DY-M50 FULL", "l");
+    leg2->AddEntry(binned_pt, "DY-M100 FULL", "l");
+    leg2->AddEntry(h_bin_pt, "DY-M50 GEN", "l");
+    leg2->AddEntry(h_unbin_pt, "DY-M100 GEN", "l");
+    leg2->Draw();
+
+    c2->Print("4way_m_cmp.pdf");
 
 
 
