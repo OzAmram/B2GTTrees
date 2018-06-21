@@ -296,16 +296,18 @@ void draw_gen_cmp(){
 
     binned_m->SetLineColor(kBlue);
     binned_m->SetLineWidth(3);
+    binned_m_rw->SetLineColor(kBlue);
+    binned_m_rw->SetLineWidth(3);
     unbinned_m->SetLineColor(kRed);
     unbinned_m->SetLineWidth(3);
 
-    binned_cost->SetLineColor(kBlue);
-    binned_cost->SetLineWidth(3);
+    binned_cost_rw->SetLineColor(kBlue);
+    binned_cost_rw->SetLineWidth(3);
     unbinned_cost->SetLineColor(kRed);
     unbinned_cost->SetLineWidth(3);
 
-    binned_pt->SetLineColor(kBlue);
-    binned_pt->SetLineWidth(3);
+    binned_pt_rw->SetLineColor(kBlue);
+    binned_pt_rw->SetLineWidth(3);
     unbinned_pt->SetLineColor(kRed);
     unbinned_pt->SetLineWidth(3);
     
@@ -319,9 +321,9 @@ void draw_gen_cmp(){
 
 
 
-    make_ratio_plot("MuMu_gen_m_cmp.pdf", binned_m, "Binned MC",unbinned_m, "Unbinned MC", "Binned/Unbinned", "M (GeV)", true);
-    make_ratio_plot("MuMu_gen_cost_cmp.pdf", binned_cost, "Binned MC",unbinned_cost, "Unbinned MC", "Binned/Unbinned", "Cos(#theta_{r})", false);
-    make_ratio_plot("MuMu_gen_pt_cmp.pdf", binned_pt, "Binned MC",unbinned_pt, "Unbinned MC", "Binned/Unbinned", "Dilepton Pt (GeV)", true);
+    make_ratio_plot("MuMu_gen_m_rw_cmp.pdf", binned_m_rw, "Binned MC",unbinned_m, "Unbinned MC", "Binned/Unbinned", "M (GeV)", true);
+    make_ratio_plot("MuMu_gen_cost_rw_cmp.pdf", binned_cost_rw, "Binned MC",unbinned_cost, "Unbinned MC", "Binned/Unbinned", "Cos(#theta_{r})", false);
+    make_ratio_plot("MuMu_gen_pt_rw_cmp.pdf", binned_pt_rw, "Binned MC",unbinned_pt, "Unbinned MC", "Binned/Unbinned", "Dilepton Pt (GeV)", true);
 
 
 

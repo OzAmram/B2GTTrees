@@ -98,11 +98,9 @@ void ElEl_reco_background_batch()
 
     mu_SFs runs_bcdef, runs_gh;
     pileup_SFs pu_SFs;
-    BTag_readers b_reader;
-    BTag_effs btag_effs;
     el_SFs el_SF;
     //separate SFs for runs BCDEF and GH
-    setup_SFs(&runs_bcdef, &runs_gh, &b_reader, &btag_effs, &pu_SFs);
+    setup_SFs(&runs_bcdef, &runs_gh, &pu_SFs);
     setup_el_SF(&el_SF);
     printf("Retrieved Scale Factors \n\n");
 
@@ -136,8 +134,6 @@ void ElEl_reco_background_batch()
     tout->Branch("el_id_SF", &el_id_SF);
     tout->Branch("el_reco_SF", &el_reco_SF);
     tout->Branch("el_HLT_SF", &el_HLT_SF);
-    tout->Branch("jet1_b_weight", &jet1_b_weight);
-    tout->Branch("jet2_b_weight", &jet2_b_weight);
     tout->Branch("nJets", &nJets, "nJets/I");
     tout->Branch("jet1_flavour", &jet1_flavour, "jet1_flavour/I");
     tout->Branch("jet2_flavour", &jet2_flavour, "jet2_flavour/I");
@@ -315,7 +311,6 @@ void ElEl_reco_background_batch()
                                     jet2_eta = jet_Eta[j];
                                     jet2_cmva = jet_CMVA[j];
                                     jet2_flavour = jet_partonflavour[j];
-                                    jet2_b_weight = get_btag_weight(jet_Pt[j], jet_Eta[j],jet_partonflavour[j],btag_effs, b_reader);
                                     nJets =2;
                                     break;
                                 }
@@ -324,7 +319,6 @@ void ElEl_reco_background_batch()
                                     jet1_eta = jet_Eta[j];
                                     jet1_cmva = jet_CMVA[j];
                                     jet1_flavour = jet_partonflavour[j];
-                                    jet1_b_weight = get_btag_weight(jet_Pt[j], jet_Eta[j],jet_partonflavour[j],btag_effs, b_reader);
                                     nJets = 1;
                                 }
                             }

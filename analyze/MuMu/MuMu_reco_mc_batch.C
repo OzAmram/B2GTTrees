@@ -6,7 +6,10 @@
 #include <algorithm>
 #include "TFile.h"
 #include "TRandom3.h"
+#include "TTree.h"
+#include "TLorentzVector.h"
 #include "../ScaleFactors.C"
+#include "../RoccoR.cc"
 
 #define GEN_SIZE 4000
 #define MU_SIZE 100
@@ -17,8 +20,8 @@ const double root2 = sqrt(2);
 double Ebeam = 6500.;
 double Pbeam = sqrt(Ebeam*Ebeam - 0.938*0.938);
 
-char *filename("DY_files_unbinned_oct23.txt");
-const TString fout_name("output_files/MuMu_DY_zpeak_unbinned_june14.root");
+char *filename("dy_test.txt");
+const TString fout_name("output_files/MuMu_DY_test_june20.root");
 const bool PRINT=false;
 
 const bool data_2016 = true;
@@ -101,14 +104,13 @@ void MuMu_reco_mc_batch()
 
     mu_SFs runs_bcdef, runs_gh;
     pileup_SFs pu_SFs;
-    BTag_readers b_reader;
-    BTag_effs btag_effs;
-    //RoccoR  rc("rcdata.2016.v3"); //directory path as input for now; initialize only once, contains all variations
+    printf("Getting RC \n");
+    RoccoR  rc("rcdata.2016.v3"); //directory path as input for now; initialize only once, contains all variations
     TRandom *rand = new TRandom3();
 
 
     //separate SFs for runs BCDEF and GH
-    setup_SFs(&runs_bcdef, &runs_gh, &b_reader, &btag_effs, &pu_SFs);
+    setup_SFs(&runs_bcdef, &runs_gh, &pu_SFs);
     printf("Retrieved Scale Factors \n\n");
 
 
@@ -117,6 +119,7 @@ void MuMu_reco_mc_batch()
     //t_signal->SetDirectory(0);
     Double_t cm_m, xF, cost_r, cost_st, mu1_pt, mu2_pt, mu1_eta, mu2_eta, jet1_pt, jet2_pt, jet1_eta, jet2_eta, deltaC, 
              gen_weight, jet1_csv, jet1_cmva, jet2_csv, jet2_cmva, gen_m;
+    Double_t mu1_pt_corr, mu2_pt_corr;
     Double_t bcdef_HLT_SF, bcdef_iso_SF, bcdef_id_SF, gh_HLT_SF, gh_iso_SF, gh_id_SF,
              bcdef_trk_SF, gh_trk_SF,
              jet1_b_weight, jet2_b_weight, pu_SF;
@@ -133,6 +136,8 @@ void MuMu_reco_mc_batch()
     t_signal->Branch("cost", &cost_r, "cost/D");
     t_signal->Branch("cost_st", &cost_st, "cost_st/D");
     t_signal->Branch("mu1_pt", &mu1_pt, "mu1_pt/D");
+    t_signal->Branch("mu1_pt_corr", &mu1_pt_corr, "mu1_pt_corr/D");
+    t_signal->Branch("mu2_pt_corr", &mu2_pt_corr, "mu2_pt_corr/D");
     t_signal->Branch("mu2_pt", &mu2_pt, "mu2_pt/D");
     t_signal->Branch("mu1_eta", &mu1_eta, "mu1_eta/D");
     t_signal->Branch("mu2_eta", &mu2_eta, "mu2_eta/D");
@@ -158,8 +163,6 @@ void MuMu_reco_mc_batch()
     t_signal->Branch("gh_iso_SF", &gh_iso_SF);
     t_signal->Branch("gh_id_SF", &gh_id_SF);
     t_signal->Branch("gh_trk_SF", &gh_trk_SF);
-    t_signal->Branch("jet1_b_weight", &jet1_b_weight);
-    t_signal->Branch("jet2_b_weight", &jet2_b_weight);
     t_signal->Branch("mu_R_up", &mu_R_up);
     t_signal->Branch("mu_R_down", &mu_R_down);
     t_signal->Branch("mu_F_up", &mu_F_up);
@@ -185,6 +188,8 @@ void MuMu_reco_mc_batch()
     t_back->Branch("cost_st", &cost_st, "cost_st/D");
     t_back->Branch("mu1_pt", &mu1_pt, "mu1_pt/D");
     t_back->Branch("mu2_pt", &mu2_pt, "mu2_pt/D");
+    t_back->Branch("mu1_pt_corr", &mu1_pt_corr, "mu1_pt_corr/D");
+    t_back->Branch("mu2_pt_corr", &mu2_pt_corr, "mu2_pt_corr/D");
     t_back->Branch("mu1_eta", &mu1_pt, "mu1_eta/D");
     t_back->Branch("mu2_eta", &mu2_pt, "mu2_eta/D");
     t_back->Branch("mu_m", "TLorentzVector", &mu_m);
@@ -209,8 +214,6 @@ void MuMu_reco_mc_batch()
     t_back->Branch("gh_iso_SF", &gh_iso_SF);
     t_back->Branch("gh_id_SF", &gh_id_SF);
     t_back->Branch("gh_trk_SF", &gh_trk_SF);
-    t_back->Branch("jet1_b_weight", &jet1_b_weight);
-    t_back->Branch("jet2_b_weight", &jet2_b_weight);
     t_back->Branch("nJets", &nJets, "nJets/I");
     t_back->Branch("jet1_flavour", &jet1_flavour, "jet1_flavour/I");
     t_back->Branch("jet2_flavour", &jet2_flavour, "jet2_flavour/I");
@@ -286,6 +289,7 @@ void MuMu_reco_mc_batch()
                     mu_NumberTrackerLayers[MU_SIZE];
 
 
+
             Float_t jet_Pt[JET_SIZE], jet_Eta[JET_SIZE], jet_Phi[JET_SIZE], jet_E[JET_SIZE],
                     jet_CSV[JET_SIZE], jet_CMVA[JET_SIZE], jet_partonflavour[JET_SIZE];
 
@@ -305,7 +309,7 @@ void MuMu_reco_mc_batch()
             t1->SetBranchAddress("mu_SumNeutralHadronPt", &mu_SumNeutralHadronPt);
             t1->SetBranchAddress("mu_SumPUPt", &mu_SumPUPt);
             t1->SetBranchAddress("mu_SumPhotonPt", &mu_SumPhotonPt);
-            //t1->SetBranchAddress("mu_NumberTrackerLayers", &mu_NumberTrackerLayers);
+            t1->SetBranchAddress("mu_NumberTrackerLayers", &mu_NumberTrackerLayers);
 
             t1->SetBranchAddress("jetAK4CHS_size", &jet_size);
             t1->SetBranchAddress("jetAK4CHS_Pt", &jet_Pt);
@@ -371,25 +375,17 @@ void MuMu_reco_mc_batch()
                     float loose_iso = 0.25;
                     nNonIso++;
                     //only want events with 2 oppositely charged muons
-                    double mu_p_mcSF, mu_m_mcSF;
+                    double mu0_mcSF = rc.kScaleAndSmearMC((int) mu_Charge[0], mu_Pt[0], mu_Eta[0], mu_Phi[0], (int) mu_NumberTrackerLayers[0], rand->Rndm(), rand->Rndm(), 0, 0);
+                    double mu1_mcSF = rc.kScaleAndSmearMC((int) mu_Charge[0], mu_Pt[1], mu_Eta[1], mu_Phi[1], (int) mu_NumberTrackerLayers[1], rand->Rndm(), rand->Rndm(), 0, 0);
                     if(mu_Charge[0] >0){
-                        mu_p.SetPtEtaPhiE(mu_Pt[0], mu_Eta[0], mu_Phi[0], mu_E[0]);
-                        mu_m.SetPtEtaPhiE(mu_Pt[1], mu_Eta[1], mu_Phi[1], mu_E[1]);
-                        //mu_p_mcSF = rc.kScaleAndSmearMC(1, mu_Pt[0], mu_Eta[0], mu_Phi[0], 5, rand->Rndm(), rand->Rndm(), 0, 0);
-                        //mu_m_mcSF = rc.kScaleAndSmearMC(-1, mu_Pt[1], mu_Eta[1], mu_Phi[1], 5, rand->Rndm(), rand->Rndm(), 0, 0);
+                        mu_p.SetPtEtaPhiE(mu0_mcSF * mu_Pt[0], mu_Eta[0], mu_Phi[0], mu_E[0]);
+                        mu_m.SetPtEtaPhiE(mu1_mcSF * mu_Pt[1], mu_Eta[1], mu_Phi[1], mu_E[1]);
                     }
                     else{
-                        mu_m.SetPtEtaPhiE(mu_Pt[0], mu_Eta[0], mu_Phi[0], mu_E[0]);
-                        mu_p.SetPtEtaPhiE(mu_Pt[1], mu_Eta[1], mu_Phi[1], mu_E[1]);
-                        //mu_m_mcSF = rc.kScaleAndSmearMC(-1, mu_Pt[0], mu_Eta[0], mu_Phi[0], 5, rand->Rndm(), rand->Rndm(), 0, 0);
-                        //mu_p_mcSF = rc.kScaleAndSmearMC(1, mu_Pt[1], mu_Eta[1], mu_Phi[1], 5, rand->Rndm(), rand->Rndm(), 0, 0);
+                        mu_m.SetPtEtaPhiE(mu0_mcSF * mu_Pt[0], mu_Eta[0], mu_Phi[0], mu_E[0]);
+                        mu_p.SetPtEtaPhiE(mu1_mcSF * mu_Pt[1], mu_Eta[1], mu_Phi[1], mu_E[1]);
                     }
-                    //printf("charges are %1f %1f \n", mu_Charge[0], mu_Charge[1]);
-                    //printf("(pt, eta, phi,E) = %4.2f %4.2f %4.2f %4.2f \n", mu_Pt[0], mu_Eta[0], mu_Phi[0], mu_E[0]);
-                    //printf("(pt, eta, phi,E) = %4.2f %4.2f %4.2f %4.2f \n", mu_Pt[1], mu_Eta[1], mu_Phi[1], mu_E[1]);
-                    //mu_p.Print();
-                    //mu_m.Print();
-                    //printf ("Momentum SFs are %.3f %.3f for Pts %.0f %.0f \n", mu_p_mcSF, mu_m_mcSF, mu_p.Pt(), mu_m.Pt());
+                    //printf ("Momentum SFs are %.3f %.3f for Pts %.0f %.0f \n", mu0_mcSF, mu1_mcSF, mu_p.Pt(), mu_m.Pt());
                    
 
 
@@ -700,6 +696,7 @@ void MuMu_reco_mc_batch()
                         else cost_r = cost;
 
 
+                        //Don't use Rocc corrs. to get SF's
                         gen_weight = evt_Gen_Weight * normalization;
                         mu1_pt = mu_Pt[0];
                         mu2_pt = mu_Pt[1];
@@ -715,7 +712,6 @@ void MuMu_reco_mc_batch()
                                     jet2_eta = jet_Eta[j];
                                     jet2_cmva = jet_CMVA[j];
                                     jet2_flavour = jet_partonflavour[j];
-                                    jet2_b_weight = get_btag_weight(jet_Pt[j], jet_Eta[j],jet_partonflavour[j],btag_effs, b_reader);
                                     nJets =2;
                                     break;
                                 }
@@ -724,7 +720,6 @@ void MuMu_reco_mc_batch()
                                     jet1_eta = jet_Eta[j];
                                     jet1_cmva = jet_CMVA[j];
                                     jet1_flavour = jet_partonflavour[j];
-                                    jet1_b_weight = get_btag_weight(jet_Pt[j], jet_Eta[j],jet_partonflavour[j],btag_effs, b_reader);
                                     nJets = 1;
                                 }
                             }
@@ -747,6 +742,9 @@ void MuMu_reco_mc_batch()
 
                         bcdef_trk_SF = get_Mu_trk_SF(abs(mu1_eta), runs_bcdef.TRK_SF) * get_Mu_trk_SF(abs(mu2_eta), runs_bcdef.TRK_SF);
                         gh_trk_SF = get_Mu_trk_SF(abs(mu1_eta), runs_gh.TRK_SF) * get_Mu_trk_SF(abs(mu2_eta), runs_gh.TRK_SF);
+
+                        mu1_pt_corr =mu1_pt *mu0_mcSF;
+                        mu2_pt_corr =mu2_pt * mu1_mcSF;
 
 
                         mu_R_up = scale_Weights[2];
@@ -831,4 +829,9 @@ void MuMu_reco_mc_batch()
 
 
     return;
+}
+
+int main(){
+    MuMu_reco_mc_batch();
+    return 0;
 }
