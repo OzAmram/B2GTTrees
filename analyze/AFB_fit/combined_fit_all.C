@@ -20,8 +20,8 @@
 #include "TSystem.h"
 //#include"Minuit2/Minuit2Minimizer.h"
 #include "Math/Functor.h"
-//#include "../TemplateMaker_systematics.C"
-#include "../TemplateMaker.C"
+#include "../TemplateMaker_systematics.C"
+//#include "../TemplateMaker.C"
 #include "root_files.h"
 
 

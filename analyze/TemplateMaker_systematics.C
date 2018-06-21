@@ -273,7 +273,7 @@ int gen_mc_template(TTree *t1, Double_t alpha, TH2F* h_sym, TH2F *h_asym, TH2F *
     int do_btag_sys = 0;
     BTag_readers b_reader;
     BTag_effs btag_effs;
-    setup_btag_SFs(b_reader, btag_effs, do_btag_sys);
+    setup_btag_SFs(&b_reader, &btag_effs, do_btag_sys);
 
     if(flag1 == FLAG_MUONS){
         t1->SetBranchAddress("mu_p", &lep_p);
@@ -681,7 +681,7 @@ int gen_combined_background_template(int nTrees, TTree **ts, TH2F* h,
     BTag_readers b_reader;
     BTag_effs btag_effs;
 
-    setup_btag_SFs(b_reader, btag_effs);
+    setup_btag_SFs(&b_reader, &btag_effs);
     for(int i=0; i<nTrees; i++){
         TTree *t1 = ts[i];
         Long64_t nEntries  =  t1->GetEntries();
