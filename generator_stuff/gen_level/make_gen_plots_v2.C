@@ -1,4 +1,5 @@
 #include "GenLoader.cc"
+#include "TLegend.h"
 
 
 void fill_gen_hist(TTree *t, TH1F *h_m, TH1F *h_pt){
@@ -80,7 +81,7 @@ void make_ratio_plot(char title[80], TH1F* h1, char h1_label[80], TH1F* h2, char
 
 
     gStyle->SetLegendBorderSize(0);
-    TLegend *leg1 = new TLegend(0.15, 0.05, 0.4, 0.3);
+    TLegend *leg1 = new TLegend(0.3, 0.3);
     leg1->AddEntry(h1, h1_label, "l");
     leg1->AddEntry(h2, h2_label, "l");
     leg1->Draw();
@@ -130,17 +131,20 @@ void make_ratio_plot(char title[80], TH1F* h1, char h1_label[80], TH1F* h2, char
 
 void make_gen_plots_v2(){
     gStyle->SetOptStat(0);
-    TFile *f_unbinned = TFile::Open("DY_M50_gen_v2.root");
+    TFile *f_unbinned = TFile::Open("DY_M100_gen_v2.root");
     TTree *t_unbinned = (TTree *)f_unbinned->Get("Events");
 
     TFile *f_binned = TFile::Open("DY_M100_gen.root");
     TTree *t_binned = (TTree *)f_binned->Get("Events");
 
+    float pt_bins[] = {0., 10., 20., 40., 60.,  80., 100., 150., 200., 300., 400.};
+    int n_pt_bins = 10;
+
     TH1F *h_unbin_m = new TH1F("h_unbin_m", "", 20, 100, 200);
-    TH1F *h_unbin_pt = new TH1F("h_unbin_pt", "", 20, 0, 400);
+    TH1F *h_unbin_pt = new TH1F("h_unbin_pt", "", n_pt_bins, pt_bins);
 
     TH1F *h_bin_m = new TH1F("h_bin_m", "", 20, 100, 200);
-    TH1F *h_bin_pt = new TH1F("h_bin_pt", "", 20, 0, 400);
+    TH1F *h_bin_pt = new TH1F("h_bin_pt", "", n_pt_bins, pt_bins);
     fill_gen_hist(t_unbinned, h_unbin_m, h_unbin_pt);
     fill_gen_hist(t_binned, h_bin_m, h_bin_pt);
 
@@ -156,7 +160,7 @@ void make_gen_plots_v2(){
 
 
 
-    make_ratio_plot("gen_m_cmp.pdf", h_bin_m, "Binned MC (DY_M-100to200)",h_unbin_m, "Unbinned MC (DY_M50)", "Binned/Unbinned", "M (GeV)", true);
-    make_ratio_plot("gen_pt_cmp.pdf", h_bin_pt, "Binned MC (DY_M-100to200)",h_unbin_pt, "Unbinned MC (DY_M50)", "Binned/Unbinned", "Pt (GeV)", true);
+    make_ratio_plot("gen_m_cmp.pdf", h_bin_m, "Gen Level M-100 Extensions",h_unbin_m, "Gen Level M-100 Original", "Ext./Orig.", "M (GeV)", true);
+    make_ratio_plot("gen_pt_cmp.pdf", h_bin_pt, "Gen level M-100 Extensions",h_unbin_pt, "Gen Level M-100 Original", "Ext./Orig.", "Pt (GeV)", true);
     return;
 }
