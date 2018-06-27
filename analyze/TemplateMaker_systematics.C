@@ -28,6 +28,7 @@
 #include "Math/Functor.h"
 #include "ScaleFactors.C"
 #include "BTagUtils.C"
+#include "HistMaker.C"
 
 
 using namespace std;
@@ -94,56 +95,6 @@ static void setup_new_mu_fakerate(FakeRate *FR){
     f0->Close();
 }
 
-double get_cost(TLorentzVector lep_p, TLorentzVector lep_m){
-
-    TLorentzVector cm = lep_p + lep_m;
-    double root2 = sqrt(2);
-    double lep_p_pls = (lep_p.E()+lep_p.Pz())/root2;
-    double lep_p_min = (lep_p.E()-lep_p.Pz())/root2;
-    double lep_m_pls = (lep_m.E()+lep_m.Pz())/root2;
-    double lep_m_min = (lep_m.E()-lep_m.Pz())/root2;
-    double qt2 = cm.Px()*cm.Px()+cm.Py()*cm.Py();
-    double cm_m2 = cm.M2();
-    //cost_p = cos(theta)_r (reconstructed collins soper angle, sign
-    //may be 'wrong' if lepton pair direction is not the same as inital
-    //quark direction)
-    double cost = 2*(lep_m_pls*lep_p_min - lep_m_min*lep_p_pls)/sqrt(cm_m2*(cm_m2 + qt2));
-    if(cm.Pz() <0.) cost = -cost;
-    return cost;
-}
-
-double get_cost_v2(TLorentzVector lep_p, TLorentzVector lep_m){
-
-    double Ebeam = 6500.;
-    double Pbeam = sqrt(Ebeam*Ebeam - 0.938*0.938);
-    TLorentzVector cm = lep_p + lep_m;
-    TLorentzVector p1(0., 0., Pbeam, Ebeam);
-    TLorentzVector p2(0., 0., -Pbeam, Ebeam);
-
-    if(cm.Pz() < 0. ){
-        TLorentzVector p = p1;
-        p1 = p2;
-        p2 = p;
-    }
-
-    TVector3 beta = -cm.BoostVector();
-    lep_m.Boost(beta);
-    lep_p.Boost(beta);
-    p1.Boost(beta);
-    p2.Boost(beta);
-
-    // Now calculate the direction of the new z azis
-
-    TVector3 p1u = p1.Vect();
-    p1u.SetMag(1.0);
-    TVector3 p2u = p2.Vect();
-    p2u.SetMag(1.0);
-    TVector3 pzu = p1u - p2u;
-    pzu.SetMag(1.0);
-    lep_m.RotateUz(pzu); 
-    double cost = lep_m.CosTheta();
-    return cost;
-}
 
 
 static Double_t get_new_fakerate_prob(Double_t pt, Double_t eta, TH2D *h){

@@ -131,10 +131,10 @@ void make_ratio_plot(char title[80], TH1F* h1, char h1_label[80], TH1F* h2, char
 
 void make_gen_plots_v2(){
     gStyle->SetOptStat(0);
-    TFile *f_unbinned = TFile::Open("DY_M100_gen_v2.root");
+    TFile *f_unbinned = TFile::Open("DY_M100_gen.root");
     TTree *t_unbinned = (TTree *)f_unbinned->Get("Events");
 
-    TFile *f_binned = TFile::Open("DY_M100_gen.root");
+    TFile *f_binned = TFile::Open("DY_M100_gen_ext.root");
     TTree *t_binned = (TTree *)f_binned->Get("Events");
 
     float pt_bins[] = {0., 10., 20., 40., 60.,  80., 100., 150., 200., 300., 400.};

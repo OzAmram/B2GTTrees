@@ -25,7 +25,7 @@
 #include "TH2D.h"
 #include "TLegend.h"
 #include "Math/Functor.h"
-#include "../../analyze/TemplateMaker.C"
+#include "../../analyze/HistMaker.C"
 #include "../tdrstyle.C"
 #include "../CMS_lumi.C"
 #include "../../generator_stuff/gen_level/GenLoader.cc"

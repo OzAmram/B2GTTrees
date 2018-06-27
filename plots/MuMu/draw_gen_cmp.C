@@ -22,7 +22,7 @@
 #include "TFitter.h"
 #include "TSystem.h"
 #include "Math/Functor.h"
-#include "../../analyze/TemplateMaker.C"
+#include "../../analyze/HistMaker.C"
 #include "../tdrstyle.C"
 #include "../CMS_lumi.C"
 
@@ -59,8 +59,8 @@ void make_m_cost_pt_gen_hist(TTree *t1, TH1F *h_m, TH1F *h_cost, TH1F *h_pt){
     t1->SetBranchAddress("jet2_pt", &jet2_pt);
     t1->SetBranchAddress("nJets", &nJets);
     t1->SetBranchAddress("gen_weight", &gen_weight);
-    t1->SetBranchAddress("jet1_b_weight", &jet1_b_weight);
-    t1->SetBranchAddress("jet2_b_weight", &jet2_b_weight);
+    //t1->SetBranchAddress("jet1_b_weight", &jet1_b_weight);
+    //t1->SetBranchAddress("jet2_b_weight", &jet2_b_weight);
     t1->SetBranchAddress("pu_SF", &pu_SF);
     t1->SetBranchAddress("gen_mu_p", &gen_mu_p);
     t1->SetBranchAddress("gen_mu_m", &gen_mu_m);
@@ -77,9 +77,10 @@ void make_m_cost_pt_gen_hist(TTree *t1, TH1F *h_m, TH1F *h_cost, TH1F *h_pt){
         t1->GetEntry(i);
         bool no_bjets = has_no_bjets(nJets, jet1_pt, jet2_pt, jet1_cmva, jet2_cmva);
 
-        if(m >= 150. && met_pt < 50. && no_bjets){
+        if(m >= 100. && met_pt < 50. && no_bjets){
             cm = *gen_mu_p + *gen_mu_m;
             Double_t pt = cm.Pt();
+            Double_t gen_m = cm.M();
             double mu_p_pls = (gen_mu_p->E()+gen_mu_p->Pz())/root2;
             double mu_p_min = (gen_mu_p->E()-gen_mu_p->Pz())/root2;
             double mu_m_pls = (gen_mu_m->E()+gen_mu_m->Pz())/root2;
@@ -95,19 +96,14 @@ void make_m_cost_pt_gen_hist(TTree *t1, TH1F *h_m, TH1F *h_cost, TH1F *h_pt){
 
             Double_t bcdef_weight = gen_weight *pu_SF * bcdef_HLT_SF * bcdef_iso_SF * bcdef_id_SF * bcdef_trk_SF;
             Double_t gh_weight = gen_weight *pu_SF * gh_HLT_SF * gh_iso_SF * gh_id_SF * gh_trk_SF;
-            if (nJets >= 1){
-                bcdef_weight *= jet1_b_weight;
-                gh_weight *= jet1_b_weight;
-            }
-            if (nJets >= 2){
-                bcdef_weight *= jet2_b_weight;
-                gh_weight *= jet2_b_weight;
-            }
+
             double final_weight = 1000.*(bcdef_weight*bcdef_lumi + gh_weight*gh_lumi);
             //Double_t weight = gen_weight;
-            h_m->Fill(m,final_weight);
-            h_cost->Fill(gen_cost, final_weight);
-            h_pt->Fill(pt, final_weight);
+            if(gen_m > 100. && gen_m < 400.){
+                h_m->Fill(gen_m,final_weight);
+                h_cost->Fill(gen_cost, final_weight);
+                h_pt->Fill(pt, final_weight);
+            }
 
 
         }
@@ -221,7 +217,7 @@ void make_ratio_plot(char title[80], TH1F* h1, char h1_label[80], TH1F* h2, char
 
 
     gStyle->SetLegendBorderSize(0);
-    TLegend *leg1 = new TLegend(0.25, 0.05, 0.4, 0.2);
+    TLegend *leg1 = new TLegend(0.3, 0.3);
     leg1->AddEntry(h1, h1_label, "l");
     leg1->AddEntry(h2, h2_label, "l");
     leg1->Draw();
@@ -272,27 +268,27 @@ void make_ratio_plot(char title[80], TH1F* h1, char h1_label[80], TH1F* h2, char
 
 
 void draw_gen_cmp(){
-    TFile *f_mc_unbinned = TFile::Open("../analyze/output_files/MuMu_DY_zpeak_unbinned_june14.root");
+    TFile *f_mc_unbinned = TFile::Open("../analyze/output_files/MuMu_DY_april9_unbinned.root");
     TTree *t_mc_unbinned = (TTree *)f_mc_unbinned->Get("T_data");
 
-    TFile *f_mc_binned = TFile::Open("../analyze/output_files/MuMu_DY_zpeak_june14.root");
+    TFile *f_mc_binned = TFile::Open("../analyze/output_files/MuMu_DY_noext_june26.root");
     TTree *t_mc_binned = (TTree *)f_mc_binned->Get("T_data");
     setTDRStyle();
 
 
     
 
-    TH1F *binned_m = new TH1F("bin_m", "Binned MC", 40, 150.,1000.);
+    TH1F *binned_m = new TH1F("bin_m", "Binned MC", 20, 100.,400.);
     TH1F *binned_cost = new TH1F("bin_cost", "Binned MC", 40, -1.,1.);
-    TH1F *binned_pt = new TH1F("bin_pt", "Binned MC", 25, 0.,400.);
+    TH1F *binned_pt = new TH1F("bin_pt", "Binned MC", 20, 0.,400.);
 
-    TH1F *binned_m_rw = new TH1F("bin_m_rw", "Binned MC", 40, 150.,1000.);
+    TH1F *binned_m_rw = new TH1F("bin_m_rw", "Binned MC", 20, 100.,400.);
     TH1F *binned_cost_rw = new TH1F("bin_cost_rw", "Binned MC", 40, -1.,1.);
-    TH1F *binned_pt_rw = new TH1F("bin_pt_rw", "Binned MC", 25, 0.,400.);
+    TH1F *binned_pt_rw = new TH1F("bin_pt_rw", "Binned MC", 20, 0.,400.);
 
-    TH1F *unbinned_m = new TH1F("unbin_m", "unbinned MC", 40, 150.,1000.);
+    TH1F *unbinned_m = new TH1F("unbin_m", "unbinned MC", 20, 100.,400.);
     TH1F *unbinned_cost = new TH1F("unbin_cost", "unbinned MC", 40, -1.,1.);
-    TH1F *unbinned_pt = new TH1F("unbin_pt", "unbinned MC", 25, 0.,400.);
+    TH1F *unbinned_pt = new TH1F("unbin_pt", "unbinned MC", 20, 0.,400.);
 
     binned_m->SetLineColor(kBlue);
     binned_m->SetLineWidth(3);
@@ -301,13 +297,13 @@ void draw_gen_cmp(){
     unbinned_m->SetLineColor(kRed);
     unbinned_m->SetLineWidth(3);
 
-    binned_cost_rw->SetLineColor(kBlue);
-    binned_cost_rw->SetLineWidth(3);
+    binned_cost->SetLineColor(kBlue);
+    binned_cost->SetLineWidth(3);
     unbinned_cost->SetLineColor(kRed);
     unbinned_cost->SetLineWidth(3);
 
-    binned_pt_rw->SetLineColor(kBlue);
-    binned_pt_rw->SetLineWidth(3);
+    binned_pt->SetLineColor(kBlue);
+    binned_pt->SetLineWidth(3);
     unbinned_pt->SetLineColor(kRed);
     unbinned_pt->SetLineWidth(3);
     
@@ -317,13 +313,13 @@ void draw_gen_cmp(){
     TH1F *h_rw = (TH1F *) unbinned_pt->Clone("rw");
     h_rw->Divide(binned_pt);
 
-    make_reweighted_m_cost_pt_gen_hist(t_mc_binned, binned_m_rw, binned_cost_rw, binned_pt_rw, h_rw);
+    //make_reweighted_m_cost_pt_gen_hist(t_mc_binned, binned_m_rw, binned_cost_rw, binned_pt_rw, h_rw);
 
 
 
-    make_ratio_plot("MuMu_gen_m_rw_cmp.pdf", binned_m_rw, "Binned MC",unbinned_m, "Unbinned MC", "Binned/Unbinned", "M (GeV)", true);
-    make_ratio_plot("MuMu_gen_cost_rw_cmp.pdf", binned_cost_rw, "Binned MC",unbinned_cost, "Unbinned MC", "Binned/Unbinned", "Cos(#theta_{r})", false);
-    make_ratio_plot("MuMu_gen_pt_rw_cmp.pdf", binned_pt_rw, "Binned MC",unbinned_pt, "Unbinned MC", "Binned/Unbinned", "Dilepton Pt (GeV)", true);
+    make_ratio_plot("Ext_cmp/v2/MuMu_gen_m_cmp.pdf", binned_m, "unbinned ",unbinned_m, "Binned No Extensions", "Binned/Unbinned", "Gen M (GeV)", true);
+    make_ratio_plot("Ext_cmp/v2/MuMu_gen_cost_cmp.pdf", binned_cost, "unbinned",unbinned_cost, "Binned No Extensions", "Binned/Unbinned", "Gen Cos(#theta_{r})", false);
+    make_ratio_plot("Ext_cmp/v2/MuMu_gen_pt_cmpt.pdf", binned_pt, "unbinned",unbinned_pt, "Binned No Extensions", "Binned/Unbinned", "Gen Dilepton Pt (GeV)", true);
 
 
 
