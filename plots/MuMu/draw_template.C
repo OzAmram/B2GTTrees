@@ -19,7 +19,7 @@
 #include "TFitter.h"
 #include "TSystem.h"
 #include "Math/Functor.h"
-#include "../analyze/TemplateMaker.C"
+#include "../analyze/HistMaker.C"
 
 
 int n_xf_bins = 5;

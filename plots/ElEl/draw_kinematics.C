@@ -21,7 +21,7 @@
 #include "TFitter.h"
 #include "TSystem.h"
 #include "Math/Functor.h"
-#include "../../analyze/TemplateMaker.C"
+#include "../../analyze/HistMaker.C"
 #include "../tdrstyle.C"
 #include "../CMS_lumi.C"
 #include "root_files.h"
@@ -274,10 +274,10 @@ void make_plots(char name[80], kin_hists *k_data, kin_hists *k_mc, kin_hists *k_
     pad2->SetGridy();
 
     char outfile[4][80];
-    sprintf(outfile[0], "%s_kinematics.pdf(", name);
-    sprintf(outfile[1], "%s_kinematics.pdf", name);
-    sprintf(outfile[2], "%s_kinematics.pdf", name);
-    sprintf(outfile[3], "%s_kinematics.pdf)", name);
+    sprintf(outfile[0], "%s_M.pdf", name);
+    sprintf(outfile[1], "%s_pt.pdf", name);
+    sprintf(outfile[2], "%s_eta.pdf", name);
+    sprintf(outfile[3], "%s_phi.pdf", name);
     for(int i=0; i<4; i++){
         printf("loop %i \n", i);
         pad1->cd();
@@ -367,7 +367,7 @@ void draw_kinematics(){
     do_emu_scaling(&k_wt);
 
     printf("making plots \n");
-    make_plots("El", &k_data, &k_mc, &k_mc_nosig, &k_ttbar, &k_diboson, &k_wt);
+    make_plots("El_unbinned", &k_data, &k_mc, &k_mc_nosig, &k_ttbar, &k_diboson, &k_wt);
 
     return;
 }

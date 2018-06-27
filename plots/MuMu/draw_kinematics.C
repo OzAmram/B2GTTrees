@@ -20,7 +20,7 @@
 #include "TFitter.h"
 #include "TSystem.h"
 #include "Math/Functor.h"
-#include "../../analyze/TemplateMaker.C"
+#include "../../analyze/HistMaker.C"
 #include "../tdrstyle.C"
 #include "../CMS_lumi.C"
 #include "root_files.h"
@@ -81,7 +81,7 @@ void make_4vec_hists(TTree *t1, kin_hists *k, bool is_data=false){
             t1->GetEntry(i);
             bool no_bjets = has_no_bjets(nJets, jet1_pt, jet2_pt, jet1_cmva, jet2_cmva);
 
-            if(m >= 150. && met_pt < 50. && no_bjets){
+            if(m >= 250. && met_pt < 50. && no_bjets){
                 cm = *mu_p + *mu_m;
 
                 //mu_p->Print();
@@ -95,19 +95,20 @@ void make_4vec_hists(TTree *t1, kin_hists *k, bool is_data=false){
                 
 
                 if(is_data){
-                    //k->m_hist->Fill(obs.E());
-                    //k->pt_hist->Fill(obs.Pt());
-                    //k->eta_hist->Fill(obs.Eta());
-                    //k->phi_hist->Fill(obs.Phi());
-                    k->m_hist->Fill(mu_p->E());
-                    k->pt_hist->Fill(mu_p->Pt());
-                    k->eta_hist->Fill(mu_p->Eta());
-                    k->phi_hist->Fill(mu_p->Phi());
+                    k->m_hist->Fill(obs.E());
+                    k->pt_hist->Fill(obs.Pt());
+                    k->eta_hist->Fill(obs.Eta());
+                    k->phi_hist->Fill(obs.Phi());
+                    
+                    //k->m_hist->Fill(mu_p->E());
+                    //k->pt_hist->Fill(mu_p->Pt());
+                    //k->eta_hist->Fill(mu_p->Eta());
+                    //k->phi_hist->Fill(mu_p->Phi());
 
-                    k->m_hist->Fill(mu_m->E());
-                    k->pt_hist->Fill(mu_m->Pt());
-                    k->eta_hist->Fill(mu_m->Eta());
-                    k->phi_hist->Fill(mu_m->Phi());
+                    //k->m_hist->Fill(mu_m->E());
+                    //k->pt_hist->Fill(mu_m->Pt());
+                    //k->eta_hist->Fill(mu_m->Eta());
+                    //k->phi_hist->Fill(mu_m->Phi());
                 }
                 else{
                     Double_t bcdef_weight = gen_weight *pu_SF * bcdef_HLT_SF * bcdef_iso_SF * bcdef_id_SF * bcdef_trk_SF;
@@ -119,20 +120,20 @@ void make_4vec_hists(TTree *t1, kin_hists *k, bool is_data=false){
                     if (nJets >= 2){
                         combined_weight *= jet2_b_weight;
                     }
-                    //k->m_hist->Fill(obs.E(), combined_weight);
-                    //k->pt_hist->Fill(obs.Pt(), combined_weight);
-                    //k->eta_hist->Fill(obs.Eta(), combined_weight);
-                    //k->phi_hist->Fill(obs.Phi(), combined_weight);
+                    k->m_hist->Fill(obs.E(), combined_weight);
+                    k->pt_hist->Fill(obs.Pt(), combined_weight);
+                    k->eta_hist->Fill(obs.Eta(), combined_weight);
+                    k->phi_hist->Fill(obs.Phi(), combined_weight);
 
-                    k->m_hist->Fill(mu_p->E(), combined_weight);
-                    k->pt_hist->Fill(mu_p->Pt(), combined_weight);
-                    k->eta_hist->Fill(mu_p->Eta(), combined_weight);
-                    k->phi_hist->Fill(mu_p->Phi(), combined_weight);
+                    //k->m_hist->Fill(mu_p->E(), combined_weight);
+                    //k->pt_hist->Fill(mu_p->Pt(), combined_weight);
+                    //k->eta_hist->Fill(mu_p->Eta(), combined_weight);
+                    //k->phi_hist->Fill(mu_p->Phi(), combined_weight);
 
-                    k->m_hist->Fill(mu_m->E(), combined_weight);
-                    k->pt_hist->Fill(mu_m->Pt(), combined_weight);
-                    k->eta_hist->Fill(mu_m->Eta(), combined_weight);
-                    k->phi_hist->Fill(mu_m->Phi(), combined_weight);
+                    //k->m_hist->Fill(mu_m->E(), combined_weight);
+                    //k->pt_hist->Fill(mu_m->Pt(), combined_weight);
+                    //k->eta_hist->Fill(mu_m->Eta(), combined_weight);
+                    //k->phi_hist->Fill(mu_m->Phi(), combined_weight);
 
                 }
 
@@ -280,10 +281,10 @@ void make_plots(char name[80], kin_hists *k_data, kin_hists *k_mc, kin_hists *k_
     pad2->SetGridy();
 
     char outfile[4][80];
-    sprintf(outfile[0], "%s_kinematics.pdf(", name);
-    sprintf(outfile[1], "%s_kinematics.pdf", name);
-    sprintf(outfile[2], "%s_kinematics.pdf", name);
-    sprintf(outfile[3], "%s_kinematics.pdf)", name);
+    sprintf(outfile[0], "%s_M.pdf", name);
+    sprintf(outfile[1], "%s_pt.pdf", name);
+    sprintf(outfile[2], "%s_eta.pdf", name);
+    sprintf(outfile[3], "%s_phi.pdf", name);
     for(int i=0; i<4; i++){
         printf("loop %i \n", i);
         pad1->cd();
@@ -374,7 +375,7 @@ void draw_kinematics(){
     do_emu_scaling(&k_wt);
 
     printf("making plots \n");
-    make_plots("Muon", &k_data, &k_mc, &k_mc_nosig, &k_ttbar,&k_diboson, &k_wt);
+    make_plots("MuMu_binned_m250", &k_data, &k_mc, &k_mc_nosig, &k_ttbar,&k_diboson, &k_wt);
 
     return;
 }
