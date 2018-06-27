@@ -9,15 +9,15 @@
 
 #define GEN_SIZE 300
 #define EL_SIZE 100
-#define JET_SIZE 20
+#define JET_SIZE 60
 #define MAX_SAMPLES 20
 
 const double root2 = sqrt(2);
 double Ebeam = 6500.;
 double Pbeam = sqrt(Ebeam*Ebeam - 0.938*0.938);
 
-char *filename("diboson_files_aug29.txt");
-const TString fout_name("output_files/ElEl_diboson_zpeak_may29.root");
+char *filename("combined_back_files_june20.txt");
+const TString fout_name("output_files/ElEl_combined_back_slim_june27root");
 const double alpha = 0.05;
 const bool PRINT=false;
 

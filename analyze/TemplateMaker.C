@@ -231,6 +231,10 @@ int gen_mc_template(TTree *t1, Double_t alpha, TH2F* h_sym, TH2F *h_asym, TH2F *
     BTag_readers b_reader;
     BTag_effs btag_effs;
 
+    bool do_bweight = false;
+    jet1_b_weight = 1.;
+    jet2_b_weight = 1.;
+
     setup_btag_SFs(&b_reader, &btag_effs);
 
     if(flag1 == FLAG_MUONS){
@@ -260,8 +264,10 @@ int gen_mc_template(TTree *t1, Double_t alpha, TH2F* h_sym, TH2F *h_asym, TH2F *
                 n++;
                 gen_weight *= *systematic;
 
-                jet1_b_weight = get_btag_weight(jet1_pt, jet1_eta,(Float_t) jet1_flavour , btag_effs, b_reader, 0);
-                jet2_b_weight = get_btag_weight(jet2_pt, jet2_eta,(Float_t) jet2_flavour , btag_effs, b_reader, 0);
+                if(do_bweight){
+                    jet1_b_weight = get_btag_weight(jet1_pt, jet1_eta,(Float_t) jet1_flavour , btag_effs, b_reader, 0);
+                    jet2_b_weight = get_btag_weight(jet2_pt, jet2_eta,(Float_t) jet2_flavour , btag_effs, b_reader, 0);
+                }
 
                 Double_t bcdef_weight = gen_weight * pu_SF * bcdef_HLT_SF * bcdef_iso_SF * bcdef_id_SF * bcdef_trk_SF;
                 Double_t gh_weight = gen_weight * pu_SF * gh_HLT_SF * gh_iso_SF * gh_id_SF * gh_trk_SF;
@@ -312,8 +318,10 @@ int gen_mc_template(TTree *t1, Double_t alpha, TH2F* h_sym, TH2F *h_asym, TH2F *
                 n++;
                 gen_weight *= *systematic;
 
-                jet1_b_weight = get_btag_weight(jet1_pt, jet1_eta,(Float_t) jet1_flavour , btag_effs, b_reader, 0);
-                jet2_b_weight = get_btag_weight(jet2_pt, jet2_eta,(Float_t) jet2_flavour , btag_effs, b_reader, 0);
+                if(do_bweight){
+                    jet1_b_weight = get_btag_weight(jet1_pt, jet1_eta,(Float_t) jet1_flavour , btag_effs, b_reader, 0);
+                    jet2_b_weight = get_btag_weight(jet2_pt, jet2_eta,(Float_t) jet2_flavour , btag_effs, b_reader, 0);
+                }
 
 
                 Double_t evt_weight = gen_weight * el_id_SF *el_reco_SF * pu_SF * el_HLT_SF;
@@ -611,6 +619,10 @@ int gen_combined_background_template(int nTrees, TTree **ts, TH2F* h,
         t1->SetBranchAddress("jet2_flavour", &jet2_flavour);
         t1->SetBranchAddress("gen_weight", &gen_weight);
         t1->SetBranchAddress("pu_SF", &pu_SF);
+
+        bool do_bweight = false;
+        jet1_b_weight = 1.;
+        jet2_b_weight = 1.;
         if(flag1 == FLAG_MUONS){
 
             t1->SetBranchAddress("bcdef_HLT_SF", &bcdef_HLT_SF);
@@ -638,8 +650,10 @@ int gen_combined_background_template(int nTrees, TTree **ts, TH2F* h,
 
                 if(pass){
 
-                    jet1_b_weight = get_btag_weight(jet1_pt, jet1_eta,(Float_t) jet1_flavour , btag_effs, b_reader, 0);
-                    jet2_b_weight = get_btag_weight(jet2_pt, jet2_eta,(Float_t) jet2_flavour , btag_effs, b_reader, 0);
+                    if(do_bweight){
+                        jet1_b_weight = get_btag_weight(jet1_pt, jet1_eta,(Float_t) jet1_flavour , btag_effs, b_reader, 0);
+                        jet2_b_weight = get_btag_weight(jet2_pt, jet2_eta,(Float_t) jet2_flavour , btag_effs, b_reader, 0);
+                    }
                     Double_t bcdef_weight = gen_weight *pu_SF * bcdef_HLT_SF * bcdef_iso_SF * bcdef_id_SF * bcdef_trk_SF;
                     Double_t gh_weight = gen_weight *pu_SF * gh_HLT_SF * gh_iso_SF * gh_id_SF * gh_trk_SF;
                     if (nJets >= 1){
@@ -673,8 +687,10 @@ int gen_combined_background_template(int nTrees, TTree **ts, TH2F* h,
                     && met_pt < 50.  && no_bjets;
                 if(pass){
 
-                    jet1_b_weight = get_btag_weight(jet1_pt, jet1_eta,(Float_t) jet1_flavour , btag_effs, b_reader, 0);
-                    jet2_b_weight = get_btag_weight(jet2_pt, jet2_eta,(Float_t) jet2_flavour , btag_effs, b_reader, 0);
+                    if(do_bweight){
+                        jet1_b_weight = get_btag_weight(jet1_pt, jet1_eta,(Float_t) jet1_flavour , btag_effs, b_reader, 0);
+                        jet2_b_weight = get_btag_weight(jet2_pt, jet2_eta,(Float_t) jet2_flavour , btag_effs, b_reader, 0);
+                    }
 
                     Double_t evt_weight = gen_weight * pu_SF * el_id_SF * el_reco_SF * el_HLT_SF;
                     if (nJets >= 1){
@@ -797,6 +813,7 @@ void make_m_cost_pt_hist(TTree *t1, TH1F *h_m, TH1F *h_cost, TH1F *h_pt, bool is
     Double_t gh_HLT_SF, gh_iso_SF, gh_id_SF, el_id_SF, el_reco_SF, el_HLT_SF;
     Double_t bcdef_trk_SF, gh_trk_SF;
     Double_t jet1_pt, jet2_pt, jet1_b_weight, jet2_b_weight, pu_SF;
+    jet1_b_weight = jet2_b_weight = 1.;
     TLorentzVector *mu_p = 0;
     TLorentzVector *mu_m = 0;
     TLorentzVector *el_p = 0;
@@ -817,17 +834,9 @@ void make_m_cost_pt_hist(TTree *t1, TH1F *h_m, TH1F *h_cost, TH1F *h_pt, bool is
     if(!is_data){
         t1->SetBranchAddress("nJets", &nJets);
         t1->SetBranchAddress("gen_weight", &gen_weight);
-        t1->SetBranchAddress("jet1_b_weight", &jet1_b_weight);
-        t1->SetBranchAddress("jet2_b_weight", &jet2_b_weight);
         t1->SetBranchAddress("pu_SF", &pu_SF);
     }
     if(flag1 == FLAG_MUONS){
-        TH2D *h_m_bcdef = (TH2D *)h_m->Clone("h_m_bcdef");
-        TH2D *h_m_gh = (TH2D *)h_m->Clone("h_m_gh");
-        TH2D *h_cost_bcdef = (TH2D *)h_cost->Clone("h_cost_bcdef");
-        TH2D *h_cost_gh = (TH2D *)h_cost->Clone("h_cost_gh");
-        TH2D *h_pt_bcdef = (TH2D *)h_pt->Clone("h_pt_bcdef");
-        TH2D *h_pt_gh = (TH2D *)h_pt->Clone("h_pt_gh");
         t1->SetBranchAddress("mu_p", &mu_p);
         t1->SetBranchAddress("mu_m", &mu_m);
         if(!is_data){
@@ -863,28 +872,15 @@ void make_m_cost_pt_hist(TTree *t1, TH1F *h_m, TH1F *h_cost, TH1F *h_pt, bool is
                         bcdef_weight *= jet2_b_weight;
                         gh_weight *= jet2_b_weight;
                     }
+                    double final_weight = 1000*(bcdef_weight *bcdef_lumi + gh_weight*gh_lumi);
                     //Double_t weight = gen_weight;
-                    h_m_bcdef->Fill(m,bcdef_weight);
-                    h_m_gh->Fill(m,gh_weight);
-                    h_cost_bcdef->Fill(cost,bcdef_weight);
-                    h_cost_gh->Fill(cost,gh_weight);
-                    h_pt_bcdef->Fill(pt,bcdef_weight);
-                    h_pt_gh->Fill(pt,gh_weight);
+                    h_m->Fill(m,final_weight);
+                    h_cost->Fill(cost,final_weight);
+                    h_pt->Fill(pt,final_weight);
                 }
 
 
             }
-        }
-        if(!is_data){
-            h_m_bcdef ->Scale(bcdef_lumi * 1000);
-            h_cost_bcdef ->Scale(bcdef_lumi * 1000);
-            h_pt_bcdef ->Scale(bcdef_lumi * 1000);
-            h_m_gh ->Scale(gh_lumi * 1000);
-            h_cost_gh ->Scale(gh_lumi * 1000);
-            h_pt_gh ->Scale(gh_lumi * 1000);
-            h_m->Add(h_m_bcdef, h_m_gh);
-            h_cost->Add(h_cost_bcdef, h_cost_gh);
-            h_pt->Add(h_pt_bcdef, h_pt_gh);
         }
     }
     else if(flag1==FLAG_ELECTRONS) {

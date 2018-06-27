@@ -77,7 +77,7 @@ void make_m_cost_pt_gen_hist(TTree *t1, TH1F *h_m, TH1F *h_cost, TH1F *h_pt){
         t1->GetEntry(i);
         bool no_bjets = has_no_bjets(nJets, jet1_pt, jet2_pt, jet1_cmva, jet2_cmva);
 
-        if(m >= 150. && met_pt < 50. && no_bjets){
+        if(m >= 150. &&  m <= 200. && met_pt < 50. && no_bjets){
             cm = *gen_mu_p + *gen_mu_m;
             Double_t pt = cm.Pt();
             double mu_p_pls = (gen_mu_p->E()+gen_mu_p->Pz())/root2;
@@ -162,7 +162,7 @@ void make_reweighted_m_cost_pt_gen_hist(TTree *t1, TH1F *h_m, TH1F *h_cost, TH1F
         t1->GetEntry(i);
         bool no_bjets = has_no_bjets(nJets, jet1_pt, jet2_pt, jet1_cmva, jet2_cmva);
 
-        if(m >= 150. && met_pt < 50. && no_bjets){
+        if(m >= 150. && m<= 200. &&  met_pt < 50. && no_bjets){
             cm = *gen_mu_p + *gen_mu_m;
             Double_t pt = cm.Pt();
             double mu_p_pls = (gen_mu_p->E()+gen_mu_p->Pz())/root2;

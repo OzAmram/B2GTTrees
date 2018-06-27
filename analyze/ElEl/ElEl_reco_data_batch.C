@@ -6,7 +6,7 @@
 #include <algorithm>
 #include "TFile.h"
 #define EL_SIZE 200
-#define JET_SIZE 20
+#define JET_SIZE 60
 
 const double root2 = sqrt(2);
 const char* filename("SingleElectron_files_aug29.txt");

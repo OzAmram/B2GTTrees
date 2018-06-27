@@ -20,17 +20,17 @@
 #include "TSystem.h"
 //#include"Minuit2/Minuit2Minimizer.h"
 #include "Math/Functor.h"
-//#include "../TemplateMaker_systematics.C"
+#include "../TemplateMaker_systematics.C"
 #include "root_files.h"
-#include "../TemplateMaker.C"
+//#include "../TemplateMaker.C"
 
 
 
 
 
-int FLAG = FLAG_ELECTRONS;
+int FLAG = FLAG_MUONS;
 //int FLAG = FLAG_MUONS;
-bool do_both = true;
+bool do_both = false;
 const TString mumu_fout_name("AFB_fit/fit_results/m_bins/MuMu_fit_test.root");
 const TString elel_fout_name("AFB_fit/fit_results/m_bins/ElEl_fit_test.root");
 
@@ -141,13 +141,13 @@ void setup(){
     printf("Generating templates \n");
 
     if(FLAG == FLAG_MUONS){
+        nDataEvents = gen_data_template(t_mumu_data, h_data, &v_xF, &v_cost, m_low, m_high, FLAG);
         gen_mc_template(t_mumu_mc, alpha, h_sym, h_asym, h_sym_count, m_low, m_high, FLAG);
         TTree *ts[2] = {t_mumu_back, t_mumu_nosig};
 
         gen_fakes_template(t_mumu_WJets, t_mumu_QCD, t_mumu_WJets_contam, t_mumu_QCD_contam, h_back, m_low, m_high, FLAG);
         gen_combined_background_template(2, ts, h_back, m_low, m_high, FLAG);
 
-        nDataEvents = gen_data_template(t_mumu_data, h_data, &v_xF, &v_cost, m_low, m_high, FLAG);
     }
     if(FLAG == FLAG_ELECTRONS){
         gen_mc_template(t_elel_mc, alpha, h_sym, h_asym, h_sym_count, m_low, m_high, FLAG);

@@ -11,17 +11,16 @@
 #include "../ScaleFactors.C"
 #include "../RoccoR.cc"
 
-#define GEN_SIZE 300
-#define MU_SIZE 100
-#define JET_SIZE 20
+#define MU_SIZE 200
+#define JET_SIZE 60
 #define MAX_SAMPLES 20
 
 const double root2 = sqrt(2);
 double Ebeam = 6500.;
 double Pbeam = sqrt(Ebeam*Ebeam - 0.938*0.938);
 
-char *filename("dy_test.txt");
-const TString fout_name("output_files/MuMu_back_test.root");
+char *filename("combined_back_files_june20.txt");
+const TString fout_name("output_files/MuMu_combined_back_slim_june27.root");
 const double alpha = 0.05;
 const bool PRINT=false;
 
@@ -95,11 +94,17 @@ void MuMu_reco_background_batch()
 {
 
     Double_t norms[MAX_SAMPLES]; // computed normalizations to apply to each event in a sample (based on xsection and total weight)
+    for(int i=0; i<MAX_SAMPLES; i++) norms[i]= 0.;
     unsigned int nFiles = 0;
     printf("Computing normalizations for each sample \n");
     compute_norms(norms, &nFiles);
     printf("Done with normalizations \n\n\n");
 
+    printf("NORMS: \n");
+    for(int i=0; i< MAX_SAMPLES; i++){
+        printf("%.2e ", norms[i]);
+    }
+    printf("\n");
     printf("Getting RC \n");
     RoccoR  rc("rcdata.2016.v3"); //directory path as input for now; initialize only once, contains all variations
     TRandom *rand = new TRandom3();
@@ -267,9 +272,14 @@ void MuMu_reco_background_batch()
             char out_buff[10000];
             bool print_out = false;
 
+            bool printed = false;
+            printf("\n");
             for (int i=0; i<nEntries; i++) {
                 t1->GetEntry(i);
+
+
                 if(mu_size > MU_SIZE) printf("WARNING: MU_SIZE TOO LARGE \n");
+                if(jet_size > JET_SIZE) printf("WARNING: JET_SIZE TOO LARGE. Jet size is %i \n", (int) jet_size);
                 if(met_size != 1) printf("WARNING: Met size not equal to 1\n");
                 bool good_trigger = HLT_IsoMu || HLT_IsoTkMu;
                 if(good_trigger &&
@@ -337,7 +347,7 @@ void MuMu_reco_background_batch()
 
                         //pick out 2 highest pt jets with eta < 2.4
                         nJets =0;
-                        for(int j=0; j < jet_size; j++){
+                        for(unsigned j=0; j < jet_size; j++){
                             if(jet_Pt[j] > 20. && std::abs(jet_Eta[j]) < 2.4){
                                 if(nJets == 1){
                                     jet2_pt = jet_Pt[j];
@@ -407,6 +417,7 @@ void MuMu_reco_background_batch()
 
             f1->Close();
             printf("moving on to next file, currently %i events \n\n", nEvents);
+
         }
     }
     fclose(root_files);

@@ -9,15 +9,15 @@
 
 #define GEN_SIZE 4000
 #define EL_SIZE 100
-#define JET_SIZE 20
+#define JET_SIZE 60
 #define MAX_SAMPLES 20
 
 const double root2 = sqrt(2);
 double Ebeam = 6500.;
 double Pbeam = sqrt(Ebeam*Ebeam - 0.938*0.938);
 
-char *filename("DY_files_june17.txt");
-const TString fout_name("output_files/ElEl_DY_zpeak_june19.root");
+char *filename("DY_files_june20.txt");
+const TString fout_name("output_files/ElEl_DY_june27.root");
 const double alpha = 0.05;
 const bool PRINT=false;
 
@@ -646,35 +646,6 @@ void ElEl_reco_mc_batch()
                         }
 
 
-                        /*
-                           TLorentzVector p1(0., 0., Pbeam, Ebeam);
-                           TLorentzVector p2(0., 0., -Pbeam, Ebeam);
-
-                           if(cm.Pz() < 0. ){
-                           TLorentzVector p = p1;
-                           p1 = p2;
-                           p2 = p;
-                           }
-
-                           TVector3 beta = -cm.BoostVector();
-                           el_m.Boost(beta);
-                           el_p.Boost(beta);
-                           p1.Boost(beta);
-                           p2.Boost(beta);
-
-                        // Now calculate the direction of the new z azis
-
-                        TVector3 p1u = p1.Vect();
-                        p1u.SetMag(1.0);
-                        TVector3 p2u = p2.Vect();
-                        p2u.SetMag(1.0);
-                        TVector3 pzu = p1u - p2u;
-                        pzu.SetMag(1.0);
-                        el_m.RotateUz(pzu); 
-                        double cost_r_b = el_m.CosTheta();
-                        deltaC = std::abs(cost_r_b) - std::abs(cost);
-                        */
-                        //printf("cost_r, cost_r_b, cost_r_b2: %0.2f %0.2f %0.2f \n", cost_r, cost_r_b, cost_r_b2);
 
                         if(PRINT){
                             sprintf(out_buff + strlen(out_buff),  "1st Particle %i:(pt, eta, phi,E) = %4.2f %4.2f %4.2f %4.2f \n", 

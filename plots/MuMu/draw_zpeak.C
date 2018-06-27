@@ -24,11 +24,10 @@
 #include "../../analyze/TemplateMaker.C"
 #include "../tdrstyle.C"
 #include "../CMS_lumi.C"
+#include "root_files.h"
 
 const int type = FLAG_MUONS;
 
-TFile *f_data, *f_mc, *f_mc_nosig, *f_ttbar, *f_QCD, *f_WJets, *f_WJets_mc, *f_QCD_mc, *f_diboson, *f_wt;
-TTree *t_data, *t_mc, *t_mc_nosig, *t_ttbar, *t_QCD, *t_WJets, *t_WJets_mc, *t_QCD_mc, *t_diboson, *t_wt;
 
 void make_m_zpeak_hist(TTree *t1, TH1F *h_m, bool is_data=false, int flag1 = FLAG_MUONS){
     //read event data
@@ -38,6 +37,7 @@ void make_m_zpeak_hist(TTree *t1, TH1F *h_m, bool is_data=false, int flag1 = FLA
     Double_t gh_HLT_SF, gh_iso_SF, gh_id_SF, el_id_SF, el_reco_SF, el_HLT_SF;
     Double_t bcdef_trk_SF, gh_trk_SF;
     Double_t jet1_pt, jet2_pt, jet1_b_weight, jet2_b_weight, pu_SF;
+    jet1_b_weight = jet2_b_weight =1.;
     TLorentzVector *mu_p = 0;
     TLorentzVector *mu_m = 0;
     TLorentzVector *el_p = 0;
@@ -58,8 +58,6 @@ void make_m_zpeak_hist(TTree *t1, TH1F *h_m, bool is_data=false, int flag1 = FLA
     if(!is_data){
         t1->SetBranchAddress("nJets", &nJets);
         t1->SetBranchAddress("gen_weight", &gen_weight);
-        t1->SetBranchAddress("jet1_b_weight", &jet1_b_weight);
-        t1->SetBranchAddress("jet2_b_weight", &jet2_b_weight);
         t1->SetBranchAddress("pu_SF", &pu_SF);
     }
     if(flag1 == FLAG_MUONS){
@@ -103,39 +101,6 @@ void make_m_zpeak_hist(TTree *t1, TH1F *h_m, bool is_data=false, int flag1 = FLA
 
 
             }
-        }
-    }
-    else if(flag1==FLAG_ELECTRONS) {
-        t1->SetBranchAddress("el_p", &el_p);
-        t1->SetBranchAddress("el_m", &el_m);
-        if(!is_data) t1->SetBranchAddress("el_id_SF", &el_id_SF);
-        if(!is_data) t1->SetBranchAddress("el_reco_SF", &el_reco_SF);
-        if(!is_data) t1->SetBranchAddress("el_HLT_SF", &el_HLT_SF);
-        for (int i=0; i<size; i++) {
-            t1->GetEntry(i);
-            bool no_bjets = has_no_bjets(nJets, jet1_pt, jet2_pt, jet1_cmva, jet2_cmva);
-            if(m >= 50. && met_pt < 50.  && no_bjets){
-                TLorentzVector cm = *el_p + *el_m;
-                Double_t pt = cm.Pt();
-                if(is_data){
-                    h_m->Fill(m);
-                }
-                else{
-
-                    Double_t evt_weight = gen_weight *pu_SF * el_id_SF * el_reco_SF * el_HLT_SF;
-                    if (nJets >= 1){
-                        evt_weight *= jet1_b_weight;
-                    }
-                    if (nJets >= 2){
-                        evt_weight *= jet2_b_weight;
-                    }
-                    h_m->Fill(m, evt_weight);
-                }
-            }
-        }
-        if(!is_data){
-            Double_t el_lumi = 1000*tot_lumi;
-            h_m->Scale(el_lumi);
         }
     }
 
@@ -247,31 +212,10 @@ void Fakerate_est_zpeak_mu(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_contam, 
 }
 
 void draw_zpeak(){
-    f_data = TFile::Open("../analyze/output_files/SingleMuon_data_zpeak_may29.root");
-    t_data = (TTree *)f_data->Get("T_data");
-    f_mc = TFile::Open("../analyze/output_files/MuMu_DY_zpeak_unbinned_june14.root");
+    init();
+    f_mc = TFile::Open("../analyze/output_files/MuMu_DY_unbinned_june20.root");
     t_mc = (TTree *)f_mc->Get("T_data");
     t_mc_nosig = (TTree *)f_mc->Get("T_back");
-    f_ttbar = TFile::Open("../analyze/output_files/MuMu_TTbar_zpeak_may29.root");
-    t_ttbar = (TTree *)f_ttbar->Get("T_data");
-
-    f_QCD = TFile::Open("../analyze/output_files/MuMu_QCD_est_may29.root");
-    t_QCD = (TTree *)f_QCD->Get("T_data");
-
-    f_WJets = TFile::Open("../analyze/output_files/MuMu_WJets_est_may29.root");
-    t_WJets = (TTree *)f_WJets->Get("T_data");
-
-    f_WJets_mc = TFile::Open("../analyze/FakeRate/root_files/MuMu_fakerate_Wjets_MC_mar8.root");
-    t_WJets_mc = (TTree *)f_WJets_mc->Get("T_data");
-
-    f_QCD_mc = TFile::Open("../analyze/FakeRate/root_files/MuMu_fakerate_QCD_MC_mar8.root");
-    t_QCD_mc = (TTree *)f_QCD_mc->Get("T_data");
-
-    f_diboson = TFile::Open("../analyze/output_files/MuMu_diboson_zpeak_may29.root");
-    t_diboson = (TTree *)f_diboson->Get("T_data");
-
-    f_wt = TFile::Open("../analyze/output_files/MuMu_WT_zpeak_may29.root");
-    t_wt = (TTree *)f_wt->Get("T_data");
     setTDRStyle();
 
 
@@ -312,14 +256,12 @@ void draw_zpeak(){
 
     make_m_zpeak_hist(t_data, data_m, true, type);
     make_m_zpeak_hist(t_mc, mc_m, false, type);
-    //make_m_zpeak_hist(t_mc_nosig, mc_nosig_m, false, type);
+    make_m_zpeak_hist(t_mc_nosig, mc_nosig_m, false, type);
     make_m_zpeak_hist(t_ttbar, ttbar_m, false, type);
     make_m_zpeak_hist(t_wt, wt_m, false);
     make_m_zpeak_hist(t_diboson, diboson_m, false, type);
-    ttbar_m->Scale(730.6/831.76);
-    wt_m->Scale(38.06/35.85);
 
-    Fakerate_est_zpeak_mu(t_WJets, t_QCD, t_WJets_mc, t_QCD_mc, QCD_m);
+    //Fakerate_est_zpeak_mu(t_WJets, t_QCD, t_WJets_mc, t_QCD_mc, QCD_m);
 
 
 
@@ -347,9 +289,9 @@ void draw_zpeak(){
     THStack *m_stack = new THStack("m_stack", "MuMu Mass Distribution: Data vs MC ; m_{#mu^{+}#mu^{-}} (GeV)");
     m_stack->Add(diboson_m);
     m_stack->Add(wt_m);
-    m_stack->Add(QCD_m);
+    //m_stack->Add(QCD_m);
     m_stack->Add(ttbar_m);
-    //m_stack->Add(mc_nosig_m);
+    m_stack->Add(mc_nosig_m);
     m_stack->Add(mc_m);
 
 
@@ -370,13 +312,13 @@ void draw_zpeak(){
 
 
     gStyle->SetLegendBorderSize(0);
-    TLegend *leg1 = new TLegend(0.5, 0.65, 0.75, 0.8);
+    TLegend *leg1 = new TLegend(0.5, 0.25, 0.75, 0.4);
     leg1->AddEntry(data_m, "data", "p");
     leg1->AddEntry(mc_m, "DY (q#bar{q}, qg #bar{q}g)", "f");
     leg1->AddEntry(mc_nosig_m, "DY no asymmety(gg, qq, #bar{q}#bar{q})", "f");
     leg1->AddEntry(diboson_m, "WW + WZ + ZZ", "f");
     leg1->AddEntry(wt_m, "tW + #bar{t}W", "f");
-    leg1->AddEntry(QCD_m, "QCD + WJets", "f");
+    //leg1->AddEntry(QCD_m, "QCD + WJets", "f");
     leg1->AddEntry(ttbar_m, "t#bar{t}", "f");
     leg1->Draw();
 

@@ -10,11 +10,11 @@
 #include "TLorentzVector.h"
 #include "../RoccoR.cc"
 #define MU_SIZE 200
-#define JET_SIZE 20
+#define JET_SIZE 60
 
 const double root2 = sqrt(2);
 const char* filename("SingleMuon_files_sep25.txt");
-const TString fout_name("output_files/SingleMuon_data_june21.root");
+const TString fout_name("output_files/SingleMuon_data_june26.root");
 
 
 bool is_empty_line(const char *s) {
@@ -167,7 +167,7 @@ void MuMu_reco_data_batch()
 
                 cm = mu_p + mu_m;
                 cm_m = cm.M();
-                if (iso_0 < tight_iso && iso_1 < tight_iso && cm_m >=50.){
+                if (iso_0 < tight_iso && iso_1 < tight_iso && cm_m >=150.){
                     xF = abs(2.*cm.Pz()/13000.); 
 
                     // compute Colins soper angle with formula

@@ -24,11 +24,10 @@
 #include "../../analyze/TemplateMaker.C"
 #include "../tdrstyle.C"
 #include "../CMS_lumi.C"
+#include "root_files.h"
 
 const int type = FLAG_ELECTRONS;
 
-TFile *f_data, *f_mc, *f_mc_nosig, *f_ttbar, *f_QCD, *f_WJets, *f_WJets_mc, *f_QCD_mc, *f_diboson, *f_wt;
-TTree *t_data, *t_mc, *t_mc_nosig, *t_ttbar, *t_QCD, *t_WJets, *t_WJets_mc, *t_QCD_mc, *t_diboson, *t_wt;
 
 void make_m_zpeak_hist(TTree *t1, TH1F *h_m, bool is_data=false, int flag1 = FLAG_MUONS){
     //read event data
@@ -38,6 +37,7 @@ void make_m_zpeak_hist(TTree *t1, TH1F *h_m, bool is_data=false, int flag1 = FLA
     Double_t gh_HLT_SF, gh_iso_SF, gh_id_SF, el_id_SF, el_reco_SF, el_HLT_SF;
     Double_t bcdef_trk_SF, gh_trk_SF;
     Double_t jet1_pt, jet2_pt, jet1_b_weight, jet2_b_weight, pu_SF;
+    jet1_b_weight = jet2_b_weight =1.;
     TLorentzVector *mu_p = 0;
     TLorentzVector *mu_m = 0;
     TLorentzVector *el_p = 0;
@@ -58,8 +58,6 @@ void make_m_zpeak_hist(TTree *t1, TH1F *h_m, bool is_data=false, int flag1 = FLA
     if(!is_data){
         t1->SetBranchAddress("nJets", &nJets);
         t1->SetBranchAddress("gen_weight", &gen_weight);
-        t1->SetBranchAddress("jet1_b_weight", &jet1_b_weight);
-        t1->SetBranchAddress("jet2_b_weight", &jet2_b_weight);
         t1->SetBranchAddress("pu_SF", &pu_SF);
     }
     if(flag1 == FLAG_MUONS){
@@ -240,32 +238,15 @@ void Fakerate_est_zpeak_el(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_MC, TTre
     printf("Total fakerate est is %.0f \n", h_m->Integral());
 }
 void draw_zpeak(){
+    init();
+    setTDRStyle();
+
     f_data = TFile::Open("../analyze/output_files/SingleElectron_data_zpeak_june15.root");
     t_data = (TTree *)f_data->Get("T_data");
-    f_mc = TFile::Open("../analyze/output_files/ElEl_DY_zpeak_unbinned_june14.root");
+
+    f_mc = TFile::Open("../analyze/output_files/ElEl_DY_unbinned_june20.root");
     t_mc = (TTree *)f_mc->Get("T_data");
     t_mc_nosig = (TTree *)f_mc->Get("T_back");
-    f_ttbar = TFile::Open("../analyze/output_files/ElEl_TTbar_zpeak_may29.root");
-    t_ttbar = (TTree *)f_ttbar->Get("T_data");
-
-    //f_QCD = TFile::Open("../analyze/output_files/ElEl_QCD_est_may29.root");
-    //t_QCD = (TTree *)f_QCD->Get("T_data");
-
-    //f_WJets = TFile::Open("../analyze/output_files/ElEl_WJets_est_may29.root");
-    //t_WJets = (TTree *)f_WJets->Get("T_data");
-
-    //f_WJets_mc = TFile::Open("../analyze/FakeRate/root_files/ElEl_fakerate_Wjets_MC_mar8.root");
-    //t_WJets_mc = (TTree *)f_WJets_mc->Get("T_data");
-
-    //f_QCD_mc = TFile::Open("../analyze/FakeRate/root_files/ElEl_fakerate_QCD_MC_mar8.root");
-    //t_QCD_mc = (TTree *)f_QCD_mc->Get("T_data");
-
-    f_diboson = TFile::Open("../analyze/output_files/ElEl_diboson_zpeak_may29.root");
-    t_diboson = (TTree *)f_diboson->Get("T_data");
-
-    f_wt = TFile::Open("../analyze/output_files/ElEl_WT_zpeak_may29.root");
-    t_wt = (TTree *)f_wt->Get("T_data");
-    setTDRStyle();
 
 
 
@@ -305,7 +286,7 @@ void draw_zpeak(){
 
     make_m_zpeak_hist(t_data, data_m, true, type);
     make_m_zpeak_hist(t_mc, mc_m, false, type);
-    //make_m_zpeak_hist(t_mc_nosig, mc_nosig_m, false, type);
+    make_m_zpeak_hist(t_mc_nosig, mc_nosig_m, false, type);
     make_m_zpeak_hist(t_ttbar, ttbar_m, false, type);
     make_m_zpeak_hist(t_wt, wt_m, false, type);
     make_m_zpeak_hist(t_diboson, diboson_m, false, type);
@@ -340,7 +321,7 @@ void draw_zpeak(){
     m_stack->Add(wt_m);
     m_stack->Add(QCD_m);
     m_stack->Add(ttbar_m);
-    //m_stack->Add(mc_nosig_m);
+    m_stack->Add(mc_nosig_m);
     m_stack->Add(mc_m);
 
 
@@ -361,7 +342,7 @@ void draw_zpeak(){
 
 
     gStyle->SetLegendBorderSize(0);
-    TLegend *leg1 = new TLegend(0.5, 0.65, 0.75, 0.8);
+    TLegend *leg1 = new TLegend(0.5, 0.35, 0.75, 0.5);
     leg1->AddEntry(data_m, "data", "p");
     leg1->AddEntry(mc_m, "DY (q#bar{q}, qg #bar{q}g)", "f");
     leg1->AddEntry(mc_nosig_m, "DY no asymmety(gg, qq, #bar{q}#bar{q})", "f");

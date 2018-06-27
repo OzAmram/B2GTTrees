@@ -7,7 +7,7 @@
 #include "TFile.h"
 #include "../TemplateMaker.C"
 #define MU_SIZE 200
-#define JET_SIZE 20
+#define JET_SIZE 60
 
 const double root2 = sqrt(2);
 const char* filename("SingleMuon_files_sep25.txt");

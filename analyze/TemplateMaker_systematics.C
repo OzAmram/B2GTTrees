@@ -187,7 +187,7 @@ int gen_data_template(TTree *t1, TH2F* h, vector<double> *v_xF, vector<double> *
         int flag1 = FLAG_MUONS, int flag2 = FLAG_M_BINS){
     Long64_t nEntries  =  t1->GetEntries();
     //printf("size is %i \n", nEntries);
-    bool turn_off_RC = true;
+    bool turn_off_RC = false;
     Double_t m, xF, cost, gen_weight, jet1_cmva, jet2_cmva,
              jet1_pt, jet2_pt, lep1_pt, lep2_pt, lep1_pt_corr, lep2_pt_corr;
     Float_t met_pt;
@@ -238,9 +238,9 @@ int gen_data_template(TTree *t1, TH2F* h, vector<double> *v_xF, vector<double> *
                         mu_p.SetPtEtaPhiE(lep2_pt, lep_p->Eta(), lep_p->Phi(), lep_p->E());
                         mu_m.SetPtEtaPhiE(lep1_pt, lep_m->Eta(), lep_m->Phi(), lep_m->E());
                     }
-                    double new_cost = get_cost_v2(mu_p, mu_m);
+                    double new_cost = get_cost_v2(lep_p, lep_m);
 
-                    if(abs(new_cost - cost) > 0.05){
+                    if(false && abs(new_cost - cost) > 0.05){
                         printf("\n");
                         printf("lep pts %.2f %.2f mu pts %.2f %.2f \n", lep_p->Pt(), lep_m->Pt(), mu_p.Pt(), mu_m.Pt());
                         printf("new_cost = %.2f, cost = %.2f recalc = %.2f \n", new_cost, cost, get_cost_v2(*lep_p, *lep_m));

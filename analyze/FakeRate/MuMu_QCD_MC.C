@@ -13,7 +13,7 @@
 
 #define GEN_SIZE 300
 #define MU_SIZE 100
-#define JET_SIZE 20
+#define JET_SIZE 60
 #define MAX_SAMPLES 20
 
 const double root2 = sqrt(2);
