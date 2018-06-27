@@ -94,6 +94,57 @@ static void setup_new_mu_fakerate(FakeRate *FR){
     f0->Close();
 }
 
+double get_cost(TLorentzVector lep_p, TLorentzVector lep_m){
+
+    TLorentzVector cm = lep_p + lep_m;
+    double root2 = sqrt(2);
+    double lep_p_pls = (lep_p.E()+lep_p.Pz())/root2;
+    double lep_p_min = (lep_p.E()-lep_p.Pz())/root2;
+    double lep_m_pls = (lep_m.E()+lep_m.Pz())/root2;
+    double lep_m_min = (lep_m.E()-lep_m.Pz())/root2;
+    double qt2 = cm.Px()*cm.Px()+cm.Py()*cm.Py();
+    double cm_m2 = cm.M2();
+    //cost_p = cos(theta)_r (reconstructed collins soper angle, sign
+    //may be 'wrong' if lepton pair direction is not the same as inital
+    //quark direction)
+    double cost = 2*(lep_m_pls*lep_p_min - lep_m_min*lep_p_pls)/sqrt(cm_m2*(cm_m2 + qt2));
+    if(cm.Pz() <0.) cost = -cost;
+    return cost;
+}
+
+double get_cost_v2(TLorentzVector lep_p, TLorentzVector lep_m){
+
+    double Ebeam = 6500.;
+    double Pbeam = sqrt(Ebeam*Ebeam - 0.938*0.938);
+    TLorentzVector cm = lep_p + lep_m;
+    TLorentzVector p1(0., 0., Pbeam, Ebeam);
+    TLorentzVector p2(0., 0., -Pbeam, Ebeam);
+
+    if(cm.Pz() < 0. ){
+        TLorentzVector p = p1;
+        p1 = p2;
+        p2 = p;
+    }
+
+    TVector3 beta = -cm.BoostVector();
+    lep_m.Boost(beta);
+    lep_p.Boost(beta);
+    p1.Boost(beta);
+    p2.Boost(beta);
+
+    // Now calculate the direction of the new z azis
+
+    TVector3 p1u = p1.Vect();
+    p1u.SetMag(1.0);
+    TVector3 p2u = p2.Vect();
+    p2u.SetMag(1.0);
+    TVector3 pzu = p1u - p2u;
+    pzu.SetMag(1.0);
+    lep_m.RotateUz(pzu); 
+    double cost = lep_m.CosTheta();
+    return cost;
+}
+
 
 static Double_t get_new_fakerate_prob(Double_t pt, Double_t eta, TH2D *h){
     //pt=35;
@@ -136,8 +187,9 @@ int gen_data_template(TTree *t1, TH2F* h, vector<double> *v_xF, vector<double> *
         int flag1 = FLAG_MUONS, int flag2 = FLAG_M_BINS){
     Long64_t nEntries  =  t1->GetEntries();
     //printf("size is %i \n", nEntries);
+    bool turn_off_RC = true;
     Double_t m, xF, cost, gen_weight, jet1_cmva, jet2_cmva,
-             jet1_pt, jet2_pt;
+             jet1_pt, jet2_pt, lep1_pt, lep2_pt, lep1_pt_corr, lep2_pt_corr;
     Float_t met_pt;
     Int_t nJets;
     TLorentzVector *lep_p = 0;
@@ -153,10 +205,18 @@ int gen_data_template(TTree *t1, TH2F* h, vector<double> *v_xF, vector<double> *
     if(flag1 == FLAG_MUONS){
         t1->SetBranchAddress("mu_p", &lep_p);
         t1->SetBranchAddress("mu_m", &lep_m);
+        t1->SetBranchAddress("mu1_pt", &lep1_pt);
+        t1->SetBranchAddress("mu2_pt", &lep2_pt);
+        if(turn_off_RC){
+            t1->SetBranchAddress("mu1_pt_corr", &lep1_pt_corr);
+            t1->SetBranchAddress("mu2_pt_corr", &lep2_pt_corr);
+        }
     }
     else{
         t1->SetBranchAddress("el_p", &lep_p);
         t1->SetBranchAddress("el_m", &lep_m);
+        t1->SetBranchAddress("el1_pt", &lep1_pt);
+        t1->SetBranchAddress("el2_pt", &lep2_pt);
     }
     //t1->SetBranchAddress("nJets", &nJets);
     nJets =2;
@@ -167,6 +227,30 @@ int gen_data_template(TTree *t1, TH2F* h, vector<double> *v_xF, vector<double> *
         bool no_bjets = has_no_bjets(nJets, jet1_pt, jet2_pt, jet1_cmva, jet2_cmva);
         if(flag2 == FLAG_M_BINS){
             if(m >= var_low && m <= var_high && met_pt < 50. && no_bjets){
+                if(flag1 == FLAG_MUONS && turn_off_RC){
+                    TLorentzVector mu_p, mu_m, cm;
+                    if((lep_p->Pt() > lep_m->Pt() && lep1_pt_corr > lep2_pt_corr) ||
+                            (lep_p->Pt() < lep_m->Pt() && lep1_pt_corr < lep2_pt_corr)){
+                        mu_p.SetPtEtaPhiE(lep1_pt, lep_p->Eta(), lep_p->Phi(), lep_p->E());
+                        mu_m.SetPtEtaPhiE(lep2_pt, lep_m->Eta(), lep_m->Phi(), lep_m->E());
+                    }
+                    else{
+                        mu_p.SetPtEtaPhiE(lep2_pt, lep_p->Eta(), lep_p->Phi(), lep_p->E());
+                        mu_m.SetPtEtaPhiE(lep1_pt, lep_m->Eta(), lep_m->Phi(), lep_m->E());
+                    }
+                    double new_cost = get_cost_v2(mu_p, mu_m);
+
+                    if(abs(new_cost - cost) > 0.05){
+                        printf("\n");
+                        printf("lep pts %.2f %.2f mu pts %.2f %.2f \n", lep_p->Pt(), lep_m->Pt(), mu_p.Pt(), mu_m.Pt());
+                        printf("new_cost = %.2f, cost = %.2f recalc = %.2f \n", new_cost, cost, get_cost_v2(*lep_p, *lep_m));
+                        printf("raw pts: %.2f %.2f, RC pts: %.2f %2f, etas: %.2f %.2f, E: %.2f %.2f  \n",
+                                lep1_pt, lep2_pt, lep1_pt_corr, lep2_pt_corr, mu_p.Eta(), mu_m.Eta(), mu_p.E(), mu_m.E());
+                    }
+                    cost = new_cost;
+
+                }
+
                 n++;
                 h->Fill(xF, cost, 1); 
                 //printf("size %i \n", (int) v_cost->size());
@@ -237,8 +321,6 @@ int gen_mc_template(TTree *t1, Double_t alpha, TH2F* h_sym, TH2F *h_asym, TH2F *
     t1->SetBranchAddress("jet2_pt", &jet2_pt);
     t1->SetBranchAddress("nJets", &nJets);
     t1->SetBranchAddress("gen_weight", &gen_weight);
-    t1->SetBranchAddress("jet1_b_weight", &jet1_b_weight);
-    t1->SetBranchAddress("jet2_b_weight", &jet2_b_weight);
     t1->SetBranchAddress("pu_SF", &pu_SF);
     t1->SetBranchAddress("mu_R_up", &mu_R_up);
     t1->SetBranchAddress("mu_R_down", &mu_R_down);
