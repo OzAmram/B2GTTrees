@@ -252,7 +252,7 @@ void make_emu_m_hist(TTree *t1, TH1F *h_m, bool is_data = false, int flag1 = FLA
     }
 }
 
-void make_m_cost_pt_hist(TTree *t1, TH1F *h_m, TH1F *h_cost, TH1F *h_pt, bool is_data=false, int flag1 = FLAG_MUONS){
+void make_m_cost_pt_hist(TTree *t1, TH1F *h_m, TH1F *h_cost, TH1F *h_pt, bool is_data=false, int flag1 = FLAG_MUONS, bool turn_off_RC = false){
     //read event data
     Long64_t size  =  t1->GetEntries();
     Double_t m, xF, cost, mu1_pt, mu2_pt, jet1_cmva, jet2_cmva, gen_weight;
@@ -260,6 +260,7 @@ void make_m_cost_pt_hist(TTree *t1, TH1F *h_m, TH1F *h_cost, TH1F *h_pt, bool is
     Double_t gh_HLT_SF, gh_iso_SF, gh_id_SF, el_id_SF, el_reco_SF, el_HLT_SF;
     Double_t bcdef_trk_SF, gh_trk_SF;
     Double_t jet1_pt, jet2_pt, jet1_b_weight, jet2_b_weight, pu_SF;
+    Double_t mu1_pt_corr, mu2_pt_corr;
     jet1_b_weight = jet2_b_weight =1.;
     TLorentzVector *mu_p = 0;
     TLorentzVector *mu_m = 0;
@@ -281,13 +282,15 @@ void make_m_cost_pt_hist(TTree *t1, TH1F *h_m, TH1F *h_cost, TH1F *h_pt, bool is
     if(!is_data){
         t1->SetBranchAddress("nJets", &nJets);
         t1->SetBranchAddress("gen_weight", &gen_weight);
-        t1->SetBranchAddress("jet1_b_weight", &jet1_b_weight);
-        t1->SetBranchAddress("jet2_b_weight", &jet2_b_weight);
+        //t1->SetBranchAddress("jet1_b_weight", &jet1_b_weight);
+        //t1->SetBranchAddress("jet2_b_weight", &jet2_b_weight);
         t1->SetBranchAddress("pu_SF", &pu_SF);
     }
     if(flag1 == FLAG_MUONS){
         t1->SetBranchAddress("mu_p", &mu_p);
         t1->SetBranchAddress("mu_m", &mu_m);
+        t1->SetBranchAddress("mu1_pt", &mu1_pt);
+        t1->SetBranchAddress("mu2_pt", &mu2_pt);
         if(!is_data){
             t1->SetBranchAddress("bcdef_HLT_SF", &bcdef_HLT_SF);
             t1->SetBranchAddress("bcdef_iso_SF", &bcdef_iso_SF);
@@ -298,14 +301,38 @@ void make_m_cost_pt_hist(TTree *t1, TH1F *h_m, TH1F *h_cost, TH1F *h_pt, bool is
             t1->SetBranchAddress("gh_trk_SF", &gh_trk_SF);
             t1->SetBranchAddress("bcdef_trk_SF", &bcdef_trk_SF);
         }
+        if(turn_off_RC){
+            t1->SetBranchAddress("mu1_pt_corr", &mu1_pt_corr);
+            t1->SetBranchAddress("mu2_pt_corr", &mu2_pt_corr);
+        }
         for (int i=0; i<size; i++) {
             t1->GetEntry(i);
             bool no_bjets = has_no_bjets(nJets, jet1_pt, jet2_pt, jet1_cmva, jet2_cmva);
 
+            cm = *mu_p + *mu_m;
+            Double_t pt = cm.Pt();
+            cost = get_cost_v2(*mu_p, *mu_m);
+            if(turn_off_RC){
+                TLorentzVector mu_p_new, mu_m_new;
+                if((mu_p->Pt() > mu_m->Pt() && mu1_pt_corr > mu2_pt_corr) ||
+                        (mu_p->Pt() < mu_m->Pt() && mu1_pt_corr < mu2_pt_corr)){
+                    mu_p_new.SetPtEtaPhiE(mu1_pt, mu_p->Eta(), mu_p->Phi(), mu_p->E());
+                    mu_m_new.SetPtEtaPhiE(mu2_pt, mu_m->Eta(), mu_m->Phi(), mu_m->E());
+                }
+                else{
+                    mu_p_new.SetPtEtaPhiE(mu2_pt, mu_p->Eta(), mu_p->Phi(), mu_p->E());
+                    mu_m_new.SetPtEtaPhiE(mu1_pt, mu_m->Eta(), mu_m->Phi(), mu_m->E());
+                }
+                double new_cost = get_cost_v2(mu_p_new, mu_m_new);
+                cm = mu_p_new + mu_m_new;
+                //if(cm.M() < 150.) continue;
+                cost = new_cost;
+                m = cm.M();
+                pt = cm.Pt();
+                   
+            }
             if(m >= 150. && met_pt < 50. && no_bjets){
-                cm = *mu_p + *mu_m;
-                Double_t pt = cm.Pt();
-                cost = get_cost_v2(*mu_p, *mu_m);
+
                 if(is_data){
                     h_m->Fill(m);
                     h_cost->Fill(cost);
