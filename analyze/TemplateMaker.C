@@ -61,6 +61,7 @@ int gen_data_template(TTree *t1, TH2F* h, vector<double> *v_xF, vector<double> *
     int n=0;
     for (int i=0; i<nEntries; i++) {
         t1->GetEntry(i);
+        cost = get_cost_v2(*lep_p, *lep_m);
         bool no_bjets = has_no_bjets(nJets, jet1_pt, jet2_pt, jet1_cmva, jet2_cmva);
         if(flag2 == FLAG_M_BINS){
             if(m >= var_low && m <= var_high && met_pt < 50. && no_bjets){
@@ -144,7 +145,7 @@ int gen_mc_template(TTree *t1, Double_t alpha, TH2F* h_sym, TH2F *h_asym, TH2F *
     BTag_readers b_reader;
     BTag_effs btag_effs;
 
-    bool do_bweight = false;
+    bool do_bweight = true;
     jet1_b_weight = 1.;
     jet2_b_weight = 1.;
 
@@ -172,6 +173,9 @@ int gen_mc_template(TTree *t1, Double_t alpha, TH2F* h_sym, TH2F *h_asym, TH2F *
                     (flag2 == FLAG_PT_BINS && m >= 150. && pt >= var_low && pt <= var_high))
                 && met_pt < 50.  && no_bjets;
             if(pass){
+                cost = get_cost_v2(*lep_p, *lep_m);
+                if(cost_st>0.) cost_st = fabs(cost);
+                else cost_st = -fabs(cost);
                 reweight = (4./3.)*cost_st*(2. + alpha)/
                     (1. + cost_st*cost_st + alpha*(1.- cost_st*cost_st));
                 n++;
@@ -226,6 +230,9 @@ int gen_mc_template(TTree *t1, Double_t alpha, TH2F* h_sym, TH2F *h_asym, TH2F *
                     (flag2 == FLAG_PT_BINS && m >= 150. && pt >= var_low && pt <= var_high))
                 && met_pt < 50.  && no_bjets;
             if(pass){
+                cost = get_cost_v2(*lep_p, *lep_m);
+                if(cost_st>0.) cost_st = fabs(cost);
+                else cost_st = -fabs(cost);
                 reweight = (4./3.)*cost_st*(2. + alpha)/
                     (1. + cost_st*cost_st + alpha*(1.- cost_st*cost_st));
                 n++;
@@ -375,6 +382,7 @@ void gen_fakes_template(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_contam,
                     && met_pt < 50.  && no_bjets;
 
                 if(pass){
+                    cost = get_cost_v2(*lep_p, *lep_m);
                     //if(l==3) printf("Evt fr %.2e \n", evt_fakerate);
                     //if(l==3) printf("cost, fr %.2f %.2e \n", cost, evt_fakerate);
                     h->Fill(xF, cost, evt_fakerate);
@@ -474,6 +482,7 @@ void gen_fakes_template(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_contam,
                         (flag2 == FLAG_PT_BINS && m >= 150. && pt >= var_low && pt <= var_high))
                     && met_pt < 50.  && no_bjets;
                 if(pass){
+                    cost = get_cost_v2(*lep_p, *lep_m);
                     //if(l==3) printf("Evt fr %.2e \n", evt_fakerate);
                     //if(l==3) printf("cost, fr %.2f %.2e \n", cost, evt_fakerate);
                     h->Fill(xF, cost, evt_fakerate);
@@ -533,7 +542,7 @@ int gen_combined_background_template(int nTrees, TTree **ts, TH2F* h,
         t1->SetBranchAddress("gen_weight", &gen_weight);
         t1->SetBranchAddress("pu_SF", &pu_SF);
 
-        bool do_bweight = false;
+        bool do_bweight = true;
         jet1_b_weight = 1.;
         jet2_b_weight = 1.;
         if(flag1 == FLAG_MUONS){
@@ -562,6 +571,7 @@ int gen_combined_background_template(int nTrees, TTree **ts, TH2F* h,
                     && met_pt < 50.  && no_bjets;
 
                 if(pass){
+                    cost = get_cost_v2(*lep_p, *lep_m);
 
                     if(do_bweight){
                         jet1_b_weight = get_btag_weight(jet1_pt, jet1_eta,(Float_t) jet1_flavour , btag_effs, b_reader, 0);
@@ -600,6 +610,7 @@ int gen_combined_background_template(int nTrees, TTree **ts, TH2F* h,
                     && met_pt < 50.  && no_bjets;
                 if(pass){
 
+                    cost = get_cost_v2(*lep_p, *lep_m);
                     if(do_bweight){
                         jet1_b_weight = get_btag_weight(jet1_pt, jet1_eta,(Float_t) jet1_flavour , btag_effs, b_reader, 0);
                         jet2_b_weight = get_btag_weight(jet2_pt, jet2_eta,(Float_t) jet2_flavour , btag_effs, b_reader, 0);

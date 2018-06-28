@@ -14,7 +14,7 @@
 
 const double root2 = sqrt(2);
 const char* filename("SingleMuon_files_sep25.txt");
-const TString fout_name("output_files/SingleMuon_data_june26.root");
+const TString fout_name("output_files/SingleMuon_data_june28.root");
 
 
 bool is_empty_line(const char *s) {
@@ -40,7 +40,7 @@ void MuMu_reco_data_batch()
     //tout->SetDirectory(0);
     Double_t cm_m, xF, cost_r, mu1_pt, mu2_pt, mu1_eta, mu2_eta, jet1_pt, jet2_pt,
              jet1_cmva, jet1_eta, jet2_cmva, jet2_eta;
-    Double_t mu1_pt_corr, mu2_pt_corr;
+    Double_t mu1_pt_corr, mu2_pt_corr, mu1_pt_alt, mu2_pt_alt;
     Int_t nJets, pu_NtrueInt;
     Float_t met_pt;
     TLorentzVector mu_p, mu_m, cm, q1, q2;
@@ -51,6 +51,8 @@ void MuMu_reco_data_batch()
     tout->Branch("mu2_pt", &mu2_pt, "mu2_pt/D");
     tout->Branch("mu1_pt_corr", &mu1_pt_corr, "mu1_pt_corr/D");
     tout->Branch("mu2_pt_corr", &mu2_pt_corr, "mu2_pt_corr/D");
+    tout->Branch("mu1_pt_alt", &mu1_pt_alt, "mu1_pt_alt/D");
+    tout->Branch("mu2_pt_alt", &mu2_pt_alt, "mu2_pt_alt/D");
     tout->Branch("mu1_eta", &mu1_eta, "mu1_eta/D");
     tout->Branch("mu2_eta", &mu2_eta, "mu2_eta/D");
     tout->Branch("mu_m", "TLorentzVector", &mu_m);
@@ -167,7 +169,7 @@ void MuMu_reco_data_batch()
 
                 cm = mu_p + mu_m;
                 cm_m = cm.M();
-                if (iso_0 < tight_iso && iso_1 < tight_iso && cm_m >=150.){
+                if (iso_0 < tight_iso && iso_1 < tight_iso && cm_m >=50.){
                     xF = abs(2.*cm.Pz()/13000.); 
 
                     // compute Colins soper angle with formula
@@ -209,6 +211,10 @@ void MuMu_reco_data_batch()
                     }
                     mu1_pt_corr =mu1_pt *mu0_SF;
                     mu2_pt_corr =mu2_pt * mu1_SF;
+                    double mu0_SF_alt = rc.kScaleDT((int) mu_Charge[0], mu_Pt[0], mu_Eta[0], mu_Phi[0], 1, 0);
+                    double mu1_SF_alt = rc.kScaleDT((int) mu_Charge[0], mu_Pt[1], mu_Eta[1], mu_Phi[1], 1, 0);
+                    mu1_pt_alt = mu1_pt *mu0_SF_alt;
+                    mu2_pt_alt = mu2_pt *mu1_SF_alt;
                     tout->Fill();
 
                     nEvents++;

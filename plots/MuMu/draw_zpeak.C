@@ -213,9 +213,10 @@ void Fakerate_est_zpeak_mu(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_contam, 
 
 void draw_zpeak(){
     init();
-    f_mc = TFile::Open("../analyze/output_files/MuMu_DY_unbinned_june20.root");
+    //f_mc = TFile::Open("../analyze/output_files/MuMu_DY_unbinned_june20.root");
+    f_mc = TFile::Open("../analyze/output_files/MuMu_unbinned_DY_backbatch_june26.root");
     t_mc = (TTree *)f_mc->Get("T_data");
-    t_mc_nosig = (TTree *)f_mc->Get("T_back");
+    //t_mc_nosig = (TTree *)f_mc->Get("T_back");
     setTDRStyle();
 
 
@@ -256,7 +257,7 @@ void draw_zpeak(){
 
     make_m_zpeak_hist(t_data, data_m, true, type);
     make_m_zpeak_hist(t_mc, mc_m, false, type);
-    make_m_zpeak_hist(t_mc_nosig, mc_nosig_m, false, type);
+    //make_m_zpeak_hist(t_mc_nosig, mc_nosig_m, false, type);
     make_m_zpeak_hist(t_ttbar, ttbar_m, false, type);
     make_m_zpeak_hist(t_wt, wt_m, false);
     make_m_zpeak_hist(t_diboson, diboson_m, false, type);
@@ -291,7 +292,7 @@ void draw_zpeak(){
     m_stack->Add(wt_m);
     //m_stack->Add(QCD_m);
     m_stack->Add(ttbar_m);
-    m_stack->Add(mc_nosig_m);
+    //m_stack->Add(mc_nosig_m);
     m_stack->Add(mc_m);
 
 

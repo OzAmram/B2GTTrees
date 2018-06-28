@@ -33,10 +33,12 @@ Double_t alpha;
 void init(){
     //MC templates
     printf("init \n");
-    f_elel_mc = (TFile*) TFile::Open("output_files/ElEl_DY_june25.root");
+    f_elel_mc = (TFile*) TFile::Open("output_files/ElEl_DY_slim_june25.root");
+    //f_elel_mc = (TFile*) TFile::Open("output_files/ElEl_DY_mar8.root");
     t_elel_mc = (TTree *) f_elel_mc ->Get("T_data");
     t_elel_nosig = (TTree *) f_elel_mc ->Get("T_back");
-    f_elel_back = (TFile*) TFile::Open("output_files/ElEl_combined_back_june26.root");
+    //f_elel_back = (TFile*) TFile::Open("output_files/ElEl_combined_back_mar8.root");
+    f_elel_back = (TFile*) TFile::Open("output_files/ElEl_combined_back_slim_june26.root");
     t_elel_back = (TTree *) f_elel_back ->Get("T_data");
 
     f_elel_data = TFile::Open("output_files/SingleElectron_data_jan22.root");
@@ -56,12 +58,15 @@ void init(){
     ////////////////////////////////////////
 
     f_mumu_mc = (TFile*) TFile::Open("output_files/MuMu_DY_mar19.root");
+    //f_mumu_mc = (TFile*) TFile::Open("output_files/MuMu_DY_slim_june25.root");
     t_mumu_mc = (TTree *) f_mumu_mc ->Get("T_data");
     t_mumu_nosig = (TTree *) f_mumu_mc ->Get("T_back");
-    f_mumu_back = (TFile*) TFile::Open("output_files/MuMu_combined_back_june26.root");
+    //f_mumu_back = (TFile*) TFile::Open("output_files/MuMu_combined_back_jan22.root");
+    f_mumu_back = (TFile*) TFile::Open("output_files/MuMu_combined_back_slim_june26.root");
     t_mumu_back = (TTree *) f_mumu_back ->Get("T_data");
 
     f_mumu_data = TFile::Open("output_files/SingleMuon_data_jan22.root");
+    //f_mumu_data = TFile::Open("output_files/SingleMuon_data_slim_june25.root");
     t_mumu_data = (TTree *)f_mumu_data->Get("T_data"); 
 
     f_mumu_QCD = TFile::Open("../analyze/output_files/MuMu_QCD_est_mar8.root");

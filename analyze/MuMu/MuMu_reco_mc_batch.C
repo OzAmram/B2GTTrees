@@ -21,7 +21,7 @@ double Ebeam = 6500.;
 double Pbeam = sqrt(Ebeam*Ebeam - 0.938*0.938);
 
 char *filename("DY_files_june20.txt");
-const TString fout_name("output_files/MuMu_DY_rcoff_june27.root");
+const TString fout_name("output_files/MuMu_DY_june28.root");
 const bool PRINT=false;
 
 const bool data_2016 = true;
@@ -119,7 +119,7 @@ void MuMu_reco_mc_batch()
     //t_signal->SetDirectory(0);
     Double_t cm_m, xF, cost_r, cost_st, mu1_pt, mu2_pt, mu1_eta, mu2_eta, jet1_pt, jet2_pt, jet1_eta, jet2_eta, deltaC, 
              gen_weight, jet1_csv, jet1_cmva, jet2_csv, jet2_cmva, gen_m;
-    Double_t mu1_pt_corr, mu2_pt_corr;
+    Double_t mu1_pt_corr, mu2_pt_corr, mu1_pt_alt, mu2_pt_alt;
     Double_t bcdef_HLT_SF, bcdef_iso_SF, bcdef_id_SF, gh_HLT_SF, gh_iso_SF, gh_id_SF,
              bcdef_trk_SF, gh_trk_SF,
              jet1_b_weight, jet2_b_weight, pu_SF;
@@ -138,6 +138,8 @@ void MuMu_reco_mc_batch()
     t_signal->Branch("mu1_pt", &mu1_pt, "mu1_pt/D");
     t_signal->Branch("mu1_pt_corr", &mu1_pt_corr, "mu1_pt_corr/D");
     t_signal->Branch("mu2_pt_corr", &mu2_pt_corr, "mu2_pt_corr/D");
+    t_signal->Branch("mu1_pt_alt", &mu1_pt_alt, "mu1_pt_alt/D");
+    t_signal->Branch("mu2_pt_alt", &mu2_pt_alt, "mu2_pt_alt/D");
     t_signal->Branch("mu2_pt", &mu2_pt, "mu2_pt/D");
     t_signal->Branch("mu1_eta", &mu1_eta, "mu1_eta/D");
     t_signal->Branch("mu2_eta", &mu2_eta, "mu2_eta/D");
@@ -190,6 +192,8 @@ void MuMu_reco_mc_batch()
     t_back->Branch("mu2_pt", &mu2_pt, "mu2_pt/D");
     t_back->Branch("mu1_pt_corr", &mu1_pt_corr, "mu1_pt_corr/D");
     t_back->Branch("mu2_pt_corr", &mu2_pt_corr, "mu2_pt_corr/D");
+    t_back->Branch("mu1_pt_alt", &mu1_pt_alt, "mu1_pt_alt/D");
+    t_back->Branch("mu2_pt_alt", &mu2_pt_alt, "mu2_pt_alt/D");
     t_back->Branch("mu1_eta", &mu1_pt, "mu1_eta/D");
     t_back->Branch("mu2_eta", &mu2_pt, "mu2_eta/D");
     t_back->Branch("mu_m", "TLorentzVector", &mu_m);
@@ -378,16 +382,16 @@ void MuMu_reco_mc_batch()
                     double mu0_mcSF = rc.kScaleAndSmearMC((int) mu_Charge[0], mu_Pt[0], mu_Eta[0], mu_Phi[0], (int) mu_NumberTrackerLayers[0], rand->Rndm(), rand->Rndm(), 0, 0);
                     double mu1_mcSF = rc.kScaleAndSmearMC((int) mu_Charge[0], mu_Pt[1], mu_Eta[1], mu_Phi[1], (int) mu_NumberTrackerLayers[1], rand->Rndm(), rand->Rndm(), 0, 0);
                     if(mu_Charge[0] >0){
-                        //mu_p.SetPtEtaPhiE(mu0_mcSF * mu_Pt[0], mu_Eta[0], mu_Phi[0], mu_E[0]);
-                        //mu_m.SetPtEtaPhiE(mu1_mcSF * mu_Pt[1], mu_Eta[1], mu_Phi[1], mu_E[1]);
-                        mu_p.SetPtEtaPhiE(mu_Pt[0], mu_Eta[0], mu_Phi[0], mu_E[0]);
-                        mu_m.SetPtEtaPhiE(mu_Pt[1], mu_Eta[1], mu_Phi[1], mu_E[1]);
+                        mu_p.SetPtEtaPhiE(mu0_mcSF * mu_Pt[0], mu_Eta[0], mu_Phi[0], mu_E[0]);
+                        mu_m.SetPtEtaPhiE(mu1_mcSF * mu_Pt[1], mu_Eta[1], mu_Phi[1], mu_E[1]);
+                        //mu_p.SetPtEtaPhiE(mu_Pt[0], mu_Eta[0], mu_Phi[0], mu_E[0]);
+                        //mu_m.SetPtEtaPhiE(mu_Pt[1], mu_Eta[1], mu_Phi[1], mu_E[1]);
                     }
                     else{
-                        //mu_m.SetPtEtaPhiE(mu0_mcSF * mu_Pt[0], mu_Eta[0], mu_Phi[0], mu_E[0]);
-                        //mu_p.SetPtEtaPhiE(mu1_mcSF * mu_Pt[1], mu_Eta[1], mu_Phi[1], mu_E[1]);
-                        mu_m.SetPtEtaPhiE(mu_Pt[0], mu_Eta[0], mu_Phi[0], mu_E[0]);
-                        mu_p.SetPtEtaPhiE(mu_Pt[1], mu_Eta[1], mu_Phi[1], mu_E[1]);
+                        mu_m.SetPtEtaPhiE(mu0_mcSF * mu_Pt[0], mu_Eta[0], mu_Phi[0], mu_E[0]);
+                        mu_p.SetPtEtaPhiE(mu1_mcSF * mu_Pt[1], mu_Eta[1], mu_Phi[1], mu_E[1]);
+                        //mu_m.SetPtEtaPhiE(mu_Pt[0], mu_Eta[0], mu_Phi[0], mu_E[0]);
+                        //mu_p.SetPtEtaPhiE(mu_Pt[1], mu_Eta[1], mu_Phi[1], mu_E[1]);
                     }
                     //printf ("Momentum SFs are %.3f %.3f for Pts %.0f %.0f \n", mu0_mcSF, mu1_mcSF, mu_p.Pt(), mu_m.Pt());
                    
@@ -749,6 +753,10 @@ void MuMu_reco_mc_batch()
 
                         mu1_pt_corr =mu1_pt *mu0_mcSF;
                         mu2_pt_corr =mu2_pt * mu1_mcSF;
+                        double mu0_SF_alt = rc.kScaleDT((int) mu_Charge[0], mu_Pt[0], mu_Eta[0], mu_Phi[0], 1, 0);
+                        double mu1_SF_alt = rc.kScaleDT((int) mu_Charge[0], mu_Pt[1], mu_Eta[1], mu_Phi[1], 1, 0);
+                        mu1_pt_alt = mu1_pt *mu0_SF_alt;
+                        mu2_pt_alt = mu2_pt *mu1_SF_alt;
 
 
                         mu_R_up = scale_Weights[2];

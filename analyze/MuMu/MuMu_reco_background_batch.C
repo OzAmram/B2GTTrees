@@ -20,7 +20,7 @@ double Ebeam = 6500.;
 double Pbeam = sqrt(Ebeam*Ebeam - 0.938*0.938);
 
 char *filename("combined_back_files_june20.txt");
-const TString fout_name("output_files/MuMu_combined_back_slim_june27.root");
+const TString fout_name("output_files/MuMu_combined_back_june28.root");
 const double alpha = 0.05;
 const bool PRINT=false;
 
@@ -123,7 +123,7 @@ void MuMu_reco_background_batch()
              jet1_cmva, jet1_csv, jet2_cmva, jet2_csv;
     Double_t bcdef_HLT_SF, bcdef_iso_SF, bcdef_id_SF, gh_HLT_SF, gh_iso_SF, gh_id_SF, bcdef_trk_SF, gh_trk_SF,
              jet1_b_weight, jet2_b_weight, pu_SF;
-    Double_t mu1_pt_corr, mu2_pt_corr;
+    Double_t mu1_pt_corr, mu2_pt_corr, mu1_pt_alt, mu2_pt_alt;
     Int_t nJets, jet1_flavour, jet2_flavour, pu_NtrueInt;
     Float_t met_pt;
     TLorentzVector mu_p, mu_m, cm, q1, q2;
@@ -134,6 +134,8 @@ void MuMu_reco_background_batch()
     tout->Branch("mu2_pt", &mu2_pt, "mu2_pt/D");
     tout->Branch("mu1_pt_corr", &mu1_pt_corr, "mu1_pt_corr/D");
     tout->Branch("mu2_pt_corr", &mu2_pt_corr, "mu2_pt_corr/D");
+    tout->Branch("mu1_pt_alt", &mu1_pt_alt, "mu1_pt_alt/D");
+    tout->Branch("mu2_pt_alt", &mu2_pt_alt, "mu2_pt_alt/D");
     tout->Branch("mu1_eta", &mu1_eta, "mu1_eta/D");
     tout->Branch("mu2_eta", &mu2_eta, "mu2_eta/D");
     tout->Branch("mu_m", "TLorentzVector", &mu_m);
@@ -400,6 +402,10 @@ void MuMu_reco_background_batch()
 
                         mu1_pt_corr =mu1_pt *mu0_mcSF;
                         mu2_pt_corr =mu2_pt * mu1_mcSF;
+                        double mu0_SF_alt = rc.kScaleDT((int) mu_Charge[0], mu_Pt[0], mu_Eta[0], mu_Phi[0], 1, 0);
+                        double mu1_SF_alt = rc.kScaleDT((int) mu_Charge[0], mu_Pt[1], mu_Eta[1], mu_Phi[1], 1, 0);
+                        mu1_pt_alt = mu1_pt *mu0_SF_alt;
+                        mu2_pt_alt = mu2_pt *mu1_SF_alt;
 
                         tout->Fill();
                         nEvents++;
