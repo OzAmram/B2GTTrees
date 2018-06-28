@@ -177,31 +177,34 @@ int gen_data_template(TTree *t1, TH2F* h, vector<double> *v_xF, vector<double> *
         t1->GetEntry(i);
         bool no_bjets = has_no_bjets(nJets, jet1_pt, jet2_pt, jet1_cmva, jet2_cmva);
         if(flag2 == FLAG_M_BINS){
+            TLorentzVector mu_p, mu_m, cm;
+            if((lep_p->Pt() > lep_m->Pt() && lep1_pt_corr > lep2_pt_corr) ||
+                    (lep_p->Pt() < lep_m->Pt() && lep1_pt_corr < lep2_pt_corr)){
+                mu_p.SetPtEtaPhiE(lep1_pt, lep_p->Eta(), lep_p->Phi(), lep_p->E());
+                mu_m.SetPtEtaPhiE(lep2_pt, lep_m->Eta(), lep_m->Phi(), lep_m->E());
+            }
+            else{
+                mu_p.SetPtEtaPhiE(lep2_pt, lep_p->Eta(), lep_p->Phi(), lep_p->E());
+                mu_m.SetPtEtaPhiE(lep1_pt, lep_m->Eta(), lep_m->Phi(), lep_m->E());
+            }
+            double new_cost = get_cost_v2(mu_p, mu_m);
+
+            if(false && abs(new_cost - cost) > 0.05){
+                printf("\n");
+                printf("lep pts %.2f %.2f mu pts %.2f %.2f \n", lep_p->Pt(), lep_m->Pt(), mu_p.Pt(), mu_m.Pt());
+                printf("new_cost = %.2f, cost = %.2f recalc = %.2f \n", new_cost, cost, get_cost_v2(*lep_p, *lep_m));
+                printf("raw pts: %.2f %.2f, RC pts: %.2f %2f, etas: %.2f %.2f, E: %.2f %.2f  \n",
+                        lep1_pt, lep2_pt, lep1_pt_corr, lep2_pt_corr, mu_p.Eta(), mu_m.Eta(), mu_p.E(), mu_m.E());
+            }
+            cost = new_cost;
+            cm = mu_p + mu_m;
+            m = cm.M();
+            xF = abs(2.*cm.Pz()/13000.); 
+
+        }
+
             if(m >= var_low && m <= var_high && met_pt < 50. && no_bjets){
                 if(flag1 == FLAG_MUONS && turn_off_RC){
-                    TLorentzVector mu_p, mu_m, cm;
-                    if((lep_p->Pt() > lep_m->Pt() && lep1_pt_corr > lep2_pt_corr) ||
-                            (lep_p->Pt() < lep_m->Pt() && lep1_pt_corr < lep2_pt_corr)){
-                        mu_p.SetPtEtaPhiE(lep1_pt, lep_p->Eta(), lep_p->Phi(), lep_p->E());
-                        mu_m.SetPtEtaPhiE(lep2_pt, lep_m->Eta(), lep_m->Phi(), lep_m->E());
-                    }
-                    else{
-                        mu_p.SetPtEtaPhiE(lep2_pt, lep_p->Eta(), lep_p->Phi(), lep_p->E());
-                        mu_m.SetPtEtaPhiE(lep1_pt, lep_m->Eta(), lep_m->Phi(), lep_m->E());
-                    }
-                    double new_cost = get_cost_v2(lep_p, lep_m);
-
-                    if(false && abs(new_cost - cost) > 0.05){
-                        printf("\n");
-                        printf("lep pts %.2f %.2f mu pts %.2f %.2f \n", lep_p->Pt(), lep_m->Pt(), mu_p.Pt(), mu_m.Pt());
-                        printf("new_cost = %.2f, cost = %.2f recalc = %.2f \n", new_cost, cost, get_cost_v2(*lep_p, *lep_m));
-                        printf("raw pts: %.2f %.2f, RC pts: %.2f %2f, etas: %.2f %.2f, E: %.2f %.2f  \n",
-                                lep1_pt, lep2_pt, lep1_pt_corr, lep2_pt_corr, mu_p.Eta(), mu_m.Eta(), mu_p.E(), mu_m.E());
-                    }
-                    cost = new_cost;
-
-                }
-
                 n++;
                 h->Fill(xF, cost, 1); 
                 //printf("size %i \n", (int) v_cost->size());
