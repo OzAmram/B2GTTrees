@@ -44,10 +44,12 @@ void fill_gen_hist(TTree *t, TH1F *h_m, TH1F *h_pt){
         }
         if(got_lep1 && got_lep2){
             TLorentzVector cm = lep1 + lep2;
-            if(cm.M() > 100. && cm.M() < 200.){
+            if(cm.M() > 100. && cm.M() < 400.){
+                float weight = g->fGenInfo->weight;
                 nEvents++;
-                h_m->Fill(cm.M(), g->fGenInfo->weight);
-                h_pt->Fill(cm.Pt(), g->fGenInfo->weight);
+                h_m->Fill(cm.M(), weight);
+                h_pt->Fill(cm.Pt(),weight);
+                
             }
         }
         else{
@@ -55,6 +57,7 @@ void fill_gen_hist(TTree *t, TH1F *h_m, TH1F *h_pt){
             //printf("Didn't get leps \n");
         }
     }
+    printf("TOt weight is %.2f \n", h_m->Integral());
     h_m->Scale(1./h_m->Integral());
     h_pt->Scale(1./h_pt->Integral());
     printf("nEvents = %i nMiss  = %i nExtra = %i \n", nEvents, nMiss, nExtra);
@@ -134,19 +137,22 @@ void make_gen_plots_v2(){
     TFile *f_unbinned = TFile::Open("DY_M100_gen.root");
     TTree *t_unbinned = (TTree *)f_unbinned->Get("Events");
 
-    TFile *f_binned = TFile::Open("DY_M100_gen_ext.root");
+    TFile *f_binned = TFile::Open("DY_M100_ext_fixV2.root");
     TTree *t_binned = (TTree *)f_binned->Get("Events");
 
     float pt_bins[] = {0., 10., 20., 40., 60.,  80., 100., 150., 200., 300., 400.};
     int n_pt_bins = 10;
 
-    TH1F *h_unbin_m = new TH1F("h_unbin_m", "", 20, 100, 200);
+    TH1F *h_unbin_m = new TH1F("h_unbin_m", "", 30, 100, 400);
     TH1F *h_unbin_pt = new TH1F("h_unbin_pt", "", n_pt_bins, pt_bins);
 
-    TH1F *h_bin_m = new TH1F("h_bin_m", "", 20, 100, 200);
+    TH1F *h_bin_m = new TH1F("h_bin_m", "", 30, 100, 400);
     TH1F *h_bin_pt = new TH1F("h_bin_pt", "", n_pt_bins, pt_bins);
     fill_gen_hist(t_unbinned, h_unbin_m, h_unbin_pt);
     fill_gen_hist(t_binned, h_bin_m, h_bin_pt);
+
+    h_bin_m->Print();
+    h_unbin_m->Print();
 
     h_bin_pt->SetLineColor(kRed);
     h_unbin_pt->SetLineColor(kBlue);
@@ -160,7 +166,7 @@ void make_gen_plots_v2(){
 
 
 
-    make_ratio_plot("gen_m_cmp.pdf", h_bin_m, "Gen Level M-100 Extensions",h_unbin_m, "Gen Level M-100 Original", "Ext./Orig.", "M (GeV)", true);
-    make_ratio_plot("gen_pt_cmp.pdf", h_bin_pt, "Gen level M-100 Extensions",h_unbin_pt, "Gen Level M-100 Original", "Ext./Orig.", "Pt (GeV)", true);
+    make_ratio_plot("gen_M100_fix_m_cmp.pdf", h_bin_m, "Gen Level M-100 Extensions (with fix)",h_unbin_m, "Gen Level M-100 Original", "Ext./Orig.", "M (GeV)", true);
+    make_ratio_plot("gen_M100_fix_pt_cmp.pdf", h_bin_pt, "Gen level M-100 Extensions (with fix)",h_unbin_pt, "Gen Level M-100 Original", "Ext./Orig.", "Pt (GeV)", true);
     return;
 }
