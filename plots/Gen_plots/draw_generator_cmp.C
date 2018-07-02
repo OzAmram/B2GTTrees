@@ -166,8 +166,8 @@ void draw_generator_cmp(){
     h_pwg_m->SetLineWidth(3);
     h_pwg_cost->SetLineWidth(3);
 
-    make_ratio_plot("pwg_vs_mad_m_cmp.pdf", h_mad_m, "amc@NLO",h_pwg_m, "POWHEG", "aMC/POWHEG", "M (GeV)", true);
-    make_ratio_plot("pwg_vs_mad_cost_cmp.pdf", h_mad_cost, "amc@NLO",h_pwg_cost, "POWHEG", "aMC/POWHEG", "cos(#theta_{r})", false);
+    make_ratio_plot("pwg_vs_mad_m150_m_cmp.pdf", h_mad_m, "amc@NLO",h_pwg_m, "POWHEG", "aMC/POWHEG", "M (GeV)", true);
+    make_ratio_plot("pwg_vs_mad_m150_cost_cmp.pdf", h_mad_cost, "amc@NLO",h_pwg_cost, "POWHEG", "aMC/POWHEG", "cos(#theta_{*})", false);
 
     return;
 }

@@ -103,12 +103,14 @@ void draw_cmp(){
     QCD_m->SetFillColor(kRed -7);
     QCD_cost->SetFillColor(kRed -7);
 
-    make_m_cost_pt_hist(t_data, data_m, data_cost, data_pt, true, type);
-    make_m_cost_pt_hist(t_mc, mc_m, mc_cost, mc_pt, false, type);
-    make_m_cost_pt_hist(t_mc_nosig, mc_nosig_m, mc_nosig_cost, mc_nosig_pt, false, type);
-    make_m_cost_pt_hist(t_ttbar, ttbar_m, ttbar_cost, ttbar_pt, false, type);
-    make_m_cost_pt_hist(t_wt, wt_m, wt_cost, wt_pt, false);
-    make_m_cost_pt_hist(t_diboson, diboson_m, diboson_cost, diboson_pt, false, type);
+    bool do_RC = true;
+
+    make_m_cost_pt_hist(t_data, data_m, data_cost, data_pt, true, type, do_RC);
+    make_m_cost_pt_hist(t_mc, mc_m, mc_cost, mc_pt, false, type, do_RC);
+    make_m_cost_pt_hist(t_mc_nosig, mc_nosig_m, mc_nosig_cost, mc_nosig_pt, false, type, do_RC);
+    make_m_cost_pt_hist(t_ttbar, ttbar_m, ttbar_cost, ttbar_pt, false, type, do_RC);
+    make_m_cost_pt_hist(t_wt, wt_m, wt_cost, wt_pt, false, type, do_RC);
+    make_m_cost_pt_hist(t_diboson, diboson_m, diboson_cost, diboson_pt, false, type, do_RC);
 
     Fakerate_est_mu(t_WJets, t_QCD, t_WJets_mc, t_QCD_mc, QCD_m, QCD_cost, QCD_pt);
 
