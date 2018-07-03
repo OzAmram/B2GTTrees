@@ -20,8 +20,8 @@ const double root2 = sqrt(2);
 double Ebeam = 6500.;
 double Pbeam = sqrt(Ebeam*Ebeam - 0.938*0.938);
 
-char *filename("DY_files_june20.txt");
-const TString fout_name("output_files/MuMu_DY_june28.root");
+char *filename("DY_files_june20_noext.txt");
+const TString fout_name("output_files/MuMu_DY_noext_july02.root");
 const bool PRINT=false;
 
 const bool data_2016 = true;
@@ -379,19 +379,13 @@ void MuMu_reco_mc_batch()
                     float loose_iso = 0.25;
                     nNonIso++;
                     //only want events with 2 oppositely charged muons
-                    double mu0_mcSF = rc.kScaleAndSmearMC((int) mu_Charge[0], mu_Pt[0], mu_Eta[0], mu_Phi[0], (int) mu_NumberTrackerLayers[0], rand->Rndm(), rand->Rndm(), 0, 0);
-                    double mu1_mcSF = rc.kScaleAndSmearMC((int) mu_Charge[0], mu_Pt[1], mu_Eta[1], mu_Phi[1], (int) mu_NumberTrackerLayers[1], rand->Rndm(), rand->Rndm(), 0, 0);
                     if(mu_Charge[0] >0){
-                        mu_p.SetPtEtaPhiE(mu0_mcSF * mu_Pt[0], mu_Eta[0], mu_Phi[0], mu_E[0]);
-                        mu_m.SetPtEtaPhiE(mu1_mcSF * mu_Pt[1], mu_Eta[1], mu_Phi[1], mu_E[1]);
-                        //mu_p.SetPtEtaPhiE(mu_Pt[0], mu_Eta[0], mu_Phi[0], mu_E[0]);
-                        //mu_m.SetPtEtaPhiE(mu_Pt[1], mu_Eta[1], mu_Phi[1], mu_E[1]);
+                        mu_p.SetPtEtaPhiE(mu_Pt[0], mu_Eta[0], mu_Phi[0], mu_E[0]);
+                        mu_m.SetPtEtaPhiE(mu_Pt[1], mu_Eta[1], mu_Phi[1], mu_E[1]);
                     }
                     else{
-                        mu_m.SetPtEtaPhiE(mu0_mcSF * mu_Pt[0], mu_Eta[0], mu_Phi[0], mu_E[0]);
-                        mu_p.SetPtEtaPhiE(mu1_mcSF * mu_Pt[1], mu_Eta[1], mu_Phi[1], mu_E[1]);
-                        //mu_m.SetPtEtaPhiE(mu_Pt[0], mu_Eta[0], mu_Phi[0], mu_E[0]);
-                        //mu_p.SetPtEtaPhiE(mu_Pt[1], mu_Eta[1], mu_Phi[1], mu_E[1]);
+                        mu_m.SetPtEtaPhiE(mu_Pt[0], mu_Eta[0], mu_Phi[0], mu_E[0]);
+                        mu_p.SetPtEtaPhiE(mu_Pt[1], mu_Eta[1], mu_Phi[1], mu_E[1]);
                     }
                     //printf ("Momentum SFs are %.3f %.3f for Pts %.0f %.0f \n", mu0_mcSF, mu1_mcSF, mu_p.Pt(), mu_m.Pt());
                    
@@ -751,12 +745,24 @@ void MuMu_reco_mc_batch()
                         bcdef_trk_SF = get_Mu_trk_SF(abs(mu1_eta), runs_bcdef.TRK_SF) * get_Mu_trk_SF(abs(mu2_eta), runs_bcdef.TRK_SF);
                         gh_trk_SF = get_Mu_trk_SF(abs(mu1_eta), runs_gh.TRK_SF) * get_Mu_trk_SF(abs(mu2_eta), runs_gh.TRK_SF);
 
+                        double gen1_pt, gen2_pt;
+                        if(mu_Charge[0] < 0){
+                            gen1_pt = gen_mu_m_vec.Pt();
+                            gen2_pt = gen_mu_p_vec.Pt();
+                        }
+                        else{
+                            gen1_pt = gen_mu_p_vec.Pt();
+                            gen2_pt = gen_mu_m_vec.Pt();
+                        }
+
+                        double mu0_mcSF = rc.kScaleFromGenMC((int) mu_Charge[0], mu_Pt[0], mu_Eta[0], mu_Phi[0], (int) mu_NumberTrackerLayers[0], gen1_pt, rand->Rndm(), 0, 0);
+                        double mu1_mcSF = rc.kScaleFromGenMC((int) mu_Charge[0], mu_Pt[1], mu_Eta[1], mu_Phi[1], (int) mu_NumberTrackerLayers[1], gen2_pt, rand->Rndm(), 0, 0);
+                        double mu0_mcSF_alt = rc.kScaleFromGenMC((int) mu_Charge[0], mu_Pt[0], mu_Eta[0], mu_Phi[0], (int) mu_NumberTrackerLayers[0], gen1_pt, rand->Rndm(), 1, 0);
+                        double mu1_mcSF_alt = rc.kScaleFromGenMC((int) mu_Charge[0], mu_Pt[1], mu_Eta[1], mu_Phi[1], (int) mu_NumberTrackerLayers[1], gen2_pt, rand->Rndm(), 1, 0);
                         mu1_pt_corr =mu1_pt *mu0_mcSF;
                         mu2_pt_corr =mu2_pt * mu1_mcSF;
-                        double mu0_SF_alt = rc.kScaleDT((int) mu_Charge[0], mu_Pt[0], mu_Eta[0], mu_Phi[0], 1, 0);
-                        double mu1_SF_alt = rc.kScaleDT((int) mu_Charge[0], mu_Pt[1], mu_Eta[1], mu_Phi[1], 1, 0);
-                        mu1_pt_alt = mu1_pt *mu0_SF_alt;
-                        mu2_pt_alt = mu2_pt *mu1_SF_alt;
+                        mu1_pt_alt = mu1_pt *mu0_mcSF_alt;
+                        mu2_pt_alt = mu2_pt *mu1_mcSF_alt;
 
 
                         mu_R_up = scale_Weights[2];

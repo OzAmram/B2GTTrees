@@ -20,14 +20,14 @@
 #include "TSystem.h"
 //#include"Minuit2/Minuit2Minimizer.h"
 #include "Math/Functor.h"
-#include "../TemplateMaker_systematics.C"
-//#include "../TemplateMaker.C"
-#include "root_files.h"
+//#include "../TemplateMaker_systematics.C"
+#include "../TemplateMaker.C"
+#include "FitUtils.C"
 
 
 
 
-const TString fout_name("AFB_fit/fit_results/m_bins/combined_fit_test_june25.root");
+const TString fout_name("AFB_fit/fit_results/m_bins/combined_fit_test_june29.root");
 
 
 
@@ -220,6 +220,7 @@ void cleanup(){
 void combined_fit_all(){
     Double_t AFB_fit[n_m_bins], AFB_fit_err[n_m_bins], r_elel_back_fit[n_m_bins], r_elel_back_fit_err[n_m_bins], 
              r_mumu_back_fit[n_m_bins], r_mumu_back_fit_err[n_m_bins];
+    float chi_sq[n_m_bins];
 
     init();
     TTree *tout= new TTree("T_fit_res", "Tree with Fit Results");
@@ -306,14 +307,18 @@ void combined_fit_all(){
         r_mumu_back_err = r_mumu_back_fit_err[i];
         tout->Fill();
 
+        chi_sq[i] = get_chi_sq(h_mumu_data, h_mumu_sym, h_mumu_asym, h_mumu_back, AFB, r_mumu_back) + get_chi_sq(h_elel_data, h_elel_sym, h_elel_asym, h_elel_back, AFB, r_elel_back);
+
         cleanup();
     }
     TFile *fout = TFile::Open(fout_name, "RECREATE");
     fout->cd();
     tout->Write();
     for(int i=0; i<n_m_bins; i++){
-        printf("\n Fit on M=[%.0f, %.0f], %i ElEl Events, %i MuMu Events: AFB = %0.3f +/- %0.3f r_elel_back = %0.3f +/- %0.3f r_mumu_back =%0.3f +/- %0.3f \n", 
-                    m_bins[i], m_bins[i+1], nElElEvents[i], nMuMuEvents[i], AFB_fit[i], AFB_fit_err[i], r_elel_back_fit[i], r_elel_back_fit_err[i], r_mumu_back_fit[i], r_mumu_back_fit_err[i]);
+        printf("\n Fit on M=[%.0f, %.0f], %i ElEl Events, %i MuMu Events Chi_sq %.0f :" 
+                "AFB = %0.3f +/- %0.3f r_elel_back = %0.3f +/- %0.3f r_mumu_back =%0.3f +/- %0.3f \n", 
+                    m_bins[i], m_bins[i+1], nElElEvents[i], nMuMuEvents[i], chi_sq[i], 
+                    AFB_fit[i], AFB_fit_err[i], r_elel_back_fit[i], r_elel_back_fit_err[i], r_mumu_back_fit[i], r_mumu_back_fit_err[i]);
 
     }
     printf("fit results written to %s \n", fout_name.Data());

@@ -19,8 +19,8 @@ const double root2 = sqrt(2);
 double Ebeam = 6500.;
 double Pbeam = sqrt(Ebeam*Ebeam - 0.938*0.938);
 
-char *filename("combined_back_files_june20.txt");
-const TString fout_name("output_files/MuMu_combined_back_june28.root");
+char *filename("diboson_files_june20.txt");
+const TString fout_name("output_files/MuMu_diboson_june29.root");
 const double alpha = 0.05;
 const bool PRINT=false;
 
@@ -117,8 +117,10 @@ void MuMu_reco_background_batch()
     printf("Retrieved Scale Factors \n\n");
 
 
+    TFile *fout = TFile::Open(fout_name, "RECREATE");
+    fout->cd();
     TTree *tout= new TTree("T_data", "Tree with reco events");
-    tout->SetDirectory(0);
+    //tout->SetDirectory(0);
     Double_t cm_m, xF, cost_r, mu1_pt, mu2_pt, mu1_eta, mu2_eta, jet1_pt, jet2_pt, deltaC, jet1_eta, jet2_eta, gen_weight,
              jet1_cmva, jet1_csv, jet2_cmva, jet2_csv;
     Double_t bcdef_HLT_SF, bcdef_iso_SF, bcdef_id_SF, gh_HLT_SF, gh_iso_SF, gh_id_SF, bcdef_trk_SF, gh_trk_SF,
@@ -296,15 +298,15 @@ void MuMu_reco_background_batch()
                     float tight_iso = 0.15;
                     float loose_iso = 0.25;
                     //only want events with 2 oppositely charged muons
-                    double mu0_mcSF = rc.kScaleAndSmearMC(1, mu_Pt[0], mu_Eta[0], mu_Phi[0], (int) mu_NumberTrackerLayers[0], rand->Rndm(), rand->Rndm(), 0, 0);
-                    double mu1_mcSF = rc.kScaleAndSmearMC(-1, mu_Pt[1], mu_Eta[1], mu_Phi[1], (int) mu_NumberTrackerLayers[1], rand->Rndm(), rand->Rndm(), 0, 0);
                     if(mu_Charge[0] >0){
-                        mu_p.SetPtEtaPhiE(mu0_mcSF * mu_Pt[0], mu_Eta[0], mu_Phi[0], mu_E[0]);
-                        mu_m.SetPtEtaPhiE(mu1_mcSF * mu_Pt[1], mu_Eta[1], mu_Phi[1], mu_E[1]);
+                        //mu_p.SetPtEtaPhiE(mu0_mcSF * mu_Pt[0], mu_Eta[0], mu_Phi[0], mu_E[0]);
+                        //mu_m.SetPtEtaPhiE(mu1_mcSF * mu_Pt[1], mu_Eta[1], mu_Phi[1], mu_E[1]);
+                        mu_p.SetPtEtaPhiE(mu_Pt[0], mu_Eta[0], mu_Phi[0], mu_E[0]);
+                        mu_m.SetPtEtaPhiE(mu_Pt[1], mu_Eta[1], mu_Phi[1], mu_E[1]);
                     }
                     else{
-                        mu_m.SetPtEtaPhiE(mu0_mcSF * mu_Pt[0], mu_Eta[0], mu_Phi[0], mu_E[0]);
-                        mu_p.SetPtEtaPhiE(mu1_mcSF * mu_Pt[1], mu_Eta[1], mu_Phi[1], mu_E[1]);
+                        mu_m.SetPtEtaPhiE(mu_Pt[0], mu_Eta[0], mu_Phi[0], mu_E[0]);
+                        mu_p.SetPtEtaPhiE(mu_Pt[1], mu_Eta[1], mu_Phi[1], mu_E[1]);
                     }
 
                     cm = mu_p + mu_m;
@@ -400,10 +402,12 @@ void MuMu_reco_background_batch()
 
                         pu_SF = get_pileup_SF(pu_NtrueInt, pu_SFs.pileup_ratio);
 
+                        double mu0_mcSF = rc.kScaleAndSmearMC(1, mu_Pt[0], mu_Eta[0], mu_Phi[0], (int) mu_NumberTrackerLayers[0], rand->Rndm(), rand->Rndm(), 0, 0);
+                        double mu1_mcSF = rc.kScaleAndSmearMC(-1, mu_Pt[1], mu_Eta[1], mu_Phi[1], (int) mu_NumberTrackerLayers[1], rand->Rndm(), rand->Rndm(), 0, 0);
+                        double mu0_mcSF_alt = rc.kScaleAndSmearMC(1, mu_Pt[0], mu_Eta[0], mu_Phi[0], (int) mu_NumberTrackerLayers[0], rand->Rndm(), rand->Rndm(), 1, 0);
+                        double mu1_mcSF_alt = rc.kScaleAndSmearMC(-1, mu_Pt[1], mu_Eta[1], mu_Phi[1], (int) mu_NumberTrackerLayers[1], rand->Rndm(), rand->Rndm(), 1, 0);
                         mu1_pt_corr =mu1_pt *mu0_mcSF;
                         mu2_pt_corr =mu2_pt * mu1_mcSF;
-                        double mu0_SF_alt = rc.kScaleDT((int) mu_Charge[0], mu_Pt[0], mu_Eta[0], mu_Phi[0], 1, 0);
-                        double mu1_SF_alt = rc.kScaleDT((int) mu_Charge[0], mu_Pt[1], mu_Eta[1], mu_Phi[1], 1, 0);
                         mu1_pt_alt = mu1_pt *mu0_SF_alt;
                         mu2_pt_alt = mu2_pt *mu1_SF_alt;
 
@@ -430,13 +434,11 @@ void MuMu_reco_background_batch()
     printf("There were %i ttbar events in %i files.\n",
             nEvents, nFiles);
 
-    TFile *fout = TFile::Open(fout_name, "RECREATE");
+    printf("Writing output to file at %s \n", fout_name.Data());
+
     fout->cd();
 
-
     tout->Write();
-
-    printf("Writing output to file at %s \n", fout_name.Data());
 
     fout->Close();
 

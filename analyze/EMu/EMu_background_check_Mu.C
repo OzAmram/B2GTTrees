@@ -13,15 +13,15 @@
 #define GEN_SIZE 300
 #define MU_SIZE 100
 #define EL_SIZE 200
-#define JET_SIZE 20
+#define JET_SIZE 60
 #define MAX_SAMPLES 20
 
 const double root2 = sqrt(2);
 double Ebeam = 6500.;
 double Pbeam = sqrt(Ebeam*Ebeam - 0.938*0.938);
 
-char *filename("TTbar_files_aug29.txt");
-const TString fout_name("output_files/EMu_background_ttbar_Mu_mar29.root");
+char *filename("DY_files_unbinned_june20.txt");
+const TString fout_name("output_files/EMu_DY_Mu_june29.root");
 const bool PRINT=false;
 
 
@@ -105,8 +105,9 @@ void EMu_background_check_Mu()
     BTag_effs btag_effs;
     el_SFs el_SF;
     //separate SFs for runs BCDEF and GH
-    setup_SFs(&runs_bcdef, &runs_gh, &b_reader, &btag_effs, &pu_SFs);
+    setup_SFs(&runs_bcdef, &runs_gh, &pu_SFs);
     setup_el_SF(&el_SF);
+    setup_btag_SFs(&b_reader, &btag_effs);
     printf("got Sfs\n");
 
     TTree *tout= new TTree("T_data", "Tree with reco events");
@@ -261,6 +262,7 @@ void EMu_background_check_Mu()
 
 
             Long64_t nEntries =  t1->GetEntries();
+            printf("Tree has %i entries \n", (int) nEntries);
 
             char out_buff[10000];
             bool print_out = false;
@@ -342,7 +344,6 @@ void EMu_background_check_Mu()
 
 
 
-                        btag_weight = get_emu_btag_weight(jet1_pt, jet1_eta, jet1_flavour, jet2_pt, jet2_eta, jet2_flavour, btag_effs, b_reader);
                         bcdef_HLT_SF = get_HLT_SF_1mu(mu1_pt, mu1_eta, runs_bcdef.HLT_SF);
                         gh_HLT_SF = get_HLT_SF_1mu(mu1_pt, mu1_eta, runs_gh.HLT_SF);
 

@@ -22,7 +22,7 @@
 #include "Math/Functor.h"
 //#include "../TemplateMaker_systematics.C"
 #include "../TemplateMaker.C"
-#include "root_files.h"
+#include "FitUtils.C"
 
 
 
@@ -141,12 +141,14 @@ void setup(){
     printf("Generating templates \n");
 
     if(FLAG == FLAG_MUONS){
-        nDataEvents = gen_data_template(t_mumu_data, h_data, &v_xF, &v_cost, m_low, m_high, FLAG);
-        gen_mc_template(t_mumu_mc, alpha, h_sym, h_asym, h_sym_count, m_low, m_high, FLAG);
+        bool do_RC = true;
+        int flag2 = FLAG_M_BINS;
+        nDataEvents = gen_data_template(t_mumu_data, h_data, &v_xF, &v_cost, m_low, m_high, FLAG, flag2, do_RC);
+        gen_mc_template(t_mumu_mc, alpha, h_sym, h_asym, h_sym_count, m_low, m_high, FLAG, flag2, do_RC);
         TTree *ts[2] = {t_mumu_back, t_mumu_nosig};
 
-        gen_fakes_template(t_mumu_WJets, t_mumu_QCD, t_mumu_WJets_contam, t_mumu_QCD_contam, h_back, m_low, m_high, FLAG);
-        gen_combined_background_template(2, ts, h_back, m_low, m_high, FLAG);
+        gen_fakes_template(t_mumu_WJets, t_mumu_QCD, t_mumu_WJets_contam, t_mumu_QCD_contam, h_back, m_low, m_high, FLAG, flag2);
+        gen_combined_background_template(2, ts, h_back, m_low, m_high, FLAG, flag2, do_RC);
 
     }
     if(FLAG == FLAG_ELECTRONS){
@@ -189,6 +191,7 @@ void cleanup(){
 void single_fit_all(){
     init();
     Double_t AFB_fit[n_m_bins], AFB_fit_err[n_m_bins], r_back_fit[n_m_bins], r_back_fit_err[n_m_bins];
+    float chi_sq[n_m_bins];
     unsigned int nEvents[n_m_bins];
     TTree *tout= new TTree("T_fit_res", "Tree with Fit Results");
     tout->SetDirectory(0);
@@ -252,6 +255,8 @@ void single_fit_all(){
         nEvents[i] = nDataEvents;
         tout->Fill();
 
+        chi_sq[i] = get_chi_sq(h_data, h_sym, h_asym, h_back, AFB, r_back);
+
 
 
         cleanup();
@@ -277,8 +282,8 @@ void single_fit_all(){
         printf("ElEl fit results, written out to %s \n" , elel_fout_name.Data());
     }
     for(int i=0; i<n_m_bins; i++){
-        printf("\n Fit on M=[%.0f, %.0f], %i Events: AFB = %0.3f +/- %0.3f r_back = %0.3f +/- %0.3f \n", 
-                    m_bins[i], m_bins[i+1], nEvents[i], AFB_fit[i], AFB_fit_err[i], r_back_fit[i], r_back_fit_err[i]);
+        printf("\n Fit on M=[%.0f, %.0f], %i Events chi_sq %.0f: AFB = %0.3f +/- %0.3f r_back = %0.3f +/- %0.3f \n", 
+                    m_bins[i], m_bins[i+1], nEvents[i], chi_sq[i], AFB_fit[i], AFB_fit_err[i], r_back_fit[i], r_back_fit_err[i]);
 
     }
 

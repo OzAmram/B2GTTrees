@@ -14,7 +14,7 @@
 
 const double root2 = sqrt(2);
 const char* filename("SingleMuon_files_sep25.txt");
-const TString fout_name("output_files/SingleMuon_data_june28.root");
+const TString fout_name("output_files/SingleMuon_data_june29.root");
 
 
 bool is_empty_line(const char *s) {
@@ -155,15 +155,13 @@ void MuMu_reco_data_batch()
                 float iso_1 = (mu_SumChargedHadronPt[1] + max(0., mu_SumNeutralHadronPt[1] + mu_SumPhotonPt[1] - 0.5 * mu_SumPUPt[1]))/mu_Pt[1];
                 const float tight_iso = 0.15;
                 const float loose_iso = 0.25;
-                double mu0_SF = rc.kScaleDT((int) mu_Charge[0], mu_Pt[0], mu_Eta[0], mu_Phi[0], 0, 0);
-                double mu1_SF = rc.kScaleDT((int) mu_Charge[0], mu_Pt[1], mu_Eta[1], mu_Phi[1], 0, 0);
                 if(mu_Charge[0] >0){
-                    mu_p.SetPtEtaPhiE(mu0_SF*mu_Pt[0], mu_Eta[0], mu_Phi[0], mu_E[0]);
-                    mu_m.SetPtEtaPhiE(mu1_SF*mu_Pt[1], mu_Eta[1], mu_Phi[1], mu_E[1]);
+                    mu_p.SetPtEtaPhiE(mu_Pt[0], mu_Eta[0], mu_Phi[0], mu_E[0]);
+                    mu_m.SetPtEtaPhiE(mu_Pt[1], mu_Eta[1], mu_Phi[1], mu_E[1]);
                 }
                 else{
-                    mu_m.SetPtEtaPhiE(mu0_SF*mu_Pt[0], mu_Eta[0], mu_Phi[0], mu_E[0]);
-                    mu_p.SetPtEtaPhiE(mu1_SF*mu_Pt[1], mu_Eta[1], mu_Phi[1], mu_E[1]);
+                    mu_m.SetPtEtaPhiE(mu_Pt[0], mu_Eta[0], mu_Phi[0], mu_E[0]);
+                    mu_p.SetPtEtaPhiE(mu_Pt[1], mu_Eta[1], mu_Phi[1], mu_E[1]);
                 }
                 //printf ("Momentum SFs are %.3f %.3f for Pts %.0f %.0f \n", mu0_SF, mu1_SF, mu_p.Pt(), mu_m.Pt());
 
@@ -209,10 +207,12 @@ void MuMu_reco_data_batch()
                             }
                         }
                     }
-                    mu1_pt_corr =mu1_pt *mu0_SF;
-                    mu2_pt_corr =mu2_pt * mu1_SF;
+                    double mu0_SF = rc.kScaleDT((int) mu_Charge[0], mu_Pt[0], mu_Eta[0], mu_Phi[0], 0, 0);
+                    double mu1_SF = rc.kScaleDT((int) mu_Charge[0], mu_Pt[1], mu_Eta[1], mu_Phi[1], 0, 0);
                     double mu0_SF_alt = rc.kScaleDT((int) mu_Charge[0], mu_Pt[0], mu_Eta[0], mu_Phi[0], 1, 0);
                     double mu1_SF_alt = rc.kScaleDT((int) mu_Charge[0], mu_Pt[1], mu_Eta[1], mu_Phi[1], 1, 0);
+                    mu1_pt_corr =mu1_pt *mu0_SF;
+                    mu2_pt_corr =mu2_pt * mu1_SF;
                     mu1_pt_alt = mu1_pt *mu0_SF_alt;
                     mu2_pt_alt = mu2_pt *mu1_SF_alt;
                     tout->Fill();

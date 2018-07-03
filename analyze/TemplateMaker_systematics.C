@@ -50,12 +50,13 @@ void print_hist(TH2 *h){
 //static type means functions scope is only this file, to avoid conflicts
 
 int gen_data_template(TTree *t1, TH2F* h, vector<double> *v_xF, vector<double> *v_cost, Double_t var_low, Double_t var_high, 
-        int flag1 = FLAG_MUONS, int flag2 = FLAG_M_BINS){
+        int flag1 = FLAG_MUONS, int flag2 = FLAG_M_BINS, bool turn_on_RC = false){
+    h->Sumw2();
     Long64_t nEntries  =  t1->GetEntries();
     //printf("size is %i \n", nEntries);
-    bool turn_off_RC = false;
     Double_t m, xF, cost, gen_weight, jet1_cmva, jet2_cmva,
-             jet1_pt, jet2_pt, lep1_pt, lep2_pt, lep1_pt_corr, lep2_pt_corr;
+             jet1_pt, jet2_pt, lep1_pt, lep2_pt, lep1_pt_corr, lep2_pt_corr,
+             lep1_pt_alt, lep2_pt_alt;
     Float_t met_pt;
     Int_t nJets;
     TLorentzVector *lep_p = 0;
@@ -73,10 +74,10 @@ int gen_data_template(TTree *t1, TH2F* h, vector<double> *v_xF, vector<double> *
         t1->SetBranchAddress("mu_m", &lep_m);
         t1->SetBranchAddress("mu1_pt", &lep1_pt);
         t1->SetBranchAddress("mu2_pt", &lep2_pt);
-        if(turn_off_RC){
-            t1->SetBranchAddress("mu1_pt_corr", &lep1_pt_corr);
-            t1->SetBranchAddress("mu2_pt_corr", &lep2_pt_corr);
-        }
+        t1->SetBranchAddress("mu1_pt_corr", &lep1_pt_corr);
+        t1->SetBranchAddress("mu2_pt_corr", &lep2_pt_corr);
+        t1->SetBranchAddress("mu1_pt_alt", &lep1_pt_alt);
+        t1->SetBranchAddress("mu2_pt_alt", &lep2_pt_alt);
     }
     else{
         t1->SetBranchAddress("el_p", &lep_p);
@@ -92,19 +93,21 @@ int gen_data_template(TTree *t1, TH2F* h, vector<double> *v_xF, vector<double> *
         t1->GetEntry(i);
         cost = get_cost_v2(*lep_p, *lep_m);
         bool no_bjets = has_no_bjets(nJets, jet1_pt, jet2_pt, jet1_cmva, jet2_cmva);
-        if(flag2 == FLAG_M_BINS){
+
+        if(flag1 == FLAG_MUONS && turn_on_RC){
             TLorentzVector mu_p, mu_m, cm;
             if((lep_p->Pt() > lep_m->Pt() && lep1_pt_corr > lep2_pt_corr) ||
                     (lep_p->Pt() < lep_m->Pt() && lep1_pt_corr < lep2_pt_corr)){
-                mu_p.SetPtEtaPhiE(lep1_pt, lep_p->Eta(), lep_p->Phi(), lep_p->E());
-                mu_m.SetPtEtaPhiE(lep2_pt, lep_m->Eta(), lep_m->Phi(), lep_m->E());
+                mu_p.SetPtEtaPhiE(lep1_pt_corr, lep_p->Eta(), lep_p->Phi(), lep_p->E());
+                mu_m.SetPtEtaPhiE(lep2_pt_corr, lep_m->Eta(), lep_m->Phi(), lep_m->E());
             }
             else{
-                mu_p.SetPtEtaPhiE(lep2_pt, lep_p->Eta(), lep_p->Phi(), lep_p->E());
-                mu_m.SetPtEtaPhiE(lep1_pt, lep_m->Eta(), lep_m->Phi(), lep_m->E());
+                mu_p.SetPtEtaPhiE(lep2_pt_corr, lep_p->Eta(), lep_p->Phi(), lep_p->E());
+                mu_m.SetPtEtaPhiE(lep1_pt_corr, lep_m->Eta(), lep_m->Phi(), lep_m->E());
             }
             double new_cost = get_cost_v2(mu_p, mu_m);
 
+            /*
             if(false && abs(new_cost - cost) > 0.05){
                 printf("\n");
                 printf("lep pts %.2f %.2f mu pts %.2f %.2f \n", lep_p->Pt(), lep_m->Pt(), mu_p.Pt(), mu_m.Pt());
@@ -112,15 +115,16 @@ int gen_data_template(TTree *t1, TH2F* h, vector<double> *v_xF, vector<double> *
                 printf("raw pts: %.2f %.2f, RC pts: %.2f %2f, etas: %.2f %.2f, E: %.2f %.2f  \n",
                         lep1_pt, lep2_pt, lep1_pt_corr, lep2_pt_corr, mu_p.Eta(), mu_m.Eta(), mu_p.E(), mu_m.E());
             }
+            */
             cost = new_cost;
             cm = mu_p + mu_m;
             m = cm.M();
             xF = abs(2.*cm.Pz()/13000.); 
 
         }
+    if(flag2 == FLAG_M_BINS){
 
             if(m >= var_low && m <= var_high && met_pt < 50. && no_bjets){
-                if(flag1 == FLAG_MUONS && turn_off_RC){
                 n++;
                 h->Fill(xF, cost, 1); 
                 //printf("size %i \n", (int) v_cost->size());
@@ -154,7 +158,7 @@ int gen_data_template(TTree *t1, TH2F* h, vector<double> *v_xF, vector<double> *
 
 
 int gen_mc_template(TTree *t1, Double_t alpha, TH2F* h_sym, TH2F *h_asym, TH2F *h_count, 
-        Double_t var_low, Double_t var_high, int flag1 = FLAG_MUONS, int flag2 = FLAG_M_BINS,
+        Double_t var_low, Double_t var_high, int flag1 = FLAG_MUONS, int flag2 = FLAG_M_BINS, bool turn_on_RC = false,
         int pdf_sys = -1){
     Long64_t nEntries  =  t1->GetEntries();
     //printf("size is %i \n", nEntries);
@@ -174,6 +178,7 @@ int gen_mc_template(TTree *t1, Double_t alpha, TH2F* h_sym, TH2F *h_asym, TH2F *
     Double_t el1_pt, el1_eta, el2_pt, el2_eta;
     Double_t mu_R_up, mu_R_down, mu_F_up, mu_F_down, 
              mu_RF_up, mu_RF_down, pdf_up, pdf_down;
+    Double_t mu1_pt_corr, mu2_pt_corr, mu1_pt_alt, mu2_pt_alt;
     Float_t cost_pt, met_pt;
     Float_t pdf_weights[100];
     TLorentzVector *lep_p=0;
@@ -242,7 +247,12 @@ int gen_mc_template(TTree *t1, Double_t alpha, TH2F* h_sym, TH2F *h_asym, TH2F *
         t1->SetBranchAddress("gh_iso_SF", &gh_iso_SF);
         t1->SetBranchAddress("gh_id_SF", &gh_id_SF);
         t1->SetBranchAddress("gh_trk_SF", &gh_trk_SF);
-
+        if(turn_on_RC){
+            t1->SetBranchAddress("mu1_pt_corr", &mu1_pt_corr);
+            t1->SetBranchAddress("mu2_pt_corr", &mu2_pt_corr);
+            t1->SetBranchAddress("mu1_pt_alt", &mu1_pt_alt);
+            t1->SetBranchAddress("mu2_pt_alt", &mu2_pt_alt);
+        }
 
 
         mu_SFs runs_bcdef, runs_gh;
@@ -251,7 +261,7 @@ int gen_mc_template(TTree *t1, Double_t alpha, TH2F* h_sym, TH2F *h_asym, TH2F *
         if(do_SF_sys){
             setup_SFs(&runs_bcdef, &runs_gh, &pu_SFs);
         }
-       
+
 
         for (int i=0; i<nEntries; i++) {
             t1->GetEntry(i);
@@ -260,13 +270,35 @@ int gen_mc_template(TTree *t1, Double_t alpha, TH2F* h_sym, TH2F *h_asym, TH2F *
                 TLorentzVector cm = *lep_p + *lep_m;
                 pt = cm.Pt();
             }
-            bool pass = ((flag2 == FLAG_M_BINS && m >= var_low && m <= var_high) ||
-                        (flag2 == FLAG_PT_BINS && m >= 150. && pt >= var_low && pt <= var_high))
-                        && met_pt < 50.  && no_bjets;
-            if(pass){
-                cost = get_cost_v2(*lep_p, *lep_m);
+            cost = get_cost_v2(*lep_p, *lep_m);
+            if(cost_st>0.) cost_st = fabs(cost);
+            else cost_st = -fabs(cost);
+            if(turn_on_RC){
+                TLorentzVector mu_p_new, mu_m_new, cm;
+                if((lep_p->Pt() > lep_m->Pt() && mu1_pt_corr > mu2_pt_corr) ||
+                        (lep_p->Pt() < lep_m->Pt() && mu1_pt_corr < mu2_pt_corr)){
+                    mu_p_new.SetPtEtaPhiE(mu1_pt_corr, lep_p->Eta(), lep_p->Phi(), lep_p->E());
+                    mu_m_new.SetPtEtaPhiE(mu2_pt_corr, lep_m->Eta(), lep_m->Phi(), lep_m->E());
+                }
+                else{
+                    mu_p_new.SetPtEtaPhiE(mu2_pt_corr, lep_p->Eta(), lep_p->Phi(), lep_p->E());
+                    mu_m_new.SetPtEtaPhiE(mu1_pt_corr, lep_m->Eta(), lep_m->Phi(), lep_m->E());
+                }
+                double new_cost = get_cost_v2(mu_p_new, mu_m_new);
+                cm = mu_p_new + mu_m_new;
+                //if(cm.M() < 150.) continue;
+                cost = new_cost;
+                m = cm.M();
+                pt = cm.Pt();
+                xF = abs(2.*cm.Pz()/13000.); 
                 if(cost_st>0.) cost_st = fabs(cost);
                 else cost_st = -fabs(cost);
+                   
+            }
+            bool pass = ((flag2 == FLAG_M_BINS && m >= var_low && m <= var_high) ||
+                    (flag2 == FLAG_PT_BINS && m >= 150. && pt >= var_low && pt <= var_high))
+                && met_pt < 50.  && no_bjets;
+            if(pass){
                 reweight = (4./3.)*cost_st*(2. + alpha)/
                     (1. + cost_st*cost_st + alpha*(1.- cost_st*cost_st));
                 n++;
@@ -332,7 +364,7 @@ int gen_mc_template(TTree *t1, Double_t alpha, TH2F* h_sym, TH2F *h_asym, TH2F *
         t1->SetBranchAddress("el_id_SF", &el_id_SF);
         t1->SetBranchAddress("el_HLT_SF", &el_HLT_SF);
         t1->SetBranchAddress("el_reco_SF", &el_reco_SF);
-        
+
         el_SFs el_SF;
         if(do_SF_sys){
             setup_el_SF(&el_SF);
@@ -348,8 +380,8 @@ int gen_mc_template(TTree *t1, Double_t alpha, TH2F* h_sym, TH2F *h_asym, TH2F *
                 pt = cm.Pt();
             }
             bool pass = ((flag2 == FLAG_M_BINS && m >= var_low && m <= var_high) ||
-                        (flag2 == FLAG_PT_BINS && m >= 150. && pt >= var_low && pt <= var_high))
-                        && met_pt < 50.  && no_bjets;
+                    (flag2 == FLAG_PT_BINS && m >= 150. && pt >= var_low && pt <= var_high))
+                && met_pt < 50.  && no_bjets;
             if(pass){
                 cost = get_cost_v2(*lep_p, *lep_m);
                 if(cost_st>0.) cost_st = fabs(cost);
@@ -510,8 +542,8 @@ void gen_fakes_template(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_contam,
                     pt = cm.Pt();
                 }
                 bool pass = ((flag2 == FLAG_M_BINS && m >= var_low && m <= var_high) ||
-                            (flag2 == FLAG_PT_BINS && m >= 150. && pt >= var_low && pt <= var_high))
-                            && met_pt < 50.  && no_bjets;
+                        (flag2 == FLAG_PT_BINS && m >= 150. && pt >= var_low && pt <= var_high))
+                    && met_pt < 50.  && no_bjets;
 
                 if(pass){
                     cost = get_cost_v2(*lep_p, *lep_m);
@@ -610,8 +642,8 @@ void gen_fakes_template(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_contam,
                     pt = cm.Pt();
                 }
                 bool pass = ((flag2 == FLAG_M_BINS && m >= var_low && m <= var_high) ||
-                            (flag2 == FLAG_PT_BINS && m >= 150. && pt >= var_low && pt <= var_high))
-                            && met_pt < 50.  && no_bjets;
+                        (flag2 == FLAG_PT_BINS && m >= 150. && pt >= var_low && pt <= var_high))
+                    && met_pt < 50.  && no_bjets;
                 if(pass){
                     cost = get_cost_v2(*lep_p, *lep_m);
                     //if(l==3) printf("Evt fr %.2e \n", evt_fakerate);
@@ -635,7 +667,8 @@ void gen_fakes_template(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_contam,
 
 
 int gen_combined_background_template(int nTrees, TTree **ts, TH2F* h,  
-        Double_t var_low, Double_t var_high, int flag1 = FLAG_MUONS, int flag2 = FLAG_M_BINS){
+        Double_t var_low, Double_t var_high, int flag1 = FLAG_MUONS, int flag2 = FLAG_M_BINS,
+        bool turn_on_RC = false){
     h->Sumw2();
 
     BTag_readers b_reader;
@@ -651,6 +684,7 @@ int gen_combined_background_template(int nTrees, TTree **ts, TH2F* h,
         Double_t gh_HLT_SF, gh_iso_SF, gh_id_SF, el_id_SF, el_reco_SF, el_HLT_SF;
         Double_t gh_trk_SF, bcdef_trk_SF;
         Double_t jet1_pt, jet2_pt, jet1_b_weight, jet2_b_weight, pu_SF, jet1_eta, jet2_eta;
+        Double_t mu1_pt_corr, mu2_pt_corr, mu1_pt_alt, mu2_pt_alt;
         Int_t jet1_flavour, jet2_flavour;
         Float_t cost_pt, met_pt;
         Int_t nJets;
@@ -687,6 +721,10 @@ int gen_combined_background_template(int nTrees, TTree **ts, TH2F* h,
             t1->SetBranchAddress("bcdef_trk_SF", &bcdef_trk_SF);
             t1->SetBranchAddress("mu_p", &lep_p);
             t1->SetBranchAddress("mu_m", &lep_m);
+            t1->SetBranchAddress("mu1_pt_corr", &mu1_pt_corr);
+            t1->SetBranchAddress("mu2_pt_corr", &mu2_pt_corr);
+            t1->SetBranchAddress("mu1_pt_alt", &mu1_pt_alt);
+            t1->SetBranchAddress("mu2_pt_alt", &mu2_pt_alt);
 
 
             for (int i=0; i<nEntries; i++) {
@@ -696,13 +734,33 @@ int gen_combined_background_template(int nTrees, TTree **ts, TH2F* h,
                     TLorentzVector cm = *lep_p + *lep_m;
                     pt = cm.Pt();
                 }
+                cost = get_cost_v2(*lep_p, *lep_m);
+                if(turn_on_RC){
+                    TLorentzVector mu_p_new, mu_m_new, cm;
+                    if((lep_p->Pt() > lep_m->Pt() && mu1_pt_corr > mu2_pt_corr) ||
+                            (lep_p->Pt() < lep_m->Pt() && mu1_pt_corr < mu2_pt_corr)){
+                        mu_p_new.SetPtEtaPhiE(mu1_pt_corr, lep_p->Eta(), lep_p->Phi(), lep_p->E());
+                        mu_m_new.SetPtEtaPhiE(mu2_pt_corr, lep_m->Eta(), lep_m->Phi(), lep_m->E());
+                    }
+                    else{
+                        mu_p_new.SetPtEtaPhiE(mu2_pt_corr, lep_p->Eta(), lep_p->Phi(), lep_p->E());
+                        mu_m_new.SetPtEtaPhiE(mu1_pt_corr, lep_m->Eta(), lep_m->Phi(), lep_m->E());
+                    }
+                    double new_cost = get_cost_v2(mu_p_new, mu_m_new);
+                    cm = mu_p_new + mu_m_new;
+                    //if(cm.M() < 150.) continue;
+                    xF = abs(2.*cm.Pz()/13000.); 
+                    cost = new_cost;
+                    m = cm.M();
+                    pt = cm.Pt();
+                       
+                }
                 bool pass = ((flag2 == FLAG_M_BINS && m >= var_low && m <= var_high) ||
                         (flag2 == FLAG_PT_BINS && m >= 150. && pt >= var_low && pt <= var_high))
                     && met_pt < 50.  && no_bjets;
 
                 if(pass){
 
-                    cost = get_cost_v2(*lep_p, *lep_m);
                     jet1_b_weight = get_btag_weight(jet1_pt, jet1_eta,(Float_t) jet1_flavour , btag_effs, b_reader, 0);
                     jet2_b_weight = get_btag_weight(jet2_pt, jet2_eta,(Float_t) jet2_flavour , btag_effs, b_reader, 0);
                     Double_t bcdef_weight = gen_weight *pu_SF * bcdef_HLT_SF * bcdef_iso_SF * bcdef_id_SF * bcdef_trk_SF;
@@ -769,7 +827,7 @@ int gen_combined_background_template(int nTrees, TTree **ts, TH2F* h,
 
 
 int gen_finite_mc_template(TTree *t1, TH2F* h_mc_corr, TH2F *h_mc_inc, TH2F *h_errs, TH2F *h_count, TH3F *h_rw, Double_t alpha,
-        Double_t var_low, Double_t var_high, int flag1 = FLAG_MUONS, int flag2 = FLAG_M_BINS){
+        Double_t var_low, Double_t var_high, int flag1 = FLAG_MUONS, int flag2 = FLAG_M_BINS, bool turn_on_RC = false){
     //h_mc_corr template where cost_st = cost
     //h_mc_inc template where cost_st = -cost
     Long64_t nEntries  =  t1->GetEntries();
@@ -788,6 +846,7 @@ int gen_finite_mc_template(TTree *t1, TH2F* h_mc_corr, TH2F *h_mc_inc, TH2F *h_e
     Double_t jet1_pt, jet2_pt, jet1_b_weight, jet2_b_weight;
     Double_t mu_R_up, mu_R_down, mu_F_up, mu_F_down, 
              mu_RF_up, mu_RF_down, pdf_up, pdf_down;
+    Double_t mu1_pt_corr, mu2_pt_corr;
     Float_t cost_pt, met_pt;
     TLorentzVector *lep_p=0;
     TLorentzVector *lep_m=0;
@@ -812,6 +871,8 @@ int gen_finite_mc_template(TTree *t1, TH2F* h_mc_corr, TH2F *h_mc_inc, TH2F *h_e
     if(flag1 == FLAG_MUONS){
         t1->SetBranchAddress("mu_p", &lep_p);
         t1->SetBranchAddress("mu_m", &lep_m);
+        t1->SetBranchAddress("mu1_pt_corr", &mu1_pt_corr);
+        t1->SetBranchAddress("mu2_pt_corr", &mu2_pt_corr);
         t1->SetBranchAddress("bcdef_HLT_SF", &bcdef_HLT_SF);
         t1->SetBranchAddress("bcdef_iso_SF", &bcdef_iso_SF);
         t1->SetBranchAddress("bcdef_id_SF", &bcdef_id_SF);
@@ -827,14 +888,34 @@ int gen_finite_mc_template(TTree *t1, TH2F* h_mc_corr, TH2F *h_mc_inc, TH2F *h_e
                 TLorentzVector cm = *lep_p + *lep_m;
                 pt = cm.Pt();
             }
+            cost = get_cost_v2(*lep_p, *lep_m);
+            if(cost_st>0.) cost_st = fabs(cost);
+            else cost_st = -fabs(cost);
+            if(turn_on_RC){
+                TLorentzVector mu_p_new, mu_m_new, cm;
+                if((lep_p->Pt() > lep_m->Pt() && mu1_pt_corr > mu2_pt_corr) ||
+                        (lep_p->Pt() < lep_m->Pt() && mu1_pt_corr < mu2_pt_corr)){
+                    mu_p_new.SetPtEtaPhiE(mu1_pt_corr, lep_p->Eta(), lep_p->Phi(), lep_p->E());
+                    mu_m_new.SetPtEtaPhiE(mu2_pt_corr, lep_m->Eta(), lep_m->Phi(), lep_m->E());
+                }
+                else{
+                    mu_p_new.SetPtEtaPhiE(mu2_pt_corr, lep_p->Eta(), lep_p->Phi(), lep_p->E());
+                    mu_m_new.SetPtEtaPhiE(mu1_pt_corr, lep_m->Eta(), lep_m->Phi(), lep_m->E());
+                }
+                double new_cost = get_cost_v2(mu_p_new, mu_m_new);
+                cm = mu_p_new + mu_m_new;
+                //if(cm.M() < 150.) continue;
+                cost = new_cost;
+                m = cm.M();
+                pt = cm.Pt();
+                xF = abs(2.*cm.Pz()/13000.); 
+                   
+            }
             bool pass = ((flag2 == FLAG_M_BINS && m >= var_low && m <= var_high) ||
                     (flag2 == FLAG_PT_BINS && m >= 150. && pt >= var_low && pt <= var_high))
                 && met_pt < 50.  && no_bjets;
             if(pass){
 
-                cost = get_cost_v2(*lep_p, *lep_m);
-                if(cost_st>0.) cost_st = fabs(cost);
-                else cost_st = -fabs(cost);
                 double reweight = (4./3.)*cost_st*(2. + alpha)/
                     (1. + cost_st*cost_st + alpha*(1.- cost_st*cost_st));
 
@@ -901,7 +982,7 @@ int gen_finite_mc_template(TTree *t1, TH2F* h_mc_corr, TH2F *h_mc_inc, TH2F *h_e
                 h_rw->Fill(xF, fabs(cost_st), fabs(reweight), evt_weight);
 
                 //if(xF > 0.1 && cost_st < -0.8){
-                    //printf("Filling bin 4,0, weight is %.3e \n", evt_weight);
+                //printf("Filling bin 4,0, weight is %.3e \n", evt_weight);
                 //}
             }
         }
