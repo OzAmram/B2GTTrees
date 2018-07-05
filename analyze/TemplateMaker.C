@@ -28,6 +28,16 @@
 #include "BTagUtils.C"
 #include "HistMaker.C"
 
+void cleanup_template(TH2F *h){
+    int n_xf_bins = 5;
+    int n_cost_bins = 10;
+    for(int i=1; i<= n_xf_bins; i++){
+        for(int j=1; j<=n_cost_bins; j++){
+            float val = h->GetBinContent(i,j);
+            if(val<0.) h->SetBinContent(i,j,0.);
+        }
+    }
+}
 
 int gen_data_template(TTree *t1, TH2F* h, vector<double> *v_xF, vector<double> *v_cost, Double_t var_low, Double_t var_high, 
         int flag1 = FLAG_MUONS, int flag2 = FLAG_M_BINS, bool turn_on_RC = false){
@@ -52,6 +62,7 @@ int gen_data_template(TTree *t1, TH2F* h, vector<double> *v_xF, vector<double> *
     t1->SetBranchAddress("met_pt", &met_pt);
     t1->SetBranchAddress("jet1_pt", &jet1_pt);
     t1->SetBranchAddress("jet2_pt", &jet2_pt);
+    t1->SetBranchAddress("nJets", &nJets);
     if(flag1 == FLAG_MUONS){
         t1->SetBranchAddress("mu_p", &lep_p);
         t1->SetBranchAddress("mu_m", &lep_m);
@@ -114,7 +125,7 @@ int gen_data_template(TTree *t1, TH2F* h, vector<double> *v_xF, vector<double> *
 
     }
 
-    //h->Scale(1./h->Integral());
+    h->Scale(1./h->Integral());
     t1->ResetBranchAddresses();
     return nEvents;
 }
@@ -426,16 +437,15 @@ void gen_fakes_template(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_contam,
                     mu2_fakerate = get_new_fakerate_prob(mu2_pt, mu2_eta, FR.h);
                     evt_fakerate = mc_weight * (mu1_fakerate/(1-mu1_fakerate)) * (mu2_fakerate/(1-mu2_fakerate));
                 }
-                if(flag2 == FLAG_PT_BINS){
-                    TLorentzVector cm = *lep_p + *lep_m;
-                    pt = cm.Pt();
-                }
                 bool pass = ((flag2 == FLAG_M_BINS && m >= var_low && m <= var_high) ||
                         (flag2 == FLAG_PT_BINS && m >= 150. && pt >= var_low && pt <= var_high))
                     && met_pt < 50.  && no_bjets;
 
                 if(pass){
                     cost = get_cost_v2(*lep_p, *lep_m);
+                    TLorentzVector cm = *lep_p + *lep_m;
+                    pt = cm.Pt();
+                    xF = abs(2.*cm.Pz()/13000.); 
                     //if(l==3) printf("Evt fr %.2e \n", evt_fakerate);
                     //if(l==3) printf("cost, fr %.2f %.2e \n", cost, evt_fakerate);
                     h->Fill(xF, cost, evt_fakerate);
@@ -536,6 +546,9 @@ void gen_fakes_template(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_contam,
                     && met_pt < 50.  && no_bjets;
                 if(pass){
                     cost = get_cost_v2(*lep_p, *lep_m);
+                    TLorentzVector cm = *lep_p + *lep_m;
+                    pt = cm.Pt();
+                    xF = abs(2.*cm.Pz()/13000.); 
                     //if(l==3) printf("Evt fr %.2e \n", evt_fakerate);
                     //if(l==3) printf("cost, fr %.2f %.2e \n", cost, evt_fakerate);
                     h->Fill(xF, cost, evt_fakerate);
@@ -545,6 +558,8 @@ void gen_fakes_template(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_contam,
             printf("After iter %i current fakerate est is %.0f \n", l, h->Integral());
         }
     }
+    printf("Performing fakes cleanup (removing neg. bins) \n");
+    cleanup_template(h);
     printf("Total Fakerate weight Weight is %.2f \n", h->Integral());
     if(h->Integral() < 0.){
         h->Scale(0.);
@@ -708,6 +723,8 @@ int gen_combined_background_template(int nTrees, TTree **ts, TH2F* h,
 
         t1->ResetBranchAddresses();
     }
+    printf("Performing templ. cleanup (removing neg. bins) \n");
+    cleanup_template(h);
     printf("Tot Weight is %.2f \n", h->Integral());
     h->Scale(1./h->Integral());
     return 0;
