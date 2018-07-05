@@ -20,7 +20,7 @@ double Ebeam = 6500.;
 double Pbeam = sqrt(Ebeam*Ebeam - 0.938*0.938);
 
 char *filename("diboson_files_june20.txt");
-const TString fout_name("output_files/MuMu_diboson_june29.root");
+const TString fout_name("output_files/MuMu_diboson_july5.root");
 const double alpha = 0.05;
 const bool PRINT=false;
 
@@ -402,14 +402,14 @@ void MuMu_reco_background_batch()
 
                         pu_SF = get_pileup_SF(pu_NtrueInt, pu_SFs.pileup_ratio);
 
-                        double mu0_mcSF = rc.kScaleAndSmearMC(1, mu_Pt[0], mu_Eta[0], mu_Phi[0], (int) mu_NumberTrackerLayers[0], rand->Rndm(), rand->Rndm(), 0, 0);
-                        double mu1_mcSF = rc.kScaleAndSmearMC(-1, mu_Pt[1], mu_Eta[1], mu_Phi[1], (int) mu_NumberTrackerLayers[1], rand->Rndm(), rand->Rndm(), 0, 0);
-                        double mu0_mcSF_alt = rc.kScaleAndSmearMC(1, mu_Pt[0], mu_Eta[0], mu_Phi[0], (int) mu_NumberTrackerLayers[0], rand->Rndm(), rand->Rndm(), 1, 0);
-                        double mu1_mcSF_alt = rc.kScaleAndSmearMC(-1, mu_Pt[1], mu_Eta[1], mu_Phi[1], (int) mu_NumberTrackerLayers[1], rand->Rndm(), rand->Rndm(), 1, 0);
+                        double mu0_mcSF = rc.kScaleAndSmearMC((int) mu_Charge[0], mu_Pt[0], mu_Eta[0], mu_Phi[0], (int) mu_NumberTrackerLayers[0], rand->Rndm(), rand->Rndm(), 0, 0);
+                        double mu1_mcSF = rc.kScaleAndSmearMC((int) mu_Charge[1], mu_Pt[1], mu_Eta[1], mu_Phi[1], (int) mu_NumberTrackerLayers[1], rand->Rndm(), rand->Rndm(), 0, 0);
+                        double mu0_mcSF_alt = rc.kScaleAndSmearMC((int) mu_Charge[0], mu_Pt[0], mu_Eta[0], mu_Phi[0], (int) mu_NumberTrackerLayers[0], rand->Rndm(), rand->Rndm(), 1, 0);
+                        double mu1_mcSF_alt = rc.kScaleAndSmearMC((int) mu_Charge[1], mu_Pt[1], mu_Eta[1], mu_Phi[1], (int) mu_NumberTrackerLayers[1], rand->Rndm(), rand->Rndm(), 1, 0);
                         mu1_pt_corr =mu1_pt *mu0_mcSF;
                         mu2_pt_corr =mu2_pt * mu1_mcSF;
-                        mu1_pt_alt = mu1_pt *mu0_SF_alt;
-                        mu2_pt_alt = mu2_pt *mu1_SF_alt;
+                        mu1_pt_alt = mu1_pt *mu0_mcSF_alt;
+                        mu2_pt_alt = mu2_pt *mu1_mcSF_alt;
 
                         tout->Fill();
                         nEvents++;

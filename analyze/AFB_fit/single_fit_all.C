@@ -31,8 +31,8 @@
 int FLAG = FLAG_MUONS;
 //int FLAG = FLAG_MUONS;
 bool do_both = true;
-const TString mumu_fout_name("AFB_fit/fit_results/m_bins/MuMu_fit_test.root");
-const TString elel_fout_name("AFB_fit/fit_results/m_bins/ElEl_fit_test.root");
+const TString mumu_fout_name("AFB_fit/fit_results/m_bins/MuMu_fit_nominal_july5.root");
+const TString elel_fout_name("AFB_fit/fit_results/m_bins/ElEl_fit_nominal_july5.root");
 
 
 float m_low;

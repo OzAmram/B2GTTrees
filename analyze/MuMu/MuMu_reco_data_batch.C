@@ -14,7 +14,7 @@
 
 const double root2 = sqrt(2);
 const char* filename("SingleMuon_files_sep25.txt");
-const TString fout_name("output_files/SingleMuon_data_june29.root");
+const TString fout_name("output_files/SingleMuon_data_july5.root");
 
 
 bool is_empty_line(const char *s) {
@@ -208,9 +208,9 @@ void MuMu_reco_data_batch()
                         }
                     }
                     double mu0_SF = rc.kScaleDT((int) mu_Charge[0], mu_Pt[0], mu_Eta[0], mu_Phi[0], 0, 0);
-                    double mu1_SF = rc.kScaleDT((int) mu_Charge[0], mu_Pt[1], mu_Eta[1], mu_Phi[1], 0, 0);
+                    double mu1_SF = rc.kScaleDT((int) mu_Charge[1], mu_Pt[1], mu_Eta[1], mu_Phi[1], 0, 0);
                     double mu0_SF_alt = rc.kScaleDT((int) mu_Charge[0], mu_Pt[0], mu_Eta[0], mu_Phi[0], 1, 0);
-                    double mu1_SF_alt = rc.kScaleDT((int) mu_Charge[0], mu_Pt[1], mu_Eta[1], mu_Phi[1], 1, 0);
+                    double mu1_SF_alt = rc.kScaleDT((int) mu_Charge[1], mu_Pt[1], mu_Eta[1], mu_Phi[1], 1, 0);
                     mu1_pt_corr =mu1_pt *mu0_SF;
                     mu2_pt_corr =mu2_pt * mu1_SF;
                     mu1_pt_alt = mu1_pt *mu0_SF_alt;
