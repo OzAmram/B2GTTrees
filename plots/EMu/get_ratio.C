@@ -28,20 +28,21 @@
 
 void get_ratio(){
     int type = FLAG_MUONS;
-    TFile *f_data = TFile::Open("../analyze/output_files/EMu_SingleMuon_data_nov3.root");
+    TFile *f_data = TFile::Open("../analyze/output_files/EMu_SingleMuon_data_june29.root");
     TTree *t_data = (TTree *)f_data->Get("T_data");
 
-    TFile *f_mc = TFile::Open("../analyze/output_files/EMu_combined_back_Mu_jan22.root");
-    TTree *t_mc = (TTree *)f_mc->Get("T_data");
                                 
-    /*
-    int type = FLAG_ELECTRONS;
-    TFile *f_data = TFile::Open("../analyze/output_files/EMu_SingleElectron_data_nov3.root");
-    TTree *t_data = (TTree *)f_data->Get("T_data");
+    TFile *f_ttbar = TFile::Open("../analyze/output_files/EMu_TTbar_Mu_june29.root");
+    TTree *t_ttbar = (TTree *)f_ttbar->Get("T_data");
 
-    TFile *f_mc = TFile::Open("../analyze/output_files/EMu_combined_back_El_jan22.root");
-    TTree *t_mc = (TTree *)f_mc->Get("T_data");
-    */
+    TFile *f_DYToLL = TFile::Open("../analyze/output_files/EMu_DY_Mu_june29.root");
+    TTree *t_dy = (TTree *)f_DYToLL->Get("T_data");
+
+    TFile *f_diboson = TFile::Open("../analyze/output_files/EMu_diboson_Mu_june29.root");
+    TTree *t_diboson = (TTree *)f_diboson->Get("T_data");
+
+    TFile *f_wt = TFile::Open("../analyze/output_files/EMu_WT_Mu_june29.root");
+    TTree *t_wt = (TTree *)f_wt->Get("T_data");
 
     TFile *f_QCD = TFile::Open("../analyze/output_files/EMu_QCD_fakerate_est_jan24.root");
     TTree *t_QCD = (TTree *)f_QCD->Get("T_data");
@@ -50,7 +51,6 @@ void get_ratio(){
     TTree *t_WJets = (TTree *)f_WJets->Get("T_data");
 
     TFile *f_WJets_mc = TFile::Open("../analyze/output_files/EMu_WJets_MC_jan24.root");
-    TTree *t_WJets_mc = (TTree *)f_WJets_mc->Get("T_data");
      
     TH1F *data_m = new TH1F("data_m", "WJets", 30, 150, 2000);
 
@@ -59,7 +59,10 @@ void get_ratio(){
     TH1F *qcd_m = new TH1F("qcd_m", "WJets", 30, 150, 2000);
 
     make_emu_m_hist(t_data, data_m, true, type);
-    make_emu_m_hist(t_mc, mc_m, false, type);
+    make_emu_m_hist(t_ttbar, ttbar_m, false, type);
+    make_emu_m_hist(t_diboson, diboson_m, false, type);
+    make_emu_m_hist(t_wt, wt_m, false, type);
+    make_emu_m_hist(t_dy, dy_m, false, type);
     Fakerate_est_emu(t_WJets, t_QCD,t_WJets_mc, qcd_m, type);
 
     Double_t data_count = data_m->Integral();

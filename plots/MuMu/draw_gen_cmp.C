@@ -31,7 +31,7 @@ const int type = FLAG_MUONS;
 TFile *f_data, *f_mc, *f_mc_nosig, *f_ttbar, *f_QCD, *f_WJets, *f_WJets_mc, *f_QCD_mc, *f_diboson, *f_wt;
 TTree *t_data, *t_mc, *t_mc_nosig, *t_ttbar, *t_QCD, *t_WJets, *t_WJets_mc, *t_QCD_mc, *t_diboson, *t_wt;
 
-void make_m_cost_pt_gen_hist(TTree *t1, TH1F *h_m, TH1F *h_cost, TH1F *h_pt){
+void make_m_cost_pt_xf_gen_hist(TTree *t1, TH1F *h_m, TH1F *h_cost, TH1F *h_pt, TH1F *h_xf){
     //read event data
     Long64_t size  =  t1->GetEntries();
     Double_t m, xF, cost, mu1_pt, mu2_pt, jet1_cmva, jet2_cmva, gen_weight, cost_st;
@@ -103,6 +103,7 @@ void make_m_cost_pt_gen_hist(TTree *t1, TH1F *h_m, TH1F *h_cost, TH1F *h_pt){
                 h_m->Fill(gen_m,final_weight);
                 h_cost->Fill(gen_cost, final_weight);
                 h_pt->Fill(pt, final_weight);
+                h_xf->Fill(xF, final_weight);
             }
 
 
@@ -203,6 +204,10 @@ void make_reweighted_m_cost_pt_gen_hist(TTree *t1, TH1F *h_m, TH1F *h_cost, TH1F
 void make_ratio_plot(char title[80], TH1F* h1, char h1_label[80], TH1F* h2, char h2_label[80], char ratio_label[80], 
         char axis_label[80], bool logy=false){
 
+    h1->SetLineColor(kBlue);
+    h1->SetLineWidth(3);
+    h2->SetLineColor(kRed);
+    h2->SetLineWidth(3);
     TCanvas *c = new TCanvas("c_m", "Histograms", 200, 10, 900, 700);
     TPad *pad1 = new TPad("pad1", "pad1", 0.,0.3,0.98,1.);
     pad1->SetBottomMargin(0);
@@ -217,7 +222,7 @@ void make_ratio_plot(char title[80], TH1F* h1, char h1_label[80], TH1F* h2, char
 
 
     gStyle->SetLegendBorderSize(0);
-    TLegend *leg1 = new TLegend(0.3, 0.3);
+    TLegend *leg1 = new TLegend(0.2, 0.2);
     leg1->AddEntry(h1, h1_label, "l");
     leg1->AddEntry(h2, h2_label, "l");
     leg1->Draw();
@@ -285,10 +290,12 @@ void draw_gen_cmp(){
     TH1F *binned_m_rw = new TH1F("bin_m_rw", "Binned MC", 20, 100.,400.);
     TH1F *binned_cost_rw = new TH1F("bin_cost_rw", "Binned MC", 40, -1.,1.);
     TH1F *binned_pt_rw = new TH1F("bin_pt_rw", "Binned MC", 20, 0.,400.);
+    TH1F *binned_xf = new TH1F("bin_xf", "unbinned MC", 10, 0.,0.5);
 
     TH1F *unbinned_m = new TH1F("unbin_m", "unbinned MC", 20, 100.,400.);
     TH1F *unbinned_cost = new TH1F("unbin_cost", "unbinned MC", 40, -1.,1.);
     TH1F *unbinned_pt = new TH1F("unbin_pt", "unbinned MC", 20, 0.,400.);
+    TH1F *unbinned_xf = new TH1F("unbin_xf", "unbinned MC", 10, 0.,0.5);
 
     binned_m->SetLineColor(kBlue);
     binned_m->SetLineWidth(3);
@@ -307,19 +314,20 @@ void draw_gen_cmp(){
     unbinned_pt->SetLineColor(kRed);
     unbinned_pt->SetLineWidth(3);
     
-    make_m_cost_pt_gen_hist(t_mc_binned, binned_m, binned_cost, binned_pt);
-    make_m_cost_pt_gen_hist(t_mc_unbinned, unbinned_m, unbinned_cost, unbinned_pt);
+    make_m_cost_pt_xf_gen_hist(t_mc_binned, binned_m, binned_cost, binned_pt, binned_xf);
+    make_m_cost_pt_xf_gen_hist(t_mc_unbinned, unbinned_m, unbinned_cost, unbinned_pt, unbinned_xf);
 
-    TH1F *h_rw = (TH1F *) unbinned_pt->Clone("rw");
-    h_rw->Divide(binned_pt);
+    //TH1F *h_rw = (TH1F *) unbinned_pt->Clone("rw");
+    //h_rw->Divide(binned_pt);
 
     //make_reweighted_m_cost_pt_gen_hist(t_mc_binned, binned_m_rw, binned_cost_rw, binned_pt_rw, h_rw);
 
 
 
-    make_ratio_plot("Ext_cmp/v2/MuMu_gen_m_cmp.pdf", binned_m, "unbinned ",unbinned_m, "Binned No Extensions", "Binned/Unbinned", "Gen M (GeV)", true);
-    make_ratio_plot("Ext_cmp/v2/MuMu_gen_cost_cmp.pdf", binned_cost, "unbinned",unbinned_cost, "Binned No Extensions", "Binned/Unbinned", "Gen Cos(#theta_{r})", false);
-    make_ratio_plot("Ext_cmp/v2/MuMu_gen_pt_cmpt.pdf", binned_pt, "unbinned",unbinned_pt, "Binned No Extensions", "Binned/Unbinned", "Gen Dilepton Pt (GeV)", true);
+    //make_ratio_plot("Ext_cmp/v2/MuMu_gen_m_cmp.pdf", binned_m, "unbinned ",unbinned_m, "Binned No Extensions", "Binned/Unbinned", "Gen M (GeV)", true);
+    //make_ratio_plot("Ext_cmp/v2/MuMu_gen_cost_cmp.pdf", binned_cost, "unbinned",unbinned_cost, "Binned No Extensions", "Binned/Unbinned", "Gen Cos(#theta_{r})", false);
+    //make_ratio_plot("Ext_cmp/v2/MuMu_gen_pt_cmpt.pdf", binned_pt, "unbinned",unbinned_pt, "Binned No Extensions", "Binned/Unbinned", "Gen Dilepton Pt (GeV)", true);
+    make_ratio_plot("Ext_cmp/v2/MuMu_gen_xf_cmpt.pdf", binned_xf, "Extensions",unbinned_xf, "Originals", "Extensions/Orig", "x_{F}", true);
 
 
 

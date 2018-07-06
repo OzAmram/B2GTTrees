@@ -42,6 +42,7 @@ void make_4vec_hists(TTree *t1, kin_hists *k, bool is_data=false){
     Double_t gh_HLT_SF, gh_iso_SF, gh_id_SF, el_id_SF, el_reco_SF, el_HLT_SF;
     Double_t bcdef_trk_SF, gh_trk_SF;
     Double_t jet1_pt, jet2_pt, jet1_b_weight, jet2_b_weight, pu_SF;
+    jet1_b_weight = jet2_b_weight =1.;
     TLorentzVector *mu_p = 0;
     TLorentzVector *mu_m = 0;
     TLorentzVector obs;
@@ -81,7 +82,7 @@ void make_4vec_hists(TTree *t1, kin_hists *k, bool is_data=false){
             t1->GetEntry(i);
             bool no_bjets = has_no_bjets(nJets, jet1_pt, jet2_pt, jet1_cmva, jet2_cmva);
 
-            if(m >= 250. && met_pt < 50. && no_bjets){
+            if(m >= 150. && met_pt < 50. && no_bjets){
                 cm = *mu_p + *mu_m;
 
                 //mu_p->Print();
@@ -95,45 +96,40 @@ void make_4vec_hists(TTree *t1, kin_hists *k, bool is_data=false){
                 
 
                 if(is_data){
-                    k->m_hist->Fill(obs.E());
-                    k->pt_hist->Fill(obs.Pt());
-                    k->eta_hist->Fill(obs.Eta());
-                    k->phi_hist->Fill(obs.Phi());
-                    
-                    //k->m_hist->Fill(mu_p->E());
-                    //k->pt_hist->Fill(mu_p->Pt());
-                    //k->eta_hist->Fill(mu_p->Eta());
-                    //k->phi_hist->Fill(mu_p->Phi());
+                    //k->m_hist->Fill(obs.E());
+                    //k->pt_hist->Fill(obs.Pt());
+                    //k->eta_hist->Fill(obs.Eta());
+                    //k->phi_hist->Fill(obs.Phi());
+                  
+                    k->m_hist->Fill(mu_p->E());
+                    k->pt_hist->Fill(mu_p->Pt());
+                    k->eta_hist->Fill(mu_p->Eta());
+                    k->phi_hist->Fill(mu_p->Phi());
 
-                    //k->m_hist->Fill(mu_m->E());
-                    //k->pt_hist->Fill(mu_m->Pt());
-                    //k->eta_hist->Fill(mu_m->Eta());
-                    //k->phi_hist->Fill(mu_m->Phi());
+                    k->m_hist->Fill(mu_m->E());
+                    k->pt_hist->Fill(mu_m->Pt());
+                    k->eta_hist->Fill(mu_m->Eta());
+                    k->phi_hist->Fill(mu_m->Phi());
                 }
                 else{
                     Double_t bcdef_weight = gen_weight *pu_SF * bcdef_HLT_SF * bcdef_iso_SF * bcdef_id_SF * bcdef_trk_SF;
                     Double_t gh_weight = gen_weight *pu_SF * gh_HLT_SF * gh_iso_SF * gh_id_SF * gh_trk_SF;
                     Double_t combined_weight = (bcdef_weight *bcdef_lumi + gh_weight*gh_lumi)*1000;
-                    if (nJets >= 1){
-                        combined_weight *= jet1_b_weight;
-                    }
-                    if (nJets >= 2){
-                        combined_weight *= jet2_b_weight;
-                    }
-                    k->m_hist->Fill(obs.E(), combined_weight);
-                    k->pt_hist->Fill(obs.Pt(), combined_weight);
-                    k->eta_hist->Fill(obs.Eta(), combined_weight);
-                    k->phi_hist->Fill(obs.Phi(), combined_weight);
 
-                    //k->m_hist->Fill(mu_p->E(), combined_weight);
-                    //k->pt_hist->Fill(mu_p->Pt(), combined_weight);
-                    //k->eta_hist->Fill(mu_p->Eta(), combined_weight);
-                    //k->phi_hist->Fill(mu_p->Phi(), combined_weight);
+                    //k->m_hist->Fill(obs.E(), combined_weight);
+                    //k->pt_hist->Fill(obs.Pt(), combined_weight);
+                    //k->eta_hist->Fill(obs.Eta(), combined_weight);
+                    //k->phi_hist->Fill(obs.Phi(), combined_weight);
 
-                    //k->m_hist->Fill(mu_m->E(), combined_weight);
-                    //k->pt_hist->Fill(mu_m->Pt(), combined_weight);
-                    //k->eta_hist->Fill(mu_m->Eta(), combined_weight);
-                    //k->phi_hist->Fill(mu_m->Phi(), combined_weight);
+                    k->m_hist->Fill(mu_p->E(), combined_weight);
+                    k->pt_hist->Fill(mu_p->Pt(), combined_weight);
+                    k->eta_hist->Fill(mu_p->Eta(), combined_weight);
+                    k->phi_hist->Fill(mu_p->Phi(), combined_weight);
+
+                    k->m_hist->Fill(mu_m->E(), combined_weight);
+                    k->pt_hist->Fill(mu_m->Pt(), combined_weight);
+                    k->eta_hist->Fill(mu_m->Eta(), combined_weight);
+                    k->phi_hist->Fill(mu_m->Phi(), combined_weight);
 
                 }
 
@@ -212,7 +208,7 @@ void setcolors(kin_hists *k, Int_t col){
 }
 
 void do_emu_scaling(kin_hists *k){
-    Double_t emu_scaling = 1.05;
+    Double_t emu_scaling = 0.97;
     k->m_hist->Scale(emu_scaling);
     k->pt_hist->Scale(emu_scaling);
     k->eta_hist->Scale(emu_scaling);
@@ -375,7 +371,7 @@ void draw_kinematics(){
     do_emu_scaling(&k_wt);
 
     printf("making plots \n");
-    make_plots("MuMu_binned_m250", &k_data, &k_mc, &k_mc_nosig, &k_ttbar,&k_diboson, &k_wt);
+    make_plots("Muon", &k_data, &k_mc, &k_mc_nosig, &k_ttbar,&k_diboson, &k_wt);
 
     return;
 }

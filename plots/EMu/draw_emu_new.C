@@ -32,20 +32,22 @@
 
 void draw_emu_new(){
     setTDRStyle();
-    TFile *f_data = TFile::Open("../analyze/output_files/EMu_SingleMuon_data_nov3.root");
+    TFile *f_data = TFile::Open("../analyze/output_files/EMu_SingleMuon_data_june29.root");
     TTree *t_data = (TTree *)f_data->Get("T_data");
 
                                 
+    //TFile *f_ttbar = TFile::Open("../analyze/output_files/EMu_TTbar_Mu_june29.root");
     TFile *f_ttbar = TFile::Open("../analyze/output_files/EMu_background_ttbar_Mu_mar29.root");
     TTree *t_ttbar = (TTree *)f_ttbar->Get("T_data");
 
+    //TFile *f_DYToLL = TFile::Open("../analyze/output_files/EMu_DY_Mu_june29.root");
     TFile *f_DYToLL = TFile::Open("../analyze/output_files/EMu_background_DY_Mu_mar29.root");
     TTree *t_dy = (TTree *)f_DYToLL->Get("T_data");
 
-    TFile *f_diboson = TFile::Open("../analyze/output_files/EMu_background_diboson_Mu_mar29.root");
+    TFile *f_diboson = TFile::Open("../analyze/output_files/EMu_diboson_Mu_july05.root");
     TTree *t_diboson = (TTree *)f_diboson->Get("T_data");
 
-    TFile *f_wt = TFile::Open("../analyze/output_files/EMu_background_WT_Mu_mar29.root");
+    TFile *f_wt = TFile::Open("../analyze/output_files/EMu_WT_Mu_june29.root");
     TTree *t_wt = (TTree *)f_wt->Get("T_data");
 
     TFile *f_QCD = TFile::Open("../analyze/output_files/EMu_QCD_fakerate_est_jan24.root");
@@ -76,6 +78,23 @@ void draw_emu_new(){
     make_emu_m_hist(t_dy, dy_m, false, type);
     Fakerate_est_emu(t_WJets, t_QCD,t_WJets_mc, qcd_m, type);
 
+    //correct for wrong ttbar xsec
+    //ttbar_m->Scale(831.76/730.6);
+
+    Double_t data_count = data_m->Integral();
+    Double_t fake_count = qcd_m->Integral();
+    Double_t mc_count = ttbar_m->Integral() + diboson_m->Integral() + wt_m->Integral() + dy_m->Integral();
+
+    Double_t fake_unc = 0.35 * fake_count;
+    Double_t mc_unc = sqrt(mc_count);
+
+    printf("Data count %.0f \n", data_count);
+    printf("MC count %.0f \n", mc_count);
+    printf("Fake count %.0f \n", fake_count);
+    Double_t ratio = data_count / (mc_count + fake_count);
+    Double_t unc = sqrt( (data_count/(mc_count + fake_count)/(mc_count + fake_count)) +  
+                          pow(data_count/(mc_count + fake_count)/(mc_count + fake_count), 2) * (fake_unc*fake_unc + mc_unc*mc_unc));
+    printf("Ratio is %1.3f +/- %1.3f \n", ratio, unc);
 
 
 

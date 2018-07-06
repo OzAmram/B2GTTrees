@@ -66,16 +66,16 @@ void draw_cmp(){
     ttbar_m->SetMarkerColor(kBlue);
 
 
-    TH1F *data_cost = new TH1F("data_cost", "Data", 40, -1.,1.);
-    TH1F *mc_cost = new TH1F("mc_cost", "MC Signal (qqbar, qglu, qbarglu)", 40, -1,1);
+    TH1F *data_cost = new TH1F("data_cost", "Data", 20, -1.,1.);
+    TH1F *mc_cost = new TH1F("mc_cost", "MC Signal (qqbar, qglu, qbarglu)", 20, -1,1);
     mc_cost->SetFillColor(kRed+1);
     mc_cost->SetMarkerStyle(21);
     mc_cost->SetMarkerColor(kRed+1);
-    TH1F *mc_nosig_cost = new TH1F("mc_nosig_cost", "MC no signal (qq, gluglu qbarqbar)", 40, -1.,1.);
+    TH1F *mc_nosig_cost = new TH1F("mc_nosig_cost", "MC no signal (qq, gluglu qbarqbar)", 20, -1.,1.);
     mc_nosig_cost->SetFillColor(kMagenta);
     mc_nosig_cost->SetMarkerStyle(21);
     mc_nosig_cost->SetMarkerColor(kMagenta);
-    TH1F *ttbar_cost = new TH1F("ttbar_cost", "TTbar Background", 40, -1.,1.);
+    TH1F *ttbar_cost = new TH1F("ttbar_cost", "TTbar Background", 20, -1.,1.);
     ttbar_cost->SetFillColor(kBlue);
     ttbar_cost->SetMarkerStyle(21);
     ttbar_cost->SetMarkerColor(kBlue);
@@ -84,16 +84,16 @@ void draw_cmp(){
 
 
     TH1F *diboson_m = new TH1F("diboson_m", "DiBoson (WW, WZ, ZZ)", 30, 150, 2000);
-    TH1F *diboson_cost = new TH1F("diboson_cost", "DiBoson (WW, WZ,ZZ)", 40, -1,1);
+    TH1F *diboson_cost = new TH1F("diboson_cost", "DiBoson (WW, WZ,ZZ)", 20, -1,1);
 
     TH1F *QCD_m = new TH1F("QCD_m", "QCD", 30, 150, 2000);
-    TH1F *QCD_cost = new TH1F("QCD_cost", "QCD", 40, -1,1);
+    TH1F *QCD_cost = new TH1F("QCD_cost", "QCD", 20, -1,1);
 
     TH1F *WJets_m = new TH1F("WJets_m", "WJets", 30, 150, 2000);
-    TH1F *WJets_cost = new TH1F("WJets_cost", "WJets", 40, -1,1);
+    TH1F *WJets_cost = new TH1F("WJets_cost", "WJets", 20, -1,1);
 
     TH1F *wt_m = new TH1F("wt_m", "tw + #bar{t}w", 30, 150, 2000);
-    TH1F *wt_cost = new TH1F("wt_cost", "tw + #bar{t}w", 40, -1,1);
+    TH1F *wt_cost = new TH1F("wt_cost", "tw + #bar{t}w", 20, -1,1);
 
 
     wt_m->SetFillColor(kOrange+7); 
@@ -137,39 +137,6 @@ void draw_cmp(){
             QCD_cost->SetBinError(i,j, 0.2*cost_val);
         }
     }
-
-
-    //mc_m->Draw();
-    
-    //TCanvas *c1 = new TCanvas("c1", "Histograms", 200, 10, 900, 700);
-
-    //#lumi is fb^-1, convert to pb^-1
-    /*
-    float lumi = 35.867;
-
-    mc_m->Scale(lumi*1000);
-    mc_nosig_m->Scale(lumi*1000);
-    mc_cost->Scale(lumi*1000);
-   
-    ttbar_m->Scale(lumi*1000);
-    ttbar_cost->Scale(lumi*1000);
-    */
-    
-    /*
-    float scale1 = mc_cost->Integral();
-    printf("DY has %f integral \n", scale1);
-    float scale2 = mc_nosig_cost->Integral();
-    float scale3 = ttbar_cost->Integral();
-    printf("TTbar has %f integral \n", scale3);
-
-    float tot_scale = scale1 + scale2 + scale3;
-
-    //mc_m->Scale(1./tot_scale);
-    //mc_nosig_m->Scale(1./tot_scale);
-    mc_cost->Scale(1./tot_scale);
-    mc_nosig_cost->Scale(1./tot_scale);
-    ttbar_cost->Scale(1./tot_scale);
-    */
 
 
 

@@ -204,7 +204,7 @@ void setcolors(kin_hists *k, Int_t col){
 }
 
 void do_emu_scaling(kin_hists *k){
-    Double_t emu_scaling = 1.05;
+    Double_t emu_scaling = 0.97;
     k->m_hist->Scale(emu_scaling);
     k->pt_hist->Scale(emu_scaling);
     k->eta_hist->Scale(emu_scaling);
@@ -367,7 +367,7 @@ void draw_kinematics(){
     do_emu_scaling(&k_wt);
 
     printf("making plots \n");
-    make_plots("El_unbinned", &k_data, &k_mc, &k_mc_nosig, &k_ttbar, &k_diboson, &k_wt);
+    make_plots("El", &k_data, &k_mc, &k_mc_nosig, &k_ttbar, &k_diboson, &k_wt);
 
     return;
 }

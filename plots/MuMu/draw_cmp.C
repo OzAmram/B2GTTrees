@@ -103,7 +103,7 @@ void draw_cmp(){
     QCD_m->SetFillColor(kRed -7);
     QCD_cost->SetFillColor(kRed -7);
 
-    bool do_RC = true;
+    bool do_RC = false;
 
     make_m_cost_pt_hist(t_data, data_m, data_cost, data_pt, true, type, do_RC);
     make_m_cost_pt_hist(t_mc, mc_m, mc_cost, mc_pt, false, type, do_RC);
