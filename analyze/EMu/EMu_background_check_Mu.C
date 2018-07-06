@@ -20,8 +20,8 @@ const double root2 = sqrt(2);
 double Ebeam = 6500.;
 double Pbeam = sqrt(Ebeam*Ebeam - 0.938*0.938);
 
-char *filename("DY_files_unbinned_june20.txt");
-const TString fout_name("output_files/EMu_DY_Mu_june29.root");
+char *filename("diboson_files_june20.txt");
+const TString fout_name("output_files/EMu_diboson_Mu_july05.root");
 const bool PRINT=false;
 
 

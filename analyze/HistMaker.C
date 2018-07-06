@@ -34,8 +34,8 @@ Double_t bcdef_lumi = 5.746 + 2.572 + 4.242 + 4.024 + 3.104;
 // adding new Hv2 data set to get full 2016 luminosity
 Double_t gh_lumi =  7.573 + 0.215 + 8.434;
 Double_t tot_lumi = 35.9;
-Double_t emu_scaling = 1.05;
-Double_t emu_unc = 0.05;
+Double_t emu_scaling = 0.978;
+Double_t emu_unc = 0.04;
 
 double get_cost(TLorentzVector lep_p, TLorentzVector lep_m){
 
@@ -87,6 +87,7 @@ double get_cost_v2(TLorentzVector lep_p, TLorentzVector lep_m){
     double cost = lep_m.CosTheta();
     return cost;
 }
+
 bool has_no_bjets(Int_t nJets, Double_t jet1_pt, Double_t jet2_pt, 
         Double_t jet1_cmva, Double_t jet2_cmva){
     Double_t med_btag = 0.4432;

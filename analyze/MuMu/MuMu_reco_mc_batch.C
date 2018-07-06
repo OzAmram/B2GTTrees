@@ -20,8 +20,8 @@ const double root2 = sqrt(2);
 double Ebeam = 6500.;
 double Pbeam = sqrt(Ebeam*Ebeam - 0.938*0.938);
 
-char *filename("DY_files_june20_noext.txt");
-const TString fout_name("output_files/MuMu_DY_noext_july02.root");
+char *filename("DY_files_june20.txt");
+const TString fout_name("output_files/MuMu_DY_july05.root");
 const bool PRINT=false;
 
 const bool data_2016 = true;
@@ -756,9 +756,9 @@ void MuMu_reco_mc_batch()
                         }
 
                         double mu0_mcSF = rc.kScaleFromGenMC((int) mu_Charge[0], mu_Pt[0], mu_Eta[0], mu_Phi[0], (int) mu_NumberTrackerLayers[0], gen1_pt, rand->Rndm(), 0, 0);
-                        double mu1_mcSF = rc.kScaleFromGenMC((int) mu_Charge[0], mu_Pt[1], mu_Eta[1], mu_Phi[1], (int) mu_NumberTrackerLayers[1], gen2_pt, rand->Rndm(), 0, 0);
+                        double mu1_mcSF = rc.kScaleFromGenMC((int) mu_Charge[1], mu_Pt[1], mu_Eta[1], mu_Phi[1], (int) mu_NumberTrackerLayers[1], gen2_pt, rand->Rndm(), 0, 0);
                         double mu0_mcSF_alt = rc.kScaleFromGenMC((int) mu_Charge[0], mu_Pt[0], mu_Eta[0], mu_Phi[0], (int) mu_NumberTrackerLayers[0], gen1_pt, rand->Rndm(), 1, 0);
-                        double mu1_mcSF_alt = rc.kScaleFromGenMC((int) mu_Charge[0], mu_Pt[1], mu_Eta[1], mu_Phi[1], (int) mu_NumberTrackerLayers[1], gen2_pt, rand->Rndm(), 1, 0);
+                        double mu1_mcSF_alt = rc.kScaleFromGenMC((int) mu_Charge[1], mu_Pt[1], mu_Eta[1], mu_Phi[1], (int) mu_NumberTrackerLayers[1], gen2_pt, rand->Rndm(), 1, 0);
                         mu1_pt_corr =mu1_pt *mu0_mcSF;
                         mu2_pt_corr =mu2_pt * mu1_mcSF;
                         mu1_pt_alt = mu1_pt *mu0_mcSF_alt;

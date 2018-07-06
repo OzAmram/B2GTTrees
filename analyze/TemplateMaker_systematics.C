@@ -33,6 +33,16 @@
 
 using namespace std;
 
+void cleanup_template(TH2F *h){
+    int n_xf_bins = 5;
+    int n_cost_bins = 10;
+    for(int i=1; i<= n_xf_bins; i++){
+        for(int j=1; j<=n_cost_bins; j++){
+            float val = h->GetBinContent(i,j);
+            if(val<0.) h->SetBinContent(i,j,0.);
+        }
+    }
+}
 
 void print_hist(TH2 *h){
     printf("\n");
@@ -64,6 +74,7 @@ int gen_data_template(TTree *t1, TH2F* h, vector<double> *v_xF, vector<double> *
     t1->SetBranchAddress("m", &m);
     t1->SetBranchAddress("xF", &xF);
     t1->SetBranchAddress("cost", &cost);
+    t1->SetBranchAddress("nJets", &nJets);
     t1->SetBranchAddress("jet1_CMVA", &jet1_cmva);
     t1->SetBranchAddress("jet2_CMVA", &jet2_cmva);
     t1->SetBranchAddress("met_pt", &met_pt);
@@ -85,7 +96,6 @@ int gen_data_template(TTree *t1, TH2F* h, vector<double> *v_xF, vector<double> *
         t1->SetBranchAddress("el1_pt", &lep1_pt);
         t1->SetBranchAddress("el2_pt", &lep2_pt);
     }
-    //t1->SetBranchAddress("nJets", &nJets);
     nJets =2;
     int nEvents = 0;
     int n=0;
@@ -655,6 +665,8 @@ void gen_fakes_template(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_contam,
             printf("After iter %i current fakerate est is %.0f \n", l, h->Integral());
         }
     }
+    printf("Performing fakes cleanup (removing neg. bins) \n");
+    cleanup_template(h);
     printf("Total Fakerate weight Weight is %.2f \n", h->Integral());
     if(h->Integral() < 0.){
         h->Scale(0.);
@@ -815,6 +827,8 @@ int gen_combined_background_template(int nTrees, TTree **ts, TH2F* h,
 
         t1->ResetBranchAddresses();
     }
+    printf("Performing templ. cleanup (removing neg. bins) \n");
+    cleanup_template(h);
     printf("Tot Weight is %.2f \n", h->Integral());
     h->Scale(1./h->Integral());
     return 0;

@@ -28,11 +28,11 @@
 
 
 
-int FLAG = FLAG_MUONS;
-//int FLAG = FLAG_MUONS;
-bool do_both = true;
-const TString mumu_fout_name("AFB_fit/fit_results/m_bins/MuMu_fit_nominal_july5.root");
-const TString elel_fout_name("AFB_fit/fit_results/m_bins/ElEl_fit_nominal_july5.root");
+//int FLAG = FLAG_ELECTRONS;
+int FLAG = FLAG_ELECTRONS;
+bool do_both = false;
+const TString mumu_fout_name("AFB_fit/fit_results/m_bins/MuMu_fit_test.root");
+const TString elel_fout_name("AFB_fit/fit_results/m_bins/ElEl_fit_test.root");
 
 
 float m_low;
@@ -43,7 +43,7 @@ bool print = true;
 
 Double_t med_btag = 0.4432;
 
-TH2F *h_asym, *h_sym, *h_back,  *h_data, *h_mc;
+TH2F *h_asym, *h_sym, *h_back,  *h_data, *h_mc, *h_qcd;
 TH2F *h_mc_count, *h_sym_count;
 //void *x_axp, *y_axp, *z_axp;
 
@@ -80,18 +80,20 @@ void fcn(int& npar, double* deriv, double& f, double par[], int flag){
         Double_t p_sym = get_prob(v_xF[i], v_cost[i], h_sym);
         Double_t p_asym = get_prob(v_xF[i],  v_cost[i], h_asym);
         Double_t p_back = get_prob(v_xF[i], v_cost[i], h_back);
+        Double_t p_qcd = get_prob(v_xF[i], v_cost[i], h_qcd);
 
 
 
         double AFB = par[0];
         double r_back = par[1];
+        double r_qcd = par[2];
         if(p_back < 0){ 
             //Printf("P_back < 0! %.2e %.2f %.2f \n", p_back, v_xF[i], v_cost[i]);
             p_back = 1e-20;
         }
 
-        double prob = r_back*p_back + (1 - r_back) * (p_sym + AFB*p_asym);
-        if(prob > 1) printf("Warning prob is too big %.2f %.2f %.2f %.2f %.2f  \n", r_back, AFB, p_back, p_sym, p_asym);
+        double prob = r_back*p_back + r_qcd*p_qcd + (1 - r_back - r_qcd) * (p_sym + AFB*p_asym);
+        if(prob > 1) printf("Warning prob is too big %.2f %.2f %.2f %.2f %.2f %.2f %.2f  \n", r_back, r_qcd, AFB, p_back, p_sym, p_asym, p_qcd);
         if(print && p_sym < 1e-20){
             misses++;
             printf(" Warning p_sym is 0 or negative! for bin xf: %0.2f cost: %1.2f \n", v_xF[i], v_cost[i]);
@@ -134,6 +136,10 @@ void setup(){
             n_xf_bins, xf_bins, n_cost_bins, cost_bins);
 
     h_back->SetDirectory(0);
+    h_qcd = new TH2F("h_qcd", "Combined background template",
+            n_xf_bins, xf_bins, n_cost_bins, cost_bins);
+
+    h_qcd->SetDirectory(0);
     h_data = new TH2F("h_data", "Data template of (x_f, cost_r) xF > 0.15",
             n_xf_bins, xf_bins, n_cost_bins, cost_bins);
 
@@ -141,13 +147,15 @@ void setup(){
     printf("Generating templates \n");
 
     if(FLAG == FLAG_MUONS){
-        bool do_RC = true;
+        bool do_RC = false;
         int flag2 = FLAG_M_BINS;
         nDataEvents = gen_data_template(t_mumu_data, h_data, &v_xF, &v_cost, m_low, m_high, FLAG, flag2, do_RC);
         gen_mc_template(t_mumu_mc, alpha, h_sym, h_asym, h_sym_count, m_low, m_high, FLAG, flag2, do_RC);
         TTree *ts[2] = {t_mumu_back, t_mumu_nosig};
 
-        gen_fakes_template(t_mumu_WJets, t_mumu_QCD, t_mumu_WJets_contam, t_mumu_QCD_contam, h_back, m_low, m_high, FLAG, flag2);
+        gen_fakes_template(t_mumu_WJets, t_mumu_QCD, t_mumu_WJets_contam, t_mumu_QCD_contam, h_qcd, m_low, m_high, FLAG, flag2);
+        if(h_qcd->Integral() > 0.) h_qcd->Scale(1./h_qcd->Integral());
+        else h_qcd->Scale(0.);
         gen_combined_background_template(2, ts, h_back, m_low, m_high, FLAG, flag2, do_RC);
 
     }
@@ -155,7 +163,9 @@ void setup(){
         gen_mc_template(t_elel_mc, alpha, h_sym, h_asym, h_sym_count, m_low, m_high, FLAG);
         TTree *ts[2] = {t_elel_back, t_elel_nosig};
 
-        gen_fakes_template(t_elel_WJets, t_elel_QCD, t_elel_WJets_contam, t_elel_QCD_contam, h_back, m_low, m_high, FLAG);
+        gen_fakes_template(t_elel_WJets, t_elel_QCD, t_elel_WJets_contam, t_elel_QCD_contam, h_qcd, m_low, m_high, FLAG);
+        if(h_qcd->Integral() > 0.) h_qcd->Scale(1./h_qcd->Integral());
+        else h_qcd->Scale(0.);
         gen_combined_background_template(2, ts, h_back, m_low, m_high, FLAG);
 
         nDataEvents = gen_data_template(t_elel_data, h_data, &v_xF, &v_cost, m_low, m_high, FLAG);
@@ -190,7 +200,8 @@ void cleanup(){
 }
 void single_fit_all(){
     init();
-    Double_t AFB_fit[n_m_bins], AFB_fit_err[n_m_bins], r_back_fit[n_m_bins], r_back_fit_err[n_m_bins];
+    Double_t AFB_fit[n_m_bins], AFB_fit_err[n_m_bins], r_back_fit[n_m_bins], r_back_fit_err[n_m_bins],
+             r_qcd_fit[n_m_bins], r_qcd_fit_err[n_m_bins];
     float chi_sq[n_m_bins];
     unsigned int nEvents[n_m_bins];
     TTree *tout= new TTree("T_fit_res", "Tree with Fit Results");
@@ -214,8 +225,8 @@ void single_fit_all(){
 
         setup();
 
-        printf("Integrals are %f %f %f %f  \n", h_data->Integral(), h_sym->Integral(), 
-                                               h_asym->Integral(), h_back->Integral() );
+        printf("Integrals are %f %f %f %f %f  \n", h_data->Integral(), h_sym->Integral(), 
+                                               h_asym->Integral(), h_back->Integral(), h_qcd->Integral() );
         h_sym->Print();
 
 
@@ -223,14 +234,25 @@ void single_fit_all(){
         float AFB_start = 0.6;
         float AFB_start_error = 0.1;
         float AFB_max = 0.75;
-        float r_back_start = 0.12;
+        float r_back_start = 0.10;
         float r_back_start_error = 0.04;
         float r_back_max = 0.6;
+        float r_qcd_start, r_qcd_start_error;
+        if(FLAG == FLAG_MUONS){
+            r_qcd_start = 0.02;
+            r_qcd_start_error = 0.01;
+        }
+        else{
+            r_qcd_start = 0.07;
+            r_qcd_start_error = 0.03;
+        }
 
-        TVirtualFitter * minuit = TVirtualFitter::Fitter(0,2);
+
+        TVirtualFitter * minuit = TVirtualFitter::Fitter(0,3);
         minuit->SetFCN(fcn);
         minuit->SetParameter(0,"AFB", AFB_start, AFB_start_error, -AFB_max, AFB_max);
         minuit->SetParameter(1,"r_back", r_back_start, r_back_start_error, 0., 0.5);
+        minuit->SetParameter(2,"r_qcd", r_qcd_start, r_qcd_start_error, 0., 0.5);
         Double_t arglist[100];
         arglist[0] = 10000.;
         minuit->ExecuteCommand("MIGRAD", arglist,0);
@@ -245,6 +267,8 @@ void single_fit_all(){
         AFB_fit_err[i] = minuit->GetParError(0);
         r_back_fit[i] = minuit->GetParameter(1); 
         r_back_fit_err[i] = minuit->GetParError(1);
+        r_qcd_fit[i] = minuit->GetParameter(2); 
+        r_qcd_fit_err[i] = minuit->GetParError(2);
 
         AFB = AFB_fit[i];
         AFB_err = AFB_fit_err[i];
@@ -255,7 +279,9 @@ void single_fit_all(){
         nEvents[i] = nDataEvents;
         tout->Fill();
 
-        chi_sq[i] = get_chi_sq(h_data, h_sym, h_asym, h_back, AFB, r_back);
+
+        //chi_sq[i] = get_chi_sq(h_data, h_sym, h_asym, h_back, AFB, r_back);
+        chi_sq[i] = get_chi_sq_v2(h_data, h_sym, h_asym, h_back, h_qcd, AFB, r_back, r_qcd_fit[i]);
 
 
 
@@ -282,8 +308,9 @@ void single_fit_all(){
         printf("ElEl fit results, written out to %s \n" , elel_fout_name.Data());
     }
     for(int i=0; i<n_m_bins; i++){
-        printf("\n Fit on M=[%.0f, %.0f], %i Events chi_sq %.0f: AFB = %0.3f +/- %0.3f r_back = %0.3f +/- %0.3f \n", 
-                    m_bins[i], m_bins[i+1], nEvents[i], chi_sq[i], AFB_fit[i], AFB_fit_err[i], r_back_fit[i], r_back_fit_err[i]);
+        printf("\n Fit on M=[%.0f, %.0f], %i Events chi_sq %.1f: AFB = %0.3f +/- %0.3f r_back = %0.3f +/- %0.3f r_qcd = %.3f +/- %0.3f\n", 
+                    m_bins[i], m_bins[i+1], nEvents[i], chi_sq[i], AFB_fit[i], AFB_fit_err[i], r_back_fit[i], r_back_fit_err[i],
+                    r_qcd_fit[i], r_qcd_fit_err[i]);
 
     }
 
