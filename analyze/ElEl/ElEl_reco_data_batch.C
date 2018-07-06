@@ -10,7 +10,7 @@
 
 const double root2 = sqrt(2);
 const char* filename("SingleElectron_files_aug29.txt");
-const TString fout_name("output_files/SingleElectron_data_zpeak_june15.root");
+const TString fout_name("output_files/SingleElectron_data_july6.root");
 
 const bool data_2016 = true;
 

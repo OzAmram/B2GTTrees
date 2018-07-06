@@ -29,7 +29,7 @@
 
 
 
-const TString fout_name("AFB_fit/fit_results/m_bins/combined_m_fit_mar25_pdf_sys.root");
+const TString fout_name("AFB_fit/fit_results/m_bins/combined_m_fit_july6_pdf_sys.root");
 Int_t N_PDFS = 100;
 
 

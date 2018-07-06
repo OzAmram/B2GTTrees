@@ -31,8 +31,8 @@
 int FLAG = FLAG_MUONS;
 //int FLAG = FLAG_MUONS;
 bool do_both = true;
-const TString mumu_fout_name("AFB_fit/fit_results/m_bins/MuMu_fit_nominal_july5.root");
-const TString elel_fout_name("AFB_fit/fit_results/m_bins/ElEl_fit_nominal_july5.root");
+const TString mumu_fout_name("AFB_fit/fit_results/m_bins/MuMu_fit_nominal_july6.root");
+const TString elel_fout_name("AFB_fit/fit_results/m_bins/ElEl_fit_nominal_july6.root");
 
 
 float m_low;
@@ -141,7 +141,7 @@ void setup(){
     printf("Generating templates \n");
 
     if(FLAG == FLAG_MUONS){
-        bool do_RC = true;
+        bool do_RC = false;
         int flag2 = FLAG_M_BINS;
         nDataEvents = gen_data_template(t_mumu_data, h_data, &v_xF, &v_cost, m_low, m_high, FLAG, flag2, do_RC);
         gen_mc_template(t_mumu_mc, alpha, h_sym, h_asym, h_sym_count, m_low, m_high, FLAG, flag2, do_RC);
