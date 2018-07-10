@@ -33,6 +33,10 @@
 
 using namespace std;
 
+BTag_readers b_reader;
+BTag_effs btag_effs;
+bool btag_setup = false;
+
 void cleanup_template(TH2F *h){
     int n_xf_bins = 5;
     int n_cost_bins = 10;
@@ -238,9 +242,10 @@ int gen_mc_template(TTree *t1, Double_t alpha, TH2F* h_sym, TH2F *h_asym, TH2F *
 
     // do_btag_sys: 0 = nominal, 1= var up, -1 = var down
     int do_btag_sys = 0;
-    BTag_readers b_reader;
-    BTag_effs btag_effs;
-    setup_btag_SFs(&b_reader, &btag_effs, do_btag_sys);
+    if(!btag_setup){
+        btag_setup = true;
+        setup_btag_SFs(&b_reader, &btag_effs, do_btag_sys);
+    }
 
     if(flag1 == FLAG_MUONS){
         t1->SetBranchAddress("mu_p", &lep_p);
@@ -672,8 +677,8 @@ void gen_fakes_template(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_contam,
         h->Scale(0.);
         printf("zeroing Fakes template \n");
     }
-    //if(flag1 == FLAG_MUONS) h->Scale(1.5);
-    //if(flag1 == FLAG_ELECTRONS) h->Scale(1.3);
+    //if(flag1 == FLAG_MUONS) h->Scale(.5);
+    //if(flag1 == FLAG_ELECTRONS) h->Scale(0.7);
     return;
 }
 
@@ -683,10 +688,11 @@ int gen_combined_background_template(int nTrees, TTree **ts, TH2F* h,
         bool turn_on_RC = false){
     h->Sumw2();
 
-    BTag_readers b_reader;
-    BTag_effs btag_effs;
 
-    setup_btag_SFs(&b_reader, &btag_effs);
+    if(!btag_setup){
+        btag_step = true;
+        setup_btag_SFs(&b_reader, &btag_effs);
+    }
     for(int i=0; i<nTrees; i++){
         TTree *t1 = ts[i];
         Long64_t nEntries  =  t1->GetEntries();
@@ -733,10 +739,12 @@ int gen_combined_background_template(int nTrees, TTree **ts, TH2F* h,
             t1->SetBranchAddress("bcdef_trk_SF", &bcdef_trk_SF);
             t1->SetBranchAddress("mu_p", &lep_p);
             t1->SetBranchAddress("mu_m", &lep_m);
-            t1->SetBranchAddress("mu1_pt_corr", &mu1_pt_corr);
-            t1->SetBranchAddress("mu2_pt_corr", &mu2_pt_corr);
-            t1->SetBranchAddress("mu1_pt_alt", &mu1_pt_alt);
-            t1->SetBranchAddress("mu2_pt_alt", &mu2_pt_alt);
+            if(turn_on_RC){
+                t1->SetBranchAddress("mu1_pt_corr", &mu1_pt_corr);
+                t1->SetBranchAddress("mu2_pt_corr", &mu2_pt_corr);
+                t1->SetBranchAddress("mu1_pt_alt", &mu1_pt_alt);
+                t1->SetBranchAddress("mu2_pt_alt", &mu2_pt_alt);
+            }
 
 
             for (int i=0; i<nEntries; i++) {
@@ -1007,3 +1015,197 @@ int gen_finite_mc_template(TTree *t1, TH2F* h_mc_corr, TH2F *h_mc_inc, TH2F *h_e
 }
 
 
+int gen_finite_mc_template_v2(TTree *t1, Double_t alpha, TH2F* h_sym, TH2F *h_asym, TH2F *h_cov, 
+        Double_t var_low, Double_t var_high, int flag1 = FLAG_MUONS, int flag2 = FLAG_M_BINS,
+        int pdf_sys = -1){
+    Long64_t nEntries  =  t1->GetEntries();
+    //printf("size is %i \n", nEntries);
+
+    h_sym->Sumw2();
+    h_asym->Sumw2();
+    h_cov->Sumw2();
+
+    //TH2F* h_reweights = (TH2F *) h_sym->Clone("h_rw");
+
+    Double_t m, xF, cost, gen_weight, reweight, jet1_cmva, jet2_cmva, cost_st;
+    Double_t bcdef_HLT_SF, bcdef_iso_SF, bcdef_id_SF;
+    Double_t gh_HLT_SF, gh_iso_SF, gh_id_SF;
+    Double_t gh_trk_SF, bcdef_trk_SF;
+    Double_t el_id_SF, el_reco_SF, pu_SF, el_HLT_SF;
+    Double_t jet1_pt, jet2_pt, jet1_b_weight, jet2_b_weight, jet1_eta, jet2_eta;
+    Double_t mu1_pt, mu1_eta, mu2_pt, mu2_eta;
+    Double_t el1_pt, el1_eta, el2_pt, el2_eta;
+    Double_t mu_R_up, mu_R_down, mu_F_up, mu_F_down, 
+             mu_RF_up, mu_RF_down, pdf_up, pdf_down;
+    Float_t cost_pt, met_pt;
+    Float_t pdf_weights[100];
+    TLorentzVector *lep_p=0;
+    TLorentzVector *lep_m=0;
+    Double_t pt;
+    Int_t nJets, pu_NtrueInt, jet1_flavour, jet2_flavour;
+    t1->SetBranchAddress("m", &m);
+    t1->SetBranchAddress("xF", &xF);
+    t1->SetBranchAddress("cost", &cost);
+    t1->SetBranchAddress("cost_st", &cost_st);
+    t1->SetBranchAddress("jet1_CMVA", &jet1_cmva);
+    t1->SetBranchAddress("jet2_CMVA", &jet2_cmva);
+    t1->SetBranchAddress("met_pt", &met_pt);
+    t1->SetBranchAddress("jet1_pt", &jet1_pt);
+    t1->SetBranchAddress("jet2_pt", &jet2_pt);
+    t1->SetBranchAddress("nJets", &nJets);
+    t1->SetBranchAddress("gen_weight", &gen_weight);
+    t1->SetBranchAddress("pu_SF", &pu_SF);
+    t1->SetBranchAddress("mu_R_up", &mu_R_up);
+    t1->SetBranchAddress("mu_R_down", &mu_R_down);
+    t1->SetBranchAddress("mu_F_up", &mu_F_up);
+    t1->SetBranchAddress("mu_F_down", &mu_F_down);
+    t1->SetBranchAddress("mu_RF_up", &mu_RF_up);
+    t1->SetBranchAddress("mu_RF_down", &mu_RF_down);
+    t1->SetBranchAddress("pdf_up", &pdf_up);
+    t1->SetBranchAddress("pdf_down", &pdf_down);
+    t1->SetBranchAddress("pu_NtrueInt", &pu_NtrueInt);
+    t1->SetBranchAddress("jet1_eta", &jet1_eta);
+    t1->SetBranchAddress("jet2_eta", &jet2_eta);
+    t1->SetBranchAddress("jet1_flavour", &jet1_flavour);
+    t1->SetBranchAddress("jet2_flavour", &jet2_flavour);
+    if(pdf_sys >=0) t1->SetBranchAddress("pdf_weights", &pdf_weights);
+    int n = 0;
+
+    BTag_readers b_reader;
+    BTag_effs btag_effs;
+
+    bool do_bweight = true;
+    jet1_b_weight = 1.;
+    jet2_b_weight = 1.;
+
+    setup_btag_SFs(&b_reader, &btag_effs);
+
+    if(flag1 == FLAG_MUONS){
+        t1->SetBranchAddress("mu_p", &lep_p);
+        t1->SetBranchAddress("mu_m", &lep_m);
+        t1->SetBranchAddress("mu1_pt", &mu1_pt);
+        t1->SetBranchAddress("mu1_eta", &mu1_eta);
+        t1->SetBranchAddress("mu2_pt", &mu2_pt);
+        t1->SetBranchAddress("mu2_eta", &mu2_eta);
+        t1->SetBranchAddress("bcdef_HLT_SF", &bcdef_HLT_SF);
+        t1->SetBranchAddress("bcdef_iso_SF", &bcdef_iso_SF);
+        t1->SetBranchAddress("bcdef_id_SF", &bcdef_id_SF);
+        t1->SetBranchAddress("bcdef_trk_SF", &bcdef_trk_SF);
+        t1->SetBranchAddress("gh_HLT_SF", &gh_HLT_SF);
+        t1->SetBranchAddress("gh_iso_SF", &gh_iso_SF);
+        t1->SetBranchAddress("gh_id_SF", &gh_id_SF);
+        t1->SetBranchAddress("gh_trk_SF", &gh_trk_SF);
+
+
+
+
+        for (int i=0; i<nEntries; i++) {
+            t1->GetEntry(i);
+            bool no_bjets = has_no_bjets(nJets, jet1_pt, jet2_pt, jet1_cmva, jet2_cmva);
+            if(flag2 == FLAG_PT_BINS){
+                TLorentzVector cm = *lep_p + *lep_m;
+                pt = cm.Pt();
+            }
+            bool pass = ((flag2 == FLAG_M_BINS && m >= var_low && m <= var_high) ||
+                        (flag2 == FLAG_PT_BINS && m >= 150. && pt >= var_low && pt <= var_high))
+                        && met_pt < 50.  && no_bjets;
+            if(pass){
+
+                if(do_bweight){
+                    jet1_b_weight = get_btag_weight(jet1_pt, jet1_eta,(Float_t) jet1_flavour , btag_effs, b_reader, 0);
+                    jet2_b_weight = get_btag_weight(jet2_pt, jet2_eta,(Float_t) jet2_flavour , btag_effs, b_reader, 0);
+                }
+                reweight = (4./3.)*cost_st*(2. + alpha)/
+                    (1. + cost_st*cost_st + alpha*(1.- cost_st*cost_st));
+                n++;
+
+                Double_t bcdef_weight = gen_weight * pu_SF * bcdef_HLT_SF * bcdef_iso_SF * bcdef_id_SF * bcdef_trk_SF;
+                Double_t gh_weight = gen_weight * pu_SF * gh_HLT_SF * gh_iso_SF * gh_id_SF * gh_trk_SF;
+                if (nJets >= 1){
+                    bcdef_weight *= jet1_b_weight;
+                    gh_weight *= jet1_b_weight;
+                }
+                if (nJets >= 2){
+                    bcdef_weight *= jet2_b_weight;
+                    gh_weight *= jet2_b_weight;
+                }
+
+
+                Double_t final_weight = 1000*(bcdef_weight*bcdef_lumi + gh_weight*gh_lumi);
+                h_sym->Fill(xF, cost, final_weight); 
+                h_sym->Fill(xF, -cost, final_weight); 
+
+                h_asym->Fill(xF, cost, reweight * final_weight);
+                h_asym->Fill(xF, -cost, -reweight * final_weight);
+                //h_reweights->Fill(xF, fabs(cost), fabs(reweight));
+
+                //h_count->Fill(xF, fabs(cost), 1);
+                h_cov->Fill(xF, abs(cost), abs(reweight)*final_weight*final_weight);
+            }
+        }
+
+    }
+    else if (flag1 == FLAG_ELECTRONS) {
+        t1->SetBranchAddress("el_p", &lep_p);
+        t1->SetBranchAddress("el_m", &lep_m);
+        t1->SetBranchAddress("el1_pt", &el1_pt);
+        t1->SetBranchAddress("el1_eta", &el1_eta);
+        t1->SetBranchAddress("el2_pt", &el2_pt);
+        t1->SetBranchAddress("el2_eta", &el2_eta);
+        t1->SetBranchAddress("el_id_SF", &el_id_SF);
+        t1->SetBranchAddress("el_HLT_SF", &el_HLT_SF);
+        t1->SetBranchAddress("el_reco_SF", &el_reco_SF);
+
+        for (int i=0; i<nEntries; i++) {
+            t1->GetEntry(i);
+            bool no_bjets = has_no_bjets(nJets, jet1_pt, jet2_pt, jet1_cmva, jet2_cmva);
+            if(flag2 == FLAG_PT_BINS){
+                TLorentzVector cm = *lep_p + *lep_m;
+                pt = cm.Pt();
+            }
+            bool pass = ((flag2 == FLAG_M_BINS && m >= var_low && m <= var_high) ||
+                        (flag2 == FLAG_PT_BINS && m >= 150. && pt >= var_low && pt <= var_high))
+                        && met_pt < 50.  && no_bjets;
+            if(pass){
+
+                if(do_bweight){
+                    jet1_b_weight = get_btag_weight(jet1_pt, jet1_eta,(Float_t) jet1_flavour , btag_effs, b_reader, 0);
+                    jet2_b_weight = get_btag_weight(jet2_pt, jet2_eta,(Float_t) jet2_flavour , btag_effs, b_reader, 0);
+                }
+                reweight = (4./3.)*cost_st*(2. + alpha)/
+                    (1. + cost_st*cost_st + alpha*(1.- cost_st*cost_st));
+                n++;
+
+                Double_t evt_weight = gen_weight * el_id_SF *el_reco_SF * pu_SF * el_HLT_SF;
+                if (nJets >= 1){
+                    evt_weight *= jet1_b_weight;
+                }
+                if (nJets >= 2){
+                    evt_weight *= jet2_b_weight;
+                }
+
+
+                h_sym->Fill(xF, cost, evt_weight); 
+                h_sym->Fill(xF, -cost, evt_weight); 
+
+                h_asym->Fill(xF, cost, reweight * evt_weight);
+                h_asym->Fill(xF, -cost, -reweight * evt_weight);
+
+                h_cov->Fill(xF, abs(cost), abs(reweight)*evt_weight*evt_weight);
+
+            }
+        }
+
+    }
+    //h_reweights->Divide(h_count);
+    //print_hist(h_reweights);
+
+    printf("N sym is %i \n", n);
+    float norm = h_sym -> Integral();
+    h_sym->Scale(1./norm);
+    h_cov->Scale(1./norm/norm);
+    h_asym->Scale(1./norm);
+    t1->ResetBranchAddresses();
+    printf("MC templates generated from %i events \n \n", n);
+    return 0;
+}

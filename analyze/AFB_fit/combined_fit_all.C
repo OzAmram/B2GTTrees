@@ -20,14 +20,14 @@
 #include "TSystem.h"
 //#include"Minuit2/Minuit2Minimizer.h"
 #include "Math/Functor.h"
-//#include "../TemplateMaker_systematics.C"
-#include "../TemplateMaker.C"
+#include "../TemplateMaker_systematics.C"
+//#include "../TemplateMaker.C"
 #include "FitUtils.C"
 
 
 
 
-const TString fout_name("AFB_fit/fit_results/m_bins/combined_fit_nominal_july6.root");
+const TString fout_name("AFB_fit/fit_results/m_bins/combined_test_july9.root");
 
 
 
@@ -250,6 +250,7 @@ void combined_fit_all(){
         m_low = m_bins[i];
         m_high = m_bins[i+1];
         alpha = alphas[i];
+        //alpha = alphas[i] - alpha_unc[i];
 
         setup();
 

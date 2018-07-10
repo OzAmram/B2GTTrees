@@ -22,8 +22,8 @@
 #include "TSystem.h"
 //#include"Minuit2/Minuit2Minimizer.h"
 #include "Math/Functor.h"
-//#include "../TemplateMaker_systematics.C"
-#include "../TemplateMaker.C"
+#include "../TemplateMaker_systematics.C"
+//#include "../TemplateMaker.C"
 #include "root_files.h"
 
 using namespace std;
@@ -31,7 +31,7 @@ using namespace std;
 
 
 
-const TString fout_name("AFB_fit/fit_results/m_bins/Combined_fit_finite_mc_stat_fixed_june14.root");
+const TString fout_name("AFB_fit/fit_results/m_bins/Combined_fit_finite_mc_stat_fixed_july9.root");
 
 int FLAG = FLAG_MUONS;
 bool do_both = true;
@@ -77,183 +77,6 @@ Double_t get_prob(Double_t xF, Double_t cost, TH2F *h){
     return h->GetBinContent(xbin, ybin);
 }
 
-int gen_finite_mc_template_v2(TTree *t1, Double_t alpha, TH2F* h_sym, TH2F *h_asym, TH2F *h_cov, 
-        Double_t var_low, Double_t var_high, int flag1 = FLAG_MUONS, int flag2 = FLAG_M_BINS,
-        int pdf_sys = -1){
-    Long64_t nEntries  =  t1->GetEntries();
-    //printf("size is %i \n", nEntries);
-
-    h_sym->Sumw2();
-    h_asym->Sumw2();
-    h_cov->Sumw2();
-
-    //TH2F* h_reweights = (TH2F *) h_sym->Clone("h_rw");
-
-    Double_t m, xF, cost, gen_weight, reweight, jet1_cmva, jet2_cmva, cost_st;
-    Double_t bcdef_HLT_SF, bcdef_iso_SF, bcdef_id_SF;
-    Double_t gh_HLT_SF, gh_iso_SF, gh_id_SF;
-    Double_t gh_trk_SF, bcdef_trk_SF;
-    Double_t el_id_SF, el_reco_SF, pu_SF, el_HLT_SF;
-    Double_t jet1_pt, jet2_pt, jet1_b_weight, jet2_b_weight, jet1_eta, jet2_eta;
-    Double_t mu1_pt, mu1_eta, mu2_pt, mu2_eta;
-    Double_t el1_pt, el1_eta, el2_pt, el2_eta;
-    Double_t mu_R_up, mu_R_down, mu_F_up, mu_F_down, 
-             mu_RF_up, mu_RF_down, pdf_up, pdf_down;
-    Float_t cost_pt, met_pt;
-    Float_t pdf_weights[100];
-    TLorentzVector *lep_p=0;
-    TLorentzVector *lep_m=0;
-    Double_t pt;
-    Int_t nJets, pu_NtrueInt, jet1_flavour, jet2_flavour;
-    t1->SetBranchAddress("m", &m);
-    t1->SetBranchAddress("xF", &xF);
-    t1->SetBranchAddress("cost", &cost);
-    t1->SetBranchAddress("cost_st", &cost_st);
-    t1->SetBranchAddress("jet1_CMVA", &jet1_cmva);
-    t1->SetBranchAddress("jet2_CMVA", &jet2_cmva);
-    t1->SetBranchAddress("met_pt", &met_pt);
-    t1->SetBranchAddress("jet1_pt", &jet1_pt);
-    t1->SetBranchAddress("jet2_pt", &jet2_pt);
-    t1->SetBranchAddress("nJets", &nJets);
-    t1->SetBranchAddress("gen_weight", &gen_weight);
-    t1->SetBranchAddress("jet1_b_weight", &jet1_b_weight);
-    t1->SetBranchAddress("jet2_b_weight", &jet2_b_weight);
-    t1->SetBranchAddress("pu_SF", &pu_SF);
-    t1->SetBranchAddress("mu_R_up", &mu_R_up);
-    t1->SetBranchAddress("mu_R_down", &mu_R_down);
-    t1->SetBranchAddress("mu_F_up", &mu_F_up);
-    t1->SetBranchAddress("mu_F_down", &mu_F_down);
-    t1->SetBranchAddress("mu_RF_up", &mu_RF_up);
-    t1->SetBranchAddress("mu_RF_down", &mu_RF_down);
-    t1->SetBranchAddress("pdf_up", &pdf_up);
-    t1->SetBranchAddress("pdf_down", &pdf_down);
-    t1->SetBranchAddress("pu_NtrueInt", &pu_NtrueInt);
-    t1->SetBranchAddress("jet1_eta", &jet1_eta);
-    t1->SetBranchAddress("jet2_eta", &jet2_eta);
-    t1->SetBranchAddress("jet1_flavour", &jet1_flavour);
-    t1->SetBranchAddress("jet2_flavour", &jet2_flavour);
-    if(pdf_sys >=0) t1->SetBranchAddress("pdf_weights", &pdf_weights);
-    int n = 0;
-
-
-    if(flag1 == FLAG_MUONS){
-        t1->SetBranchAddress("mu_p", &lep_p);
-        t1->SetBranchAddress("mu_m", &lep_m);
-        t1->SetBranchAddress("mu1_pt", &mu1_pt);
-        t1->SetBranchAddress("mu1_eta", &mu1_eta);
-        t1->SetBranchAddress("mu2_pt", &mu2_pt);
-        t1->SetBranchAddress("mu2_eta", &mu2_eta);
-        t1->SetBranchAddress("bcdef_HLT_SF", &bcdef_HLT_SF);
-        t1->SetBranchAddress("bcdef_iso_SF", &bcdef_iso_SF);
-        t1->SetBranchAddress("bcdef_id_SF", &bcdef_id_SF);
-        t1->SetBranchAddress("bcdef_trk_SF", &bcdef_trk_SF);
-        t1->SetBranchAddress("gh_HLT_SF", &gh_HLT_SF);
-        t1->SetBranchAddress("gh_iso_SF", &gh_iso_SF);
-        t1->SetBranchAddress("gh_id_SF", &gh_id_SF);
-        t1->SetBranchAddress("gh_trk_SF", &gh_trk_SF);
-
-
-
-
-        for (int i=0; i<nEntries; i++) {
-            t1->GetEntry(i);
-            bool no_bjets = has_no_bjets(nJets, jet1_pt, jet2_pt, jet1_cmva, jet2_cmva);
-            if(flag2 == FLAG_PT_BINS){
-                TLorentzVector cm = *lep_p + *lep_m;
-                pt = cm.Pt();
-            }
-            bool pass = ((flag2 == FLAG_M_BINS && m >= var_low && m <= var_high) ||
-                    (flag2 == FLAG_PT_BINS && m >= 150. && pt >= var_low && pt <= var_high))
-                && met_pt < 50.  && no_bjets;
-            if(pass){
-                reweight = (4./3.)*cost_st*(2. + alpha)/
-                    (1. + cost_st*cost_st + alpha*(1.- cost_st*cost_st));
-                n++;
-
-                Double_t bcdef_weight = gen_weight * pu_SF * bcdef_HLT_SF * bcdef_iso_SF * bcdef_id_SF * bcdef_trk_SF;
-                Double_t gh_weight = gen_weight * pu_SF * gh_HLT_SF * gh_iso_SF * gh_id_SF * gh_trk_SF;
-                if (nJets >= 1){
-                    bcdef_weight *= jet1_b_weight;
-                    gh_weight *= jet1_b_weight;
-                }
-                if (nJets >= 2){
-                    bcdef_weight *= jet2_b_weight;
-                    gh_weight *= jet2_b_weight;
-                }
-
-
-                Double_t final_weight = 1000*(bcdef_weight*bcdef_lumi + gh_weight*gh_lumi);
-                h_sym->Fill(xF, cost, final_weight); 
-                h_sym->Fill(xF, -cost, final_weight); 
-
-                h_asym->Fill(xF, cost, reweight * final_weight);
-                h_asym->Fill(xF, -cost, -reweight * final_weight);
-                //h_reweights->Fill(xF, fabs(cost), fabs(reweight));
-
-                //h_count->Fill(xF, fabs(cost), 1);
-                h_cov->Fill(xF, abs(cost), abs(reweight)*final_weight*final_weight);
-            }
-        }
-
-    }
-    else if (flag1 == FLAG_ELECTRONS) {
-        t1->SetBranchAddress("el_p", &lep_p);
-        t1->SetBranchAddress("el_m", &lep_m);
-        t1->SetBranchAddress("el1_pt", &el1_pt);
-        t1->SetBranchAddress("el1_eta", &el1_eta);
-        t1->SetBranchAddress("el2_pt", &el2_pt);
-        t1->SetBranchAddress("el2_eta", &el2_eta);
-        t1->SetBranchAddress("el_id_SF", &el_id_SF);
-        t1->SetBranchAddress("el_HLT_SF", &el_HLT_SF);
-        t1->SetBranchAddress("el_reco_SF", &el_reco_SF);
-
-        for (int i=0; i<nEntries; i++) {
-            t1->GetEntry(i);
-            bool no_bjets = has_no_bjets(nJets, jet1_pt, jet2_pt, jet1_cmva, jet2_cmva);
-            if(flag2 == FLAG_PT_BINS){
-                TLorentzVector cm = *lep_p + *lep_m;
-                pt = cm.Pt();
-            }
-            bool pass = ((flag2 == FLAG_M_BINS && m >= var_low && m <= var_high) ||
-                    (flag2 == FLAG_PT_BINS && m >= 150. && pt >= var_low && pt <= var_high))
-                && met_pt < 50.  && no_bjets;
-            if(pass){
-                reweight = (4./3.)*cost_st*(2. + alpha)/
-                    (1. + cost_st*cost_st + alpha*(1.- cost_st*cost_st));
-                n++;
-
-                Double_t evt_weight = gen_weight * el_id_SF *el_reco_SF * pu_SF * el_HLT_SF;
-                if (nJets >= 1){
-                    evt_weight *= jet1_b_weight;
-                }
-                if (nJets >= 2){
-                    evt_weight *= jet2_b_weight;
-                }
-
-
-                h_sym->Fill(xF, cost, evt_weight); 
-                h_sym->Fill(xF, -cost, evt_weight); 
-
-                h_asym->Fill(xF, cost, reweight * evt_weight);
-                h_asym->Fill(xF, -cost, -reweight * evt_weight);
-                h_cov->Fill(xF, abs(cost), fabs(reweight)*evt_weight*evt_weight);
-
-            }
-        }
-
-    }
-    //h_reweights->Divide(h_count);
-    //print_hist(h_reweights);
-
-    printf("N sym is %i \n", n);
-    float norm = h_sym -> Integral();
-    h_sym->Scale(1./norm);
-    h_cov->Scale(1./norm/norm);
-    h_asym->Scale(1./norm);
-    t1->ResetBranchAddresses();
-    printf("MC templates generated from %i events \n \n", n);
-    return 0;
-}
 
 void setHistParams(TVirtualFitter *minuit, TH2F *h_sym, TH2F *h_asym, int start_idx){
     char sym_str[20] = "sym_bin_%i_%i";
@@ -617,7 +440,7 @@ void finite_mc_fit_combined_v2(){
         minuit->SetParameter(1,"r_elel_back", r_elel_back_start, r_back_start_error, 0., 0.5);
         minuit->SetParameter(2,"r_elel_back", r_elel_back_start, r_back_start_error, 0., 0.5);
         setHistParams(minuit, h_elel_sym, h_elel_asym, 3);
-        setHistParams(minuit, h_mumu_sym, h_mumu_sym, 53);
+        setHistParams(minuit, h_mumu_sym, h_mumu_asym, 53);
         Double_t arglist[100];
         arglist[0] = 10000.;
         minuit->ExecuteCommand("MIGRAD", arglist,0);
@@ -654,9 +477,9 @@ void finite_mc_fit_combined_v2(){
     fout = TFile::Open(fout_name, "RECREATE");
     fout->cd();
     tout->Write();
-    tout->Close();
+    fout->Close();
     for(int i=0; i<6; i++){
-        printf("\n Fit on M=[%.0f, %.0f], %i ElEl Events, %i MuMu Events: AFB = %0.5f +/- %0.5f r_elel_back = %0.3f +/- %0.3f r_mumu_back =%0.3f +/- %0.3f \n", 
+        printf("\n Fit on M=[%.0f, %.0f], %i ElEl Events, %i MuMu Events: AFB = %0.8f +/- %0.8f r_elel_back = %0.3f +/- %0.3f r_mumu_back =%0.3f +/- %0.3f \n", 
                 m_bins[i], m_bins[i+1], nElElEvents[i], nMuMuEvents[i], AFB_fit[i], AFB_fit_err[i], r_elel_back_fit[i], r_elel_back_fit_err[i], r_mumu_back_fit[i], r_mumu_back_fit_err[i]);
 
     }

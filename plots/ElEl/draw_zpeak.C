@@ -241,7 +241,7 @@ void draw_zpeak(){
     init();
     setTDRStyle();
 
-    f_data = TFile::Open("../analyze/output_files/SingleElectron_data_zpeak_june15.root");
+    f_data = TFile::Open("../analyze/output_files/SingleElectron_data_july6.root");
     t_data = (TTree *)f_data->Get("T_data");
 
     f_mc = TFile::Open("../analyze/output_files/ElEl_DY_unbinned_june20.root");
