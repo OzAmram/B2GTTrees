@@ -119,11 +119,11 @@ void draw_background_frac(){
         back_frac_unc[i-1] = sqrt(pow(0.02*(back_frac[i-1]-QCD_frac[i-1]),2) + pow(QCD_frac_unc[i-1],2));
     }
     bin_center[nBins-1] = 850;
-    Double_t fit_res[] = {0.109, 0.174, 0.185, 0.186, 0.166, 0.095};
-    Double_t fit_errs[] = {0.008, 0.012, 0.012, 0.015, 0.027, 0.033};
+    Double_t fit_res[] = {0.106, 0.164, 0.172, 0.195, 0.156, 0.098};
+    Double_t fit_errs[] = {0.008, 0.011, 0.011, 0.015, 0.024, 0.041};
 
-    Double_t comb_fit_res[] = {0.111, 0.175, 0.183, 0.184, 0.165, 0.093};
-    Double_t comb_fit_errs[] = {0.008, 0.012, 0.012, 0.015, 0.027, 0.035};
+    Double_t comb_fit_res[] = {0.108, 0.164, 0.171, 0.193, 0.155, 0.098};
+    Double_t comb_fit_errs[] = {0.008, 0.011, 0.011, 0.015, 0.024, 0.041};
 
     TGraphErrors *mc_nosig_frac = new TGraphErrors(nBins, bin_center, nosig_frac, 0, 0);
     mc_nosig_frac->SetTitle("MC no asym events (qq, gluglu, qbarqbar)");
@@ -229,12 +229,12 @@ void draw_background_frac(){
     TLegend *leg2 = new TLegend(0.5, 0.65, 0.75, 0.8);
     leg2->AddEntry(fit_frac, "R_{bk} value from #mu#mu fit", "p");
     leg2->AddEntry(comb_fit_frac, "R_{bk} value from combined fit", "p");
-    leg2->AddEntry(back_mc_frac, "Total background fraction from MC", "l");
+    leg2->AddEntry(back_mc_frac, "Total background fraction from MC + QCD + WJets", "l");
+    leg2->AddEntry(QCD_est_frac, "QCD + WJets", "l");
     leg2->AddEntry(ttbar_mc_frac, "t#bar{t}", "l");
     leg2->AddEntry(mc_nosig_frac, "DY no asymmety(gg, qq, #bar{q}#bar{q})", "l");
     leg2->AddEntry(diboson_mc_frac, "WW + WZ + ZZ", "l");
     leg2->AddEntry(wt_mc_frac, "tW + #bar{t}W", "l");
-    leg2->AddEntry(QCD_est_frac, "QCD", "l");
     leg2->Draw();
 
     //lumi_sqrtS = "";       // used with iPeriod = 0, e.g. for simulation-only plots (default is an empty string)

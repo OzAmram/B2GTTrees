@@ -116,7 +116,7 @@ void draw_background_frac(){
         //wt_frac_unc[i-1] = std::sqrt(  N_wt*pow((1/denom - N_wt/pow(denom,2)), 2) +
                                           //(denom - N_wt) * pow(1/denom, 4));
         QCD_frac[i-1] =  (N_QCD)/(denom);
-        QCD_frac_unc[i-1]  = 0.2 * (N_QCD) / (denom);
+        QCD_frac_unc[i-1]  = 0.3 * (N_QCD) / (denom);
                                           
         back_frac[i-1]  = diboson_frac[i-1] + ttbar_frac[i-1] + nosig_frac[i-1] + wt_frac[i-1] + QCD_frac[i-1];
         back_frac_unc[i-1] = sqrt(pow(0.02*(back_frac[i-1]-QCD_frac[i-1]),2) + pow(QCD_frac_unc[i-1],2));
@@ -125,11 +125,11 @@ void draw_background_frac(){
                                        //pow(QCD_frac_unc[i-1],2) );
     }
     bin_center[nBins-1] = 800.;
-    Double_t fit_res[] = {0.087, 0.157, 0.210, 0.185, 0.176, 0.128};
-    Double_t fit_errs[] = {0.005, 0.008, 0.010, 0.013, 0.023, 0.033};
+    Double_t fit_res[] = {0.079, 0.147, 0.212, 0.175, 0.170, 0.137};
+    Double_t fit_errs[] = {0.005, 0.008, 0.010, 0.013, 0.022, 0.035};
 
-    Double_t comb_fit_res[] = {0.086, 0.157, 0.211, 0.187, 0.176, 0.130};
-    Double_t comb_fit_errs[] = {0.006, 0.010, 0.011, 0.014, 0.024, 0.037};
+    Double_t comb_fit_res[] = {0.078, 0.147, 0.212, 0.176, 0.170, 0.139};
+    Double_t comb_fit_errs[] = {0.005, 0.008, 0.010, 0.013, 0.022, 0.035};
 
     TGraphErrors *mc_nosig_frac = new TGraphErrors(nBins, bin_center, nosig_frac, 0, 0);
     mc_nosig_frac->SetTitle("MC no asym events (qq, gluglu, qbarqbar)");
@@ -237,12 +237,12 @@ void draw_background_frac(){
     TLegend *leg2 = new TLegend(0.5, 0.65, 0.75, 0.8);
     leg2->AddEntry(fit_frac, "R_{bk} value from ee fit", "p");
     leg2->AddEntry(comb_fit_frac, "R_{bk} value from combined fit", "p");
-    leg2->AddEntry(back_mc_frac, "Total background fraction from MC", "l");
+    leg2->AddEntry(back_mc_frac, "Total background fraction from MC + QCD + WJets", "l");
+    leg2->AddEntry(QCD_est_frac, "QCD + WJets", "l");
     leg2->AddEntry(ttbar_mc_frac, "t#bar{t}", "l");
     leg2->AddEntry(mc_nosig_frac, "DY no asymmety(gg, qq, #bar{q}#bar{q})", "l");
     leg2->AddEntry(diboson_mc_frac, "WW + WZ + ZZ", "l");
     leg2->AddEntry(wt_mc_frac, "tW + #bar{t}W", "l");
-    leg2->AddEntry(QCD_est_frac, "QCD + WJets", "l");
     leg2->Draw();
 
     writeExtraText = true;
