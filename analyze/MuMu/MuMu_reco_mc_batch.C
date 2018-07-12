@@ -20,8 +20,8 @@ const double root2 = sqrt(2);
 double Ebeam = 6500.;
 double Pbeam = sqrt(Ebeam*Ebeam - 0.938*0.938);
 
-char *filename("DY_files_june20.txt");
-const TString fout_name("output_files/MuMu_DY_july05.root");
+char *filename("DY_files_unbinned_june20.txt");
+const TString fout_name("output_files/MuMu_DY_unbinned_july10.root");
 const bool PRINT=false;
 
 const bool data_2016 = true;
@@ -119,7 +119,7 @@ void MuMu_reco_mc_batch()
     //t_signal->SetDirectory(0);
     Double_t cm_m, xF, cost_r, cost_st, mu1_pt, mu2_pt, mu1_eta, mu2_eta, jet1_pt, jet2_pt, jet1_eta, jet2_eta, deltaC, 
              gen_weight, jet1_csv, jet1_cmva, jet2_csv, jet2_cmva, gen_m;
-    Double_t mu1_pt_corr, mu2_pt_corr, mu1_pt_alt, mu2_pt_alt;
+    Double_t mu_p_SF, mu_m_SF, mu_p_SF_alt, mu_m_SF_alt;
     Double_t bcdef_HLT_SF, bcdef_iso_SF, bcdef_id_SF, gh_HLT_SF, gh_iso_SF, gh_id_SF,
              bcdef_trk_SF, gh_trk_SF,
              jet1_b_weight, jet2_b_weight, pu_SF;
@@ -136,11 +136,11 @@ void MuMu_reco_mc_batch()
     t_signal->Branch("cost", &cost_r, "cost/D");
     t_signal->Branch("cost_st", &cost_st, "cost_st/D");
     t_signal->Branch("mu1_pt", &mu1_pt, "mu1_pt/D");
-    t_signal->Branch("mu1_pt_corr", &mu1_pt_corr, "mu1_pt_corr/D");
-    t_signal->Branch("mu2_pt_corr", &mu2_pt_corr, "mu2_pt_corr/D");
-    t_signal->Branch("mu1_pt_alt", &mu1_pt_alt, "mu1_pt_alt/D");
-    t_signal->Branch("mu2_pt_alt", &mu2_pt_alt, "mu2_pt_alt/D");
     t_signal->Branch("mu2_pt", &mu2_pt, "mu2_pt/D");
+    t_signal->Branch("mu_p_SF", &mu_p_SF, "mu_p_SF/D");
+    t_signal->Branch("mu_m_SF", &mu_m_SF, "mu_m_SF/D");
+    t_signal->Branch("mu_p_SF_alt", &mu_p_SF_alt, "mu_p_SF_alt/D");
+    t_signal->Branch("mu_m_SF_alt", &mu_m_SF_alt, "mu_m_SF_alt/D");
     t_signal->Branch("mu1_eta", &mu1_eta, "mu1_eta/D");
     t_signal->Branch("mu2_eta", &mu2_eta, "mu2_eta/D");
     t_signal->Branch("mu_m", "TLorentzVector", &mu_m);
@@ -190,10 +190,10 @@ void MuMu_reco_mc_batch()
     t_back->Branch("cost_st", &cost_st, "cost_st/D");
     t_back->Branch("mu1_pt", &mu1_pt, "mu1_pt/D");
     t_back->Branch("mu2_pt", &mu2_pt, "mu2_pt/D");
-    t_back->Branch("mu1_pt_corr", &mu1_pt_corr, "mu1_pt_corr/D");
-    t_back->Branch("mu2_pt_corr", &mu2_pt_corr, "mu2_pt_corr/D");
-    t_back->Branch("mu1_pt_alt", &mu1_pt_alt, "mu1_pt_alt/D");
-    t_back->Branch("mu2_pt_alt", &mu2_pt_alt, "mu2_pt_alt/D");
+    t_back->Branch("mu_p_SF", &mu_p_SF, "mu_p_SF/D");
+    t_back->Branch("mu_m_SF", &mu_m_SF, "mu_m_SF/D");
+    t_back->Branch("mu_p_SF_alt", &mu_p_SF_alt, "mu_p_SF_alt/D");
+    t_back->Branch("mu_m_SF_alt", &mu_m_SF_alt, "mu_m_SF_alt/D");
     t_back->Branch("mu1_eta", &mu1_pt, "mu1_eta/D");
     t_back->Branch("mu2_eta", &mu2_pt, "mu2_eta/D");
     t_back->Branch("mu_m", "TLorentzVector", &mu_m);
@@ -745,24 +745,22 @@ void MuMu_reco_mc_batch()
                         bcdef_trk_SF = get_Mu_trk_SF(abs(mu1_eta), runs_bcdef.TRK_SF) * get_Mu_trk_SF(abs(mu2_eta), runs_bcdef.TRK_SF);
                         gh_trk_SF = get_Mu_trk_SF(abs(mu1_eta), runs_gh.TRK_SF) * get_Mu_trk_SF(abs(mu2_eta), runs_gh.TRK_SF);
 
-                        double gen1_pt, gen2_pt;
+                        int mu_p_n_TL, mu_m_n_TL;
                         if(mu_Charge[0] < 0){
-                            gen1_pt = gen_mu_m_vec.Pt();
-                            gen2_pt = gen_mu_p_vec.Pt();
+                            mu_m_n_TL = (int) mu_NumberTrackerLayers[0];
+                            mu_p_n_TL = (int) mu_NumberTrackerLayers[1];
                         }
                         else{
-                            gen1_pt = gen_mu_p_vec.Pt();
-                            gen2_pt = gen_mu_m_vec.Pt();
+                            mu_m_n_TL = (int) mu_NumberTrackerLayers[1];
+                            mu_p_n_TL = (int) mu_NumberTrackerLayers[0];
                         }
+                        double rand1 = rand->Rndm(); 
+                        double rand2 = rand->Rndm(); 
 
-                        double mu0_mcSF = rc.kScaleFromGenMC((int) mu_Charge[0], mu_Pt[0], mu_Eta[0], mu_Phi[0], (int) mu_NumberTrackerLayers[0], gen1_pt, rand->Rndm(), 0, 0);
-                        double mu1_mcSF = rc.kScaleFromGenMC((int) mu_Charge[1], mu_Pt[1], mu_Eta[1], mu_Phi[1], (int) mu_NumberTrackerLayers[1], gen2_pt, rand->Rndm(), 0, 0);
-                        double mu0_mcSF_alt = rc.kScaleFromGenMC((int) mu_Charge[0], mu_Pt[0], mu_Eta[0], mu_Phi[0], (int) mu_NumberTrackerLayers[0], gen1_pt, rand->Rndm(), 1, 0);
-                        double mu1_mcSF_alt = rc.kScaleFromGenMC((int) mu_Charge[1], mu_Pt[1], mu_Eta[1], mu_Phi[1], (int) mu_NumberTrackerLayers[1], gen2_pt, rand->Rndm(), 1, 0);
-                        mu1_pt_corr =mu1_pt *mu0_mcSF;
-                        mu2_pt_corr =mu2_pt * mu1_mcSF;
-                        mu1_pt_alt = mu1_pt *mu0_mcSF_alt;
-                        mu2_pt_alt = mu2_pt *mu1_mcSF_alt;
+                        mu_p_SF = rc.kScaleFromGenMC(1, mu_p.Pt(), mu_p.Eta(), mu_p.Phi(), mu_p_n_TL, gen_mu_p_vec.Pt(), rand1, 0, 0);
+                        mu_m_SF = rc.kScaleFromGenMC(-1, mu_m.Pt(), mu_m.Eta(), mu_m.Phi(), mu_m_n_TL, gen_mu_m_vec.Pt(), rand2, 0, 0);
+                        mu_p_SF_alt = rc.kScaleFromGenMC(1, mu_p.Pt(), mu_p.Eta(), mu_p.Phi(), mu_p_n_TL, gen_mu_p_vec.Pt(), rand1, 2, 0);
+                        mu_m_SF_alt = rc.kScaleFromGenMC(-1, mu_m.Pt(), mu_m.Eta(), mu_m.Phi(), mu_m_n_TL, gen_mu_m_vec.Pt(), rand2, 2, 0);
 
 
                         mu_R_up = scale_Weights[2];

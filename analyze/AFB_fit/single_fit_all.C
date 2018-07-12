@@ -35,8 +35,8 @@ const TString mumu_fout_name("AFB_fit/fit_results/m_bins/MuMu_fit_test_july9.roo
 const TString elel_fout_name("AFB_fit/fit_results/m_bins/ElEl_fit_test_july9.root");
 
 
-float m_low;
-float m_high;
+Double_t m_low;
+Double_t m_high;
 
 bool print = true;
 

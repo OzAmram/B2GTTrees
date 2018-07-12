@@ -38,8 +38,8 @@ int n_bins = n_pt_bins;
 
 
 
-float var_low;
-float var_high;
+Double_t var_low;
+Double_t var_high;
 //alpha = 0.0981;
 
 bool print = true;
