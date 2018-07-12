@@ -32,10 +32,10 @@ void draw_AFB_ptbins(){
     Double_t y_sm[6] = {0.661, 0.607, 0.532, 0.432, 0.341, 0.260};
     Double_t y_sm_errs[6] = {0.001, 0.003, 0.003, 0.006, 0.003, 0.003};
 
-    Double_t y_comb[6] = {0.637, 0.639, 0.582, 0.437, 0.396, 0.324};
+    Double_t y_comb[6] = {0.636, 0.631, 0.568, 0.435, 0.390, 0.332};
     Double_t y_comb_errs[6] = {0.011, 0.020, 0.029, 0.034, 0.041, 0.043};
 
-    Double_t y_mumu[6] = {0.626, 0.638, 0.555, 0.411, 0.450, 0.314};
+    Double_t y_mumu[6] = {0.624, 0.624, 0.536, 0.408, 0.439, 0.328};
     Double_t y_mumu_errs[6] = {0.016, 0.026, 0.039, 0.043, 0.057, 0.056};
 
 
@@ -117,7 +117,7 @@ void draw_AFB_ptbins(){
     pad2->Draw();
     pad2->cd();
     g_ratio->Draw("APE");
-    g_ratio->GetYaxis()->SetRangeUser(0.8, 1.20);
+    g_ratio->GetYaxis()->SetRangeUser(0.7, 1.30);
     g_ratio->GetXaxis()->SetLimits(0., 300.);
     g_ratio->Draw("APE");
 

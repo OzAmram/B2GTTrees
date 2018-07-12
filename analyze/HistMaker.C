@@ -189,8 +189,8 @@ void make_emu_m_hist(TTree *t1, TH1F *h_m, bool is_data = false, int flag1 = FLA
     t1->SetBranchAddress("jet1_CMVA", &jet1_cmva);
     t1->SetBranchAddress("jet1_pt", &jet1_pt);
     t1->SetBranchAddress("jet2_pt", &jet2_pt);
+    t1->SetBranchAddress("nJets", &nJets);
     if(!is_data){
-        t1->SetBranchAddress("nJets", &nJets);
         t1->SetBranchAddress("gen_weight", &gen_weight);
         t1->SetBranchAddress("jet1_b_weight", &jet1_b_weight);
         t1->SetBranchAddress("jet2_b_weight", &jet2_b_weight);
@@ -281,8 +281,8 @@ void make_m_cost_pt_hist(TTree *t1, TH1F *h_m, TH1F *h_cost, TH1F *h_pt, bool is
     t1->SetBranchAddress("jet1_CMVA", &jet1_cmva);
     t1->SetBranchAddress("jet1_pt", &jet1_pt);
     t1->SetBranchAddress("jet2_pt", &jet2_pt);
+    t1->SetBranchAddress("nJets", &nJets);
     if(!is_data){
-        t1->SetBranchAddress("nJets", &nJets);
         t1->SetBranchAddress("gen_weight", &gen_weight);
         //t1->SetBranchAddress("jet1_b_weight", &jet1_b_weight);
         //t1->SetBranchAddress("jet2_b_weight", &jet2_b_weight);
