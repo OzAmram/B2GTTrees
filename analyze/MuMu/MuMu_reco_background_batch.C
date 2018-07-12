@@ -19,8 +19,8 @@ const double root2 = sqrt(2);
 double Ebeam = 6500.;
 double Pbeam = sqrt(Ebeam*Ebeam - 0.938*0.938);
 
-char *filename("diboson_files_june20.txt");
-const TString fout_name("output_files/MuMu_diboson_july5.root");
+char *filename("TTbar_files_june20.txt");
+const TString fout_name("output_files/MuMu_TTbar_july10.root");
 const double alpha = 0.05;
 const bool PRINT=false;
 
@@ -125,7 +125,7 @@ void MuMu_reco_background_batch()
              jet1_cmva, jet1_csv, jet2_cmva, jet2_csv;
     Double_t bcdef_HLT_SF, bcdef_iso_SF, bcdef_id_SF, gh_HLT_SF, gh_iso_SF, gh_id_SF, bcdef_trk_SF, gh_trk_SF,
              jet1_b_weight, jet2_b_weight, pu_SF;
-    Double_t mu1_pt_corr, mu2_pt_corr, mu1_pt_alt, mu2_pt_alt;
+    Double_t mu_p_SF, mu_m_SF, mu_p_SF_alt, mu_m_SF_alt;
     Int_t nJets, jet1_flavour, jet2_flavour, pu_NtrueInt;
     Float_t met_pt;
     TLorentzVector mu_p, mu_m, cm, q1, q2;
@@ -134,10 +134,10 @@ void MuMu_reco_background_batch()
     tout->Branch("cost", &cost_r, "cost/D");
     tout->Branch("mu1_pt", &mu1_pt, "mu1_pt/D");
     tout->Branch("mu2_pt", &mu2_pt, "mu2_pt/D");
-    tout->Branch("mu1_pt_corr", &mu1_pt_corr, "mu1_pt_corr/D");
-    tout->Branch("mu2_pt_corr", &mu2_pt_corr, "mu2_pt_corr/D");
-    tout->Branch("mu1_pt_alt", &mu1_pt_alt, "mu1_pt_alt/D");
-    tout->Branch("mu2_pt_alt", &mu2_pt_alt, "mu2_pt_alt/D");
+    tout->Branch("mu_p_SF", &mu_p_SF, "mu_p_SF/D");
+    tout->Branch("mu_m_SF", &mu_m_SF, "mu_m_SF/D");
+    tout->Branch("mu_p_SF_alt", &mu_p_SF_alt, "mu_p_SF_alt/D");
+    tout->Branch("mu_m_SF_alt", &mu_m_SF_alt, "mu_m_SF_alt/D");
     tout->Branch("mu1_eta", &mu1_eta, "mu1_eta/D");
     tout->Branch("mu2_eta", &mu2_eta, "mu2_eta/D");
     tout->Branch("mu_m", "TLorentzVector", &mu_m);
@@ -402,14 +402,25 @@ void MuMu_reco_background_batch()
 
                         pu_SF = get_pileup_SF(pu_NtrueInt, pu_SFs.pileup_ratio);
 
-                        double mu0_mcSF = rc.kScaleAndSmearMC((int) mu_Charge[0], mu_Pt[0], mu_Eta[0], mu_Phi[0], (int) mu_NumberTrackerLayers[0], rand->Rndm(), rand->Rndm(), 0, 0);
-                        double mu1_mcSF = rc.kScaleAndSmearMC((int) mu_Charge[1], mu_Pt[1], mu_Eta[1], mu_Phi[1], (int) mu_NumberTrackerLayers[1], rand->Rndm(), rand->Rndm(), 0, 0);
-                        double mu0_mcSF_alt = rc.kScaleAndSmearMC((int) mu_Charge[0], mu_Pt[0], mu_Eta[0], mu_Phi[0], (int) mu_NumberTrackerLayers[0], rand->Rndm(), rand->Rndm(), 1, 0);
-                        double mu1_mcSF_alt = rc.kScaleAndSmearMC((int) mu_Charge[1], mu_Pt[1], mu_Eta[1], mu_Phi[1], (int) mu_NumberTrackerLayers[1], rand->Rndm(), rand->Rndm(), 1, 0);
-                        mu1_pt_corr =mu1_pt *mu0_mcSF;
-                        mu2_pt_corr =mu2_pt * mu1_mcSF;
-                        mu1_pt_alt = mu1_pt *mu0_mcSF_alt;
-                        mu2_pt_alt = mu2_pt *mu1_mcSF_alt;
+                        int mu_p_n_TL, mu_m_n_TL;
+                        if(mu_Charge[0] < 0){
+                            mu_m_n_TL = (int) mu_NumberTrackerLayers[0];
+                            mu_p_n_TL = (int) mu_NumberTrackerLayers[1];
+                        }
+                        else{
+                            mu_m_n_TL = (int) mu_NumberTrackerLayers[1];
+                            mu_p_n_TL = (int) mu_NumberTrackerLayers[0];
+                        }
+                        double rand1a = rand->Rndm(); 
+                        double rand1b = rand->Rndm(); 
+                        double rand2a = rand->Rndm(); 
+                        double rand2b = rand->Rndm(); 
+
+
+                        mu_p_SF = rc.kScaleAndSmearMC(1, mu_p.Pt(), mu_p.Eta(), mu_p.Phi(), mu_p_n_TL, rand1a, rand1b, 0, 0);
+                        mu_m_SF = rc.kScaleAndSmearMC(-1, mu_m.Pt(), mu_m.Eta(), mu_m.Phi(), mu_m_n_TL, rand2a, rand2b, 0, 0);
+                        mu_p_SF_alt = rc.kScaleAndSmearMC(1, mu_p.Pt(), mu_p.Eta(), mu_p.Phi(), mu_p_n_TL, rand1a, rand1b, 2, 0);
+                        mu_m_SF_alt = rc.kScaleAndSmearMC(-1, mu_m.Pt(), mu_m.Eta(), mu_m.Phi(), mu_m_n_TL, rand2a, rand2b, 2, 0);
 
                         tout->Fill();
                         nEvents++;

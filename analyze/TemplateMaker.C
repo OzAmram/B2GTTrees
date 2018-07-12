@@ -437,15 +437,15 @@ void gen_fakes_template(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_contam,
                     mu2_fakerate = get_new_fakerate_prob(mu2_pt, mu2_eta, FR.h);
                     evt_fakerate = mc_weight * (mu1_fakerate/(1-mu1_fakerate)) * (mu2_fakerate/(1-mu2_fakerate));
                 }
+                cost = get_cost_v2(*lep_p, *lep_m);
+                TLorentzVector cm = *lep_p + *lep_m;
+                pt = cm.Pt();
+                xF = abs(2.*cm.Pz()/13000.); 
                 bool pass = ((flag2 == FLAG_M_BINS && m >= var_low && m <= var_high) ||
                         (flag2 == FLAG_PT_BINS && m >= 150. && pt >= var_low && pt <= var_high))
                     && met_pt < 50.  && no_bjets;
 
                 if(pass){
-                    cost = get_cost_v2(*lep_p, *lep_m);
-                    TLorentzVector cm = *lep_p + *lep_m;
-                    pt = cm.Pt();
-                    xF = abs(2.*cm.Pz()/13000.); 
                     //if(l==3) printf("Evt fr %.2e \n", evt_fakerate);
                     //if(l==3) printf("cost, fr %.2f %.2e \n", cost, evt_fakerate);
                     h->Fill(xF, cost, evt_fakerate);
@@ -537,18 +537,14 @@ void gen_fakes_template(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_contam,
 
 
 
-                if(flag2 == FLAG_PT_BINS){
-                    TLorentzVector cm = *lep_p + *lep_m;
-                    pt = cm.Pt();
-                }
+                cost = get_cost_v2(*lep_p, *lep_m);
+                TLorentzVector cm = *lep_p + *lep_m;
+                pt = cm.Pt();
+                xF = abs(2.*cm.Pz()/13000.); 
                 bool pass = ((flag2 == FLAG_M_BINS && m >= var_low && m <= var_high) ||
                         (flag2 == FLAG_PT_BINS && m >= 150. && pt >= var_low && pt <= var_high))
                     && met_pt < 50.  && no_bjets;
                 if(pass){
-                    cost = get_cost_v2(*lep_p, *lep_m);
-                    TLorentzVector cm = *lep_p + *lep_m;
-                    pt = cm.Pt();
-                    xF = abs(2.*cm.Pz()/13000.); 
                     //if(l==3) printf("Evt fr %.2e \n", evt_fakerate);
                     //if(l==3) printf("cost, fr %.2f %.2e \n", cost, evt_fakerate);
                     h->Fill(xF, cost, evt_fakerate);
