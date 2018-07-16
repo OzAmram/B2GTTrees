@@ -117,7 +117,7 @@ void draw_AFB_ptbins(){
     pad2->Draw();
     pad2->cd();
     g_ratio->Draw("APE");
-    g_ratio->GetYaxis()->SetRangeUser(0.8, 1.20);
+    g_ratio->GetYaxis()->SetRangeUser(0.7, 1.30);
     g_ratio->GetXaxis()->SetLimits(0., 300.);
     g_ratio->Draw("APE");
 
