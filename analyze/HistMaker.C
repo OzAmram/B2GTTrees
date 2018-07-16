@@ -254,7 +254,7 @@ void make_emu_m_hist(TTree *t1, TH1F *h_m, bool is_data = false, int flag1 = FLA
     }
 }
 
-void make_m_cost_pt_hist(TTree *t1, TH1F *h_m, TH1F *h_cost, TH1F *h_pt, bool is_data=false, int flag1 = FLAG_MUONS, bool turn_on_RC = false){
+void make_m_cost_pt_hist(TTree *t1, TH1F *h_m, TH1F *h_cost, TH1F *h_pt, bool is_data=false, int flag1 = FLAG_MUONS, bool turn_on_RC = true){
     //read event data
     Long64_t size  =  t1->GetEntries();
     Double_t m, xF, cost, mu1_pt, mu2_pt, jet1_cmva, jet2_cmva, gen_weight;
@@ -318,14 +318,15 @@ void make_m_cost_pt_hist(TTree *t1, TH1F *h_m, TH1F *h_cost, TH1F *h_pt, bool is
             cost = get_cost_v2(*mu_p, *mu_m);
             if(turn_on_RC){
                 TLorentzVector mu_p_new, mu_m_new;
-                mu_p_new.SetPtEtaPhiE(mu_p->Pt() * mu_p_SF, mu_p->Eta(), mu_p->Phi(), mu_p->E());
-                mu_m_new.SetPtEtaPhiE(mu_m->Pt() * mu_m_SF, mu_m->Eta(), mu_m->Phi(), mu_m->E());
+                mu_p_new.SetPtEtaPhiE(mu_p->Pt() * mu_p_SF, mu_p->Eta(), mu_p->Phi(), mu_p_SF * mu_p->E());
+                mu_m_new.SetPtEtaPhiE(mu_m->Pt() * mu_m_SF, mu_m->Eta(), mu_m->Phi(), mu_m_SF * mu_m->E());
                 double new_cost = get_cost_v2(mu_p_new, mu_m_new);
                 cm = mu_p_new + mu_m_new;
                 //if(cm.M() < 150.) continue;
                 cost = new_cost;
                 m = cm.M();
                 pt = cm.Pt();
+                //printf("old mass %.3f new mass %.3f \n", mu_p->M(), mu_p_new.M());
                    
             }
             if(m >= 150. && met_pt < 50. && no_bjets){
