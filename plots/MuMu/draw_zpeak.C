@@ -29,84 +29,6 @@
 const int type = FLAG_MUONS;
 
 
-void make_m_zpeak_hist(TTree *t1, TH1F *h_m, bool is_data=false, int flag1 = FLAG_MUONS){
-    //read event data
-    Long64_t size  =  t1->GetEntries();
-    Double_t m, xF, cost, mu1_pt, mu2_pt, jet1_cmva, jet2_cmva, gen_weight;
-    Double_t bcdef_HLT_SF, bcdef_iso_SF, bcdef_id_SF;
-    Double_t gh_HLT_SF, gh_iso_SF, gh_id_SF, el_id_SF, el_reco_SF, el_HLT_SF;
-    Double_t bcdef_trk_SF, gh_trk_SF;
-    Double_t jet1_pt, jet2_pt, jet1_b_weight, jet2_b_weight, pu_SF;
-    jet1_b_weight = jet2_b_weight =1.;
-    TLorentzVector *mu_p = 0;
-    TLorentzVector *mu_m = 0;
-    TLorentzVector *el_p = 0;
-    TLorentzVector *el_m = 0;
-    TLorentzVector cm;
-    Float_t met_pt;
-    Int_t nJets;
-    nJets = 2;
-    pu_SF=1;
-    t1->SetBranchAddress("m", &m);
-    t1->SetBranchAddress("xF", &xF);
-    t1->SetBranchAddress("cost", &cost);
-    t1->SetBranchAddress("met_pt", &met_pt);
-    t1->SetBranchAddress("jet2_CMVA", &jet2_cmva);
-    t1->SetBranchAddress("jet1_CMVA", &jet1_cmva);
-    t1->SetBranchAddress("jet1_pt", &jet1_pt);
-    t1->SetBranchAddress("jet2_pt", &jet2_pt);
-    if(!is_data){
-        t1->SetBranchAddress("nJets", &nJets);
-        t1->SetBranchAddress("gen_weight", &gen_weight);
-        t1->SetBranchAddress("pu_SF", &pu_SF);
-    }
-    if(flag1 == FLAG_MUONS){
-        t1->SetBranchAddress("mu_p", &mu_p);
-        t1->SetBranchAddress("mu_m", &mu_m);
-        if(!is_data){
-            t1->SetBranchAddress("bcdef_HLT_SF", &bcdef_HLT_SF);
-            t1->SetBranchAddress("bcdef_iso_SF", &bcdef_iso_SF);
-            t1->SetBranchAddress("bcdef_id_SF", &bcdef_id_SF);
-            t1->SetBranchAddress("gh_HLT_SF", &gh_HLT_SF);
-            t1->SetBranchAddress("gh_iso_SF", &gh_iso_SF);
-            t1->SetBranchAddress("gh_id_SF", &gh_id_SF);
-            t1->SetBranchAddress("gh_trk_SF", &gh_trk_SF);
-            t1->SetBranchAddress("bcdef_trk_SF", &bcdef_trk_SF);
-        }
-        for (int i=0; i<size; i++) {
-            t1->GetEntry(i);
-            bool no_bjets = has_no_bjets(nJets, jet1_pt, jet2_pt, jet1_cmva, jet2_cmva);
-
-            if(m >= 50. && met_pt < 50. && no_bjets){
-                cm = *mu_p + *mu_m;
-                Double_t pt = cm.Pt();
-                if(is_data){
-                    h_m->Fill(m);
-                }
-                else{
-                    Double_t bcdef_weight = gen_weight *pu_SF * bcdef_HLT_SF * bcdef_iso_SF * bcdef_id_SF * bcdef_trk_SF;
-                    Double_t gh_weight = gen_weight *pu_SF * gh_HLT_SF * gh_iso_SF * gh_id_SF * gh_trk_SF;
-                    if (nJets >= 1){
-                        bcdef_weight *= jet1_b_weight;
-                        gh_weight *= jet1_b_weight;
-                    }
-                    if (nJets >= 2){
-                        bcdef_weight *= jet2_b_weight;
-                        gh_weight *= jet2_b_weight;
-                    }
-                    double final_weight = 1000.*(bcdef_weight*bcdef_lumi + gh_weight*gh_lumi);
-                    //Double_t weight = gen_weight;
-                    h_m->Fill(m,final_weight);
-                }
-
-
-            }
-        }
-    }
-
-
-    t1->ResetBranchAddresses();
-}
 
 void Fakerate_est_zpeak_mu(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_contam, TTree *t_QCD_contam, TH1F *h_m){
     FakeRate FR;
@@ -213,12 +135,14 @@ void Fakerate_est_zpeak_mu(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_contam, 
 
 void draw_zpeak(){
     init();
-    f_data = TFile::Open("../analyze/output_files/SingleMuon_data_june29.root");
+    f_data = TFile::Open("../analyze/output_files/SingleMuon_data_july10.root");
     t_data = (TTree *)f_data->Get("T_data");
-    //f_mc = TFile::Open("../analyze/output_files/MuMu_DY_unbinned_june20.root");
-    f_mc = TFile::Open("../analyze/output_files/MuMu_DY_unbinned_backbatch_june28.root");
+    f_mc = TFile::Open("../analyze/output_files/MuMu_DY_unbinned_july10.root");
+    //f_mc = TFile::Open("../analyze/output_files/MuMu_DY_unbinned_backbatch_june28.root");
     t_mc = (TTree *)f_mc->Get("T_data");
-    //t_mc_nosig = (TTree *)f_mc->Get("T_back");
+    t_mc_nosig = (TTree *)f_mc->Get("T_back");
+    f_ttbar = TFile::Open("../analyze/output_files/MuMu_TTbar_july10.root");
+    t_ttbar = (TTree *)f_ttbar->Get("T_data");
     setTDRStyle();
 
 
@@ -249,27 +173,47 @@ void draw_zpeak(){
     ttbar_m->SetMarkerColor(kBlue);
 
 
+    TH1F *data_cost = new TH1F("data_cost", "Data Dimuon Mass Distribution", n_bins, bins);
+    TH1F *mc_cost = new TH1F("mc_cost", "MC Signal (qqbar, qglu, qbarglu)", n_bins, bins);
+    TH1F *diboson_cost = new TH1F("diboson_cost", "DiBoson (WW, WZ, ZZ)", n_bins, bins);
+    TH1F *QCD_cost = new TH1F("QCD_cost", "QCD", n_bins, bins);
+    TH1F *WJets_cost = new TH1F("WJets_cost", "WJets", n_bins, bins);
+    TH1F *wt_cost = new TH1F("wt_cost", "tw + #bar{t}w", n_bins, bins);
+    TH1F *mc_nosig_cost = new TH1F("mc_nosig_cost", "MC no signal (qq, gluglu qbarqbar)", n_bins, bins);
+    TH1F *ttbar_cost = new TH1F("ttbar_cost", "TTBar Background", n_bins, bins);
 
 
+    TH1F *data_pt = new TH1F("data_pt", "Data Dimuon Mass Distribution", n_bins, bins);
+    TH1F *mc_pt = new TH1F("mc_pt", "MC Signal (qqbar, qglu, qbarglu)", n_bins, bins);
+    TH1F *diboson_pt = new TH1F("diboson_pt", "DiBoson (WW, WZ, ZZ)", n_bins, bins);
+    TH1F *QCD_pt = new TH1F("QCD_pt", "QCD", n_bins, bins);
+    TH1F *WJets_pt = new TH1F("WJets_pt", "WJets", n_bins, bins);
+    TH1F *wt_pt = new TH1F("wt_pt", "tw + #bar{t}w", n_bins, bins);
+    TH1F *mc_nosig_pt = new TH1F("mc_nosig_pt", "MC no signal (qq, gluglu qbarqbar)", n_bins, bins);
+    TH1F *ttbar_pt = new TH1F("ttbar_pt", "TTBar Background", n_bins, bins);
 
 
     wt_m->SetFillColor(kOrange+7); 
     diboson_m->SetFillColor(kGreen+3);
     QCD_m->SetFillColor(kRed -7);
 
-    make_m_zpeak_hist(t_data, data_m, true, type);
-    make_m_zpeak_hist(t_mc, mc_m, false, type);
-    //make_m_zpeak_hist(t_mc_nosig, mc_nosig_m, false, type);
-    make_m_zpeak_hist(t_ttbar, ttbar_m, false, type);
-    make_m_zpeak_hist(t_wt, wt_m, false);
-    make_m_zpeak_hist(t_diboson, diboson_m, false, type);
+    printf("data \n");
+    make_m_cost_pt_hist(t_data, data_m, data_cost, data_pt, true, type, true, 50.);
+    printf("mc \n");
+    make_m_cost_pt_hist(t_mc, mc_m, mc_cost, mc_pt, false, type, true, 50.);
+    make_m_cost_pt_hist(t_mc_nosig, mc_nosig_m, mc_nosig_cost, mc_nosig_pt, false, type, true, 50.);
+    printf("ttbar \n");
+    make_m_cost_pt_hist(t_ttbar, ttbar_m, ttbar_cost, ttbar_pt, false, type, true, 50.);
+    printf("wt + diboson \n");
+    make_m_cost_pt_hist(t_wt, wt_m, wt_cost, wt_pt, false, type, false, 50.);
+    make_m_cost_pt_hist(t_diboson, diboson_m, diboson_cost, diboson_pt, false, type, false, 50.);
 
     //Fakerate_est_zpeak_mu(t_WJets, t_QCD, t_WJets_mc, t_QCD_mc, QCD_m);
 
 
 
 
-    Double_t EMu_ratio= 1.05;
+    Double_t EMu_ratio= 0.97;
     ttbar_m->Scale(EMu_ratio);
     diboson_m->Scale(EMu_ratio);
     wt_m->Scale(EMu_ratio);
@@ -294,7 +238,7 @@ void draw_zpeak(){
     m_stack->Add(wt_m);
     //m_stack->Add(QCD_m);
     m_stack->Add(ttbar_m);
-    //m_stack->Add(mc_nosig_m);
+    m_stack->Add(mc_nosig_m);
     m_stack->Add(mc_m);
 
 
@@ -376,7 +320,7 @@ void draw_zpeak(){
     //lumi_sqrtS = "";       // used with iPeriod = 0, e.g. for simulation-only plots (default is an empty string)
     int iPeriod = 4; 
     CMS_lumi(pad1, iPeriod, 33 );
-    c_m->Print("MuMu_zpeak.pdf");
+    c_m->Print("MuMu_RC_on_zpeak.pdf");
 
 
  

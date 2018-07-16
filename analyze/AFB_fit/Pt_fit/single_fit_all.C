@@ -30,8 +30,8 @@
 
 int FLAG1 = FLAG_ELECTRONS;
 //int FLAG1 = FLAG_MUONS;
-const TString mumu_fout_name("AFB_fit/fit_results/pt_bins/MuMu_pt_fit_nominal_july11.root");
-const TString elel_fout_name("AFB_fit/fit_results/pt_bins/ElEl_pt_fit_nominal_july11.root");
+const TString mumu_fout_name("AFB_fit/fit_results/pt_bins/MuMu_pt_fit_nominal_july16.root");
+const TString elel_fout_name("AFB_fit/fit_results/pt_bins/ElEl_pt_fit_nominal_july16.root");
 
 bool do_both = true;
 int FLAG2 = FLAG_PT_BINS;

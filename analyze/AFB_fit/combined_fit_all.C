@@ -27,7 +27,7 @@
 
 
 
-const TString fout_name("AFB_fit/fit_results/m_bins/combined_test_july9.root");
+const TString fout_name("AFB_fit/fit_results/m_bins/combined_bin_down_down_july16.root");
 
 
 
@@ -250,7 +250,7 @@ void combined_fit_all(){
         m_low = m_bins[i];
         m_high = m_bins[i+1];
         alpha = alphas[i];
-        //alpha = alphas[i] - alpha_unc[i];
+        alpha = alphas[i] + alpha_unc[i];
 
         setup();
 

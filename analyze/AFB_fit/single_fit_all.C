@@ -31,8 +31,8 @@
 int FLAG = FLAG_MUONS;
 //int FLAG = FLAG_MUONS;
 bool do_both = true;
-const TString mumu_fout_name("AFB_fit/fit_results/m_bins/MuMu_fit_test_july9.root");
-const TString elel_fout_name("AFB_fit/fit_results/m_bins/ElEl_fit_test_july9.root");
+const TString mumu_fout_name("AFB_fit/fit_results/m_bins/MuMu_fit_pu_down_july16.root");
+const TString elel_fout_name("AFB_fit/fit_results/m_bins/ElEl_fit_pu_down_july16.root");
 
 
 Double_t m_low;
@@ -141,7 +141,7 @@ void setup(){
     printf("Generating templates \n");
 
     if(FLAG == FLAG_MUONS){
-        bool do_RC = false;
+        bool do_RC = true;
         int flag2 = FLAG_M_BINS;
         nDataEvents = gen_data_template(t_mumu_data, h_data, &v_xF, &v_cost, m_low, m_high, FLAG, flag2, do_RC);
         gen_mc_template(t_mumu_mc, alpha, h_sym, h_asym, h_sym_count, m_low, m_high, FLAG, flag2, do_RC);
@@ -207,11 +207,12 @@ void single_fit_all(){
     tout->Branch("r_back_err", &r_back_err);
 
     for(int i=0; i<n_m_bins; i++){
+        print=true;
         printf("Starting loop \n");
         m_low = m_bins[i];
         m_high = m_bins[i+1];
-        alpha = alphas[i];
-        //alpha = alphas[i] - alpha_unc[i];
+        //alpha = alphas[i];
+        alpha = alphas[i] + alpha_unc[i];
 
         setup();
 
