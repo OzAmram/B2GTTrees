@@ -10,6 +10,8 @@ TTree *t_mumu_mc, *t_mumu_back, *t_mumu_data, *t_mumu_QCD, *t_mumu_WJets, *t_mum
 
 int n_xf_bins = 5;
 Float_t xf_bins[] = {0., 0.02, 0.04, 0.07, 0.10, 1.0};
+//int n_cost_bins = 6;
+//Float_t cost_bins[] = {-1.0, -.667, -.333, 0., 0.33, 0.667,  1.0};
 //int n_cost_bins = 8;
 //Float_t cost_bins[] = {-1.0, -.75, -.5, -.25, 0., 0.25, 0.5,  0.75, 1.0};
 int n_cost_bins = 10;
@@ -57,15 +59,15 @@ void init(){
     t_elel_QCD_contam = (TTree *)f_elel_QCD_contam->Get("T_data");
     ////////////////////////////////////////
 
-    f_mumu_mc = (TFile*) TFile::Open("output_files/MuMu_DY_slim_july05.root");
+    f_mumu_mc = (TFile*) TFile::Open("output_files/MuMu_DY_slim_july10.root");
     //f_mumu_mc = (TFile*) TFile::Open("output_files/MuMu_DY_jan16.root");
     t_mumu_mc = (TTree *) f_mumu_mc ->Get("T_data");
     t_mumu_nosig = (TTree *) f_mumu_mc ->Get("T_back");
     //f_mumu_back = (TFile*) TFile::Open("output_files/MuMu_combined_back_jan22.root");
-    f_mumu_back = (TFile*) TFile::Open("output_files/MuMu_combined_back_july05.root");
+    f_mumu_back = (TFile*) TFile::Open("output_files/MuMu_combined_back_july10.root");
     t_mumu_back = (TTree *) f_mumu_back ->Get("T_data");
 
-    f_mumu_data = TFile::Open("output_files/SingleMuon_data_slim_july5.root");
+    f_mumu_data = TFile::Open("output_files/SingleMuon_data_slim_july10.root");
     //f_mumu_data = TFile::Open("output_files/SingleMuon_data_jan22.root");
     t_mumu_data = (TTree *)f_mumu_data->Get("T_data"); 
 

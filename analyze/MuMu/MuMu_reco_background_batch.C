@@ -19,8 +19,8 @@ const double root2 = sqrt(2);
 double Ebeam = 6500.;
 double Pbeam = sqrt(Ebeam*Ebeam - 0.938*0.938);
 
-char *filename("TTbar_files_june20.txt");
-const TString fout_name("output_files/MuMu_TTbar_july10.root");
+char *filename("diboson_files_june20.txt");
+const TString fout_name("output_files/MuMu_diboson_july10.root");
 const double alpha = 0.05;
 const bool PRINT=false;
 

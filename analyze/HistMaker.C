@@ -254,7 +254,8 @@ void make_emu_m_hist(TTree *t1, TH1F *h_m, bool is_data = false, int flag1 = FLA
     }
 }
 
-void make_m_cost_pt_hist(TTree *t1, TH1F *h_m, TH1F *h_cost, TH1F *h_pt, bool is_data=false, int flag1 = FLAG_MUONS, bool turn_on_RC = true){
+void make_m_cost_pt_hist(TTree *t1, TH1F *h_m, TH1F *h_cost, TH1F *h_pt, bool is_data=false, int flag1 = FLAG_MUONS, bool turn_on_RC = true, 
+        Double_t m_low = 150., Double_t m_high = 9999999.){
     //read event data
     Long64_t size  =  t1->GetEntries();
     Double_t m, xF, cost, mu1_pt, mu2_pt, jet1_cmva, jet2_cmva, gen_weight;
@@ -329,7 +330,7 @@ void make_m_cost_pt_hist(TTree *t1, TH1F *h_m, TH1F *h_cost, TH1F *h_pt, bool is
                 //printf("old mass %.3f new mass %.3f \n", mu_p->M(), mu_p_new.M());
                    
             }
-            if(m >= 150. && met_pt < 50. && no_bjets){
+            if(m >= m_low && m <= m_high && met_pt < 50. && no_bjets){
 
                 if(is_data){
                     h_m->Fill(m);
