@@ -111,7 +111,9 @@ if ( `echo $cmd | grep "create" | wc -l` ) then
     set SE_USERDIR=$7
     set CERT_DIR="https://cms-service-dqm.web.cern.ch/cms-service-dqm/CAF/certification/Collisions16/13TeV/ReReco/Final"
     set LATEST_GOLDEN_JSON=`ls -lrt /afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions16/13TeV/ReReco/Final | awk '{ print $NF }' | grep -vE "MuonPhys|LowPU" | grep "\.txt" | tail -1`
-    set JSON="$LATEST_GOLDEN_JSON"
+    #set JSON="$LATEST_GOLDEN_JSON"
+    set JSON="Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt"
+    #set JSON="Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON_MuonPhys.txt"
     mkdir $TASKDIR
     echo "SE_SITE "$SE_SITE >! $TASKDIR/config.txt
     echo "SE_USERDIR "$SE_USERDIR >> $TASKDIR/config.txt
