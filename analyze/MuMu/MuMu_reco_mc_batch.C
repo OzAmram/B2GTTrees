@@ -10,6 +10,7 @@
 #include "TLorentzVector.h"
 #include "../ScaleFactors.C"
 #include "../RoccoR.cc"
+#include "RecoUtils.C"
 
 #define GEN_SIZE 4000
 #define MU_SIZE 100

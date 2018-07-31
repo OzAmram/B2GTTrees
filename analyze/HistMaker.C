@@ -56,6 +56,11 @@ double get_cost(TLorentzVector lep_p, TLorentzVector lep_m){
     return cost;
 }
 
+bool notCosmic(TLorentzVector v1, TLorentzVector v2){
+    Double_t ang = v1.Angle(v2.Vect());
+    return ang < (TMath::Pi() - 0.005);
+}
+
 double get_cost_v2(TLorentzVector lep_p, TLorentzVector lep_m){
 
     double Ebeam = 6500.;
@@ -313,6 +318,7 @@ void make_m_cost_pt_hist(TTree *t1, TH1F *h_m, TH1F *h_cost, TH1F *h_pt, bool is
         for (int i=0; i<size; i++) {
             t1->GetEntry(i);
             bool no_bjets = has_no_bjets(nJets, jet1_pt, jet2_pt, jet1_cmva, jet2_cmva);
+            bool not_cosmic = notCosmic(*mu_p, *mu_m);
 
             cm = *mu_p + *mu_m;
             Double_t pt = cm.Pt();
@@ -328,8 +334,9 @@ void make_m_cost_pt_hist(TTree *t1, TH1F *h_m, TH1F *h_cost, TH1F *h_pt, bool is
                 m = cm.M();
                 pt = cm.Pt();
                    
+
             }
-            if(m >= m_low && m <= m_high && met_pt < 50. && no_bjets){
+            if(m >= m_low && m <= m_high && met_pt < 50. && no_bjets && not_cosmic){
 
                 if(is_data){
                     h_m->Fill(m);
@@ -367,7 +374,8 @@ void make_m_cost_pt_hist(TTree *t1, TH1F *h_m, TH1F *h_cost, TH1F *h_pt, bool is
         for (int i=0; i<size; i++) {
             t1->GetEntry(i);
             bool no_bjets = has_no_bjets(nJets, jet1_pt, jet2_pt, jet1_cmva, jet2_cmva);
-            if(m >= 150 && met_pt < 50.  && no_bjets){
+            bool not_cosmic = notCosmic(*el_p, *el_m);
+            if(m >= 150 && met_pt < 50.  && no_bjets && not_cosmic){
                 TLorentzVector cm = *el_p + *el_m;
                 Double_t pt = cm.Pt();
                 cost = get_cost_v2(*el_p, *el_m);
@@ -467,6 +475,7 @@ void Fakerate_est_mu(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_contam, TTree 
         for (int i=0; i<size; i++) {
             t->GetEntry(i);
             bool no_bjets = has_no_bjets(nJets, jet1_pt, jet2_pt, jet1_cmva, jet2_cmva);
+            bool not_cosmic = notCosmic(*mu_p, *mu_m);
             if(l==0){
                 if(iso_mu ==0) mu1_fakerate = get_new_fakerate_prob(mu1_pt, mu1_eta, FR.h);
                 if(iso_mu ==1) mu1_fakerate = get_new_fakerate_prob(mu2_pt, mu2_eta, FR.h);
@@ -496,7 +505,7 @@ void Fakerate_est_mu(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_contam, TTree 
 
 
 
-            if(m>= 150. && met_pt < 50.  && no_bjets){
+            if(m>= 150. && met_pt < 50.  && no_bjets && not_cosmic){
                 //if(l==3) printf("Evt rate %.2e \n", evt_fakerate);
                 TLorentzVector cm = *mu_p + *mu_m;
 
@@ -567,6 +576,7 @@ void Fakerate_est_el(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_MC, TTree *t_Q
         for (int i=0; i<size; i++) {
             t->GetEntry(i);
             bool no_bjets = has_no_bjets(nJets, jet1_pt, jet2_pt, jet1_cmva, jet2_cmva);
+            bool not_cosmic = notCosmic(*el_p, *el_m);
             if(l==0){
                 if(iso_el ==0) el1_fakerate = get_new_fakerate_prob(el1_pt, el1_eta, FR.h);
                 if(iso_el ==1) el1_fakerate = get_new_fakerate_prob(el2_pt, el2_eta, FR.h);
@@ -594,7 +604,7 @@ void Fakerate_est_el(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_MC, TTree *t_Q
 
 
 
-            if(m >= 150. && met_pt < 50.  && no_bjets){
+            if(m >= 150. && met_pt < 50.  && no_bjets && not_cosmic){
                 //if(l==3) printf("Evt fr %.2e \n", evt_fakerate);
                 //if(l==3) printf("cost, fr %.2f %.2e \n", cost, evt_fakerate);
                 TLorentzVector cm = *el_p + *el_m;

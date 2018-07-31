@@ -88,6 +88,7 @@ int gen_data_template(TTree *t1, TH2F* h, vector<double> *v_xF, vector<double> *
         t1->GetEntry(i);
         cost = get_cost_v2(*lep_p, *lep_m);
         bool no_bjets = has_no_bjets(nJets, jet1_pt, jet2_pt, jet1_cmva, jet2_cmva);
+        bool not_cosmic = notCosmic(*lep_p, *lep_m);
         cm = *lep_p + *lep_m;
         pt = cm.Pt();
         if(turn_on_RC &&  flag1 == FLAG_MUONS){
@@ -104,7 +105,7 @@ int gen_data_template(TTree *t1, TH2F* h, vector<double> *v_xF, vector<double> *
                
         }
         if(flag2 == FLAG_M_BINS){
-            if(m >= var_low && m <= var_high && met_pt < 50. && no_bjets){
+            if(m >= var_low && m <= var_high && met_pt < 50. && no_bjets && not_cosmic){
                 //if(m> 2000.) printf("m %.0f \n", m);
                 n++;
                 h->Fill(xF, cost, 1); 
@@ -114,7 +115,7 @@ int gen_data_template(TTree *t1, TH2F* h, vector<double> *v_xF, vector<double> *
             }
         }
         else{
-            if(m>= 150. &&  pt >= var_low && pt <= var_high && met_pt < 50. && no_bjets){
+            if(m>= 150. &&  pt >= var_low && pt <= var_high && met_pt < 50. && no_bjets && not_cosmic){
                 n++;
                 h->Fill(xF, cost, 1); 
                 v_xF->push_back(xF);
@@ -211,6 +212,7 @@ int gen_mc_template(TTree *t1, Double_t alpha, TH2F* h_sym, TH2F *h_asym, TH2F *
         for (int i=0; i<nEntries; i++) {
             t1->GetEntry(i);
             bool no_bjets = has_no_bjets(nJets, jet1_pt, jet2_pt, jet1_cmva, jet2_cmva);
+            bool not_cosmic = notCosmic(*lep_p, *lep_m);
             cost = get_cost_v2(*lep_p, *lep_m);
             if(cost_st>0.) cost_st = fabs(cost);
             else cost_st = -fabs(cost);
@@ -235,7 +237,7 @@ int gen_mc_template(TTree *t1, Double_t alpha, TH2F* h_sym, TH2F *h_asym, TH2F *
             }
             bool pass = ((flag2 == FLAG_M_BINS && m >= var_low && m <= var_high) ||
                     (flag2 == FLAG_PT_BINS && m >= 150. && pt >= var_low && pt <= var_high))
-                && met_pt < 50.  && no_bjets;
+                && met_pt < 50.  && no_bjets && not_cosmic;
             if(pass){
                 reweight = (4./3.)*cost_st*(2. + alpha)/
                     (1. + cost_st*cost_st + alpha*(1.- cost_st*cost_st));
@@ -283,13 +285,14 @@ int gen_mc_template(TTree *t1, Double_t alpha, TH2F* h_sym, TH2F *h_asym, TH2F *
         for (int i=0; i<nEntries; i++) {
             t1->GetEntry(i);
             bool no_bjets = has_no_bjets(nJets, jet1_pt, jet2_pt, jet1_cmva, jet2_cmva);
+            bool not_cosmic = notCosmic(*lep_p, *lep_m);
             if(flag2 == FLAG_PT_BINS){
                 TLorentzVector cm = *lep_p + *lep_m;
                 pt = cm.Pt();
             }
             bool pass = ((flag2 == FLAG_M_BINS && m >= var_low && m <= var_high) ||
                     (flag2 == FLAG_PT_BINS && m >= 150. && pt >= var_low && pt <= var_high))
-                && met_pt < 50.  && no_bjets;
+                && met_pt < 50.  && no_bjets && not_cosmic;
             if(pass){
                 cost = get_cost_v2(*lep_p, *lep_m);
                 if(cost_st>0.) cost_st = fabs(cost);
@@ -408,6 +411,7 @@ void gen_fakes_template(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_contam,
             for (int i=0; i<size; i++) {
                 t->GetEntry(i);
                 bool no_bjets = has_no_bjets(nJets, jet1_pt, jet2_pt, jet1_cmva, jet2_cmva);
+                bool not_cosmic = notCosmic(*lep_p, *lep_m);
                 if(l==0){
                     if(iso_mu ==0) mu1_fakerate = get_new_fakerate_prob(mu1_pt, mu1_eta, FR.h);
                     if(iso_mu ==1) mu1_fakerate = get_new_fakerate_prob(mu2_pt, mu2_eta, FR.h);
@@ -440,7 +444,7 @@ void gen_fakes_template(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_contam,
                 xF = abs(2.*cm.Pz()/13000.); 
                 bool pass = ((flag2 == FLAG_M_BINS && m >= var_low && m <= var_high) ||
                         (flag2 == FLAG_PT_BINS && m >= 150. && pt >= var_low && pt <= var_high))
-                    && met_pt < 50.  && no_bjets;
+                    && met_pt < 50.  && no_bjets && not_cosmic;
 
                 if(pass){
                     //if(l==3) printf("Evt fr %.2e \n", evt_fakerate);
@@ -507,6 +511,7 @@ void gen_fakes_template(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_contam,
             for (int i=0; i<size; i++) {
                 t->GetEntry(i);
                 bool no_bjets = has_no_bjets(nJets, jet1_pt, jet2_pt, jet1_cmva, jet2_cmva);
+                bool not_cosmic = notCosmic(*lep_p, *lep_m);
                 if(l==0){
                     if(iso_el ==0) el1_fakerate = get_new_fakerate_prob(el1_pt, el1_eta, FR.h);
                     if(iso_el ==1) el1_fakerate = get_new_fakerate_prob(el2_pt, el2_eta, FR.h);
@@ -540,7 +545,7 @@ void gen_fakes_template(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_contam,
                 xF = abs(2.*cm.Pz()/13000.); 
                 bool pass = ((flag2 == FLAG_M_BINS && m >= var_low && m <= var_high) ||
                         (flag2 == FLAG_PT_BINS && m >= 150. && pt >= var_low && pt <= var_high))
-                    && met_pt < 50.  && no_bjets;
+                    && met_pt < 50.  && no_bjets && not_cosmic;
                 if(pass){
                     //if(l==3) printf("Evt fr %.2e \n", evt_fakerate);
                     //if(l==3) printf("cost, fr %.2f %.2e \n", cost, evt_fakerate);
@@ -632,6 +637,7 @@ int gen_combined_background_template(int nTrees, TTree **ts, TH2F* h,
             for (int i=0; i<nEntries; i++) {
                 t1->GetEntry(i);
                 bool no_bjets = has_no_bjets(nJets, jet1_pt, jet2_pt, jet1_cmva, jet2_cmva);
+                bool not_cosmic = notCosmic(*lep_p, *lep_m);
                 if(flag2 == FLAG_PT_BINS){
                     TLorentzVector cm = *lep_p + *lep_m;
                     pt = cm.Pt();
@@ -651,7 +657,7 @@ int gen_combined_background_template(int nTrees, TTree **ts, TH2F* h,
                 }
                 bool pass = ((flag2 == FLAG_M_BINS && m >= var_low && m <= var_high) ||
                         (flag2 == FLAG_PT_BINS && m >= 150. && pt >= var_low && pt <= var_high))
-                    && met_pt < 50.  && no_bjets;
+                    && met_pt < 50.  && no_bjets && not_cosmic;
 
                 if(pass){
                     cost = get_cost_v2(*lep_p, *lep_m);
@@ -684,13 +690,14 @@ int gen_combined_background_template(int nTrees, TTree **ts, TH2F* h,
             for (int i=0; i<nEntries; i++) {
                 t1->GetEntry(i);
                 bool no_bjets = has_no_bjets(nJets, jet1_pt, jet2_pt, jet1_cmva, jet2_cmva);
+                bool not_cosmic = notCosmic(*lep_p, *lep_m);
                 if(flag2 == FLAG_PT_BINS){
                     TLorentzVector cm = *lep_p + *lep_m;
                     pt = cm.Pt();
                 }
                 bool pass = ((flag2 == FLAG_M_BINS && m >= var_low && m <= var_high) ||
                         (flag2 == FLAG_PT_BINS && m >= 150. && pt >= var_low && pt <= var_high))
-                    && met_pt < 50.  && no_bjets;
+                    && met_pt < 50.  && no_bjets && not_cosmic;
                 if(pass){
 
                     cost = get_cost_v2(*lep_p, *lep_m);
