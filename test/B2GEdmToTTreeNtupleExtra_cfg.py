@@ -18,7 +18,7 @@ useMINIAOD = True # True: Use on top of B2GAnaFW to produce TTrees, False: Use a
 if useMINIAOD:
     from Analysis.B2GTTrees.b2gedmntuples_cfg import *
     process.endPath = cms.EndPath()
-    process.skimmedPatElectrons.cut = "pt >= 5 && abs(eta) < 2.5"
+    process.skimmedPatElectrons.cut = "pt >= 10 && abs(eta) < 2.5"
     process.electronUserData.eleVetoIdFullInfoMap   = cms.InputTag("egmGsfElectronIDs:cutBasedElectronID-Spring15-25ns-V1-standalone-veto")
     process.electronUserData.eleLooseIdFullInfoMap  = cms.InputTag("egmGsfElectronIDs:cutBasedElectronID-Spring15-25ns-V1-standalone-loose")
     process.electronUserData.eleMediumIdFullInfoMap = cms.InputTag("egmGsfElectronIDs:cutBasedElectronID-Spring15-25ns-V1-standalone-medium")
@@ -139,7 +139,7 @@ genHtFilter = False
 process.TFileService = cms.Service("TFileService", fileName = cms.string(ttreeOutputLabel))
 
 ### B2GEdmExtraVarProducer
-from Analysis.B2GAnaFW.b2gedmntuples_cff import metFull, metFullClean, puppimetFull, genPart, electrons, muons, photons, photonjets, jetsAK4CHS, jetsAK4Puppi, jetsAK8CHS, jetsAK8Puppi, subjetsAK8CHS, subjetsAK8Puppi, genJetsAK8, genJetsAK8SoftDrop, eventInfo # metNoHF off since 76X
+from Analysis.B2GAnaFW.b2gedmntuples_cff import metFull, puppimetFull, genPart, electrons, muons, photons, photonjets, jetsAK4CHS, jetsAK4Puppi, jetsAK8CHS, jetsAK8Puppi, subjetsAK8CHS, subjetsAK8Puppi, genJetsAK8, genJetsAK8SoftDrop, eventInfo # metNoHF off since 76X
 
 # import DB content from sqlite
 
@@ -212,8 +212,8 @@ if usePuppiMet:
     met_label  = "puppimetFull"
     met_prefix = puppimetFull.prefix
 else:
-    met_label  = "metFullClean"
-    met_prefix = metFullClean.prefix
+    met_label  = "metFull"
+    met_prefix = metFull.prefix
 
 process.extraVar = cms.EDProducer("B2GEdmExtraVarProducer",
     isData = cms.untracked.bool(isData),
@@ -244,30 +244,30 @@ process.extraVar = cms.EDProducer("B2GEdmExtraVarProducer",
     AK8SubjetKeys_label = cms.untracked.string(AK8sub_key),
     singleI = cms.untracked.vstring(
         # Event filters (these are automatically picked up)
-        #"Flag_HBHENoiseFilter",
-        #"Flag_HBHENoiseIsoFilter",
-        #"Flag_CSCTightHaloFilter",
-        #"Flag_CSCTightHaloTrkMuUnvetoFilter",
-        #"Flag_CSCTightHalo2015Filter",
-        #"Flag_globalTightHalo2016Filter",
-        #"Flag_globalSuperTightHalo2016Filter",
-        #"Flag_HcalStripHaloFilter",
-        #"Flag_hcalLaserEventFilter",
-        #"Flag_EcalDeadCellTriggerPrimitiveFilter",
-        #"Flag_EcalDeadCellBoundaryEnergyFilter",
-        #"Flag_goodVertices",
-        #"Flag_eeBadScFilter",
-        #"Flag_ecalLaserCorrFilter",
-        #"Flag_trkPOGFilters",
-        #"Flag_chargedHadronTrackResolutionFilter",
-        #"Flag_muonBadTrackFilter",
-        #"Flag_trkPOG_manystripclus53X",
-        #"Flag_trkPOG_toomanystripclus53X",
-        #"Flag_trkPOG_logErrorTooManyClusters",
-        #"Flag_METFilters",
-        #"Flag_badMuons",
-        #"Flag_duplicateMuons",
-        #"Flag_noBadMuons",
+        "Flag_HBHENoiseFilter",
+        "Flag_HBHENoiseIsoFilter",
+        "Flag_CSCTightHaloFilter",
+        "Flag_CSCTightHaloTrkMuUnvetoFilter",
+        "Flag_CSCTightHalo2015Filter",
+        "Flag_globalTightHalo2016Filter",
+        "Flag_globalSuperTightHalo2016Filter",
+        "Flag_HcalStripHaloFilter",
+        "Flag_hcalLaserEventFilter",
+        "Flag_EcalDeadCellTriggerPrimitiveFilter",
+        "Flag_EcalDeadCellBoundaryEnergyFilter",
+        "Flag_goodVertices",
+        "Flag_eeBadScFilter",
+        "Flag_ecalLaserCorrFilter",
+        "Flag_trkPOGFilters",
+        "Flag_chargedHadronTrackResolutionFilter",
+        "Flag_muonBadTrackFilter",
+        "Flag_trkPOG_manystripclus53X",
+        "Flag_trkPOG_toomanystripclus53X",
+        "Flag_trkPOG_logErrorTooManyClusters",
+        "Flag_METFilters",
+        "Flag_badMuons",
+        "Flag_duplicateMuons",
+        "Flag_noBadMuons",
         # Add trigger names below (these are automatically picked up)
         # Single Jet
         #"HLT_PFJet40",
@@ -471,12 +471,12 @@ process.extraVar = cms.EDProducer("B2GEdmExtraVarProducer",
         "scale_Weights",
         "pdf_Weights",
         "alphas_Weights",
-        "metsyst_MuCleanOnly_Pt",
-        "metsyst_MuCleanOnly_Phi",
-        "metsyst_Pt",
-        "metsyst_Phi",
-        "puppimetsyst_Pt",
-        "puppimetsyst_Phi",
+        #"metsyst_MuCleanOnly_Pt",
+        #"metsyst_MuCleanOnly_Phi",
+        #"metsyst_Pt",
+        #"metsyst_Phi",
+        #"puppimetsyst_Pt",
+        #"puppimetsyst_Phi",
         "gen_Pt",
         "gen_Eta",
         "gen_Phi",
@@ -592,19 +592,28 @@ process.B2GTTreeMaker.isData = isData
 process.EventCounter = cms.EDAnalyzer("EventCounter",
     isData = cms.untracked.bool(isData)
 )
+#from RecoEgamma.EgammaTools.EgammaPostRecoTools import setupEgammaPostRecoSeq
+#setupEgammaPostRecoSeq(process,
+#                       runVID=False,
+#                       era='2016-Legacy')  #era is new to select between 2016 / 2017,  it defaults to 2017
+#a sequence egammaPostRecoSeq has now been created and should be added to your path, eg process.p=cms.Path(process.egammaPostRecoSeq)
 
 # Paths
 process.muonAnalysisPath = cms.Path(
+    #process.egammaPostRecoSeq *
     process.extraVar *
     process.EventCounter *
-    process.MuonCountFilter *
-    process.B2GTTreeMaker)
+    #process.MuonCountFilter *
+    process.B2GTTreeMaker
+    )
 
 
 process.electronAnalysisPath = cms.Path(
+    #process.egammaPostRecoSeq *
     process.extraVar *
     process.EventCounter *
-    process.ElectronCountFilter *
-    process.B2GTTreeMaker)
+    #process.ElectronCountFilter *
+    process.B2GTTreeMaker
+    )
 
 

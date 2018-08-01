@@ -50,6 +50,8 @@ private:
       iEvent.getByLabel(edm::InputTag("extraVar", "evtGenWeight"), evt_Gen_Weight);
       h_weightsign_->Fill((*evt_Gen_Weight>=0)-1);
       h_totweight_->Fill(double(0), *evt_Gen_Weight);
+
+      printf("I am running! \n\n\n");
       
       // Count total weight for SUSY signal events
       edm::Handle<float> SUSY_Stop_Mass;
