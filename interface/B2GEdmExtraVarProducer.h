@@ -177,33 +177,33 @@ void B2GEdmExtraVarProducer::produce(edm::Event& iEvent, edm::EventSetup const& 
   
   // Put new variables to the event
   for ( auto nameI : singleI_ ) {
-    std::auto_ptr<int> newI(new int);
+    std::unique_ptr<int> newI(new int);
     *newI = single_int_[nameI];
     size_t f; while ((f=nameI.find("_"))!=std::string::npos) nameI.erase(f,1); // Remove "_" from var name
-    iEvent.put(newI,nameI);
+    iEvent.put(std::move(newI),nameI);
   }
   for ( auto nameI : trigger_names_ ) {
-    std::auto_ptr<int> newI(new int);
+    std::unique_ptr<int> newI(new int);
     *newI = single_int_[nameI+"_prescale"];
     size_t f; while ((f=nameI.find("_"))!=std::string::npos) nameI.erase(f,1); // Remove "_" from var name
-    iEvent.put(newI,nameI+"prescale");
+    iEvent.put(std::move(newI),nameI+"prescale");
   }
   for ( auto nameF : singleF_ ) {
-    std::auto_ptr<float> newF(new float);
+    std::unique_ptr<float> newF(new float);
     *newF = single_float_[nameF];
     size_t f; while ((f=nameF.find("_"))!=std::string::npos) nameF.erase(f,1); // Remove "_" from var name
-    iEvent.put(newF,nameF);
+    iEvent.put(std::move(newF),nameF);
   }
   for ( auto nameVI : vectorI_ ) {
-    std::auto_ptr<std::vector<int> > newVI(new std::vector<int>);
+    std::unique_ptr<std::vector<int> > newVI(new std::vector<int>);
     *newVI = vector_int_[nameVI];
     size_t f; while ((f=nameVI.find("_"))!=std::string::npos) nameVI.erase(f,1); // Remove "_" from var name
-    iEvent.put(newVI,nameVI);
+    iEvent.put(std::move(newVI),nameVI);
   }
   for ( auto nameVF : vectorF_ ) {
-    std::auto_ptr<std::vector<float> > newVF(new std::vector<float>);
+    std::unique_ptr<std::vector<float> > newVF(new std::vector<float>);
     *newVF = vector_float_[nameVF];
     size_t f; while ((f=nameVF.find("_"))!=std::string::npos) nameVF.erase(f,1); // Remove "_" from var name
-    iEvent.put(newVF,nameVF);
+    iEvent.put(std::move(newVF),nameVF);
   }
 }

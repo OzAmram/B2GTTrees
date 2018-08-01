@@ -1,5 +1,6 @@
 #include "FWCore/Framework/interface/MakerMacros.h"
 #include "FWCore/Framework/interface/EDFilter.h"
+#include "FWCore/Framework/interface/Event.h"
 
 template <typename T>
 class MinMaxFilter : public edm::EDFilter {
