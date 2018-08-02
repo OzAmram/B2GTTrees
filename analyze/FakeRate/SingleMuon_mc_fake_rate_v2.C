@@ -180,9 +180,10 @@ void SingleMuon_mc_fake_rate_v2()
 
             UInt_t mu_size, met_size, jet_size;
             Float_t mu_Pt[MU_SIZE], mu_Eta[MU_SIZE], mu_Phi[MU_SIZE], mu_E[MU_SIZE], 
-                    mu_IsTightMuon[MU_SIZE], mu_Charge[MU_SIZE];
+                    mu_IsHighPtMuon[MU_SIZE], mu_Charge[MU_SIZE];
 
             Float_t mu_SumChargedHadronPt[MU_SIZE], mu_SumNeutralHadronPt[MU_SIZE], mu_SumPUPt[MU_SIZE], mu_SumPhotonPt[MU_SIZE];
+            Float_t mu_TrackerIso[MU_SIZE];
 
 
             Float_t jet_Pt[JET_SIZE], jet_Eta[JET_SIZE], jet_Phi[JET_SIZE], jet_E[JET_SIZE],
@@ -198,7 +199,8 @@ void SingleMuon_mc_fake_rate_v2()
             t1->SetBranchAddress("mu_E", &mu_E);
             t1->SetBranchAddress("mu_Charge", &mu_Charge);
 
-            t1->SetBranchAddress("mu_IsTightMuon", &mu_IsTightMuon);
+            t1->SetBranchAddress("mu_IsHighPtMuon", &mu_IsHighPtMuon);
+            t1->SetBranchAddress("mu_TrackerIso", &mu_TrackerIso);
             t1->SetBranchAddress("mu_SumChargedHadronPt", &mu_SumChargedHadronPt);
             t1->SetBranchAddress("mu_SumNeutralHadronPt", &mu_SumNeutralHadronPt);
             t1->SetBranchAddress("mu_SumPUPt", &mu_SumPUPt);
@@ -229,9 +231,9 @@ void SingleMuon_mc_fake_rate_v2()
                 if(met_size != 1) printf("WARNING: Met size not equal to 1\n");
                 if(mu_size > MU_SIZE) printf("Warning: too many muons\n");
                 bool good_trigger = HLT_IsoMu || HLT_IsoTkMu;
-                if( mu_size >= 3 && mu_Pt[0] > 26. && mu_IsTightMuon[0] && abs(mu_Eta[0]) < 2.4
-                        && mu_Pt[1] > 10. && mu_IsTightMuon[1] && abs(mu_Eta[1]) < 2.4
-                        && mu_Pt[2] > 10. && mu_IsTightMuon[2] && abs(mu_Eta[2]) < 2.4){
+                if( mu_size >= 3 && mu_Pt[0] > 26. && mu_IsHighPtMuon[0] && abs(mu_Eta[0]) < 2.4
+                        && mu_Pt[1] > 10. && mu_IsHighPtMuon[1] && abs(mu_Eta[1]) < 2.4
+                        && mu_Pt[2] > 10. && mu_IsHighPtMuon[2] && abs(mu_Eta[2]) < 2.4){
                     //Want events with 3 muons, 2 from Z and 1 extra
                     //See https://twiki.cern.ch/twiki/bin/viewauth/CMS/SWGuideMuonIdRun2 for iso cuts
 
@@ -284,11 +286,11 @@ void SingleMuon_mc_fake_rate_v2()
                     bool m12_in_Z = in_Z_window(m12);
 
                     float iso[3];
-                    iso[0] = (mu_SumChargedHadronPt[0] + max(0., mu_SumNeutralHadronPt[0] + mu_SumPhotonPt[0] - 0.5 * mu_SumPUPt[0]))/mu_Pt[0];
-                    iso[1] = (mu_SumChargedHadronPt[1] + max(0., mu_SumNeutralHadronPt[1] + mu_SumPhotonPt[1] - 0.5 * mu_SumPUPt[1]))/mu_Pt[1];
-                    iso[2] = (mu_SumChargedHadronPt[2] + max(0., mu_SumNeutralHadronPt[2] + mu_SumPhotonPt[2] - 0.5 * mu_SumPUPt[2]))/mu_Pt[2];
-                    const float tight_iso = 0.15;
-                    const float loose_iso = 0.25;
+                    iso[0] = mu_TrackerIso[0];
+                    iso[1] = mu_TrackerIso[1];
+                    iso[2] = mu_TrackerIso[2];
+                    const float tight_iso = 0.10;
+                    const float loose_iso = 0.10;
 
                     if(m01_in_Z && !m02_in_Z && !m12_in_Z && mu_Charge[0] * mu_Charge[1] < 0 && iso[0] < tight_iso && iso[1] < tight_iso){
                         mu_extra = 2;

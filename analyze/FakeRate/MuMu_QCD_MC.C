@@ -192,7 +192,7 @@ void MuMu_QCD_MC()
             UInt_t mu_size, jet_size, met_size;
 
             Float_t mu_Pt[MU_SIZE], mu_Eta[MU_SIZE], mu_Phi[MU_SIZE], mu_E[MU_SIZE], 
-                    mu_Charge[MU_SIZE], mu_IsTightMuon[MU_SIZE];
+                    mu_Charge[MU_SIZE], mu_IsHighPtMuon[MU_SIZE];
             Float_t mu_SumChargedHadronPt[MU_SIZE], mu_SumNeutralHadronPt[MU_SIZE], mu_SumPUPt[MU_SIZE], mu_SumPhotonPt[MU_SIZE];
 
 
@@ -200,6 +200,7 @@ void MuMu_QCD_MC()
                     jet_CSV[JET_SIZE], jet_CMVA[JET_SIZE], jet_partonflavour[JET_SIZE];
 
             Float_t evt_Gen_Weight;
+            Float_t mu_TrackerIso[MU_SIZE];
 
             Int_t  HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL, HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL, 
                 HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ, HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ;
@@ -212,7 +213,8 @@ void MuMu_QCD_MC()
             t1->SetBranchAddress("mu_E", &mu_E);
             t1->SetBranchAddress("mu_Charge", &mu_Charge);
 
-            t1->SetBranchAddress("mu_IsTightMuon", &mu_IsTightMuon);
+            t1->SetBranchAddress("mu_IsHighPtMuon", &mu_IsHighPtMuon);
+            t1->SetBranchAddress("mu_TrackerIso", &mu_TrackerIso);
             t1->SetBranchAddress("mu_SumChargedHadronPt", &mu_SumChargedHadronPt);
             t1->SetBranchAddress("mu_SumNeutralHadronPt", &mu_SumNeutralHadronPt);
             t1->SetBranchAddress("mu_SumPUPt", &mu_SumPUPt);
@@ -254,16 +256,16 @@ void MuMu_QCD_MC()
                 //bool good_trigger = true;
                 if(good_trigger &&
                         mu_size >= 2 && ((abs(mu_Charge[0] - mu_Charge[1])) > 0.01) &&
-                        mu_IsTightMuon[0] && mu_IsTightMuon[1] &&
+                        mu_IsHighPtMuon[0] && mu_IsHighPtMuon[1] &&
                         mu_Pt[0] > 26. &&  mu_Pt[1] > 10. &&
                         abs(mu_Eta[0]) < 2.4 && abs(mu_Eta[1]) < 2.4){ 
                     //only want events with 2 oppositely charged muons
                     //with pt above threshold
                     //See https://twiki.cern.ch/twiki/bin/viewauth/CMS/SWGuideMuonIdRun2 for iso cuts
-                    float iso_0 = (mu_SumChargedHadronPt[0] + max(0., mu_SumNeutralHadronPt[0] + mu_SumPhotonPt[0] - 0.5 * mu_SumPUPt[0]))/mu_Pt[0];
-                    float iso_1 = (mu_SumChargedHadronPt[1] + max(0., mu_SumNeutralHadronPt[1] + mu_SumPhotonPt[1] - 0.5 * mu_SumPUPt[1]))/mu_Pt[1];
-                    const float tight_iso = 0.15;
-                    const float loose_iso = 0.25;
+                    float iso_0 = mu_TrackerIso[0];
+                    float iso_1 = mu_TrackerIso[1];
+                    const float tight_iso = 0.10;
+                    const float loose_iso = 0.10;
                     if(mu_Charge[0] >0){
                         mu_p.SetPtEtaPhiE(mu_Pt[0], mu_Eta[0], mu_Phi[0], mu_E[0]);
                         mu_m.SetPtEtaPhiE(mu_Pt[1], mu_Eta[1], mu_Phi[1], mu_E[1]);
