@@ -17,13 +17,16 @@ useMINIAOD = True # True: Use on top of B2GAnaFW to produce TTrees, False: Use a
 
 if useMINIAOD:
     from Analysis.B2GTTrees.b2gedmntuples_cfg import *
-    process.endPath = cms.EndPath()
     process.skimmedPatElectrons.cut = "pt >= 10 && abs(eta) < 2.5"
-    process.electronUserData.eleVetoIdFullInfoMap   = cms.InputTag("egmGsfElectronIDs:cutBasedElectronID-Spring15-25ns-V1-standalone-veto")
-    process.electronUserData.eleLooseIdFullInfoMap  = cms.InputTag("egmGsfElectronIDs:cutBasedElectronID-Spring15-25ns-V1-standalone-loose")
-    process.electronUserData.eleMediumIdFullInfoMap = cms.InputTag("egmGsfElectronIDs:cutBasedElectronID-Spring15-25ns-V1-standalone-medium")
-    process.electronUserData.eleTightIdFullInfoMap  = cms.InputTag("egmGsfElectronIDs:cutBasedElectronID-Spring15-25ns-V1-standalone-tight")
-    setupAllVIDIdsInModule(process,'RecoEgamma.ElectronIdentification.Identification.cutBasedElectronID_Spring15_25ns_V1_cff',setupVIDElectronSelection)
+    #process.myTask = cms.Task()
+    #process.myTask.add(*[getattr(process,prod) for prod in process.producers_()])
+    #process.myTask.add(*[getattr(process,filt) for filt in process.filters_()])
+    process.endPath = cms.EndPath()
+    #process.electronUserData.eleVetoIdFullInfoMap   = cms.InputTag("egmGsfElectronIDs:cutBasedElectronID-Spring15-25ns-V1-standalone-veto")
+    #process.electronUserData.eleLooseIdFullInfoMap  = cms.InputTag("egmGsfElectronIDs:cutBasedElectronID-Spring15-25ns-V1-standalone-loose")
+    #process.electronUserData.eleMediumIdFullInfoMap = cms.InputTag("egmGsfElectronIDs:cutBasedElectronID-Spring15-25ns-V1-standalone-medium")
+    #process.electronUserData.eleTightIdFullInfoMap  = cms.InputTag("egmGsfElectronIDs:cutBasedElectronID-Spring15-25ns-V1-standalone-tight")
+    #setupAllVIDIdsInModule(process,'RecoEgamma.ElectronIdentification.Identification.cutBasedElectronID_Spring15_25ns_V1_cff',setupVIDElectronSelection)
 else:
     process = cms.Process("b2gAnalysisTTrees")
     
@@ -592,28 +595,33 @@ process.B2GTTreeMaker.isData = isData
 process.EventCounter = cms.EDAnalyzer("EventCounter",
     isData = cms.untracked.bool(isData)
 )
-#from RecoEgamma.EgammaTools.EgammaPostRecoTools import setupEgammaPostRecoSeq
-#setupEgammaPostRecoSeq(process,
-#                       runVID=False,
-#                       era='2016-Legacy')  #era is new to select between 2016 / 2017,  it defaults to 2017
+from RecoEgamma.EgammaTools.EgammaPostRecoTools import setupEgammaPostRecoSeq
+setupEgammaPostRecoSeq(process,
+                       runVID=False,
+                       era='2016-Legacy')  #era is new to select between 2016 / 2017,  it defaults to 2017
 #a sequence egammaPostRecoSeq has now been created and should be added to your path, eg process.p=cms.Path(process.egammaPostRecoSeq)
 
 # Paths
 process.muonAnalysisPath = cms.Path(
-    #process.egammaPostRecoSeq *
+    process.egammaPostRecoSeq *
     process.extraVar *
     process.EventCounter *
-    #process.MuonCountFilter *
+    process.MuonCountFilter *
     process.B2GTTreeMaker
     )
 
 
 process.electronAnalysisPath = cms.Path(
-    #process.egammaPostRecoSeq *
+    process.egammaPostRecoSeq *
     process.extraVar *
     process.EventCounter *
-    #process.ElectronCountFilter *
+    process.ElectronCountFilter *
     process.B2GTTreeMaker
     )
 
 
+process.myTask = cms.Task()
+process.myTask.add(*[getattr(process,prod) for prod in process.producers_()])
+process.myTask.add(*[getattr(process,filt) for filt in process.filters_()])
+process.muonAnalysisPath.associate(process.myTask)
+process.electronAnalysisPath.associate(process.myTask)

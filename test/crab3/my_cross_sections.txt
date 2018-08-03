@@ -1,0 +1,36 @@
+
+DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8  5941.0      1.00
+
+DYJetsToLL_M-100to200_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8  226.6 1.00
+
+DYJetsToLL_M-100to200_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8  226.6 1.00
+
+DYJetsToLL_M-200to400_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8  7.77 1.00
+DYJetsToLL_M-200to400_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8  7.77 1.00
+
+DYJetsToLL_M-400to500_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8 0.406  1.00
+
+DYJetsToLL_M-500to700_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8 0.2334 1.00
+
+DYJetsToLL_M-700to800_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8 0.0361 1.00
+
+DYJetsToLL_M-800to1000_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8 0.0304 1.00
+
+DYJetsToLL_M-1000to1500_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8 0.01636 1.00
+
+DYJetsToLL_M-1500to2000_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8 0.00218 1.00
+
+DYJetsToLL_M-2000to3000_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8 0.0005156 1.00
+
+
+TT_TuneCUETP8M2T4_13TeV-powheg-pythia8 730.6 1.00
+
+ST_tW_top_5f_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M2T4  35.85 1.00
+
+ST_tW_antitop_5f_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M2T4 35.85 1.00
+
+WW_TuneCUETP8M1_13TeV-pythia8  63.21 1.00
+
+WZ_TuneCUETP8M1_13TeV-pythia8 47.13 1.00
+
+ZZ_TuneCUETP8M1_13TeV-pythia8 16.523 1.00
