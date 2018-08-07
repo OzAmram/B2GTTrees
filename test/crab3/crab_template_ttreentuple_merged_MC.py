@@ -17,6 +17,7 @@ config.General.workArea = 'TASKDIR'
 config.section_('JobType')
 config.JobType.pluginName = 'Analysis'
 config.JobType.psetName = os.environ['CMSSW_BASE']+'/src/Analysis/B2GTTrees/test/B2GEdmToTTreeNtupleExtra_cfg.py'
+config.JobType.disableAutomaticOutputCollection = True
 config.JobType.pyCfgParams = ['DataProcessing=DATAPROC', 'wantSummary=False', 'outputLabel=B2GTTreeNtupleExtra.root']
 config.JobType.outputFiles = ['B2GTTreeNtupleExtra.root']
 config.JobType.inputFiles = input_files

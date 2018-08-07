@@ -193,6 +193,12 @@ else if ( `echo $cmd | grep "submit" | wc -l` ) then
         eval_or_echo "crab submit -c $cfg_file; sleep 1m"
     end
 
+else if ( `echo $cmd | grep "kill" | wc -l` ) then
+    if ( $dry == "1" ) echo "Add --run after command to excecute following lines:\n"
+    foreach cfg_file ( `awk '{ print "'$TASKDIR'/crab_"$1 }' $TASKDIR/input_datasets.txt` )
+        eval_or_echo "crab kill $cfg_file"
+    end
+
 else if ( `echo $cmd | grep "status" | wc -l` ) then
     set N=`cat $TASKDIR/input_datasets.txt | wc -l`
     foreach i ( `seq 1 $N` )
