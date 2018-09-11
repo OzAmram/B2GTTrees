@@ -213,11 +213,12 @@ void MuMu_reco_background_batch()
             UInt_t mu_size, jet_size, met_size;
 
             Float_t mu_Pt[MU_SIZE], mu_Eta[MU_SIZE], mu_Phi[MU_SIZE], mu_E[MU_SIZE], 
-                    mu_Charge[MU_SIZE], mu_IsTightMuon[MU_SIZE];
+                    mu_Charge[MU_SIZE], mu_IsHighPtMuon[MU_SIZE];
             Float_t mu_SumChargedHadronPt[MU_SIZE], mu_SumNeutralHadronPt[MU_SIZE], mu_SumPUPt[MU_SIZE], mu_SumPhotonPt[MU_SIZE],
                     mu_NumberTrackerLayers[MU_SIZE];
 
 
+            Float_t mu_TrackerIso[MU_SIZE];
             Float_t jet_Pt[JET_SIZE], jet_Eta[JET_SIZE], jet_Phi[JET_SIZE], jet_E[JET_SIZE],
                     jet_CSV[JET_SIZE], jet_CMVA[JET_SIZE], jet_partonflavour[JET_SIZE];
 
@@ -231,7 +232,8 @@ void MuMu_reco_background_batch()
             t1->SetBranchAddress("mu_E", &mu_E);
             t1->SetBranchAddress("mu_Charge", &mu_Charge);
 
-            t1->SetBranchAddress("mu_IsTightMuon", &mu_IsTightMuon);
+            t1->SetBranchAddress("mu_IsHighPtMuon", &mu_IsHighPtMuon);
+            t1->SetBranchAddress("mu_TrackerIso", &mu_TrackerIso);
             t1->SetBranchAddress("mu_SumChargedHadronPt", &mu_SumChargedHadronPt);
             t1->SetBranchAddress("mu_SumNeutralHadronPt", &mu_SumNeutralHadronPt);
             t1->SetBranchAddress("mu_SumPUPt", &mu_SumPUPt);
@@ -288,15 +290,15 @@ void MuMu_reco_background_batch()
                 bool good_trigger = HLT_IsoMu || HLT_IsoTkMu;
                 if(good_trigger &&
                         mu_size >= 2 && ((abs(mu_Charge[0] - mu_Charge[1])) > 0.01) &&
-                        mu_IsTightMuon[0] && mu_IsTightMuon[1] &&
+                        mu_IsHighPtMuon[0] && mu_IsHighPtMuon[1] &&
                         mu_Pt[0] > 26. &&  mu_Pt[1] > 10. &&
                         abs(mu_Eta[0]) < 2.4 && abs(mu_Eta[1]) < 2.4){ 
 
                     //See https://twiki.cern.ch/twiki/bin/viewauth/CMS/SWGuideMuonIdRun2 for iso cuts
-                    float iso_0 = (mu_SumChargedHadronPt[0] + max(0., mu_SumNeutralHadronPt[0] + mu_SumPhotonPt[0] - 0.5 * mu_SumPUPt[0]))/mu_Pt[0];
-                    float iso_1 = (mu_SumChargedHadronPt[1] + max(0., mu_SumNeutralHadronPt[1] + mu_SumPhotonPt[1] - 0.5 * mu_SumPUPt[1]))/mu_Pt[1];
-                    float tight_iso = 0.15;
-                    float loose_iso = 0.25;
+                    float iso_0 = mu_TrackerIso[0];
+                    float iso_1 = mu_TrackerIso[1];
+                    float tight_iso = 0.10;
+                    float loose_iso = 0.10;
                     //only want events with 2 oppositely charged muons
                     if(mu_Charge[0] >0){
                         //mu_p.SetPtEtaPhiE(mu0_mcSF * mu_Pt[0], mu_Eta[0], mu_Phi[0], mu_E[0]);
