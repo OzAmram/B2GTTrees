@@ -6,7 +6,6 @@
 #include <cstring>
 #include <algorithm>
 #include "TFile.h"
-#include "../ScaleFactors.C"
 #include "../TemplateMaker.C"
 
 #define GEN_SIZE 300
@@ -15,8 +14,8 @@
 #define MAX_SAMPLES 20
 
 const double root2 = sqrt(2);
-char *filename("non_QCD_files_aug29.txt");
-const TString fout_name("FakeRate/root_files/SingleMu_mc_fakerate_contam_v2_jan17.root");
+char *filename("diboson_files_aug7.txt");
+const TString fout_name("FakeRate/root_files/SingleMu_mc_fakerate_contam_v2_sep11.root");
 
 
 bool is_empty_line(const char *s) {
@@ -99,12 +98,9 @@ void SingleMuon_mc_fake_rate_v2()
 
     mu_SFs runs_bcdef, runs_gh;
     pileup_SFs pu_SFs;
-    BTag_readers b_reader;
-    BTag_effs btag_effs;
     el_SFs el_SF;
-    setup_el_SF(&el_SF);
     //separate SFs for runs BCDEF and GH
-    setup_SFs(&runs_bcdef, &runs_gh, &b_reader, &btag_effs, &pu_SFs);
+    setup_SFs(&runs_bcdef, &runs_gh, &pu_SFs);
     printf("Retrieved Scale Factors \n\n");
 
     TFile *fout = TFile::Open(fout_name, "RECREATE");
@@ -193,7 +189,7 @@ void SingleMuon_mc_fake_rate_v2()
 
             Int_t HLT_IsoMu, HLT_IsoTkMu, pu_NtrueInt;
             t1->SetBranchAddress("mu_size", &mu_size); //number of muons in the event
-            t1->SetBranchAddress("mu_Pt", &mu_Pt);
+            t1->SetBranchAddress("mu_TunePMuonBestTrackPt", &mu_Pt);
             t1->SetBranchAddress("mu_Eta", &mu_Eta);
             t1->SetBranchAddress("mu_Phi", &mu_Phi);
             t1->SetBranchAddress("mu_E", &mu_E);
@@ -218,8 +214,8 @@ void SingleMuon_mc_fake_rate_v2()
             t1->SetBranchAddress("HLT_IsoMu24", &HLT_IsoMu);
             t1->SetBranchAddress("HLT_IsoTkMu24", &HLT_IsoTkMu);
 
-            t1->SetBranchAddress("met_size", &met_size);
-            t1->SetBranchAddress("met_Pt", &met_pt);
+            t1->SetBranchAddress("met_MuCleanOnly_size", &met_size);
+            t1->SetBranchAddress("met_MuCleanOnly_Pt", &met_pt);
 
             t1->SetBranchAddress("evt_Gen_Weight", &evt_Gen_Weight);
             t1->SetBranchAddress("pu_NtrueInt",&pu_NtrueInt);
@@ -249,7 +245,6 @@ void SingleMuon_mc_fake_rate_v2()
                                 jet2_cmva = jet_CMVA[j];
                                 nJets =2;
                                 jet2_flavour = jet_partonflavour[j];
-                                jet2_b_weight = get_btag_weight(jet_Pt[j], jet_Eta[j],jet_partonflavour[j],btag_effs, b_reader);
                                 break;
                             }
                             else if(nJets ==0){
@@ -257,7 +252,6 @@ void SingleMuon_mc_fake_rate_v2()
                                 jet1_eta = jet_Eta[j];
                                 jet1_cmva = jet_CMVA[j];
                                 jet1_flavour = jet_partonflavour[j];
-                                jet1_b_weight = get_btag_weight(jet_Pt[j], jet_Eta[j],jet_partonflavour[j],btag_effs, b_reader);
                                 nJets = 1;
                             }
                         }
@@ -266,10 +260,12 @@ void SingleMuon_mc_fake_rate_v2()
                     double_t Z_mass_low = 91.2 -7;
                     double_t Z_mass_high = 91.2 + 7;
 
+                    const float mu_mass = 0.1056; // in GEV
+
                     TLorentzVector mu0, mu1, mu2;
-                    mu0.SetPtEtaPhiE(mu_Pt[0], mu_Eta[0], mu_Phi[0], mu_E[0]);
-                    mu1.SetPtEtaPhiE(mu_Pt[1], mu_Eta[1], mu_Phi[1], mu_E[1]);
-                    mu2.SetPtEtaPhiE(mu_Pt[2], mu_Eta[2], mu_Phi[2], mu_E[2]);
+                    mu0.SetPtEtaPhiM(mu_Pt[0], mu_Eta[0], mu_Phi[0], mu_mass);
+                    mu1.SetPtEtaPhiM(mu_Pt[1], mu_Eta[1], mu_Phi[1], mu_mass);
+                    mu2.SetPtEtaPhiM(mu_Pt[2], mu_Eta[2], mu_Phi[2], mu_mass);
 
                     //mu+ and mu- from Z, extra muon
                     int mu_p, mu_m, mu_extra;

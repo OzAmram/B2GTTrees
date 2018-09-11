@@ -9,12 +9,13 @@
 #include "TTree.h"
 #include "TLorentzVector.h"
 #include "../RoccoR.cc"
+#include "../ScaleFactors.C"
 #define MU_SIZE 200
 #define JET_SIZE 60
 
 const double root2 = sqrt(2);
-const char* filename("SingleMuon_files_test.txt");
-const TString fout_name("output_files/SingleMuon_data_test.root");
+const char* filename("SingleMuon_files_aug7.txt");
+const TString fout_name("output_files/SingleMuon_data_sep4.root");
 
 
 bool is_empty_line(const char *s) {
@@ -40,7 +41,7 @@ void MuMu_reco_data_batch()
     //tout->SetDirectory(0);
     Double_t cm_m, xF, cost_r, mu1_pt, mu2_pt, mu1_eta, mu2_eta, jet1_pt, jet2_pt,
              jet1_cmva, jet1_eta, jet2_cmva, jet2_eta;
-    Double_t mu_p_SF, mu_m_SF, mu_p_SF_alt, mu_m_SF_alt;
+    Double_t mu_p_SF, mu_m_SF, mu_p_SF_alt, mu_m_SF_alt, mu_p_SF_up, mu_p_SF_down, mu_m_SF_up, mu_m_SF_down;
     Int_t nJets, pu_NtrueInt;
     Float_t met_pt;
     TLorentzVector mu_p, mu_m, cm, q1, q2;
@@ -51,6 +52,10 @@ void MuMu_reco_data_batch()
     tout->Branch("mu2_pt", &mu2_pt, "mu2_pt/D");
     tout->Branch("mu_p_SF", &mu_p_SF, "mu_p_SF/D");
     tout->Branch("mu_m_SF", &mu_p_SF, "mu_m_SF/D");
+    tout->Branch("mu_p_SF_up", &mu_p_SF_up, "mu_p_SF_up/D");
+    tout->Branch("mu_m_SF_up", &mu_m_SF, "mu_m_SF_up/D");
+    tout->Branch("mu_p_SF_down", &mu_p_SF_down, "mu_p_SF_down/D");
+    tout->Branch("mu_m_SF_down", &mu_m_SF, "mu_m_SF_down/D");
     tout->Branch("mu_p_SF_alt", &mu_p_SF_alt, "mu_p_SF_alt/D");
     tout->Branch("mu_m_SF_alt", &mu_m_SF_alt, "mu_m_SF_alt/D");
     tout->Branch("mu1_eta", &mu1_eta, "mu1_eta/D");
@@ -109,7 +114,7 @@ void MuMu_reco_data_batch()
 
         Int_t HLT_IsoMu, HLT_IsoTkMu;
         t1->SetBranchAddress("mu_size", &mu_size); //number of muons in the event
-        t1->SetBranchAddress("mu_Pt", &mu_Pt);
+        t1->SetBranchAddress("mu_TunePMuonBestTrackPt", &mu_Pt);
         t1->SetBranchAddress("mu_Eta", &mu_Eta);
         t1->SetBranchAddress("mu_Phi", &mu_Phi);
         t1->SetBranchAddress("mu_E", &mu_E);
@@ -134,8 +139,8 @@ void MuMu_reco_data_batch()
         t1->SetBranchAddress("HLT_IsoMu24", &HLT_IsoMu);
         t1->SetBranchAddress("HLT_IsoTkMu24", &HLT_IsoTkMu);
 
-        t1->SetBranchAddress("met_size", &met_size);
-        t1->SetBranchAddress("met_Pt", &met_pt);
+        t1->SetBranchAddress("met_MuCleanOnly_size", &met_size);
+        t1->SetBranchAddress("met_MuCleanOnly_Pt", &met_pt);
         t1->SetBranchAddress("pu_NtrueInt",&pu_NtrueInt);
 
         unsigned int nEntries =  t1->GetEntries();
@@ -148,7 +153,7 @@ void MuMu_reco_data_batch()
             if(good_trigger &&
                     mu_size >= 2 && ((abs(mu_Charge[0] - mu_Charge[1])) > 0.01) &&
                     mu_IsHighPtMuon[0] && mu_IsHighPtMuon[1] &&
-                    mu_Pt[0] > 26. &&  mu_Pt[1] > 10. &&
+                    mu_Pt[0] > 26. &&  mu_Pt[1] > 15. &&
                     abs(mu_Eta[0]) < 2.4 && abs(mu_Eta[1]) < 2.4){ 
                 //only want events with 2 oppositely charged muons
                 //with pt above threshold
@@ -157,13 +162,14 @@ void MuMu_reco_data_batch()
                 float iso_1 = mu_TrackerIso[1];
                 const float tight_iso = 0.10;
                 const float loose_iso = 0.10;
+                const float mu_mass = 0.1056; // in GEV
                 if(mu_Charge[0] >0){
-                    mu_p.SetPtEtaPhiE(mu_Pt[0], mu_Eta[0], mu_Phi[0], mu_E[0]);
-                    mu_m.SetPtEtaPhiE(mu_Pt[1], mu_Eta[1], mu_Phi[1], mu_E[1]);
+                    mu_p.SetPtEtaPhiM(mu_Pt[0], mu_Eta[0], mu_Phi[0], mu_mass);
+                    mu_m.SetPtEtaPhiM(mu_Pt[1], mu_Eta[1], mu_Phi[1], mu_mass);
                 }
                 else{
-                    mu_m.SetPtEtaPhiE(mu_Pt[0], mu_Eta[0], mu_Phi[0], mu_E[0]);
-                    mu_p.SetPtEtaPhiE(mu_Pt[1], mu_Eta[1], mu_Phi[1], mu_E[1]);
+                    mu_m.SetPtEtaPhiM(mu_Pt[0], mu_Eta[0], mu_Phi[0], mu_mass);
+                    mu_p.SetPtEtaPhiM(mu_Pt[1], mu_Eta[1], mu_Phi[1], mu_mass);
                 }
                 //printf ("Momentum SFs are %.3f %.3f for Pts %.0f %.0f \n", mu0_SF, mu1_SF, mu_p.Pt(), mu_m.Pt());
 
@@ -213,6 +219,21 @@ void MuMu_reco_data_batch()
                     mu_m_SF = rc.kScaleDT(-1, mu_m.Pt(), mu_m.Eta(), mu_m.Phi(), 0, 0);
                     mu_p_SF_alt = rc.kScaleDT(1, mu_p.Pt(), mu_p.Eta(), mu_p.Phi(), 2, 0);
                     mu_m_SF_alt = rc.kScaleDT(-1, mu_m.Pt(), mu_m.Eta(), mu_m.Phi(), 2, 0);
+
+
+                    Double_t mu_p_SF_vars[100], mu_m_SF_vars[100];
+                    for(int k=0; k<100; k++){
+                        mu_p_SF_vars[k] = rc.kScaleDT(1, mu_p.Pt(), mu_p.Eta(), mu_p.Phi(), 1, k);
+                        mu_m_SF_vars[k] = rc.kScaleDT(-1, mu_m.Pt(), mu_m.Eta(), mu_m.Phi(), 1, k);
+                    }
+                    double mu_p_SF_std = sqrt(get_var(mu_p_SF_vars));
+                    double mu_m_SF_std = sqrt(get_var(mu_m_SF_vars));
+                    mu_p_SF_up = mu_p_SF + mu_p_SF_std;
+                    mu_p_SF_down = mu_p_SF - mu_p_SF_std;
+                    mu_m_SF_up = mu_m_SF + mu_m_SF_std;
+                    mu_m_SF_down = mu_m_SF - mu_m_SF_std;
+
+
                     tout->Fill();
 
                     nEvents++;

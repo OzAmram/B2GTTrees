@@ -193,6 +193,9 @@ void ElEl_QCD_MC()
 
             Int_t el_IDMedium[EL_SIZE], el_IDMedium_NoIso[EL_SIZE];
 
+            Float_t el_SCEta[EL_SIZE];
+            Float_t el_ScaleCorr[EL_SIZE], el_ScaleCorrUp[EL_SIZE], el_ScaleCorrDown[EL_SIZE],
+                el_ScaleSmearDown[EL_SIZE], el_ScaleSmearUp[EL_SIZE];
 
             Float_t jet_Pt[JET_SIZE], jet_Eta[JET_SIZE], jet_Phi[JET_SIZE], jet_E[JET_SIZE],
                     jet_CSV[JET_SIZE], jet_CMVA[JET_SIZE], jet_partonflavour[JET_SIZE];
@@ -207,6 +210,8 @@ void ElEl_QCD_MC()
             t1->SetBranchAddress("el_E", &el_E);
             t1->SetBranchAddress("el_Charge", &el_Charge);
             t1->SetBranchAddress("el_IDMedium", &el_IDMedium);
+            t1->SetBranchAddress("el_SCEta", &el_SCEta);
+            t1->SetBranchAddress("el_ScaleCorr", &el_ScaleCorr);
             t1->SetBranchAddress("el_IDMedium_NoIso", &el_IDMedium_NoIso);
             t1->SetBranchAddress("HLT_Ele27_WPTight_Gsf", &HLT_El);
 
@@ -224,8 +229,8 @@ void ElEl_QCD_MC()
             t1->SetBranchAddress("pu_NtrueInt",&pu_NtrueInt);
 
 
-            t1->SetBranchAddress("met_size", &met_size);
-            t1->SetBranchAddress("met_Pt", &met_pt);
+            t1->SetBranchAddress("met_MuCleanOnly_size", &met_size);
+            t1->SetBranchAddress("met_MuCleanOnly_Pt", &met_pt);
 
             Long64_t nEntries =  t1->GetEntries();
 
@@ -240,18 +245,18 @@ void ElEl_QCD_MC()
             if(good_trigger &&
                     el_size >= 2 && ((abs(el_Charge[0] - el_Charge[1])) > 0.01) &&
                     el_IDMedium_NoIso[0] && el_IDMedium_NoIso[1] &&
-                    el_Pt[0] > 29. &&  el_Pt[1] > 10. &&
-                    abs(el_Eta[0]) < 2.4 && abs(el_Eta[1]) < 2.4){ 
+                    el_ScaleCorr[0] * el_Pt[0] > 29. &&  el_ScaleCorr[1] * el_Pt[1] > 15. &&
+                    goodElEta(el_SCEta[0]) && goodElEta(el_SCEta[1])){ 
 
                     //only want events with 2 oppositely charged leptons
-                    if(el_Charge[0] >0){
-                        el_p.SetPtEtaPhiE(el_Pt[0], el_Eta[0], el_Phi[0], el_E[0]);
-                        el_m.SetPtEtaPhiE(el_Pt[1], el_Eta[1], el_Phi[1], el_E[1]);
-                    }
-                    else{
-                        el_m.SetPtEtaPhiE(el_Pt[0], el_Eta[0], el_Phi[0], el_E[0]);
-                        el_p.SetPtEtaPhiE(el_Pt[1], el_Eta[1], el_Phi[1], el_E[1]);
-                    }
+                if(el_Charge[0] >0){
+                    el_p.SetPtEtaPhiE(el_ScaleCorr[0] * el_Pt[0], el_Eta[0], el_Phi[0], el_ScaleCorr[0] * el_E[0]);
+                    el_m.SetPtEtaPhiE(el_ScaleCorr[1] * el_Pt[1], el_Eta[1], el_Phi[1], el_ScaleCorr[1] * el_E[1]);
+                }
+                else{
+                    el_m.SetPtEtaPhiE(el_ScaleCorr[0] * el_Pt[0], el_Eta[0], el_Phi[0], el_ScaleCorr[0] * el_E[0]);
+                    el_p.SetPtEtaPhiE(el_ScaleCorr[1] * el_Pt[1], el_Eta[1], el_Phi[1], el_ScaleCorr[1] * el_E[1]);
+                }
                 cm = el_p + el_m;
                 cm_m = cm.M();
 
@@ -303,8 +308,8 @@ void ElEl_QCD_MC()
 
 
                     gen_weight = evt_Gen_Weight * normalization;
-                    el1_pt = el_Pt[0];
-                    el2_pt = el_Pt[1];
+                    el1_pt = el_ScaleCorr[0] * el_Pt[0];
+                    el2_pt = el_ScaleCorr[1] * el_Pt[1];
                     el1_eta = el_Eta[0];
                     el2_eta = el_Eta[1];
 

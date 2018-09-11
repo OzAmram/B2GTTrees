@@ -20,8 +20,8 @@ const double root2 = sqrt(2);
 double Ebeam = 6500.;
 double Pbeam = sqrt(Ebeam*Ebeam - 0.938*0.938);
 
-char *filename("DY_files_test.txt");
-const TString fout_name("output_files/MuMu_DY_test.root");
+char *filename("DY_files_unbinned_aug7.txt");
+const TString fout_name("output_files/MuMu_DY_unbinned_sep11.root");
 const bool PRINT=false;
 
 const bool data_2016 = true;
@@ -110,6 +110,7 @@ void MuMu_reco_mc_batch()
 
 
     //separate SFs for runs BCDEF and GH
+    printf("getting SFs \n");
     setup_SFs(&runs_bcdef, &runs_gh, &pu_SFs);
     printf("Retrieved Scale Factors \n\n");
 
@@ -119,7 +120,7 @@ void MuMu_reco_mc_batch()
     //t_signal->SetDirectory(0);
     Double_t cm_m, xF, cost_r, cost_st, mu1_pt, mu2_pt, mu1_eta, mu2_eta, jet1_pt, jet2_pt, jet1_eta, jet2_eta, deltaC, 
              gen_weight, jet1_csv, jet1_cmva, jet2_csv, jet2_cmva, gen_m;
-    Double_t mu_p_SF, mu_m_SF, mu_p_SF_alt, mu_m_SF_alt;
+    Double_t mu_p_SF, mu_m_SF, mu_p_SF_alt, mu_m_SF_alt, mu_p_SF_up, mu_p_SF_down, mu_m_SF_up, mu_m_SF_down;
     Double_t bcdef_HLT_SF, bcdef_iso_SF, bcdef_id_SF, gh_HLT_SF, gh_iso_SF, gh_id_SF,
              bcdef_trk_SF, gh_trk_SF,
              jet1_b_weight, jet2_b_weight, pu_SF;
@@ -139,6 +140,10 @@ void MuMu_reco_mc_batch()
     t_signal->Branch("mu2_pt", &mu2_pt, "mu2_pt/D");
     t_signal->Branch("mu_p_SF", &mu_p_SF, "mu_p_SF/D");
     t_signal->Branch("mu_m_SF", &mu_m_SF, "mu_m_SF/D");
+    t_signal->Branch("mu_p_SF_up", &mu_p_SF_up, "mu_p_SF_up/D");
+    t_signal->Branch("mu_m_SF_up", &mu_m_SF, "mu_m_SF_up/D");
+    t_signal->Branch("mu_p_SF_down", &mu_p_SF_down, "mu_p_SF_down/D");
+    t_signal->Branch("mu_m_SF_down", &mu_m_SF, "mu_m_SF_down/D");
     t_signal->Branch("mu_p_SF_alt", &mu_p_SF_alt, "mu_p_SF_alt/D");
     t_signal->Branch("mu_m_SF_alt", &mu_m_SF_alt, "mu_m_SF_alt/D");
     t_signal->Branch("mu1_eta", &mu1_eta, "mu1_eta/D");
@@ -192,6 +197,10 @@ void MuMu_reco_mc_batch()
     t_back->Branch("mu2_pt", &mu2_pt, "mu2_pt/D");
     t_back->Branch("mu_p_SF", &mu_p_SF, "mu_p_SF/D");
     t_back->Branch("mu_m_SF", &mu_m_SF, "mu_m_SF/D");
+    t_back->Branch("mu_p_SF_up", &mu_p_SF_up, "mu_p_SF_up/D");
+    t_back->Branch("mu_m_SF_up", &mu_m_SF, "mu_m_SF_up/D");
+    t_back->Branch("mu_p_SF_down", &mu_p_SF_down, "mu_p_SF_down/D");
+    t_back->Branch("mu_m_SF_down", &mu_m_SF, "mu_m_SF_down/D");
     t_back->Branch("mu_p_SF_alt", &mu_p_SF_alt, "mu_p_SF_alt/D");
     t_back->Branch("mu_m_SF_alt", &mu_m_SF_alt, "mu_m_SF_alt/D");
     t_back->Branch("mu1_eta", &mu1_pt, "mu1_eta/D");
@@ -303,7 +312,7 @@ void MuMu_reco_mc_batch()
 
             Int_t HLT_IsoMu, HLT_IsoTkMu;
             t1->SetBranchAddress("mu_size", &mu_size); //number of muons in the event
-            t1->SetBranchAddress("mu_Pt", &mu_Pt);
+            t1->SetBranchAddress("mu_TunePMuonBestTrackPt", &mu_Pt);
             t1->SetBranchAddress("mu_Eta", &mu_Eta);
             t1->SetBranchAddress("mu_Phi", &mu_Phi);
             t1->SetBranchAddress("mu_E", &mu_E);
@@ -355,8 +364,8 @@ void MuMu_reco_mc_batch()
             t1->SetBranchAddress("gen_Dau0Status", &gen_Dau0Status);
             t1->SetBranchAddress("gen_Dau1Status", &gen_Dau1Status);
 
-            t1->SetBranchAddress("met_size", &met_size);
-            t1->SetBranchAddress("met_Pt", &met_pt);
+            t1->SetBranchAddress("met_MuCleanOnly_size", &met_size);
+            t1->SetBranchAddress("met_MuCleanOnly_Pt", &met_pt);
 
             Long64_t nEntries =  t1->GetEntries();
 
@@ -371,7 +380,7 @@ void MuMu_reco_mc_batch()
                 if(good_trigger &&
                         mu_size >= 2 && ((abs(mu_Charge[0] - mu_Charge[1])) > 0.01) &&
                         mu_IsHighPtMuon[0] && mu_IsHighPtMuon[1] &&
-                        mu_Pt[0] > 26. &&  mu_Pt[1] > 10. &&
+                        mu_Pt[0] > 26. &&  mu_Pt[1] > 15. &&
                         abs(mu_Eta[0]) < 2.4 && abs(mu_Eta[1]) < 2.4){ 
 
                     //See https://twiki.cern.ch/twiki/bin/viewauth/CMS/SWGuideMuonIdRun2 for iso cuts
@@ -381,13 +390,14 @@ void MuMu_reco_mc_batch()
                     float loose_iso = 0.10;
                     nNonIso++;
                     //only want events with 2 oppositely charged muons
+                    const float mu_mass = 0.1056; // in GEV
                     if(mu_Charge[0] >0){
-                        mu_p.SetPtEtaPhiE(mu_Pt[0], mu_Eta[0], mu_Phi[0], mu_E[0]);
-                        mu_m.SetPtEtaPhiE(mu_Pt[1], mu_Eta[1], mu_Phi[1], mu_E[1]);
+                        mu_p.SetPtEtaPhiM(mu_Pt[0], mu_Eta[0], mu_Phi[0], mu_mass);
+                        mu_m.SetPtEtaPhiM(mu_Pt[1], mu_Eta[1], mu_Phi[1], mu_mass);
                     }
                     else{
-                        mu_m.SetPtEtaPhiE(mu_Pt[0], mu_Eta[0], mu_Phi[0], mu_E[0]);
-                        mu_p.SetPtEtaPhiE(mu_Pt[1], mu_Eta[1], mu_Phi[1], mu_E[1]);
+                        mu_m.SetPtEtaPhiM(mu_Pt[0], mu_Eta[0], mu_Phi[0], mu_mass);
+                        mu_p.SetPtEtaPhiM(mu_Pt[1], mu_Eta[1], mu_Phi[1], mu_mass);
                     }
                     //printf ("Momentum SFs are %.3f %.3f for Pts %.0f %.0f \n", mu0_mcSF, mu1_mcSF, mu_p.Pt(), mu_m.Pt());
                    
@@ -764,6 +774,18 @@ void MuMu_reco_mc_batch()
                         mu_m_SF = rc.kScaleFromGenMC(-1, mu_m.Pt(), mu_m.Eta(), mu_m.Phi(), mu_m_n_TL, gen_mu_m_vec.Pt(), rand2, 0, 0);
                         mu_p_SF_alt = rc.kScaleFromGenMC(1, mu_p.Pt(), mu_p.Eta(), mu_p.Phi(), mu_p_n_TL, gen_mu_p_vec.Pt(), rand1, 2, 0);
                         mu_m_SF_alt = rc.kScaleFromGenMC(-1, mu_m.Pt(), mu_m.Eta(), mu_m.Phi(), mu_m_n_TL, gen_mu_m_vec.Pt(), rand2, 2, 0);
+
+                        Double_t mu_p_SF_vars[100], mu_m_SF_vars[100];
+                        for(int k=0; k<100; k++){
+                            mu_p_SF_vars[k] = rc.kScaleFromGenMC(1, mu_p.Pt(), mu_p.Eta(), mu_p.Phi(), mu_p_n_TL, gen_mu_p_vec.Pt(), rand1, 1, k);
+                            mu_m_SF_vars[k] = rc.kScaleFromGenMC(-1, mu_m.Pt(), mu_m.Eta(), mu_m.Phi(), mu_m_n_TL, gen_mu_m_vec.Pt(), rand2, 1, k);
+                        }
+                        double mu_p_SF_std = sqrt(get_var(mu_p_SF_vars));
+                        double mu_m_SF_std = sqrt(get_var(mu_m_SF_vars));
+                        mu_p_SF_up = mu_p_SF + mu_p_SF_std;
+                        mu_p_SF_down = mu_p_SF - mu_p_SF_std;
+                        mu_m_SF_up = mu_m_SF + mu_m_SF_std;
+                        mu_m_SF_down = mu_m_SF - mu_m_SF_std;
 
 
                         mu_R_up = scale_Weights[2];

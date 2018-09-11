@@ -5,6 +5,7 @@
 #include <cstring>
 #include <algorithm>
 #include "TFile.h"
+#include "../HistMaker.C"
 #include "../ScaleFactors.C"
 
 #define GEN_SIZE 4000
@@ -16,8 +17,8 @@ const double root2 = sqrt(2);
 double Ebeam = 6500.;
 double Pbeam = sqrt(Ebeam*Ebeam - 0.938*0.938);
 
-char *filename("DY_files_june20.txt");
-const TString fout_name("output_files/ElEl_DY_june27.root");
+char *filename("DY_files_unbinned_aug7.txt");
+const TString fout_name("output_files/ElEl_DY_unbinned_sep11.root");
 const double alpha = 0.05;
 const bool PRINT=false;
 
@@ -117,6 +118,8 @@ void ElEl_reco_mc_batch()
     Bool_t is_tau_event;
     Float_t met_pt;
     TLorentzVector el_p, el_m, cm, q1, q2, gen_el_p_vec, gen_el_m_vec;
+    Float_t elp_scale_up, elp_scale_down, elm_scale_up, elm_scale_down,
+             elp_smear_up, elp_smear_down, elm_smear_up, elm_smear_down;
 
     Float_t scale_Weights[10], pdf_weights[100];
 
@@ -129,6 +132,14 @@ void ElEl_reco_mc_batch()
     t_signal->Branch("el2_pt", &el2_pt, "el2_pt/D");
     t_signal->Branch("el1_eta", &el1_eta, "el1_eta/D");
     t_signal->Branch("el2_eta", &el2_eta, "el2_eta/D");
+    t_signal->Branch("elp_scale_up", &elp_scale_up);
+    t_signal->Branch("elp_scale_down", &elp_scale_down);
+    t_signal->Branch("elm_scale_up", &elm_scale_up);
+    t_signal->Branch("elm_scale_down", &elm_scale_down);
+    t_signal->Branch("elp_smear_up", &elp_smear_up);
+    t_signal->Branch("elp_smear_down", &elp_smear_down);
+    t_signal->Branch("elm_smear_up", &elm_smear_up);
+    t_signal->Branch("elm_smear_down", &elm_smear_down);
     t_signal->Branch("el_m", "TLorentzVector", &el_m);
     t_signal->Branch("el_p", "TLorentzVector", &el_p);
     t_signal->Branch("gen_el_m", "TLorentzVector", &gen_el_m_vec);
@@ -171,6 +182,14 @@ void ElEl_reco_mc_batch()
     t_back->Branch("el2_pt", &el2_pt, "el2_pt/D");
     t_back->Branch("el1_eta", &el1_pt, "el1_eta/D");
     t_back->Branch("el2_eta", &el2_pt, "el2_eta/D");
+    t_back->Branch("elp_scale_up", &elp_scale_up);
+    t_back->Branch("elp_scale_down", &elp_scale_down);
+    t_back->Branch("elm_scale_up", &elm_scale_up);
+    t_back->Branch("elm_scale_down", &elm_scale_down);
+    t_back->Branch("elp_smear_up", &elp_smear_up);
+    t_back->Branch("elp_smear_down", &elp_smear_down);
+    t_back->Branch("elm_smear_up", &elm_smear_up);
+    t_back->Branch("elm_smear_down", &elm_smear_down);
     t_back->Branch("el_m", "TLorentzVector", &el_m);
     t_back->Branch("el_p", "TLorentzVector", &el_p);
     t_signal->Branch("gen_el_m", "TLorentzVector", &gen_el_m_vec);
@@ -262,6 +281,10 @@ void ElEl_reco_mc_batch()
 
             Int_t el_IDMedium[EL_SIZE];
 
+            Float_t el_ScaleCorr[EL_SIZE], el_ScaleCorrUp[EL_SIZE], el_ScaleCorrDown[EL_SIZE],
+                el_ScaleSmearDown[EL_SIZE], el_ScaleSmearUp[EL_SIZE];
+
+            Float_t el_SCEta[EL_SIZE];
 
             Float_t jet_Pt[JET_SIZE], jet_Eta[JET_SIZE], jet_Phi[JET_SIZE], jet_E[JET_SIZE],
                     jet_CSV[JET_SIZE], jet_CMVA[JET_SIZE], jet_partonflavour[JET_SIZE];
@@ -277,6 +300,12 @@ void ElEl_reco_mc_batch()
             t1->SetBranchAddress("el_E", &el_E);
             t1->SetBranchAddress("el_Charge", &el_Charge);
             t1->SetBranchAddress("el_IDMedium", &el_IDMedium);
+            t1->SetBranchAddress("el_SCEta", &el_SCEta);
+            t1->SetBranchAddress("el_ScaleCorr", &el_ScaleCorr);
+            t1->SetBranchAddress("el_ScaleCorrUp", &el_ScaleCorrUp);
+            t1->SetBranchAddress("el_ScaleCorrDown", &el_ScaleCorrDown);
+            t1->SetBranchAddress("el_ScaleSmearUp", &el_ScaleSmearUp);
+            t1->SetBranchAddress("el_ScaleSmearDown", &el_ScaleSmearDown);
             t1->SetBranchAddress("HLT_Ele27_WPTight_Gsf", &HLT_El);
 
 
@@ -315,8 +344,8 @@ void ElEl_reco_mc_batch()
             t1->SetBranchAddress("gen_Dau0Status", &gen_Dau0Status);
             t1->SetBranchAddress("gen_Dau1Status", &gen_Dau1Status);
 
-            t1->SetBranchAddress("met_size", &met_size);
-            t1->SetBranchAddress("met_Pt", &met_pt);
+            t1->SetBranchAddress("met_MuCleanOnly_size", &met_size);
+            t1->SetBranchAddress("met_MuCleanOnly_Pt", &met_pt);
 
             Long64_t nEntries =  t1->GetEntries();
 
@@ -331,17 +360,22 @@ void ElEl_reco_mc_batch()
                 if(good_trigger &&
                         el_size >= 2 && ((abs(el_Charge[0] - el_Charge[1])) > 0.01) &&
                         el_IDMedium[0] && el_IDMedium[1] &&
-                        el_Pt[0] > 29. &&  el_Pt[1] > 10. &&
-                        abs(el_Eta[0]) < 2.5 && abs(el_Eta[1]) < 2.5){ 
+                        el_ScaleCorr[0] * el_Pt[0] > 29. &&  el_ScaleCorr[1] * el_Pt[1] > 15. &&
+                        goodElEta(el_SCEta[0]) && goodElEta(el_SCEta[1])){ 
 
                     //only want events with 2 oppositely charged leptons
+                    int elp_index, elm_index;
                     if(el_Charge[0] >0){
-                        el_p.SetPtEtaPhiE(el_Pt[0], el_Eta[0], el_Phi[0], el_E[0]);
-                        el_m.SetPtEtaPhiE(el_Pt[1], el_Eta[1], el_Phi[1], el_E[1]);
+                        el_p.SetPtEtaPhiE(el_ScaleCorr[0] * el_Pt[0], el_Eta[0], el_Phi[0], el_ScaleCorr[0] * el_E[0]);
+                        el_m.SetPtEtaPhiE(el_ScaleCorr[1] * el_Pt[1], el_Eta[1], el_Phi[1], el_ScaleCorr[1] * el_E[1]);
+                        elp_index = 0;
+                        elm_index = 1;
                     }
                     else{
-                        el_m.SetPtEtaPhiE(el_Pt[0], el_Eta[0], el_Phi[0], el_E[0]);
-                        el_p.SetPtEtaPhiE(el_Pt[1], el_Eta[1], el_Phi[1], el_E[1]);
+                        el_m.SetPtEtaPhiE(el_ScaleCorr[0] * el_Pt[0], el_Eta[0], el_Phi[0], el_ScaleCorr[0] * el_E[0]);
+                        el_p.SetPtEtaPhiE(el_ScaleCorr[1] * el_Pt[1], el_Eta[1], el_Phi[1], el_ScaleCorr[1] * el_E[1]);
+                        elm_index = 0;
+                        elp_index = 1;
                     }
 
                     cm = el_p + el_m;
@@ -661,10 +695,12 @@ void ElEl_reco_mc_batch()
 
 
                         gen_weight = evt_Gen_Weight * normalization;
-                        el1_pt = el_Pt[0];
-                        el2_pt = el_Pt[1];
+                        el1_pt = el_ScaleCorr[0] * el_Pt[0];
+                        el2_pt = el_ScaleCorr[1] * el_Pt[1];
                         el1_eta = el_Eta[0];
                         el2_eta = el_Eta[1];
+
+
 
                         //pick out 2 highest pt jets with eta < 2.4
                         nJets =0;
@@ -688,7 +724,15 @@ void ElEl_reco_mc_batch()
                             }
                         }
 
+                        elp_scale_up = el_ScaleCorrUp[elp_index];
+                        elp_scale_down = el_ScaleCorrDown[elp_index];
+                        elp_smear_up = el_ScaleSmearUp[elp_index];
+                        elp_smear_down = el_ScaleSmearDown[elp_index];
 
+                        elm_scale_up = el_ScaleCorrUp[elm_index];
+                        elm_scale_down = el_ScaleCorrDown[elm_index];
+                        elm_smear_up = el_ScaleSmearUp[elm_index];
+                        elm_smear_down = el_ScaleSmearDown[elm_index];
 
 
                         //get el cut SFs

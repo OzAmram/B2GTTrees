@@ -11,8 +11,8 @@
 #define JET_SIZE 60
 
 const double root2 = sqrt(2);
-const char* filename("SingleElectron_files_aug29.txt");
-const TString fout_name("output_files/ElEl_QCD_est_may29.root");
+const char* filename("SingleElectron_files_aug7.txt");
+const TString fout_name("output_files/ElEl_QCD_est_sep4.root");
 
 const bool data_2016 = true;
 
@@ -131,6 +131,10 @@ void ElEl_QCD_fake_rate_estimate()
         Float_t el_Pt[EL_SIZE], el_Eta[EL_SIZE], el_Phi[EL_SIZE], el_E[EL_SIZE],
                 el_Charge[EL_SIZE];
 
+        Float_t el_ScaleCorr[EL_SIZE], el_ScaleCorrUp[EL_SIZE], el_ScaleCorrDown[EL_SIZE],
+                el_ScaleSmearDown[EL_SIZE], el_ScaleSmearUp[EL_SIZE];
+        Float_t el_SCEta[EL_SIZE];
+
         Int_t el_IDMedium[EL_SIZE], el_IDMedium_NoIso[EL_SIZE];
 
         Float_t jet_Pt[JET_SIZE], jet_Eta[JET_SIZE], jet_Phi[JET_SIZE], jet_E[JET_SIZE],
@@ -144,6 +148,8 @@ void ElEl_QCD_fake_rate_estimate()
         t1->SetBranchAddress("el_Phi", &el_Phi);
         t1->SetBranchAddress("el_E", &el_E);
         t1->SetBranchAddress("el_Charge", &el_Charge);
+        t1->SetBranchAddress("el_SCEta", &el_SCEta);
+        t1->SetBranchAddress("el_ScaleCorr", &el_ScaleCorr);
         t1->SetBranchAddress("el_IDMedium", &el_IDMedium);
         t1->SetBranchAddress("el_IDMedium_NoIso", &el_IDMedium_NoIso);
         t1->SetBranchAddress("HLT_Ele27_WPTight_Gsf", &HLT_El);
@@ -157,8 +163,8 @@ void ElEl_QCD_fake_rate_estimate()
         t1->SetBranchAddress("jetAK4CHS_CSVv2", &jet_CSV);
         t1->SetBranchAddress("jetAK4CHS_CMVAv2", &jet_CMVA);
 
-        t1->SetBranchAddress("met_size", &met_size);
-        t1->SetBranchAddress("met_Pt", &met_pt);
+        t1->SetBranchAddress("met_MuCleanOnly_size", &met_size);
+        t1->SetBranchAddress("met_MuCleanOnly_Pt", &met_pt);
 
         unsigned int nEntries =  t1->GetEntries();
         printf("there are %i entries in this tree\n", nEntries);
@@ -169,16 +175,16 @@ void ElEl_QCD_fake_rate_estimate()
             bool good_trigger = HLT_El;
             if( el_size >= 2 && ((abs(el_Charge[0] - el_Charge[1])) > 0.01) &&
                     el_IDMedium_NoIso[0] && el_IDMedium_NoIso[1] &&
-                    el_Pt[0] > 29. &&  el_Pt[1] > 10. &&
-                    abs(el_Eta[0]) < 2.5 && abs(el_Eta[1]) < 2.5){ 
+                    el_ScaleCorr[0] * el_Pt[0] > 29. &&  el_ScaleCorr[1] * el_Pt[1] > 15. &&
+                    goodElEta(el_SCEta[0]) && goodElEta(el_SCEta[1])){ 
 
                 if(el_Charge[0] >0){
-                    el_p.SetPtEtaPhiE(el_Pt[0], el_Eta[0], el_Phi[0], el_E[0]);
-                    el_m.SetPtEtaPhiE(el_Pt[1], el_Eta[1], el_Phi[1], el_E[1]);
+                    el_p.SetPtEtaPhiE(el_ScaleCorr[0] * el_Pt[0], el_Eta[0], el_Phi[0], el_ScaleCorr[0] * el_E[0]);
+                    el_m.SetPtEtaPhiE(el_ScaleCorr[1] * el_Pt[1], el_Eta[1], el_Phi[1], el_ScaleCorr[1] * el_E[1]);
                 }
                 else{
-                    el_m.SetPtEtaPhiE(el_Pt[0], el_Eta[0], el_Phi[0], el_E[0]);
-                    el_p.SetPtEtaPhiE(el_Pt[1], el_Eta[1], el_Phi[1], el_E[1]);
+                    el_m.SetPtEtaPhiE(el_ScaleCorr[0] * el_Pt[0], el_Eta[0], el_Phi[0], el_ScaleCorr[0] * el_E[0]);
+                    el_p.SetPtEtaPhiE(el_ScaleCorr[1] * el_Pt[1], el_Eta[1], el_Phi[1], el_ScaleCorr[1] * el_E[1]);
                 }
 
                 cm = el_p + el_m;
@@ -222,8 +228,8 @@ void ElEl_QCD_fake_rate_estimate()
                     else cost_r = cost;
 
 
-                    el1_pt = el_Pt[0];
-                    el2_pt = el_Pt[1];
+                    el1_pt = el_ScaleCorr[0] * el_Pt[0];
+                    el2_pt = el_ScaleCorr[1] * el_Pt[1];
                     el1_eta = el_Eta[0];
                     el2_eta = el_Eta[1];
 

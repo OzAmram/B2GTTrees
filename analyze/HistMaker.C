@@ -38,6 +38,7 @@ Double_t emu_scaling_nom = 0.978;
 Double_t emu_unc = 0.04;
 Double_t emu_scaling = emu_scaling_nom;
 
+
 double get_cost(TLorentzVector lep_p, TLorentzVector lep_m){
 
     TLorentzVector cm = lep_p + lep_m;
@@ -59,6 +60,11 @@ double get_cost(TLorentzVector lep_p, TLorentzVector lep_m){
 bool notCosmic(TLorentzVector v1, TLorentzVector v2){
     Double_t ang = v1.Angle(v2.Vect());
     return ang < (TMath::Pi() - 0.005);
+}
+
+bool goodElEta(Float_t el1_eta){
+    el1_eta = abs(el1_eta);
+    return (el1_eta < 1.4442) || (el1_eta > 1.566 && el1_eta < 2.5); 
 }
 
 double get_cost_v2(TLorentzVector lep_p, TLorentzVector lep_m){

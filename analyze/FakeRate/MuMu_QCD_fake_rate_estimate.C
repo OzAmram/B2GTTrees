@@ -10,8 +10,8 @@
 #define JET_SIZE 60
 
 const double root2 = sqrt(2);
-const char* filename("SingleMuon_files_sep25.txt");
-const TString fout_name("output_files/MuMu_QCD_est_may29.root");
+const char* filename("SingleMuon_files_aug7.txt");
+const TString fout_name("output_files/MuMu_QCD_est_sep4.root");
 
 const bool data_2016 = true;
 
@@ -141,7 +141,7 @@ void MuMu_QCD_fake_rate_estimate()
         Int_t HLT_IsoMu, HLT_IsoTkMu, HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL, HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL, 
               HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ, HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ;
         t1->SetBranchAddress("mu_size", &mu_size); //number of muons in the event
-        t1->SetBranchAddress("mu_Pt", &mu_Pt);
+        t1->SetBranchAddress("mu_TunePMuonBestTrackPt", &mu_Pt);
         t1->SetBranchAddress("mu_Eta", &mu_Eta);
         t1->SetBranchAddress("mu_Phi", &mu_Phi);
         t1->SetBranchAddress("mu_E", &mu_E);
@@ -165,12 +165,8 @@ void MuMu_QCD_fake_rate_estimate()
 
         t1->SetBranchAddress("HLT_IsoMu24", &HLT_IsoMu);
         t1->SetBranchAddress("HLT_IsoTkMu24", &HLT_IsoTkMu);
-        t1->SetBranchAddress("HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ", &HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ);
-        t1->SetBranchAddress("HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL", &HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL);
-        t1->SetBranchAddress("HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ", &HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ);
-        t1->SetBranchAddress("HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL", &HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL);
-        t1->SetBranchAddress("met_size", &met_size);
-        t1->SetBranchAddress("met_Pt", &met_pt);
+        t1->SetBranchAddress("met_MuCleanOnly_size", &met_size);
+        t1->SetBranchAddress("met_MuCleanOnly_Pt", &met_pt);
 
         unsigned int nEntries =  t1->GetEntries();
         printf("there are %i entries in this tree\n", nEntries);
@@ -181,7 +177,7 @@ void MuMu_QCD_fake_rate_estimate()
             bool good_trigger = HLT_IsoMu || HLT_IsoTkMu;
             if( mu_size >= 2 && ((abs(mu_Charge[0] - mu_Charge[1])) > 0.01) &&
                     mu_IsHighPtMuon[0] && mu_IsHighPtMuon[1] &&
-                    mu_Pt[0] > 26. &&  mu_Pt[1] > 10. &&
+                    mu_Pt[0] > 26. &&  mu_Pt[1] > 15. &&
                     abs(mu_Eta[0]) < 2.4 && abs(mu_Eta[1]) < 2.4){ 
                 //only want events with 2 oppositely charged muons
                 //with pt above threshold
@@ -190,13 +186,14 @@ void MuMu_QCD_fake_rate_estimate()
                 float iso_1 = mu_TrackerIso[1];
                 const float tight_iso = 0.10;
                 const float loose_iso = 0.10;
+                const float mu_mass = 0.1056; // in GEV
                 if(mu_Charge[0] >0){
-                    mu_p.SetPtEtaPhiE(mu_Pt[0], mu_Eta[0], mu_Phi[0], mu_E[0]);
-                    mu_m.SetPtEtaPhiE(mu_Pt[1], mu_Eta[1], mu_Phi[1], mu_E[1]);
+                    mu_p.SetPtEtaPhiM(mu_Pt[0], mu_Eta[0], mu_Phi[0], mu_mass);
+                    mu_m.SetPtEtaPhiM(mu_Pt[1], mu_Eta[1], mu_Phi[1], mu_mass);
                 }
                 else{
-                    mu_m.SetPtEtaPhiE(mu_Pt[0], mu_Eta[0], mu_Phi[0], mu_E[0]);
-                    mu_p.SetPtEtaPhiE(mu_Pt[1], mu_Eta[1], mu_Phi[1], mu_E[1]);
+                    mu_m.SetPtEtaPhiM(mu_Pt[0], mu_Eta[0], mu_Phi[0], mu_mass);
+                    mu_p.SetPtEtaPhiM(mu_Pt[1], mu_Eta[1], mu_Phi[1], mu_mass);
                 }
 
                 cm = mu_p + mu_m;

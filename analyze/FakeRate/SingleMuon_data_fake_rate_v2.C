@@ -11,8 +11,8 @@
 #define JET_SIZE 20
 
 const double root2 = sqrt(2);
-const char* filename("SingleMuon_files_sep25.txt");
-const TString fout_name("FakeRate/root_files/SingleMuon_data_fake_rate_v2_jan17.root");
+const char* filename("SingleMuon_files_aug7.txt");
+const TString fout_name("FakeRate/root_files/SingleMuon_data_fake_rate_v2_sep4.root");
 const double alpha = 0.05;
 
 const bool data_2016 = true;
@@ -118,7 +118,7 @@ void SingleMuon_data_fake_rate_v2()
 
         Int_t HLT_IsoMu, HLT_IsoTkMu, evt_NIsoTrk;
         t1->SetBranchAddress("mu_size", &mu_size); //number of muons in the event
-        t1->SetBranchAddress("mu_Pt", &mu_Pt);
+        t1->SetBranchAddress("mu_TunePMuonBestTrackPt", &mu_Pt);
         t1->SetBranchAddress("mu_Eta", &mu_Eta);
         t1->SetBranchAddress("mu_Phi", &mu_Phi);
         t1->SetBranchAddress("mu_E", &mu_E);
@@ -144,14 +144,14 @@ void SingleMuon_data_fake_rate_v2()
         t1->SetBranchAddress("HLT_IsoMu24", &HLT_IsoMu);
         t1->SetBranchAddress("HLT_IsoTkMu24", &HLT_IsoTkMu);
 
-        t1->SetBranchAddress("met_size", &met_size);
-        t1->SetBranchAddress("met_Pt", &met_pt);
+        t1->SetBranchAddress("met_MuCleanOnly_size", &met_size);
+        t1->SetBranchAddress("met_MuCleanOnly_Pt", &met_pt);
 
         unsigned int nEntries =  t1->GetEntries();
         printf("there are %i entries in this tree\n", nEntries);
         for (int i=0; i<nEntries; i++) {
             t1->GetEntry(i);
-            if(met_size != 1) printf("WARNING: Met size not equal to 1\n");
+            if(met_size != 1) printf("WARNING: Met size equal to %i\n", met_size);
             if(mu_size > MU_SIZE) printf("Warning: too many muons\n");
             bool good_trigger = HLT_IsoMu || HLT_IsoTkMu;
             if( mu_size >= 3 && mu_Pt[0] > 26. && mu_IsHighPtMuon[0] && abs(mu_Eta[0]) < 2.4
@@ -180,11 +180,12 @@ void SingleMuon_data_fake_rate_v2()
                     }
                 }
                 bool no_bjets = has_no_bjets(nJets, jet1_pt, jet2_pt, jet1_cmva, jet2_cmva);
+                const float mu_mass = 0.1056; // in GEV
 
                 TLorentzVector mu0, mu1, mu2;
-                mu0.SetPtEtaPhiE(mu_Pt[0], mu_Eta[0], mu_Phi[0], mu_E[0]);
-                mu1.SetPtEtaPhiE(mu_Pt[1], mu_Eta[1], mu_Phi[1], mu_E[1]);
-                mu2.SetPtEtaPhiE(mu_Pt[2], mu_Eta[2], mu_Phi[2], mu_E[2]);
+                mu0.SetPtEtaPhiM(mu_Pt[0], mu_Eta[0], mu_Phi[0], mu_mass);
+                mu1.SetPtEtaPhiM(mu_Pt[1], mu_Eta[1], mu_Phi[1], mu_mass);
+                mu2.SetPtEtaPhiM(mu_Pt[2], mu_Eta[2], mu_Phi[2], mu_mass);
 
                 //mu+ and mu- from Z, extra muon
                 int mu_p, mu_m, mu_extra;

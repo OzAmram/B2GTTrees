@@ -19,8 +19,8 @@ const double root2 = sqrt(2);
 double Ebeam = 6500.;
 double Pbeam = sqrt(Ebeam*Ebeam - 0.938*0.938);
 
-char *filename("diboson_files_june20.txt");
-const TString fout_name("output_files/MuMu_diboson_july10.root");
+char *filename("TTbar_files_aug7.txt");
+const TString fout_name("output_files/MuMu_ttbar_sep4.root");
 const double alpha = 0.05;
 const bool PRINT=false;
 
@@ -125,7 +125,7 @@ void MuMu_reco_background_batch()
              jet1_cmva, jet1_csv, jet2_cmva, jet2_csv;
     Double_t bcdef_HLT_SF, bcdef_iso_SF, bcdef_id_SF, gh_HLT_SF, gh_iso_SF, gh_id_SF, bcdef_trk_SF, gh_trk_SF,
              jet1_b_weight, jet2_b_weight, pu_SF;
-    Double_t mu_p_SF, mu_m_SF, mu_p_SF_alt, mu_m_SF_alt;
+    Double_t mu_p_SF, mu_m_SF, mu_p_SF_alt, mu_m_SF_alt, mu_p_SF_up, mu_p_SF_down, mu_m_SF_up, mu_m_SF_down;
     Int_t nJets, jet1_flavour, jet2_flavour, pu_NtrueInt;
     Float_t met_pt;
     TLorentzVector mu_p, mu_m, cm, q1, q2;
@@ -136,6 +136,10 @@ void MuMu_reco_background_batch()
     tout->Branch("mu2_pt", &mu2_pt, "mu2_pt/D");
     tout->Branch("mu_p_SF", &mu_p_SF, "mu_p_SF/D");
     tout->Branch("mu_m_SF", &mu_m_SF, "mu_m_SF/D");
+    tout->Branch("mu_p_SF_up", &mu_p_SF_up, "mu_p_SF_up/D");
+    tout->Branch("mu_m_SF_up", &mu_m_SF, "mu_m_SF_up/D");
+    tout->Branch("mu_p_SF_down", &mu_p_SF_down, "mu_p_SF_down/D");
+    tout->Branch("mu_m_SF_down", &mu_m_SF, "mu_m_SF_down/D");
     tout->Branch("mu_p_SF_alt", &mu_p_SF_alt, "mu_p_SF_alt/D");
     tout->Branch("mu_m_SF_alt", &mu_m_SF_alt, "mu_m_SF_alt/D");
     tout->Branch("mu1_eta", &mu1_eta, "mu1_eta/D");
@@ -226,7 +230,7 @@ void MuMu_reco_background_batch()
 
             Int_t HLT_IsoMu, HLT_IsoTkMu;
             t1->SetBranchAddress("mu_size", &mu_size); //number of muons in the event
-            t1->SetBranchAddress("mu_Pt", &mu_Pt);
+            t1->SetBranchAddress("mu_TunePMuonBestTrackPt", &mu_Pt);
             t1->SetBranchAddress("mu_Eta", &mu_Eta);
             t1->SetBranchAddress("mu_Phi", &mu_Phi);
             t1->SetBranchAddress("mu_E", &mu_E);
@@ -270,8 +274,8 @@ void MuMu_reco_background_batch()
 
             t1->SetBranchAddress("pu_NtrueInt",&pu_NtrueInt);
 
-            t1->SetBranchAddress("met_size", &met_size);
-            t1->SetBranchAddress("met_Pt", &met_pt);
+            t1->SetBranchAddress("met_MuCleanOnly_size", &met_size);
+            t1->SetBranchAddress("met_MuCleanOnly_Pt", &met_pt);
 
             Long64_t nEntries =  t1->GetEntries();
 
@@ -291,7 +295,7 @@ void MuMu_reco_background_batch()
                 if(good_trigger &&
                         mu_size >= 2 && ((abs(mu_Charge[0] - mu_Charge[1])) > 0.01) &&
                         mu_IsHighPtMuon[0] && mu_IsHighPtMuon[1] &&
-                        mu_Pt[0] > 26. &&  mu_Pt[1] > 10. &&
+                        mu_Pt[0] > 26. &&  mu_Pt[1] > 15. &&
                         abs(mu_Eta[0]) < 2.4 && abs(mu_Eta[1]) < 2.4){ 
 
                     //See https://twiki.cern.ch/twiki/bin/viewauth/CMS/SWGuideMuonIdRun2 for iso cuts
@@ -300,15 +304,14 @@ void MuMu_reco_background_batch()
                     float tight_iso = 0.10;
                     float loose_iso = 0.10;
                     //only want events with 2 oppositely charged muons
+                    const float mu_mass = 0.1056; // in GEV
                     if(mu_Charge[0] >0){
-                        //mu_p.SetPtEtaPhiE(mu0_mcSF * mu_Pt[0], mu_Eta[0], mu_Phi[0], mu_E[0]);
-                        //mu_m.SetPtEtaPhiE(mu1_mcSF * mu_Pt[1], mu_Eta[1], mu_Phi[1], mu_E[1]);
-                        mu_p.SetPtEtaPhiE(mu_Pt[0], mu_Eta[0], mu_Phi[0], mu_E[0]);
-                        mu_m.SetPtEtaPhiE(mu_Pt[1], mu_Eta[1], mu_Phi[1], mu_E[1]);
+                        mu_p.SetPtEtaPhiM(mu_Pt[0], mu_Eta[0], mu_Phi[0], mu_mass);
+                        mu_m.SetPtEtaPhiM(mu_Pt[1], mu_Eta[1], mu_Phi[1], mu_mass);
                     }
                     else{
-                        mu_m.SetPtEtaPhiE(mu_Pt[0], mu_Eta[0], mu_Phi[0], mu_E[0]);
-                        mu_p.SetPtEtaPhiE(mu_Pt[1], mu_Eta[1], mu_Phi[1], mu_E[1]);
+                        mu_m.SetPtEtaPhiM(mu_Pt[0], mu_Eta[0], mu_Phi[0], mu_mass);
+                        mu_p.SetPtEtaPhiM(mu_Pt[1], mu_Eta[1], mu_Phi[1], mu_mass);
                     }
 
                     cm = mu_p + mu_m;
@@ -423,6 +426,18 @@ void MuMu_reco_background_batch()
                         mu_m_SF = rc.kScaleAndSmearMC(-1, mu_m.Pt(), mu_m.Eta(), mu_m.Phi(), mu_m_n_TL, rand2a, rand2b, 0, 0);
                         mu_p_SF_alt = rc.kScaleAndSmearMC(1, mu_p.Pt(), mu_p.Eta(), mu_p.Phi(), mu_p_n_TL, rand1a, rand1b, 2, 0);
                         mu_m_SF_alt = rc.kScaleAndSmearMC(-1, mu_m.Pt(), mu_m.Eta(), mu_m.Phi(), mu_m_n_TL, rand2a, rand2b, 2, 0);
+
+                        Double_t mu_p_SF_vars[100], mu_m_SF_vars[100];
+                        for(int k=0; k<100; k++){
+                            mu_p_SF_vars[k] = rc.kScaleAndSmearMC(1, mu_p.Pt(), mu_p.Eta(), mu_p.Phi(), mu_p_n_TL, rand1a, rand1b, 1, k);
+                            mu_m_SF_vars[k] = rc.kScaleAndSmearMC(-1, mu_m.Pt(), mu_m.Eta(), mu_m.Phi(), mu_m_n_TL, rand2a, rand2b, 1, k);
+                        }
+                        double mu_p_SF_std = sqrt(get_var(mu_p_SF_vars));
+                        double mu_m_SF_std = sqrt(get_var(mu_m_SF_vars));
+                        mu_p_SF_up = mu_p_SF + mu_p_SF_std;
+                        mu_p_SF_down = mu_p_SF - mu_p_SF_std;
+                        mu_m_SF_up = mu_m_SF + mu_m_SF_std;
+                        mu_m_SF_down = mu_m_SF - mu_m_SF_std;
 
                         tout->Fill();
                         nEvents++;

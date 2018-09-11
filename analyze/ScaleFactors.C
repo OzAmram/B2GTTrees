@@ -38,6 +38,30 @@ typedef struct{
     TH2D *HLT_MC_EFF;
 } el_SFs;
 
+double get_var(Double_t vals[100]){
+    float mean(0.), var(0.);
+    int n_vars = 100;
+    int n_entries = n_vars;
+    for(int i =0; i< n_vars; i++){
+        //printf("%.2f \n", vals[i]);
+        if(std::isnan((float)vals[i])) n_entries--;
+        else{
+            //printf("val %.2f \n", vals[i]);
+            mean += vals[i];
+        }
+        //printf("%.3e \n", vals[i]);
+    }
+    mean = mean / n_entries;
+    //printf("mean %.3f n_entries %i\n", mean, n_entries);
+
+    for(int  i=0; i< n_vars; i++){
+        if(std::isnan((float)vals[i])) continue;
+        else var += pow(vals[i] - mean, 2);
+    }
+    var = var/(n_entries -1);
+    //printf("std %.3f \n\n\n", sqrt(var));
+    return var;
+}
 
 Double_t get_pileup_SF(Int_t n_int, TH1D *h){
 
@@ -299,23 +323,26 @@ void setup_SFs(mu_SFs *runs_BCDEF, mu_SFs *runs_GH, pileup_SFs *pu_SF){
     runs_BCDEF->HLT_MC_EFF = MC_EFF1;
     f1->Close();
 
+    printf("2 \n");
 
     TFile *f2 = TFile::Open("SFs/EfficienciesAndSF_BCDEF_ID.root");
-    f2->cd("MC_NUM_TightID_DEN_genTracks_PAR_pt_eta");
+    f2->cd("MC_NUM_HighPtID_DEN_genTracks_PAR_newpt_eta");
     TDirectory *subdir2 = gDirectory;
-    TH2D *ID_1 = (TH2D *) subdir2->Get("pt_abseta_ratio")->Clone();
+    TH2D *ID_1 = (TH2D *) subdir2->Get("pair_ne_ratio")->Clone();
     ID_1->SetDirectory(0);
     runs_BCDEF->ID_SF = ID_1;
     f2->Close();
+    printf("3 \n");
 
 
     TFile *f3 = TFile::Open("SFs/EfficienciesAndSF_BCDEF_ISO.root");
-    f3->cd("TightISO_TightID_pt_eta");
+    f3->cd("tkLooseISO_highptID_newpt_eta");
     TDirectory *subdir3 = gDirectory;
-    TH2D *ISO_1 = (TH2D *) subdir3->Get("pt_abseta_ratio")->Clone();
+    TH2D *ISO_1 = (TH2D *) subdir3->Get("pair_ne_ratio")->Clone();
     ISO_1->SetDirectory(0);
     runs_BCDEF->ISO_SF = ISO_1;
     f3->Close();
+    printf("4\n");
 
 
     TFile *f4 = TFile::Open("SFs/EfficienciesAndSF_Period4.root");
@@ -332,18 +359,18 @@ void setup_SFs(mu_SFs *runs_BCDEF, mu_SFs *runs_GH, pileup_SFs *pu_SF){
 
 
     TFile *f5 = TFile::Open("SFs/EfficienciesAndSF_GH_ID.root");
-    f5->cd("MC_NUM_TightID_DEN_genTracks_PAR_pt_eta");
+    f5->cd("MC_NUM_HighPtID_DEN_genTracks_PAR_newpt_eta");
     TDirectory *subdir5 = gDirectory;
-    TH2D *ID_2 = (TH2D *) subdir5->Get("pt_abseta_ratio")->Clone();
+    TH2D *ID_2 = (TH2D *) subdir5->Get("pair_ne_ratio")->Clone();
     ID_2->SetDirectory(0);
     runs_GH->ID_SF = ID_2;
     f5->Close();
 
 
     TFile *f6 = TFile::Open("SFs/EfficienciesAndSF_GH_ISO.root");
-    f6->cd("TightISO_TightID_pt_eta");
+    f6->cd("tkLooseISO_highptID_newpt_eta");
     TDirectory *subdir6 = gDirectory;
-    TH2D *ISO_2 = (TH2D *) subdir6->Get("pt_abseta_ratio")->Clone();
+    TH2D *ISO_2 = (TH2D *) subdir6->Get("pair_ne_ratio")->Clone();
     ISO_2->SetDirectory(0);
     runs_GH->ISO_SF = ISO_2;
     f6->Close();

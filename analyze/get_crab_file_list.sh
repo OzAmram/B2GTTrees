@@ -9,7 +9,7 @@ list_files()
         if [[ $file == *.root ]];
         then
             echo root://cmseos.fnal.gov/$file
-        elif [[ $file != *log* ]]; 
+        elif [[ $file != *log* ]] && [[ $file != *fail* ]] ; 
         then
             list_files $file
         fi
