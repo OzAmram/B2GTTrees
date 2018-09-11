@@ -119,10 +119,10 @@ void draw_background_frac(){
         back_frac_unc[i-1] = sqrt(pow(0.02*(back_frac[i-1]-QCD_frac[i-1]),2) + pow(QCD_frac_unc[i-1],2));
     }
     bin_center[nBins-1] = 850;
-    Double_t fit_res[] = {0.106, 0.164, 0.172, 0.195, 0.156, 0.098};
-    Double_t fit_errs[] = {0.008, 0.011, 0.011, 0.015, 0.024, 0.041};
+    Double_t fit_res[] = {0.095, 0.158, 0.170, 0.189, 0.155, 0.105};
+    Double_t fit_errs[] = {0.008, 0.011, 0.011, 0.015, 0.024, 0.039};
 
-    Double_t comb_fit_res[] = {0.108, 0.164, 0.171, 0.193, 0.155, 0.098};
+    Double_t comb_fit_res[] = {0.097, 0.159, 0.169, 0.187, 0.154, 0.105};
     Double_t comb_fit_errs[] = {0.008, 0.011, 0.011, 0.015, 0.024, 0.041};
 
     TGraphErrors *mc_nosig_frac = new TGraphErrors(nBins, bin_center, nosig_frac, 0, 0);

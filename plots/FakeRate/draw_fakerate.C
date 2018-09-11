@@ -22,7 +22,11 @@
 #include "TFitter.h"
 #include "TSystem.h"
 #include "Math/Functor.h"
-#include "../../analyze/TemplateMaker.C"
+//#include "../../analyze/TemplateMaker.C"
+//
+const int FLAG_MUONS = 0;
+const int FLAG_ELECTRONS = 1;
+float tot_lumi = 35.9;
 
 void SetErrors(TH2D *h_rate, TH2D *h_total){
     int nBins_x = h_rate->GetXaxis()->GetNbins();
@@ -137,16 +141,16 @@ void draw_fakerate(){
     */
 
     ///*
-    TFile *f = TFile::Open("../analyze/FakeRate/root_files/SingleMuon_data_fake_rate_v2_jan17.root");
-    TFile *f_mc = TFile::Open("../analyze/FakeRate/root_files/SingleMu_mc_fakerate_contam_v2_jan17.root");
-    TFile *f_new = TFile::Open("../analyze/FakeRate/root_files/SingleMuon_data_fake_rate_v2_corrected_jan19.root", "RECREATE");
+    TFile *f = TFile::Open("../analyze/FakeRate/root_files/SingleMuon_data_fake_rate_v2_sep4.root");
+    TFile *f_mc = TFile::Open("../analyze/FakeRate/root_files/SingleMu_mc_fakerate_contam_v2_sep11.root");
+    TFile *f_new = TFile::Open("../analyze/FakeRate/root_files/SingleMuon_data_fake_rate_v2_corrected_sep11.root", "RECREATE");
     //*/
 
     Float_t pt_bins[] = {10,20,26,35,1000};
     int n_pt_bins = 4;
     Float_t eta_bins[] = {0,1.479,2.4};
     int n_eta_bins = 2;
-    FLAG = FLAG_MUONS;
+    int FLAG = FLAG_MUONS;
 
     TH2D *h_rate = new TH2D("h_rate", "passing iso cuts", n_eta_bins, eta_bins, n_pt_bins, pt_bins);
     TH2D *h_total = new TH2D("h_total", "passing iso cuts", n_eta_bins, eta_bins, n_pt_bins, pt_bins);

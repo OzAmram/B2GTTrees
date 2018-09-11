@@ -126,7 +126,7 @@ static void setup_new_el_fakerate(FakeRate *FR){
     f0->Close();
 }
 static void setup_new_mu_fakerate(FakeRate *FR){
-    TFile *f0 = TFile::Open("../analyze/FakeRate/root_files/SingleMuon_data_fake_rate_v2_corrected_jan19.root");
+    TFile *f0 = TFile::Open("../analyze/FakeRate/root_files/SingleMuon_data_fake_rate_v2_corrected_sep11.root");
     //f0->ls();
     TDirectory *subdir = gDirectory;
     TH2D *h1 = (TH2D *) subdir->Get("h_rate_new")->Clone();
