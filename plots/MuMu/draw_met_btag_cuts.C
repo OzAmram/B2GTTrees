@@ -51,7 +51,7 @@ void make_cut_hists(TTree *t1, TH1F *h_both, TH1F* h_metonly, TH1F *h_btagonly )
     t1->SetBranchAddress("m", &m);
     t1->SetBranchAddress("xF", &xF);
     t1->SetBranchAddress("cost", &cost);
-    t1->SetBranchAddress("cost_st", &cost_st);
+    //t1->SetBranchAddress("cost_st", &cost_st);
     t1->SetBranchAddress("met_pt", &met_pt);
     t1->SetBranchAddress("jet2_CMVA", &jet2_cmva);
     t1->SetBranchAddress("jet1_CMVA", &jet1_cmva);
@@ -84,7 +84,8 @@ void make_cut_hists(TTree *t1, TH1F *h_both, TH1F* h_metonly, TH1F *h_btagonly )
             Double_t gh_weight = gen_weight *pu_SF * gh_HLT_SF * gh_iso_SF * gh_id_SF * gh_trk_SF;
 
             double final_weight = 1000.*(bcdef_weight*bcdef_lumi + gh_weight*gh_lumi);
-            //Double_t weight = gen_weight;
+            //h_both->Fill(cost,final_weight);
+            Double_t weight = gen_weight;
             if(no_bjets && met_pt < 50. ){
                 h_both->Fill(cost,final_weight);
             }
@@ -169,7 +170,7 @@ void make_ratio_plot(char title[80], TH1F* h1, char h1_label[80], TH1F* h2, char
 
 
 void draw_met_btag_cuts(){
-    TFile *f_mc_binned = TFile::Open("../analyze/output_files/MuMu_DY_noext_june26.root");
+    TFile *f_mc_binned = TFile::Open("../analyze/output_files/MuMu_TTbar_july10.root");
     TTree *t_mc_binned = (TTree *)f_mc_binned->Get("T_data");
     setTDRStyle();
 
