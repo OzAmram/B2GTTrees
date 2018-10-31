@@ -89,7 +89,7 @@ void compute_norms(Double_t *norms, unsigned int *nFiles){
 
 
 
-void EMu_background_check_Mu()
+void EMu_background_check_Mu(int nJobs = 1, int iJob = 0)
 {
 
     Double_t norms[MAX_SAMPLES]; // computed normalizations to apply to each event in a sample (based on xsection and total weight)
@@ -162,6 +162,7 @@ void EMu_background_check_Mu()
 
     FILE *root_files = fopen(filename, "r");
     char lines[300];
+    int count = 0;
     while(fgets(lines, 300, root_files)){
         if(lines[0] == '#' || is_empty_line(lines)) continue; //comment line
         else if(lines[0] == '!'){//sample header
@@ -176,6 +177,8 @@ void EMu_background_check_Mu()
             printf("Moving on to sample %i which has normalization %e \n", sample_idx, normalization);
         }
         else if(normalization > 0) {//root file
+            count++;
+            if(count % nJobs != iJob) continue; 
 
 
 
@@ -231,12 +234,14 @@ void EMu_background_check_Mu()
             t1->SetBranchAddress("el_Phi", &el_Phi);
             t1->SetBranchAddress("el_E", &el_E);
             t1->SetBranchAddress("el_Charge", &el_Charge);
-            t1->SetBranchAddress("el_IDMedium", &el_IDMedium);
+            t1->SetBranchAddress("el_SCEta", &el_SCEta);
+            t1->SetBranchAddress("el_ScaleCorr", &el_ScaleCorr);
             t1->SetBranchAddress("HLT_Ele27_WPTight_Gsf", &HLT_El);
 
 
 
-            t1->SetBranchAddress("mu_IsTightMuon", &mu_IsTightMuon);
+            t1->SetBranchAddress("mu_IsHighPtMuon", &mu_IsHighPtMuon);
+            t1->SetBranchAddress("mu_TrackerIso", &mu_TrackerIso);
             t1->SetBranchAddress("mu_SumChargedHadronPt", &mu_SumChargedHadronPt);
             t1->SetBranchAddress("mu_SumNeutralHadronPt", &mu_SumNeutralHadronPt);
             t1->SetBranchAddress("mu_SumPUPt", &mu_SumPUPt);
@@ -257,8 +262,8 @@ void EMu_background_check_Mu()
             t1->SetBranchAddress("pu_NtrueInt",&pu_NtrueInt);
 
 
-            t1->SetBranchAddress("met_size", &met_size);
-            t1->SetBranchAddress("met_Pt", &met_pt);
+            t1->SetBranchAddress("met_MuCleanOnly_size", &met_size);
+            t1->SetBranchAddress("met_MuCleanOnly_Pt", &met_pt);
 
 
             Long64_t nEntries =  t1->GetEntries();
@@ -272,20 +277,20 @@ void EMu_background_check_Mu()
                 if(mu_size > MU_SIZE) printf("WARNING: MU_SIZE TOO LARGE \n");
                 if(met_size != 1) printf("WARNING: Met size not equal to 1\n");
                 bool good_trigger = HLT_IsoMu || HLT_IsoTkMu;
-                if(good_trigger &&
+            if(good_trigger &&
                         mu_size >= 1 && el_size >=1 && 
                         ((abs(mu_Charge[0] - el_Charge[0])) > 0.01) &&
-                        mu_IsTightMuon[0] && el_IDMedium[0] && 
-                        el_Pt[0] > 10. && mu_Pt[0] > 26. &&
-                        abs(mu_Eta[0]) < 2.4 && abs(el_Eta[0]) < 2.5){ 
+                        mu_IsHighPtMuon[0] && el_IDMedium[0] && 
+                        el_ScaleCorr[0] * el_Pt[0] > 10. && mu_Pt[0] > 26. &&
+                        abs(mu_Eta[0]) < 2.4 && goodElEta(el_SCEta[0])){ 
 
                     //See https://twiki.cern.ch/twiki/bin/viewauth/CMS/SWGuideMuonIdRun2 for iso cuts
-                    float iso_0 = (mu_SumChargedHadronPt[0] + max(0., mu_SumNeutralHadronPt[0] + mu_SumPhotonPt[0] - 0.5 * mu_SumPUPt[0]))/mu_Pt[0];
-                    const float tight_iso = 0.15;
-                    const float loose_iso = 0.25;
+                    float iso_0 = mu_TrackerIso[0];
+                    const float tight_iso = 0.10;
+                    const float loose_iso = 0.10;
 
                     mu.SetPtEtaPhiE(mu_Pt[0], mu_Eta[0], mu_Phi[0], mu_E[0]);
-                    el.SetPtEtaPhiE(el_Pt[0], el_Eta[0], el_Phi[0], el_E[0]);
+                    el.SetPtEtaPhiE(el_ScaleCorr[0] * el_Pt[0], el_Eta[0], el_Phi[0], el_ScaleCorr[0] * el_E[0]);
 
 
                     cm = el + mu;
@@ -337,7 +342,7 @@ void EMu_background_check_Mu()
                             }
                         }
                         gen_weight = evt_Gen_Weight * normalization;
-                        el1_pt = el_Pt[0];
+                        el1_pt = el_ScaleCorr[0] * el_Pt[0];
                         el1_eta = el_Eta[0];
                         mu1_pt = mu_Pt[0];
                         mu1_eta = mu_Eta[0];

@@ -62,7 +62,7 @@ Double_t get_fakerate_prob(Double_t pt, Double_t eta, TH2D *h){
     return prob;
 }
 
-void MuMu_WJets_fake_rate_estimate()
+void MuMu_WJets_fake_rate_estimate(int nJobs=1, int iJob=0)
 {
     //FakeRate FR;
     //setup_fakerate(&FR);
@@ -113,6 +113,7 @@ void MuMu_WJets_fake_rate_estimate()
     while(fgets(lines, 300, root_files)){
         if(lines[0] == '#' || is_empty_line(lines)) continue; // comment line
         nFiles++;
+        if(nFiles % nJobs != iJob) continue; 
         char * cur_file;
 
         char * end;

@@ -24,7 +24,7 @@ bool is_empty_line(const char *s) {
     return true;
 }
 
-void ElEl_reco_data_batch()
+void ElEl_reco_data_batch(int nJobs=1, int iJob=0)
 {
 
 
@@ -71,6 +71,7 @@ void ElEl_reco_data_batch()
     while(fgets(lines, 300, root_files)){
         if(lines[0] == '#' || lines[0] == '!' || is_empty_line(lines)) continue; // comment line
         nFiles++;
+        if(nFiles % nJobs != iJob) continue; 
         char * cur_file;
 
         char * end;

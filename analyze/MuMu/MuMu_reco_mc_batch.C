@@ -20,8 +20,8 @@ const double root2 = sqrt(2);
 double Ebeam = 6500.;
 double Pbeam = sqrt(Ebeam*Ebeam - 0.938*0.938);
 
-char *filename("DY_files_unbinned_aug7.txt");
-const TString fout_name("output_files/MuMu_DY_unbinned_sep11.root");
+char *filename("DY_files_test.txt");
+const TString fout_name("output_files/MuMu_DY_test.root");
 const bool PRINT=false;
 
 const bool data_2016 = true;
@@ -93,7 +93,7 @@ void compute_norms(Double_t *norms, unsigned int *nFiles){
 
 
 
-void MuMu_reco_mc_batch()
+void MuMu_reco_mc_batch(int nJobs =1, int iJob = 0)
 {
 
     Double_t norms[MAX_SAMPLES]; // computed normalizations to apply to each event in a sample (based on xsection and total weight)
@@ -253,6 +253,7 @@ void MuMu_reco_mc_batch()
 
     FILE *root_files = fopen(filename, "r");
     char lines[300];
+    int count = 0;
     while(fgets(lines, 300, root_files)){
         if(lines[0] == '#' || is_empty_line(lines)) continue; //comment line
         else if(lines[0] == '!'){//sample header
@@ -267,6 +268,8 @@ void MuMu_reco_mc_batch()
             printf("Moving on to sample %i which has normalization %e \n", sample_idx, normalization);
         }
         else if(normalization > 0) {//root file
+            count++;
+            if(nn % nJobs != iJob) continue;
 
 
 

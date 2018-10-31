@@ -19,8 +19,8 @@ const double root2 = sqrt(2);
 double Ebeam = 6500.;
 double Pbeam = sqrt(Ebeam*Ebeam - 0.938*0.938);
 
-char *filename("TTbar_files_aug7.txt");
-const TString fout_name("output_files/MuMu_ttbar_sep4.root");
+char *filename("diboson_files_aug7.txt");
+const TString fout_name("output_files/MuMu_diboson_sep4.root");
 const double alpha = 0.05;
 const bool PRINT=false;
 
@@ -90,7 +90,7 @@ void compute_norms(Double_t *norms, unsigned int *nFiles){
 
 
 
-void MuMu_reco_background_batch()
+void MuMu_reco_background_batch(int nJobs =1, int iJob=0)
 {
 
     Double_t norms[MAX_SAMPLES]; // computed normalizations to apply to each event in a sample (based on xsection and total weight)
@@ -177,6 +177,7 @@ void MuMu_reco_background_batch()
 
     FILE *root_files = fopen(filename, "r");
     char lines[300];
+    int count = 0;
     while(fgets(lines, 300, root_files)){
         if(lines[0] == '#' || is_empty_line(lines)) continue; //comment line
         else if(lines[0] == '!'){//sample header
@@ -191,7 +192,8 @@ void MuMu_reco_background_batch()
             printf("Moving on to sample %i which has normalization %e \n", sample_idx, normalization);
         }
         else if(normalization > 0) {//root file
-
+            count++;
+            if(count % nJobs != iJob) continue; 
 
 
             char * end;

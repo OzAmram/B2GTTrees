@@ -19,7 +19,7 @@ double Ebeam = 6500.;
 double Pbeam = sqrt(Ebeam*Ebeam - 0.938*0.938);
 
 char *filename("non_QCD_files_aug29.txt");
-const TString fout_name("FakeRate/root_files/ElEl_fakerate_QCD_MC_dec4.root");
+const TString fout_name("output_files/ElEl_fakerate_QCD_MC_oct29.root");
 const bool PRINT=false;
 
 
@@ -87,7 +87,7 @@ void compute_norms(Double_t *norms, unsigned int *nFiles){
 
 
 
-void ElEl_QCD_MC()
+void ElEl_QCD_MC(int nJobs = 1, int iJob = 0)
 {
 
     Double_t norms[MAX_SAMPLES]; // computed normalizations to apply to each event in a sample (based on xsection and total weight)
@@ -150,6 +150,7 @@ void ElEl_QCD_MC()
 
     FILE *root_files = fopen(filename, "r");
     char lines[300];
+    int count = 0;
     while(fgets(lines, 300, root_files)){
         if(lines[0] == '#' || is_empty_line(lines)) continue; //comment line
         else if(lines[0] == '!'){//sample header
@@ -165,6 +166,8 @@ void ElEl_QCD_MC()
         }
         else if(normalization > 0) {//root file
 
+            count++;
+            if(count % nJobs != iJob) continue; 
 
 
             char * end;

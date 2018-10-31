@@ -18,7 +18,7 @@
 
 const double root2 = sqrt(2);
 const char* filename("non_QCD_files_aug29.txt");
-const TString fout_name("FakeRate/root_files/MuMu_fakerate_QCD_MC_mar8.root");
+const TString fout_name("output_files/MuMu_fakerate_QCD_MC_oct29.root");
 
 
 bool is_empty_line(const char *s) {
@@ -83,7 +83,7 @@ void compute_norms(Double_t *norms, unsigned int *nFiles){
 
 }
 
-void MuMu_QCD_MC()
+void MuMu_QCD_MC(int nJobs = 1, int iJob = 0)
 {
 
     Double_t norms[MAX_SAMPLES]; // computed normalizations to apply to each event in a sample (based on xsection and total weight)
@@ -152,6 +152,7 @@ void MuMu_QCD_MC()
 
     FILE *root_files = fopen(filename, "r");
     char lines[300];
+    int count = 0;
     while(fgets(lines, 300, root_files)){
         if(lines[0] == '#' || is_empty_line(lines)) continue; //comment line
         else if(lines[0] == '!'){//sample header
@@ -166,6 +167,8 @@ void MuMu_QCD_MC()
             printf("Moving on to sample %i which has normalization %e \n", sample_idx, normalization);
         }
         else if(normalization > 0) {//root file
+            count++;
+            if(count % nJobs != iJob) continue; 
 
 
 

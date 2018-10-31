@@ -15,7 +15,7 @@
 
 const double root2 = sqrt(2);
 const char* filename("SingleMuon_files_aug7.txt");
-const TString fout_name("output_files/SingleMuon_data_sep4.root");
+const TString fout_name("output_files/SingleMuon_data_test1.root");
 
 
 bool is_empty_line(const char *s) {
@@ -27,7 +27,7 @@ bool is_empty_line(const char *s) {
     return true;
 }
 
-void MuMu_reco_data_batch()
+void MuMu_reco_data_batch(int nJobs=1, int iJob = 0)
 {
 
     printf("Getting RC \n");
@@ -86,6 +86,7 @@ void MuMu_reco_data_batch()
     while(fgets(lines, 300, root_files)){
         if(lines[0] == '#' || is_empty_line(lines)) continue; // comment line
         nFiles++;
+        if(nFiles % nJobs != iJob) continue; 
         char * cur_file;
 
         char * end;
