@@ -42,6 +42,7 @@ void compute_norms(Double_t *norms, unsigned int *nFiles){
 
     char lines[300];
     FILE *root_files = fopen(filename, "r");
+    int count = 0;
     while(fgets(lines, 300, root_files)){
         if(lines[0] == '#' || is_empty_line(lines)) continue; // comment line
         if(lines[0] == '!'){

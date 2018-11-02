@@ -6,7 +6,6 @@
 #include <cstring>
 #include <algorithm>
 #include "TFile.h"
-#include "../ScaleFactors.C"
 #include "../TemplateMaker.C"
 
 #define GEN_SIZE 300
@@ -18,7 +17,7 @@ const double root2 = sqrt(2);
 double Ebeam = 6500.;
 double Pbeam = sqrt(Ebeam*Ebeam - 0.938*0.938);
 
-char *filename("non_QCD_files_aug29.txt");
+char *filename("non_QCD_files_oct22.txt");
 const TString fout_name("output_files/ElEl_fakerate_QCD_MC_oct29.root");
 const bool PRINT=false;
 
@@ -98,11 +97,9 @@ void ElEl_QCD_MC(int nJobs = 1, int iJob = 0)
 
     mu_SFs runs_bcdef, runs_gh;
     pileup_SFs pu_SFs;
-    BTag_readers b_reader;
-    BTag_effs btag_effs;
     el_SFs el_SF;
     //separate SFs for runs BCDEF and GH
-    setup_SFs(&runs_bcdef, &runs_gh, &b_reader, &btag_effs, &pu_SFs);
+    setup_SFs(&runs_bcdef, &runs_gh,  &pu_SFs);
     setup_el_SF(&el_SF);
     printf("Retrieved Scale Factors \n\n");
 
@@ -324,18 +321,14 @@ void ElEl_QCD_MC(int nJobs = 1, int iJob = 0)
                                 jet2_pt = jet_Pt[j];
                                 jet2_eta = jet_Eta[j];
                                 jet2_cmva = jet_CMVA[j];
-                                jet2_flavour = jet_partonflavour[j];
-                                jet2_b_weight = get_btag_weight(jet_Pt[j], jet_Eta[j],jet_partonflavour[j],btag_effs, b_reader);
                                 nJets =2;
                                 break;
                             }
                             else if(nJets ==0){
                                 jet1_pt = jet_Pt[j];
                                 jet1_eta = jet_Eta[j];
-                                    jet1_cmva = jet_CMVA[j];
-                                    jet1_flavour = jet_partonflavour[j];
-                                    jet1_b_weight = get_btag_weight(jet_Pt[j], jet_Eta[j],jet_partonflavour[j],btag_effs, b_reader);
-                                    nJets = 1;
+                                jet1_cmva = jet_CMVA[j];
+                                nJets = 1;
                                 }
                             }
                         }

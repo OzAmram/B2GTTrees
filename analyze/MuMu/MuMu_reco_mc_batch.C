@@ -20,8 +20,8 @@ const double root2 = sqrt(2);
 double Ebeam = 6500.;
 double Pbeam = sqrt(Ebeam*Ebeam - 0.938*0.938);
 
-char *filename("DY_files_test.txt");
-const TString fout_name("output_files/MuMu_DY_test.root");
+char *filename("DY_files_oct22.txt");
+const TString fout_name("output_files/MuMu_DY_oct22.root");
 const bool PRINT=false;
 
 const bool data_2016 = true;
@@ -269,7 +269,7 @@ void MuMu_reco_mc_batch(int nJobs =1, int iJob = 0)
         }
         else if(normalization > 0) {//root file
             count++;
-            if(nn % nJobs != iJob) continue;
+            if(count % nJobs != iJob) continue;
 
 
 

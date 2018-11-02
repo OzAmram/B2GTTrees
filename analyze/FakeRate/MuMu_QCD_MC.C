@@ -8,7 +8,6 @@
 #include <algorithm>
 #include "TFile.h"
 #include "TFile.h"
-#include "../ScaleFactors.C"
 #include "../TemplateMaker.C"
 
 #define GEN_SIZE 300
@@ -17,7 +16,7 @@
 #define MAX_SAMPLES 20
 
 const double root2 = sqrt(2);
-const char* filename("non_QCD_files_aug29.txt");
+const char* filename("non_QCD_files_oct22.txt");
 const TString fout_name("output_files/MuMu_fakerate_QCD_MC_oct29.root");
 
 
@@ -94,11 +93,9 @@ void MuMu_QCD_MC(int nJobs = 1, int iJob = 0)
 
     mu_SFs runs_bcdef, runs_gh;
     pileup_SFs pu_SFs;
-    BTag_readers b_reader;
-    BTag_effs btag_effs;
     el_SFs el_SF;
     //separate SFs for runs BCDEF and GH
-    setup_SFs(&runs_bcdef, &runs_gh, &b_reader, &btag_effs, &pu_SFs);
+    setup_SFs(&runs_bcdef, &runs_gh, &pu_SFs);
     printf("Retrieved Scale Factors \n\n");
 
     TTree *tout= new TTree("T_data", "Tree with reco events");
@@ -239,8 +236,8 @@ void MuMu_QCD_MC(int nJobs = 1, int iJob = 0)
             t1->SetBranchAddress("pu_NtrueInt",&pu_NtrueInt);
 
 
-            t1->SetBranchAddress("met_size", &met_size);
-            t1->SetBranchAddress("met_Pt", &met_pt);
+            t1->SetBranchAddress("met_MuCleanOnly_size", &met_size);
+            t1->SetBranchAddress("met_MuCleanOnly_Pt", &met_pt);
 
             Long64_t nEntries =  t1->GetEntries();
 

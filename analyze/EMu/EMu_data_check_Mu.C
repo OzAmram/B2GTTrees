@@ -1,4 +1,3 @@
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
@@ -6,7 +5,10 @@
 #include <cstring>
 #include <algorithm>
 #include "TFile.h"
-#include "../TemplateMaker.C"
+#include "TRandom3.h"
+#include "TTree.h"
+#include "TLorentzVector.h"
+#include "../HistMaker.C"
 
 #define MU_SIZE 200
 #define EL_SIZE 200
@@ -190,9 +192,8 @@ void EMu_data_check_Mu(int nJobs =1, int iJob = 0)
                         }
                     }
                 }
-                bool no_bjets = has_no_bjets(nJets, jet1_pt, jet2_pt, jet1_cmva, jet2_cmva);
 
-                if (no_bjets && (met_pt < 50) && (cm_m >=150.) && iso_0 < tight_iso){
+                if ((cm_m >=150.) && iso_0 < tight_iso){
 
 
                     nJets =0;

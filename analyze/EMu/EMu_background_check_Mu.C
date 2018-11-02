@@ -7,7 +7,6 @@
 #include <algorithm>
 
 #include "TFile.h"
-#include "../ScaleFactors.C"
 #include "../TemplateMaker.C"
 
 #define GEN_SIZE 300
@@ -20,8 +19,8 @@ const double root2 = sqrt(2);
 double Ebeam = 6500.;
 double Pbeam = sqrt(Ebeam*Ebeam - 0.938*0.938);
 
-char *filename("diboson_files_june20.txt");
-const TString fout_name("output_files/EMu_diboson_Mu_july05.root");
+char *filename("WT_files_aug7.txt");
+const TString fout_name("output_files/EMu_WT_nov1.root");
 const bool PRINT=false;
 
 
@@ -205,14 +204,18 @@ void EMu_background_check_Mu(int nJobs = 1, int iJob = 0)
             UInt_t mu_size, jet_size, el_size, met_size;
 
             Float_t mu_Pt[MU_SIZE], mu_Eta[MU_SIZE], mu_Phi[MU_SIZE], mu_E[MU_SIZE], 
-                    mu_Charge[MU_SIZE], mu_IsTightMuon[MU_SIZE];
+                    mu_Charge[MU_SIZE], mu_IsHighPtMuon[MU_SIZE];
 
             Float_t mu_SumChargedHadronPt[MU_SIZE], mu_SumNeutralHadronPt[MU_SIZE], mu_SumPUPt[MU_SIZE], mu_SumPhotonPt[MU_SIZE];
+            Float_t mu_TrackerIso[MU_SIZE];
 
             Float_t el_Pt[MU_SIZE], el_Eta[MU_SIZE], el_Phi[MU_SIZE], el_E[MU_SIZE],
                     el_Charge[MU_SIZE];
 
             Int_t el_IDMedium[EL_SIZE];
+            Float_t el_SCEta[EL_SIZE];
+            Float_t el_ScaleCorr[EL_SIZE], el_ScaleCorrUp[EL_SIZE], el_ScaleCorrDown[EL_SIZE],
+                el_ScaleSmearDown[EL_SIZE], el_ScaleSmearUp[EL_SIZE];
 
             Float_t jet_Pt[JET_SIZE], jet_Eta[JET_SIZE], jet_Phi[JET_SIZE], jet_E[JET_SIZE],
                     jet_CSV[JET_SIZE], jet_CMVA[JET_SIZE], jet_partonflavour[JET_SIZE];
@@ -235,6 +238,7 @@ void EMu_background_check_Mu(int nJobs = 1, int iJob = 0)
             t1->SetBranchAddress("el_E", &el_E);
             t1->SetBranchAddress("el_Charge", &el_Charge);
             t1->SetBranchAddress("el_SCEta", &el_SCEta);
+            t1->SetBranchAddress("el_IDMedium", &el_IDMedium);
             t1->SetBranchAddress("el_ScaleCorr", &el_ScaleCorr);
             t1->SetBranchAddress("HLT_Ele27_WPTight_Gsf", &HLT_El);
 
