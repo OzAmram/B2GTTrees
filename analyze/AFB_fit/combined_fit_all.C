@@ -20,14 +20,14 @@
 #include "TSystem.h"
 //#include"Minuit2/Minuit2Minimizer.h"
 #include "Math/Functor.h"
-#include "../TemplateMaker_systematics.C"
-//#include "../TemplateMaker.C"
+//#include "../TemplateMaker_systematics.C"
+#include "../TemplateMaker.C"
 #include "FitUtils.C"
 
 
 
 
-const TString fout_name("AFB_fit/fit_results/m_bins/combined_bin_down_down_july16.root");
+const TString fout_name("AFB_fit/fit_results/m_bins/combined_test_nov26.root");
 
 
 

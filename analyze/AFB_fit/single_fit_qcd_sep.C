@@ -147,7 +147,7 @@ void setup(){
     printf("Generating templates \n");
 
     if(FLAG == FLAG_MUONS){
-        bool do_RC = false;
+        bool do_RC = true;
         int flag2 = FLAG_M_BINS;
         nDataEvents = gen_data_template(t_mumu_data, h_data, &v_xF, &v_cost, m_low, m_high, FLAG, flag2, do_RC);
         gen_mc_template(t_mumu_mc, alpha, h_sym, h_asym, h_sym_count, m_low, m_high, FLAG, flag2, do_RC);
@@ -198,7 +198,7 @@ void cleanup(){
     v_xF.clear();
     printf("Finishing cleanup\n");
 }
-void single_fit_all(){
+void single_fit_qcd_sep(){
     init();
     Double_t AFB_fit[n_m_bins], AFB_fit_err[n_m_bins], r_back_fit[n_m_bins], r_back_fit_err[n_m_bins],
              r_qcd_fit[n_m_bins], r_qcd_fit_err[n_m_bins];
@@ -297,7 +297,7 @@ void single_fit_all(){
         do_both = false;
         FLAG = 1 - FLAG;
         printf("Starting 2nd run \n");
-        single_fit_all();
+        single_fit_qcd_sep();
         FLAG = 1 - FLAG;
     }
 

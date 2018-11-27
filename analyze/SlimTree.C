@@ -3,19 +3,19 @@
 
 
 void SlimTree(){
-    TFile *f_old = (TFile*) TFile::Open("output_files/SingleMuon_data_nov26.root");
+    TFile *f_old = (TFile*) TFile::Open("output_files/ElEl_DY_nov2.root");
     TTree *t_old = (TTree *) f_old ->Get("T_data");
-    //TTree *t_old2 = (TTree *) f_old ->Get("T_back");
+    TTree *t_old2 = (TTree *) f_old ->Get("T_back");
 
 
-    string fout_name("output_files/SingleMuon_data_slim_nov26.root");
+    string fout_name("output_files/ElEl_DY_slim_nov2.root");
     TFile *fout = TFile::Open(fout_name.c_str(), "RECREATE");
     TTree *t_new = t_old->CopyTree("m>130.");
-    //TTree *t_new2 = t_old2->CopyTree("m>130.");
+    TTree *t_new2 = t_old2->CopyTree("m>130.");
 
 
     fout->cd();
     t_new->Write();
-    //t_new2->Write();
+    t_new2->Write();
 }
 

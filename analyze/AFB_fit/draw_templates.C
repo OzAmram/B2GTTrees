@@ -187,7 +187,7 @@ void draw_fit(char title_base[80], TH2F *h_data, TH2F *h_sym, TH2F *h_asym, TH2F
 
 void draw_templates(){
     init();
-    for(int i=1; i<2; i++){
+    for(int i=0; i<1; i++){
         printf("Starting loop \n");
         m_low = m_bins[i];
         m_high = m_bins[i+1];
@@ -203,6 +203,6 @@ void draw_templates(){
                                                h_asym->Integral(), h_back->Integral(), h_qcd->Integral() );
         draw_template("ElEl_QCD_template.pdf", h_qcd);
         draw_template("ElEl_back_template.pdf", h_back);
-        draw_fit("ElEl_fit_qcd_sep", h_data, h_sym, h_asym, h_back, h_qcd, 0.692, 0.29, 0.008);
+        draw_fit("ElEl_fit_qcd_sep", h_data, h_sym, h_asym, h_back, h_qcd, 0.7, 0.22, 0.00);
     }
 }
