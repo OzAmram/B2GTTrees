@@ -30,10 +30,11 @@ using namespace std;
 #define FLAG_M_BINS 0
 #define FLAG_PT_BINS 1
 
-Double_t bcdef_lumi = 5.746 + 2.572 + 4.242 + 4.024 + 3.104;
+Double_t bcdef_lumi = 6.04 + 2.68 + 4.37 + 4.06 + 3.17;
 // adding new Hv2 data set to get full 2016 luminosity
-Double_t gh_lumi =  7.573 + 0.215 + 8.434;
-Double_t tot_lumi = 35.9;
+Double_t gh_lumi =  7.69 + 0.216 + 8.67;
+Double_t mu_lumi = bcdef_lumi + gh_lumi;
+Double_t el_lumi = 36.5;
 Double_t emu_scaling_nom = 0.978;
 Double_t emu_unc = 0.04;
 Double_t emu_scaling = emu_scaling_nom;
@@ -407,10 +408,10 @@ void make_m_cost_pt_hist(TTree *t1, TH1F *h_m, TH1F *h_cost, TH1F *h_pt, bool is
             }
         }
         if(!is_data){
-            Double_t el_lumi = 1000*tot_lumi;
-            h_m->Scale(el_lumi);
-            h_cost->Scale(el_lumi);
-            h_pt->Scale(el_lumi);
+            Double_t el_lumi_ = 1000*el_lumi;
+            h_m->Scale(el_lumi_);
+            h_cost->Scale(el_lumi_);
+            h_pt->Scale(el_lumi_);
         }
     }
 
@@ -596,13 +597,13 @@ void Fakerate_est_el(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_MC, TTree *t_Q
             }
             if(l==2){
 
-                Double_t mc_weight = gen_weight * el_id_SF * el_reco_SF  * 1000. * tot_lumi;
+                Double_t mc_weight = gen_weight * el_id_SF * el_reco_SF  * 1000. * el_lumi;
                 if(iso_el ==0) el1_fakerate = get_new_fakerate_prob(el1_pt, el1_eta, FR.h);
                 if(iso_el ==1) el1_fakerate = get_new_fakerate_prob(el2_pt, el2_eta, FR.h);
                 evt_fakerate = -(el1_fakerate * mc_weight)/(1-el1_fakerate);
             }
             if(l==3){
-                Double_t mc_weight = gen_weight * el_id_SF * el_reco_SF * 1000. * tot_lumi;
+                Double_t mc_weight = gen_weight * el_id_SF * el_reco_SF * 1000. * el_lumi;
 
                 el1_fakerate = get_new_fakerate_prob(el1_pt, el1_eta, FR.h);
                 el2_fakerate = get_new_fakerate_prob(el2_pt, el2_eta, FR.h);
@@ -675,8 +676,6 @@ void Fakerate_est_emu(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_MC, TH1F *h_m
             t->SetBranchAddress("el_id_SF", &el_id_SF);
             t->SetBranchAddress("el_reco_SF", &el_reco_SF);
             t->SetBranchAddress("gen_weight", &gen_weight);
-            t->SetBranchAddress("jet1_b_weight", &jet1_b_weight);
-            t->SetBranchAddress("jet2_b_weight", &jet2_b_weight);
             t->SetBranchAddress("pu_SF", &pu_SF);
             t->SetBranchAddress("bcdef_trk_SF", &bcdef_trk_SF);
             t->SetBranchAddress("bcdef_id_SF", &bcdef_id_SF);
@@ -706,7 +705,7 @@ void Fakerate_est_emu(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_MC, TH1F *h_m
                     (bcdef_lumi + gh_lumi);
 
                 Double_t mc_weight = gen_weight * el_id_SF * el_reco_SF *pu_SF *
-                    mu_SF  * 1000. * tot_lumi;
+                    mu_SF  * 1000. * mu_lumi;
                 if(iso_lep ==0) lep1_fakerate = get_new_fakerate_prob(mu1_pt, mu1_eta, mu_FR.h);
                 if(iso_lep ==1) lep1_fakerate = get_new_fakerate_prob(el1_pt, el1_eta, el_FR.h);
                 evt_fakerate = -(lep1_fakerate * mc_weight)/(1-lep1_fakerate);

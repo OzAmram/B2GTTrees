@@ -9,7 +9,6 @@
 #include <algorithm>
 
 #include "TFile.h"
-#include "../ScaleFactors.C"
 #include "../TemplateMaker.C"
 
 #define GEN_SIZE 300
@@ -22,8 +21,8 @@ const double root2 = sqrt(2);
 double Ebeam = 6500.;
 double Pbeam = sqrt(Ebeam*Ebeam - 0.938*0.938);
 
-char *filename("non_QCD_files_aug29.txt");
-const TString fout_name("output_files/EMu_WJets_MC_jan24.root");
+char *filename("non_QCD_files_oct22.txt");
+const TString fout_name("output_files/EMu_WJets_MC_nov26.root");
 const bool PRINT=false;
 
 
@@ -91,7 +90,7 @@ void compute_norms(Double_t *norms, unsigned int *nFiles){
 
 
 
-void EMu_WJets_MC()
+void EMu_WJets_MC(int nJobs = 1, int iJob = 0)
 {
 
     Double_t norms[MAX_SAMPLES]; // computed normalizations to apply to each event in a sample (based on xsection and total weight)
@@ -103,11 +102,9 @@ void EMu_WJets_MC()
     printf("getting SFs \n");
     pileup_SFs pu_SFs;
     mu_SFs runs_bcdef, runs_gh;
-    BTag_readers b_reader;
-    BTag_effs btag_effs;
     el_SFs el_SF;
     //separate SFs for runs BCDEF and GH
-    setup_SFs(&runs_bcdef, &runs_gh, &b_reader, &btag_effs, &pu_SFs);
+    setup_SFs(&runs_bcdef, &runs_gh, &pu_SFs);
     setup_el_SF(&el_SF);
     printf("got Sfs\n");
 
@@ -120,9 +117,8 @@ void EMu_WJets_MC()
 
     Double_t bcdef_trk_SF, gh_trk_SF;
     Float_t met_pt;
-    Int_t nJets, jet1_flavour, jet2_flavour;
     TLorentzVector mu, el, cm, q1, q2;
-    Int_t iso_lep;
+    Int_t iso_lep, nJets;
     //iso_lep: 0 = muon, 1 = electron
     tout->Branch("mu1_pt", &mu1_pt, "mu1_pt/D");
     tout->Branch("mu1_eta", &mu1_eta, "mu1_eta/D");
@@ -138,8 +134,6 @@ void EMu_WJets_MC()
     tout->Branch("jet2_eta", &jet2_eta, "jet2_eta/D");
     tout->Branch("jet2_CMVA", &jet2_cmva, "jet2_CMVA/D");
     tout->Branch("nJets", &nJets, "nJets/I");
-    tout->Branch("jet1_flavour", &jet1_flavour, "jet1_flavour/I");
-    tout->Branch("jet2_flavour", &jet2_flavour, "jet2_flavour/I");
     tout->Branch("met_pt", &met_pt, "met_Pt/F");
     tout->Branch("gen_weight", &gen_weight, "gen_weight/D");
     tout->Branch("pu_SF", &pu_SF);
@@ -166,6 +160,7 @@ void EMu_WJets_MC()
 
     FILE *root_files = fopen(filename, "r");
     char lines[300];
+    int count = 0;
     while(fgets(lines, 300, root_files)){
         if(lines[0] == '#' || is_empty_line(lines)) continue; //comment line
         else if(lines[0] == '!'){//sample header
@@ -180,6 +175,8 @@ void EMu_WJets_MC()
             printf("Moving on to sample %i which has normalization %e \n", sample_idx, normalization);
         }
         else if(normalization > 0) {//root file
+            count++;
+            if(count % nJobs != iJob) continue;
 
 
 
@@ -203,25 +200,32 @@ void EMu_WJets_MC()
             TTree *t1 = (TTree *)gDirectory->Get("B2GTree");
 
 
-            UInt_t mu_size, jet_size, el_size, met_size;
 
+            UInt_t mu_size, met_size, jet_size, el_size;
             Float_t mu_Pt[MU_SIZE], mu_Eta[MU_SIZE], mu_Phi[MU_SIZE], mu_E[MU_SIZE], 
-                    mu_Charge[MU_SIZE], mu_IsTightMuon[MU_SIZE];
+                    mu_IsHighPtMuon[MU_SIZE], mu_Charge[MU_SIZE];
 
-            Float_t mu_SumChargedHadronPt[MU_SIZE], mu_SumNeutralHadronPt[MU_SIZE], mu_SumPUPt[MU_SIZE], mu_SumPhotonPt[MU_SIZE];
+            Float_t el_Pt[EL_SIZE], el_Eta[EL_SIZE], el_Phi[EL_SIZE], el_E[EL_SIZE],
+                    el_Charge[EL_SIZE];
 
-            Float_t el_Pt[MU_SIZE], el_Eta[MU_SIZE], el_Phi[MU_SIZE], el_E[MU_SIZE],
-                    el_Charge[MU_SIZE];
+            Float_t el_SCEta[EL_SIZE];
+            Float_t el_ScaleCorr[EL_SIZE], el_ScaleCorrUp[EL_SIZE], el_ScaleCorrDown[EL_SIZE],
+                    el_ScaleSmearDown[EL_SIZE], el_ScaleSmearUp[EL_SIZE];
 
             Int_t el_IDMedium[EL_SIZE], el_IDMedium_NoIso[EL_SIZE];
 
-            Float_t jet_Pt[JET_SIZE], jet_Eta[JET_SIZE], jet_Phi[JET_SIZE], jet_E[JET_SIZE],
-                    jet_CSV[JET_SIZE], jet_CMVA[JET_SIZE], jet_partonflavour[JET_SIZE];
+            Float_t mu_TrackerIso[MU_SIZE];
 
+            Float_t mu_SumChargedHadronPt[MU_SIZE], mu_SumNeutralHadronPt[MU_SIZE], mu_SumPUPt[MU_SIZE], mu_SumPhotonPt[MU_SIZE];
+
+
+            Float_t jet_Pt[JET_SIZE], jet_Eta[JET_SIZE], jet_Phi[JET_SIZE], jet_E[JET_SIZE],
+                    jet_CSV[JET_SIZE], jet_CMVA[JET_SIZE];
+            Int_t jet_partonflavour[JET_SIZE], pu_NtrueInt;
 
             Float_t evt_Gen_Weight;
 
-            Int_t HLT_IsoMu, HLT_IsoTkMu, HLT_El, pu_NtrueInt;
+            Int_t HLT_IsoMu, HLT_IsoTkMu, HLT_El;
             t1->SetBranchAddress("mu_size", &mu_size); //number of muons in the event
             t1->SetBranchAddress("mu_Pt", &mu_Pt);
             t1->SetBranchAddress("mu_Eta", &mu_Eta);
@@ -229,18 +233,20 @@ void EMu_WJets_MC()
             t1->SetBranchAddress("mu_E", &mu_E);
             t1->SetBranchAddress("mu_Charge", &mu_Charge);
 
-            t1->SetBranchAddress("el_size", &el_size); //number of elons in the event
+            t1->SetBranchAddress("el_size", &el_size); //number of els in the event
             t1->SetBranchAddress("el_Pt", &el_Pt);
             t1->SetBranchAddress("el_Eta", &el_Eta);
             t1->SetBranchAddress("el_Phi", &el_Phi);
             t1->SetBranchAddress("el_E", &el_E);
             t1->SetBranchAddress("el_Charge", &el_Charge);
             t1->SetBranchAddress("el_IDMedium", &el_IDMedium);
+            t1->SetBranchAddress("el_IDMedium_NoIso", &el_IDMedium_NoIso);
+            t1->SetBranchAddress("el_SCEta", &el_SCEta);
+            t1->SetBranchAddress("el_ScaleCorr", &el_ScaleCorr);
             t1->SetBranchAddress("HLT_Ele27_WPTight_Gsf", &HLT_El);
 
-
-
-            t1->SetBranchAddress("mu_IsTightMuon", &mu_IsTightMuon);
+            t1->SetBranchAddress("mu_IsHighPtMuon", &mu_IsHighPtMuon);
+            t1->SetBranchAddress("mu_TrackerIso", &mu_TrackerIso);
             t1->SetBranchAddress("mu_SumChargedHadronPt", &mu_SumChargedHadronPt);
             t1->SetBranchAddress("mu_SumNeutralHadronPt", &mu_SumNeutralHadronPt);
             t1->SetBranchAddress("mu_SumPUPt", &mu_SumPUPt);
@@ -252,7 +258,6 @@ void EMu_WJets_MC()
             t1->SetBranchAddress("jetAK4CHS_Phi", &jet_Phi);
             t1->SetBranchAddress("jetAK4CHS_E", &jet_E);
             t1->SetBranchAddress("jetAK4CHS_CMVAv2", &jet_CMVA);
-            t1->SetBranchAddress("jetAK4CHS_PartonFlavour", &jet_partonflavour);
 
             t1->SetBranchAddress("HLT_IsoMu24", &HLT_IsoMu);
             t1->SetBranchAddress("HLT_IsoTkMu24", &HLT_IsoTkMu);
@@ -277,20 +282,21 @@ void EMu_WJets_MC()
                 bool good_trigger = HLT_El;
                 if( mu_size >= 1 && el_size >=1 && 
                         ((abs(mu_Charge[0] - el_Charge[0])) > 0.01) &&
-                        mu_IsTightMuon[0] && el_IDMedium_NoIso[0] && 
-                        el_Pt[0] > 10. && mu_Pt[0] > 10. &&
-                        (el_Pt[0] >= 29. || mu_Pt[0] >= 26.) &&
-                        abs(mu_Eta[0]) < 2.4 && abs(el_Eta[0]) < 2.5){ 
+                        mu_IsHighPtMuon[0] && el_IDMedium_NoIso[0] && 
+                        el_ScaleCorr[0] * el_Pt[0] > 10. && mu_Pt[0] > 26. &&
+                        abs(mu_Eta[0]) < 2.4 && goodElEta(el_SCEta[0])){ 
 
                     //See https://twiki.cern.ch/twiki/bin/viewauth/CMS/SWGuideMuonIdRun2 for iso cuts
-                    float iso_0 = (mu_SumChargedHadronPt[0] + max(0., mu_SumNeutralHadronPt[0] + mu_SumPhotonPt[0] - 0.5 * mu_SumPUPt[0]))/mu_Pt[0];
-                    const float tight_iso = 0.15;
-                    const float loose_iso = 0.25;
-                    bool mu_iso = iso_0 < tight_iso;
-                    bool one_iso = (mu_iso ^ el_IDMedium[0]);
+                    float iso_0 = mu_TrackerIso[0];
+                    const float tight_iso = 0.10;
+                    const float loose_iso = 0.10;
+                    bool iso_mu = iso_0 < tight_iso;
+                    bool one_iso = iso_mu ^ el_IDMedium[0];
+
+
 
                     mu.SetPtEtaPhiE(mu_Pt[0], mu_Eta[0], mu_Phi[0], mu_E[0]);
-                    el.SetPtEtaPhiE(el_Pt[0], el_Eta[0], el_Phi[0], el_E[0]);
+                    el.SetPtEtaPhiE(el_ScaleCorr[0] * el_Pt[0], el_Eta[0], el_Phi[0], el_ScaleCorr[0] * el_E[0]);
 
 
                     cm = el + mu;
@@ -318,7 +324,7 @@ void EMu_WJets_MC()
 
 
                     if (no_bjets && (met_pt < 50) && (cm_m >=150.) && one_iso){
-                        if(mu_iso) iso_lep = 0;
+                        if(iso_mu) iso_lep = 0;
                         else iso_lep = 1;
                         if(PRINT) sprintf(out_buff + strlen(out_buff),"Event %i \n", i);
 
@@ -329,8 +335,6 @@ void EMu_WJets_MC()
                                     jet2_pt = jet_Pt[j];
                                     jet2_eta = jet_Eta[j];
                                     jet2_cmva = jet_CMVA[j];
-                                    jet2_flavour = jet_partonflavour[j];
-                                    jet2_b_weight = get_btag_weight(jet_Pt[j], jet_Eta[j],jet_partonflavour[j],btag_effs, b_reader);
                                     nJets =2;
                                     break;
                                 }
@@ -338,21 +342,18 @@ void EMu_WJets_MC()
                                     jet1_pt = jet_Pt[j];
                                     jet1_eta = jet_Eta[j];
                                     jet1_cmva = jet_CMVA[j];
-                                    jet1_flavour = jet_partonflavour[j];
-                                    jet1_b_weight = get_btag_weight(jet_Pt[j], jet_Eta[j],jet_partonflavour[j],btag_effs, b_reader);
                                     nJets = 1;
                                 }
                             }
                         }
                         gen_weight = evt_Gen_Weight * normalization;
-                        el1_pt = el_Pt[0];
+                        el1_pt = el_ScaleCorr[0] * el_Pt[0];
                         el1_eta = el_Eta[0];
                         mu1_pt = mu_Pt[0];
                         mu1_eta = mu_Eta[0];
 
 
 
-                        btag_weight = get_emu_btag_weight(jet1_pt, jet1_eta, jet1_flavour, jet2_pt, jet2_eta, jet2_flavour, btag_effs, b_reader);
                         bcdef_HLT_SF = get_HLT_SF_1mu(mu1_pt, mu1_eta, runs_bcdef.HLT_SF);
                         gh_HLT_SF = get_HLT_SF_1mu(mu1_pt, mu1_eta, runs_gh.HLT_SF);
 

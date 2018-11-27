@@ -16,8 +16,8 @@
 #define JET_SIZE 20
 
 const double root2 = sqrt(2);
-const char* filename("SingleElectron_files_aug29.txt");
-const TString fout_name("output_files/EMu_WJets_fakerate_est_jan24.root");
+const char* filename("SingleMuon_files_nov12.txt");
+const TString fout_name("output_files/EMu_WJets_fakerate_est_nov26.root");
 
 const bool data_2016 = true;
 
@@ -30,7 +30,7 @@ bool is_empty_line(const char *s) {
     return true;
 }
 
-void EMu_WJets_fakerate_est()
+void EMu_WJets_fakerate_est(int nJobs =1, int iJob = 0)
 {
 
 
@@ -73,6 +73,7 @@ void EMu_WJets_fakerate_est()
     while(fgets(lines, 300, root_files)){
         if(lines[0] == '#' || is_empty_line(lines)) continue; // comment line
         nFiles++;
+        if(nFiles % nJobs != iJob) continue; 
         char * cur_file;
 
         char * end;
@@ -90,13 +91,18 @@ void EMu_WJets_fakerate_est()
 
         UInt_t mu_size, met_size, jet_size, el_size;
         Float_t mu_Pt[MU_SIZE], mu_Eta[MU_SIZE], mu_Phi[MU_SIZE], mu_E[MU_SIZE], 
-                mu_IsTightMuon[MU_SIZE], mu_Charge[MU_SIZE];
+                mu_IsHighPtMuon[MU_SIZE], mu_Charge[MU_SIZE];
 
         Float_t el_Pt[EL_SIZE], el_Eta[EL_SIZE], el_Phi[EL_SIZE], el_E[EL_SIZE],
                 el_Charge[EL_SIZE];
 
+        Float_t el_SCEta[EL_SIZE];
+        Float_t el_ScaleCorr[EL_SIZE], el_ScaleCorrUp[EL_SIZE], el_ScaleCorrDown[EL_SIZE],
+                el_ScaleSmearDown[EL_SIZE], el_ScaleSmearUp[EL_SIZE];
+
         Int_t el_IDMedium[EL_SIZE], el_IDMedium_NoIso[EL_SIZE];
 
+        Float_t mu_TrackerIso[MU_SIZE];
 
         Float_t mu_SumChargedHadronPt[MU_SIZE], mu_SumNeutralHadronPt[MU_SIZE], mu_SumPUPt[MU_SIZE], mu_SumPhotonPt[MU_SIZE];
 
@@ -120,9 +126,12 @@ void EMu_WJets_fakerate_est()
         t1->SetBranchAddress("el_Charge", &el_Charge);
         t1->SetBranchAddress("el_IDMedium", &el_IDMedium);
         t1->SetBranchAddress("el_IDMedium_NoIso", &el_IDMedium_NoIso);
+        t1->SetBranchAddress("el_SCEta", &el_SCEta);
+        t1->SetBranchAddress("el_ScaleCorr", &el_ScaleCorr);
         t1->SetBranchAddress("HLT_Ele27_WPTight_Gsf", &HLT_El);
 
-        t1->SetBranchAddress("mu_IsTightMuon", &mu_IsTightMuon);
+        t1->SetBranchAddress("mu_IsHighPtMuon", &mu_IsHighPtMuon);
+        t1->SetBranchAddress("mu_TrackerIso", &mu_TrackerIso);
         t1->SetBranchAddress("mu_SumChargedHadronPt", &mu_SumChargedHadronPt);
         t1->SetBranchAddress("mu_SumNeutralHadronPt", &mu_SumNeutralHadronPt);
         t1->SetBranchAddress("mu_SumPUPt", &mu_SumPUPt);
@@ -140,8 +149,8 @@ void EMu_WJets_fakerate_est()
         t1->SetBranchAddress("HLT_IsoMu24", &HLT_IsoMu);
         t1->SetBranchAddress("HLT_IsoTkMu24", &HLT_IsoTkMu);
 
-        t1->SetBranchAddress("met_size", &met_size);
-        t1->SetBranchAddress("met_Pt", &met_pt);
+        t1->SetBranchAddress("met_MuCleanOnly_size", &met_size);
+        t1->SetBranchAddress("met_MuCleanOnly_Pt", &met_pt);
 
         unsigned int nEntries =  t1->GetEntries();
         printf("there are %i entries in this tree\n", nEntries);
@@ -152,22 +161,21 @@ void EMu_WJets_fakerate_est()
             bool good_trigger = HLT_El;
             if( mu_size >= 1 && el_size >=1 && 
                         ((abs(mu_Charge[0] - el_Charge[0])) > 0.01) &&
-                        mu_IsTightMuon[0] && el_IDMedium_NoIso[0] && 
-                        el_Pt[0] > 10. && mu_Pt[0] > 10. &&
-                        (el_Pt[0] >= 29. || mu_Pt[0] >= 26.) &&
-                        abs(mu_Eta[0]) < 2.4 && abs(el_Eta[0]) < 2.5){ 
+                        mu_IsHighPtMuon[0] && el_IDMedium_NoIso[0] && 
+                        el_ScaleCorr[0] * el_Pt[0] > 10. && mu_Pt[0] > 26. &&
+                        abs(mu_Eta[0]) < 2.4 && goodElEta(el_SCEta[0])){ 
 
                 //See https://twiki.cern.ch/twiki/bin/viewauth/CMS/SWGuideMuonIdRun2 for iso cuts
-                float iso_0 = (mu_SumChargedHadronPt[0] + max(0., mu_SumNeutralHadronPt[0] + mu_SumPhotonPt[0] - 0.5 * mu_SumPUPt[0]))/mu_Pt[0];
-                const float tight_iso = 0.15;
-                const float loose_iso = 0.25;
+                float iso_0 = mu_TrackerIso[0];
+                const float tight_iso = 0.10;
+                const float loose_iso = 0.10;
                 bool iso_mu = iso_0 < tight_iso;
-                bool one_iso = (iso_mu ^ el_IDMedium[0]);
+                bool one_iso = iso_mu ^ el_IDMedium[0];
 
 
 
                 mu.SetPtEtaPhiE(mu_Pt[0], mu_Eta[0], mu_Phi[0], mu_E[0]);
-                el.SetPtEtaPhiE(el_Pt[0], el_Eta[0], el_Phi[0], el_E[0]);
+                el.SetPtEtaPhiE(el_ScaleCorr[0] * el_Pt[0], el_Eta[0], el_Phi[0], el_ScaleCorr[0] * el_E[0]);
 
 
                 cm = el + mu;
@@ -217,7 +225,7 @@ void EMu_WJets_fakerate_est()
                             }
                         }
                     }
-                    el1_pt = el_Pt[0];
+                    el1_pt = el_ScaleCorr[0] * el_Pt[0];
                     el1_eta = el_Eta[0];
                     mu1_pt = mu_Pt[0];
                     mu1_eta = mu_Eta[0];

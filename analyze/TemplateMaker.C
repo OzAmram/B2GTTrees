@@ -524,13 +524,13 @@ void gen_fakes_template(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_contam,
                 }
                 if(l==2){
 
-                    Double_t mc_weight = gen_weight * el_id_SF * el_reco_SF  * 1000. * tot_lumi;
+                    Double_t mc_weight = gen_weight * el_id_SF * el_reco_SF  * 1000. * el_lumi;
                     if(iso_el ==0) el1_fakerate = get_new_fakerate_prob(el1_pt, el1_eta, FR.h);
                     if(iso_el ==1) el1_fakerate = get_new_fakerate_prob(el2_pt, el2_eta, FR.h);
                     evt_fakerate = -(el1_fakerate * mc_weight)/(1-el1_fakerate);
                 }
                 if(l==3){
-                    Double_t mc_weight = gen_weight * el_id_SF * el_reco_SF * 1000. * tot_lumi;
+                    Double_t mc_weight = gen_weight * el_id_SF * el_reco_SF * 1000. * el_lumi;
 
                     el1_fakerate = get_new_fakerate_prob(el1_pt, el1_eta, FR.h);
                     el2_fakerate = get_new_fakerate_prob(el2_pt, el2_eta, FR.h);
@@ -713,7 +713,7 @@ int gen_combined_background_template(int nTrees, TTree **ts, TH2F* h,
                     if (nJets >= 2){
                         evt_weight *= jet2_b_weight;
                     }
-                    evt_weight *= 1000*tot_lumi*emu_scaling;
+                    evt_weight *= 1000*el_lumi*emu_scaling;
                     h->Fill(xF, cost, evt_weight);
                 }
             }
