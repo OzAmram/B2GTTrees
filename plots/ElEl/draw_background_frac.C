@@ -55,6 +55,14 @@ void draw_background_frac(){
     TH1F *diboson_pt = new TH1F("diboson_pt", "MC signal", 40, 0, 1000);
     TH1F *wt_pt = new TH1F("wt_pt", "MC signal", 40, 0, 1000);
     TH1F *QCD_pt = new TH1F("QCD_pt", "MC signal", 40, 0, 1000);
+
+    TH1F *mc_xf = new TH1F("mc_xf", "MC signal", 40, 0, 1000);
+    TH1F *mc_nosig_xf = new TH1F("mc_nosig_xf", "MC signal", 40, 0, 1000);
+    TH1F *data_xf = new TH1F("data_xf", "MC signal", 40, 0, 1000);
+    TH1F *ttbar_xf = new TH1F("ttbar_xf", "MC signal", 40, 0, 1000);
+    TH1F *diboson_xf = new TH1F("diboson_xf", "MC signal", 40, 0, 1000);
+    TH1F *wt_xf = new TH1F("wt_xf", "MC signal", 40, 0, 1000);
+    TH1F *QCD_xf = new TH1F("QCD_xf", "MC signal", 40, 0, 1000);
     
     /*
     TH1F *ww_m = new TH1F("ww_m", "MC Signal (qqbar, qglu, qbarglu)", nBins, m_bins);
@@ -69,14 +77,14 @@ void draw_background_frac(){
     TH1F *wt_cost = new TH1F("wt_cost", "W top", 40, -1,1);
 
     int type = FLAG_ELECTRONS;
-    make_m_cost_pt_hist(t_mc, mc_m, mc_cost, mc_pt, false,type);
-    make_m_cost_pt_hist(t_mc_nosig, mc_nosig_m, mc_nosig_pt, mc_nosig_cost, false,type);
-    make_m_cost_pt_hist(t_ttbar, ttbar_m, ttbar_cost, ttbar_pt, false,type);
-    make_m_cost_pt_hist(t_diboson, diboson_m, diboson_cost, diboson_pt, false,type);
-    make_m_cost_pt_hist(t_wt, wt_m, wt_cost, wt_pt, false,type);
+    make_m_cost_pt_xf_hist(t_mc, mc_m, mc_cost, mc_pt, mc_xf, false,type, false);
+    make_m_cost_pt_xf_hist(t_mc_nosig, mc_nosig_m, mc_nosig_pt, mc_nosig_cost, mc_nosig_xf, false,type, false);
+    make_m_cost_pt_xf_hist(t_ttbar, ttbar_m, ttbar_cost, ttbar_pt, ttbar_xf, false,type, true);
+    make_m_cost_pt_xf_hist(t_diboson, diboson_m, diboson_cost, diboson_pt, diboson_xf, false,type, true);
+    make_m_cost_pt_xf_hist(t_wt, wt_m, wt_cost, wt_pt, wt_xf, false,type, true);
     
 
-    Fakerate_est_el(t_WJets, t_QCD, t_WJets_mc, t_QCD_mc, QCD_m, QCD_cost, QCD_pt);
+    Fakerate_est_el(t_WJets, t_QCD, t_WJets_mc, t_QCD_mc, QCD_m, QCD_cost, QCD_pt, QCD_xf);
 
 
     /*
@@ -88,7 +96,6 @@ void draw_background_frac(){
     */
         
     
-    Double_t emu_scaling = 1.05;
 
     Double_t ttbar_frac[nBins], ttbar_frac_unc[nBins], diboson_frac[nBins], diboson_frac_unc[nBins], bin_center[nBins];
     Double_t back_frac[nBins], back_frac_unc[nBins], nosig_frac[nBins], nosig_frac_unc[nBins];
@@ -96,10 +103,10 @@ void draw_background_frac(){
     for (int i=1; i <= nBins; i++){
         Double_t N_mc = mc_m->GetBinContent(i);
         Double_t N_mc_nosig = mc_nosig_m->GetBinContent(i);
-        Double_t N_ttbar = emu_scaling * ttbar_m->GetBinContent(i);
-        Double_t N_diboson = emu_scaling* diboson_m->GetBinContent(i);
+        Double_t N_ttbar =  ttbar_m->GetBinContent(i);
+        Double_t N_diboson = diboson_m->GetBinContent(i);
         Double_t N_QCD = QCD_m->GetBinContent(i);
-        Double_t N_wt = emu_scaling *wt_m->GetBinContent(i);
+        Double_t N_wt = wt_m->GetBinContent(i);
         Double_t denom = N_ttbar + N_diboson + N_mc + N_wt + N_mc_nosig + N_QCD;
         bin_center[i-1] = mc_m->GetBinCenter(i);
         printf("bin center %f \n", bin_center[i-1]);

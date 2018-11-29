@@ -22,11 +22,8 @@
 #include "TFitter.h"
 #include "TSystem.h"
 #include "Math/Functor.h"
-//#include "../../analyze/TemplateMaker.C"
+#include "../../analyze/HistMaker.C"
 //
-const int FLAG_MUONS = 0;
-const int FLAG_ELECTRONS = 1;
-float tot_lumi = 35.9;
 
 void SetErrors(TH2D *h_rate, TH2D *h_total){
     int nBins_x = h_rate->GetXaxis()->GetNbins();
@@ -106,13 +103,16 @@ void SetCorrectedRate(TH2D *h_data_rate, TH2D *h_data_total, TH2D *h_contam_rate
 void construct_fakerate_template(TH2D *h_rate, TH2D *h_total, TTree *t, int flag = FLAG_MUONS, bool isData = true){
     Double_t pt, eta, gen_weight;
     Bool_t pass;
+    Double_t lumi;
     if(flag == FLAG_MUONS){
         t->SetBranchAddress("mu_pt", &pt);
         t->SetBranchAddress("mu_eta", &eta);
+        lumi = mu_lumi;
     }
     else{
         t->SetBranchAddress("el_pt", &pt);
         t->SetBranchAddress("el_eta", &eta);
+        lumi = el_lumi;
     }
     t->SetBranchAddress("pass", &pass);
     if(!isData) t->SetBranchAddress("gen_weight", &gen_weight);
@@ -125,7 +125,7 @@ void construct_fakerate_template(TH2D *h_rate, TH2D *h_total, TTree *t, int flag
         if(pass) h_rate->Fill(eta,pt, fill_weight);
     }
     h_rate->Divide(h_total);
-    if(!isData) h_total->Scale(1000*tot_lumi);
+    if(!isData) h_total->Scale(1000*lumi);
     return;
 }
     
@@ -135,22 +135,27 @@ void construct_fakerate_template(TH2D *h_rate, TH2D *h_total, TTree *t, int flag
 
 void draw_fakerate(){
     /*
-    TFile *f = TFile::Open("../analyze/FakeRate/root_files/SingleElectron_data_fake_rate_v2_nov28.root");
-    TFile *f_mc = TFile::Open("../analyze/FakeRate/root_files/SingleEl_mc_fakerate_contam_v2_nov28.root");
-    TFile *f_new = TFile::Open("../analyze/FakeRate/root_files/SingleElectron_data_fake_rate_v2_corrected_nov29.root", "RECREATE");
+
+    TFile *f = TFile::Open("../analyze/FakeRate/root_files/SingleElectron_data_fakerate_nov27.root");
+    TFile *f_mc = TFile::Open("../analyze/FakeRate/root_files/SingleElectron_mc_fakerate_contam_nov27.root");
+    TFile *f_new = TFile::Open("../analyze/FakeRate/root_files/SingleElectron_data_fakerate_corrected_nov27.root", "RECREATE");
+    int FLAG = FLAG_ELECTRONS;
+    Float_t pt_bins[] = {10,20,32,45,60,100, 1000};
+    int n_pt_bins = 6;
     */
 
     ///*
-    TFile *f = TFile::Open("../analyze/FakeRate/root_files/SingleMuon_data_fake_rate_v2_sep4.root");
-    TFile *f_mc = TFile::Open("../analyze/FakeRate/root_files/SingleMu_mc_fakerate_contam_v2_sep11.root");
-    TFile *f_new = TFile::Open("../analyze/FakeRate/root_files/SingleMuon_data_fake_rate_v2_corrected_sep11.root", "RECREATE");
-    //*/
-
+    TFile *f = TFile::Open("../analyze/FakeRate/root_files/SingleMuon_data_fakerate_nov27.root");
+    TFile *f_mc = TFile::Open("../analyze/FakeRate/root_files/SingleMuon_mc_fakerate_contam_nov27.root");
+    TFile *f_new = TFile::Open("../analyze/FakeRate/root_files/SingleMuon_data_fakerate_corrected_nov27.root", "RECREATE");
+    int FLAG = FLAG_MUONS;
     Float_t pt_bins[] = {10,20,26,35,1000};
     int n_pt_bins = 4;
+    //*/
+
+    //
     Float_t eta_bins[] = {0,1.479,2.4};
     int n_eta_bins = 2;
-    int FLAG = FLAG_MUONS;
 
     TH2D *h_rate = new TH2D("h_rate", "passing iso cuts", n_eta_bins, eta_bins, n_pt_bins, pt_bins);
     TH2D *h_total = new TH2D("h_total", "passing iso cuts", n_eta_bins, eta_bins, n_pt_bins, pt_bins);
@@ -210,11 +215,12 @@ void draw_fakerate(){
     TCanvas *c1 = new TCanvas("c1", "Histograms", 200, 10, 900, 700);
     c1->SetLogx();
     rate_barrel->SetTitle("Muons fakerate");
+    //rate_barrel->SetTitle("Electrons fakerate");
     rate_barrel->SetStats(0);
     rate_barrel->SetLineWidth(3);
     rate_barrel ->Draw("E1");
     rate_barrel->GetXaxis()->SetTitle("p_t (Gev)");
-    rate_barrel->GetXaxis()->SetRangeUser(10,1000);
+    rate_barrel->GetXaxis()->SetRangeUser(10,500);
     rate_barrel->GetYaxis()->SetRangeUser(0, 0.7);
     c1->Update();
 
@@ -234,6 +240,7 @@ void draw_fakerate(){
 
 
 
+    /*
     TCanvas *c3 = new TCanvas("c3", "Histograms", 200, 10, 900, 700);
     total_barrel->SetTitle("Number of events");
     total_barrel->SetStats(0);
@@ -244,7 +251,6 @@ void draw_fakerate(){
     c3->SetLogy();
     c3->SetLogx();
 
-    //TCanvas *c4 = new TCanvas("c4", "Histograms", 200, 10, 900, 700);
     total_endcap->SetTitle("Number of events");
     total_endcap->SetStats(0);
     total_endcap->SetLineWidth(3);
@@ -257,6 +263,7 @@ void draw_fakerate(){
     leg2->AddEntry(total_barrel, "Barrel",  "f");
     leg2->AddEntry(total_endcap, "Endcap" , "f");
     leg2->Draw();
+    */
 }
 
     

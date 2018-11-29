@@ -276,7 +276,7 @@ void draw_gen_cmp(){
     TFile *f_mc_unbinned = TFile::Open("../analyze/output_files/MuMu_DY_april9_unbinned.root");
     TTree *t_mc_unbinned = (TTree *)f_mc_unbinned->Get("T_data");
 
-    TFile *f_mc_binned = TFile::Open("../analyze/output_files/MuMu_DY_noext_june26.root");
+    TFile *f_mc_binned = TFile::Open("../analyze/output_files/MuMu_DY_slim_nov2.root");
     TTree *t_mc_binned = (TTree *)f_mc_binned->Get("T_data");
     setTDRStyle();
 
@@ -324,10 +324,10 @@ void draw_gen_cmp(){
 
 
 
-    //make_ratio_plot("Ext_cmp/v2/MuMu_gen_m_cmp.pdf", binned_m, "unbinned ",unbinned_m, "Binned No Extensions", "Binned/Unbinned", "Gen M (GeV)", true);
-    //make_ratio_plot("Ext_cmp/v2/MuMu_gen_cost_cmp.pdf", binned_cost, "unbinned",unbinned_cost, "Binned No Extensions", "Binned/Unbinned", "Gen Cos(#theta_{r})", false);
-    //make_ratio_plot("Ext_cmp/v2/MuMu_gen_pt_cmpt.pdf", binned_pt, "unbinned",unbinned_pt, "Binned No Extensions", "Binned/Unbinned", "Gen Dilepton Pt (GeV)", true);
-    make_ratio_plot("Ext_cmp/v2/MuMu_gen_xf_cmpt.pdf", binned_xf, "Extensions",unbinned_xf, "Originals", "Extensions/Orig", "x_{F}", true);
+    make_ratio_plot("Ext_cmp/nov5/MuMu_gen_m_cmp.pdf", binned_m, "unbinned ",unbinned_m, "Binned No Extensions", "Binned/Unbinned", "Gen M (GeV)", true);
+    make_ratio_plot("Ext_cmp/nov5/MuMu_gen_cost_cmp.pdf", binned_cost, "unbinned",unbinned_cost, "Binned No Extensions", "Binned/Unbinned", "Gen Cos(#theta_{r})", false);
+    make_ratio_plot("Ext_cmp/nov5/MuMu_gen_pt_cmpt.pdf", binned_pt, "unbinned",unbinned_pt, "Binned No Extensions", "Binned/Unbinned", "Gen Dilepton Pt (GeV)", true);
+    make_ratio_plot("Ext_cmp/nov5/MuMu_gen_xf_cmpt.pdf", binned_xf, "Extensions",unbinned_xf, "Originals", "Extensions/Orig", "x_{F}", true);
 
 
 
