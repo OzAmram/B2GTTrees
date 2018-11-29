@@ -101,7 +101,6 @@ void SingleElectron_mc_fake_rate_v2(int nJobs=1, int iJob =0)
 
 
     mu_SFs runs_bcdef, runs_gh;
-    pileup_SFs pu_SFs;
     BTag_readers b_reader;
     BTag_effs btag_effs;
     el_SFs el_SF;
@@ -172,12 +171,8 @@ void SingleElectron_mc_fake_rate_v2(int nJobs=1, int iJob =0)
 
             printf("Opening file: %s \n", lines);
             TFile *f1=  TFile::Open(lines);
+            printf("opened \n");
 
-            f1->cd("EventCounter");
-            TDirectory *subdir = gDirectory;
-            TH1D *mc_pileup = (TH1D *)subdir->Get("pileup");
-            mc_pileup->Scale(1./mc_pileup->Integral());
-            pu_SFs.pileup_ratio->Divide(pu_SFs.data_pileup, mc_pileup);
 
             f1->cd("B2GTTreeMaker");
             TTree *t1 = (TTree *)gDirectory->Get("B2GTree");
@@ -221,7 +216,6 @@ void SingleElectron_mc_fake_rate_v2(int nJobs=1, int iJob =0)
             t1->SetBranchAddress("jetAK4CHS_CSVv2", &jet_CSV);
             t1->SetBranchAddress("jetAK4CHS_CMVAv2", &jet_CMVA);
 
-            t1->SetBranchAddress("met_size", &met_size);
             t1->SetBranchAddress("evt_Gen_Weight", &evt_Gen_Weight);
             t1->SetBranchAddress("pu_NtrueInt",&pu_NtrueInt);
 

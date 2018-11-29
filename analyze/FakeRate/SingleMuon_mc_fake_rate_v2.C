@@ -15,7 +15,7 @@
 
 const double root2 = sqrt(2);
 char *filename("diboson_files_aug7.txt");
-const TString fout_name("output_files/SingleMu_mc_fakerate_contam_v2_nov27.root");
+const TString fout_name("output_files/SingleMu_mc_fakerate_contam_test.root");
 
 
 bool is_empty_line(const char *s) {
