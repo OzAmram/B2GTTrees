@@ -8,8 +8,10 @@ TTree *t_elel_mc, *t_elel_back, *t_elel_data, *t_elel_QCD, *t_elel_WJets, *t_ele
 TFile *f_mumu_mc, *f_mumu_back, *f_mumu_data, *f_mumu_QCD, *f_mumu_WJets, *f_mumu_WJets_contam, *f_mumu_QCD_contam;
 TTree *t_mumu_mc, *t_mumu_back, *t_mumu_data, *t_mumu_QCD, *t_mumu_WJets, *t_mumu_WJets_contam, *t_mumu_QCD_contam, *t_mumu_nosig;
 
-int n_xf_bins = 5;
-Float_t xf_bins[] = {0., 0.02, 0.04, 0.07, 0.10, 1.0};
+//int n_xf_bins = 5;
+//Float_t xf_bins[] = {0., 0.02, 0.04, 0.07, 0.10, 1.0};
+int n_xf_bins = 4;
+Float_t xf_bins[] = {0., 0.04, 0.07, 0.10, 1.0};
 //int n_cost_bins = 6;
 //Float_t cost_bins[] = {-1.0, -.667, -.333, 0., 0.33, 0.667,  1.0};
 //int n_cost_bins = 8;

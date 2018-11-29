@@ -8,12 +8,13 @@
 #include <cstring>
 #include <algorithm>
 #include "TFile.h"
+#include "../TemplateMaker.C"
 #define EL_SIZE 200
 #define JET_SIZE 20
 
 const double root2 = sqrt(2);
-const char* filename("SingleElectron_files_aug29.txt");
-const TString fout_name("FakeRate/root_files/SingleElectron_data_fake_rate_v2_nov28.root");
+const char* filename("SingleElectron_files_nov12.txt");
+const TString fout_name("output_files/SingleElectron_data_fake_rate_v2_nov27.root");
 const double alpha = 0.05;
 
 
@@ -26,18 +27,6 @@ bool is_empty_line(const char *s) {
     return true;
 }
 
-bool has_no_bjets(Int_t nJets, Double_t jet1_pt, Double_t jet2_pt, 
-        Double_t jet1_cmva, Double_t jet2_cmva){
-    Double_t med_btag = 0.4432;
-    if(nJets ==0) return true;
-    else if(nJets == 1){
-        if(jet1_pt < 20.) return true;
-        else return jet1_cmva < med_btag;
-    }
-    else{
-        return (jet1_pt < 20. || jet1_cmva < med_btag) && (jet2_pt < 20. || jet2_cmva < med_btag);
-    }
-}
 
 bool in_Z_window(Double_t m){
     double_t Z_mass_low = 91.2 -7.;
@@ -45,7 +34,7 @@ bool in_Z_window(Double_t m){
     return (m > Z_mass_low ) && (m < Z_mass_high);
 }
 
-void SingleElectron_data_fake_rate_v2()
+void SingleElectron_data_fake_rate_v2(int nJobs = 1, int iJob =0)
 {
 
 
@@ -88,6 +77,7 @@ void SingleElectron_data_fake_rate_v2()
     while(fgets(lines, 300, root_files)){
         if(lines[0] == '#' || is_empty_line(lines)) continue; // comment line
         nFiles++;
+        if(nFiles % nJobs != iJob) continue; 
         char * cur_file;
 
         char * end;
@@ -108,6 +98,8 @@ void SingleElectron_data_fake_rate_v2()
         Float_t el_Pt[EL_SIZE], el_Eta[EL_SIZE], el_Phi[EL_SIZE], el_E[EL_SIZE],
                 el_Charge[EL_SIZE];
 
+        Float_t el_ScaleCorr[EL_SIZE], el_ScaleCorrUp[EL_SIZE], el_ScaleCorrDown[EL_SIZE],
+                el_ScaleSmearDown[EL_SIZE], el_ScaleSmearUp[EL_SIZE], el_SCEta[EL_SIZE];
         Int_t el_IDMedium[EL_SIZE], el_IDMedium_NoIso[EL_SIZE];
 
         Float_t jet_Pt[JET_SIZE], jet_Eta[JET_SIZE], jet_Phi[JET_SIZE], jet_E[JET_SIZE],
@@ -120,6 +112,8 @@ void SingleElectron_data_fake_rate_v2()
         t1->SetBranchAddress("el_Phi", &el_Phi);
         t1->SetBranchAddress("el_E", &el_E);
         t1->SetBranchAddress("el_Charge", &el_Charge);
+        t1->SetBranchAddress("el_SCEta", &el_SCEta);
+        t1->SetBranchAddress("el_ScaleCorr", &el_ScaleCorr);
         t1->SetBranchAddress("el_IDMedium", &el_IDMedium);
         t1->SetBranchAddress("el_IDMedium_NoIso", &el_IDMedium_NoIso);
         t1->SetBranchAddress("HLT_Ele27_WPTight_Gsf", &HLT_El);
@@ -133,8 +127,8 @@ void SingleElectron_data_fake_rate_v2()
         t1->SetBranchAddress("jetAK4CHS_CSVv2", &jet_CSV);
         t1->SetBranchAddress("jetAK4CHS_CMVAv2", &jet_CMVA);
 
-        t1->SetBranchAddress("met_size", &met_size);
-        t1->SetBranchAddress("met_Pt", &met_pt);
+        t1->SetBranchAddress("met_MuCleanOnly_size", &met_size);
+        t1->SetBranchAddress("met_MuCleanOnly_Pt", &met_pt);
 
 
         unsigned int nEntries =  t1->GetEntries();
@@ -144,10 +138,10 @@ void SingleElectron_data_fake_rate_v2()
             if(el_size > EL_SIZE) printf("WARNING: MU_SIZE TOO LARGE \n");
             if(met_size != 1) printf("WARNING: Met size not equal to 1\n");
             bool good_trigger = HLT_El;
-            if( good_trigger &&
-                    el_size >= 3 && el_Pt[0] > 29. && el_IDMedium_NoIso[0] && abs(el_Eta[0]) < 2.4
-                    && el_Pt[1] > 10. && el_IDMedium_NoIso[1] && abs(el_Eta[1]) < 2.4
-                    && el_Pt[2] > 10. && el_IDMedium_NoIso[2] && abs(el_Eta[2]) < 2.4){
+            if( good_trigger && el_size >= 3 && 
+                    el_Pt[0] * el_ScaleCorr[0] > 29. && el_IDMedium_NoIso[0] && goodElEta(el_SCEta[0])
+                    && el_Pt[1] * el_ScaleCorr[1] > 15. && el_IDMedium_NoIso[1] && goodElEta(el_SCEta[1])
+                    && el_Pt[2] * el_ScaleCorr[2] > 15. && el_IDMedium_NoIso[2] && goodElEta(el_SCEta[1])){
                 //Want events with 3 elons, 2 from Z and 1 extra
                 //See https://twiki.cern.ch/twiki/bin/viewauth/CMS/SWGuideelonIdRun2 for iso cuts
 
@@ -171,13 +165,11 @@ void SingleElectron_data_fake_rate_v2()
                     }
                 }
                 bool no_bjets = has_no_bjets(nJets, jet1_pt, jet2_pt, jet1_cmva, jet2_cmva);
-                double_t Z_mass_low = 91.2 -7;
-                double_t Z_mass_high = 91.2 + 7;
 
                 TLorentzVector el0, el1, el2;
-                el0.SetPtEtaPhiE(el_Pt[0], el_Eta[0], el_Phi[0], el_E[0]);
-                el1.SetPtEtaPhiE(el_Pt[1], el_Eta[1], el_Phi[1], el_E[1]);
-                el2.SetPtEtaPhiE(el_Pt[2], el_Eta[2], el_Phi[2], el_E[2]);
+                el0.SetPtEtaPhiE(el_ScaleCorr[0] * el_Pt[0], el_Eta[0], el_Phi[0], el_ScaleCorr[0] *el_E[0]);
+                el1.SetPtEtaPhiE(el_ScaleCorr[1] * el_Pt[1], el_Eta[1], el_Phi[1], el_ScaleCorr[1] *el_E[1]);
+                el2.SetPtEtaPhiE(el_ScaleCorr[2] * el_Pt[2], el_Eta[2], el_Phi[2], el_ScaleCorr[2] *el_E[2]);
 
                 //el+ and el- from Z, extra elon
                 int el_p, el_m, el_extra;

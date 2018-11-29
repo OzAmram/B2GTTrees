@@ -723,7 +723,7 @@ int gen_combined_background_template(int nTrees, TTree **ts, TH2F* h,
     }
     printf("Performing templ. cleanup (removing neg. bins) \n");
     cleanup_template(h);
-    printf("Tot Weight is %.2f \n", h->Integral());
+    printf("Tot MC Weight is %.2f \n", h->Integral());
     h->Scale(1./h->Integral());
     return 0;
 }

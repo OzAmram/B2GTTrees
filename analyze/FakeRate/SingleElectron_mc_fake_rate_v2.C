@@ -10,7 +10,6 @@
 #include <algorithm>
 #include "TFile.h"
 #include "TFile.h"
-#include "../ScaleFactors.C"
 #include "../TemplateMaker.C"
 
 #define GEN_SIZE 300
@@ -19,8 +18,8 @@
 #define MAX_SAMPLES 20
 
 const double root2 = sqrt(2);
-char *filename("non_QCD_files_aug29.txt");
-const TString fout_name("FakeRate/root_files/SingleEl_mc_fakerate_contam_v2_nov28.root");
+char *filename("diboson_files_aug7.txt");
+const TString fout_name("output_files/SingleElectron_mc_fakerate_contam_v2_nov27.root");
 
 
 bool is_empty_line(const char *s) {
@@ -91,7 +90,7 @@ void compute_norms(Double_t *norms, unsigned int *nFiles){
 
 }
 
-void SingleElectron_mc_fake_rate_v2()
+void SingleElectron_mc_fake_rate_v2(int nJobs=1, int iJob =0)
 {
 
     Double_t norms[MAX_SAMPLES]; // computed normalizations to apply to each event in a sample (based on xsection and total weight)
@@ -108,7 +107,6 @@ void SingleElectron_mc_fake_rate_v2()
     el_SFs el_SF;
     setup_el_SF(&el_SF);
     //separate SFs for runs BCDEF and GH
-    setup_SFs(&runs_bcdef, &runs_gh, &b_reader, &btag_effs, &pu_SFs);
     printf("Retrieved Scale Factors \n\n");
 
     TFile *fout = TFile::Open(fout_name, "RECREATE");
@@ -146,6 +144,7 @@ void SingleElectron_mc_fake_rate_v2()
 
     FILE *root_files = fopen(filename, "r");
     char lines[300];
+    int count = 0;
     while(fgets(lines, 300, root_files)){
         if(lines[0] == '#' || is_empty_line(lines)) continue; //comment line
         else if(lines[0] == '!'){//sample header
@@ -161,7 +160,8 @@ void SingleElectron_mc_fake_rate_v2()
         }
         else if(normalization > 0) {//root file
 
-
+        count++;
+        if(count % nJobs != iJob) continue; 
 
             char * end;
             //remove trailing whitespace
@@ -188,6 +188,9 @@ void SingleElectron_mc_fake_rate_v2()
             Float_t el_Pt[EL_SIZE], el_Eta[EL_SIZE], el_Phi[EL_SIZE], el_E[EL_SIZE],
                     el_Charge[EL_SIZE];
 
+            Float_t el_ScaleCorr[EL_SIZE], el_ScaleCorrUp[EL_SIZE], el_ScaleCorrDown[EL_SIZE],
+                el_ScaleSmearDown[EL_SIZE], el_ScaleSmearUp[EL_SIZE], el_SCEta[EL_SIZE];
+
             Int_t el_IDMedium[EL_SIZE], el_IDMedium_NoIso[EL_SIZE];
 
             Float_t jet_Pt[JET_SIZE], jet_Eta[JET_SIZE], jet_Phi[JET_SIZE], jet_E[JET_SIZE],
@@ -203,6 +206,8 @@ void SingleElectron_mc_fake_rate_v2()
             t1->SetBranchAddress("el_Phi", &el_Phi);
             t1->SetBranchAddress("el_E", &el_E);
             t1->SetBranchAddress("el_Charge", &el_Charge);
+            t1->SetBranchAddress("el_SCEta", &el_SCEta);
+            t1->SetBranchAddress("el_ScaleCorr", &el_ScaleCorr);
             t1->SetBranchAddress("el_IDMedium", &el_IDMedium);
             t1->SetBranchAddress("el_IDMedium_NoIso", &el_IDMedium_NoIso);
             t1->SetBranchAddress("HLT_Ele27_WPTight_Gsf", &HLT_El);
@@ -215,15 +220,14 @@ void SingleElectron_mc_fake_rate_v2()
             t1->SetBranchAddress("jetAK4CHS_E", &jet_E);
             t1->SetBranchAddress("jetAK4CHS_CSVv2", &jet_CSV);
             t1->SetBranchAddress("jetAK4CHS_CMVAv2", &jet_CMVA);
-            t1->SetBranchAddress("jetAK4CHS_PartonFlavour", &jet_partonflavour);
 
             t1->SetBranchAddress("met_size", &met_size);
             t1->SetBranchAddress("evt_Gen_Weight", &evt_Gen_Weight);
             t1->SetBranchAddress("pu_NtrueInt",&pu_NtrueInt);
 
 
-            t1->SetBranchAddress("met_size", &met_size);
-            t1->SetBranchAddress("met_Pt", &met_pt);
+            t1->SetBranchAddress("met_MuCleanOnly_size", &met_size);
+            t1->SetBranchAddress("met_MuCleanOnly_Pt", &met_pt);
 
             Long64_t nEntries =  t1->GetEntries();
 
@@ -235,10 +239,10 @@ void SingleElectron_mc_fake_rate_v2()
                 if(el_size > EL_SIZE) printf("WARNING: MU_SIZE TOO LARGE \n");
                 if(met_size != 1) printf("WARNING: Met size not equal to 1\n");
                 bool good_trigger = HLT_El;
-                if( good_trigger 
-                        && el_size >= 3 && el_Pt[0] > 29. && el_IDMedium_NoIso[0] && abs(el_Eta[0]) < 2.4
-                        && el_Pt[1] > 10. && el_IDMedium_NoIso[1] && abs(el_Eta[1]) < 2.4
-                        && el_Pt[2] > 10. && el_IDMedium_NoIso[2] && abs(el_Eta[2]) < 2.4){
+                if( good_trigger && el_size >= 3 && 
+                        el_Pt[0] * el_ScaleCorr[0] > 29. && el_IDMedium_NoIso[0] && goodElEta(el_SCEta[0])
+                        && el_Pt[1] * el_ScaleCorr[1] > 15. && el_IDMedium_NoIso[1] && goodElEta(el_SCEta[1])
+                        && el_Pt[2] * el_ScaleCorr[2] > 15. && el_IDMedium_NoIso[2] && goodElEta(el_SCEta[1])){
                     //Want events with 3 elons, 2 from Z and 1 extra
                     //See https://twiki.cern.ch/twiki/bin/viewauth/CMS/SWGuideelonIdRun2 for iso cuts
 
@@ -253,28 +257,22 @@ void SingleElectron_mc_fake_rate_v2()
                                 jet2_eta = jet_Eta[j];
                                 jet2_cmva = jet_CMVA[j];
                                 nJets =2;
-                                jet2_flavour = jet_partonflavour[j];
-                                jet2_b_weight = get_btag_weight(jet_Pt[j], jet_Eta[j],jet_partonflavour[j],btag_effs, b_reader);
                                 break;
                             }
                             else if(nJets ==0){
                                 jet1_pt = jet_Pt[j];
                                 jet1_eta = jet_Eta[j];
                                 jet1_cmva = jet_CMVA[j];
-                                jet1_flavour = jet_partonflavour[j];
-                                jet1_b_weight = get_btag_weight(jet_Pt[j], jet_Eta[j],jet_partonflavour[j],btag_effs, b_reader);
                                 nJets = 1;
                             }
                         }
                     }
                     bool no_bjets = has_no_bjets(nJets, jet1_pt, jet2_pt, jet1_cmva, jet2_cmva);
-                    double_t Z_mass_low = 91.2 -7;
-                    double_t Z_mass_high = 91.2 + 7;
 
                     TLorentzVector el0, el1, el2;
-                    el0.SetPtEtaPhiE(el_Pt[0], el_Eta[0], el_Phi[0], el_E[0]);
-                    el1.SetPtEtaPhiE(el_Pt[1], el_Eta[1], el_Phi[1], el_E[1]);
-                    el2.SetPtEtaPhiE(el_Pt[2], el_Eta[2], el_Phi[2], el_E[2]);
+                    el0.SetPtEtaPhiE(el_ScaleCorr[0] * el_Pt[0], el_Eta[0], el_Phi[0], el_ScaleCorr[0] *el_E[0]);
+                    el1.SetPtEtaPhiE(el_ScaleCorr[1] * el_Pt[1], el_Eta[1], el_Phi[1], el_ScaleCorr[1] *el_E[1]);
+                    el2.SetPtEtaPhiE(el_ScaleCorr[2] * el_Pt[2], el_Eta[2], el_Phi[2], el_ScaleCorr[2] *el_E[2]);
 
                     //el+ and el- from Z, extra elon
                     int el_p, el_m, el_extra;
@@ -341,8 +339,7 @@ void SingleElectron_mc_fake_rate_v2()
                         Double_t el_reco_SF = get_el_SF(el_Pt[el_p], el_Eta[el_p], el_SF.RECO_SF) * get_el_SF(el_Pt[el_m], el_Eta[el_m], el_SF.RECO_SF);;
 
 
-                        pu_SF = get_pileup_SF(pu_NtrueInt, pu_SFs.pileup_ratio);
-                        gen_weight = evt_Gen_Weight * pu_SF * normalization * el_id_SF * el_reco_SF * jet1_b_weight * jet2_b_weight;
+                        gen_weight = evt_Gen_Weight * normalization * el_id_SF * el_reco_SF;
 
                         nEvents++;
                         el_pt = el_Pt[el_extra];

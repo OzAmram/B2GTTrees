@@ -24,7 +24,7 @@
 #include "TFitter.h"
 #include "TSystem.h"
 #include "Math/Functor.h"
-#include "../TemplateMaker_systematics.C"
+#include "../TemplateMaker.C"
 #include "FitUtils.C"
 
 
@@ -128,18 +128,30 @@ void draw_template(char title[80], TH2F *h){
         }
     }
     TCanvas *c1 = new TCanvas("c1", "", 200, 10, 900, 700);
-    h_1d[0]->SetLineColor(kBlack);
-    h_1d[0]->SetMaximum(0.15);
-    h_1d[0]->SetMinimum(0.);
-    h_1d[1]->SetLineColor(kBlue);
-    h_1d[2]->SetLineColor(kRed);
-    h_1d[3]->SetLineColor(kGreen);
-    h_1d[4]->SetLineColor(kOrange);
     TLegend *leg = new TLegend(0.5, 0.7, 0.65, 0.85);
     for(int i=0; i<n_xf_bins; i++){
 
+        if(i==1){
+            h_1d[0]->SetLineColor(kBlack);
+            h_1d[0]->SetMaximum(0.15);
+            h_1d[0]->SetMinimum(0.);
+        }
+        else if(i==2){
+            h_1d[1]->SetLineColor(kBlue);
+        }
+        else if(i==3){
+            h_1d[2]->SetLineColor(kRed);
+        }
+        else if((i==4){
+            h_1d[3]->SetLineColor(kGreen);
+        }
+        else if(i==5){
+            h_1d[4]->SetLineColor(kOrange);
+        }
+
         h_1d[i]->SetLineWidth(3);
         h_1d[i]->Draw("same");
+        h_1d[i]->SetMinimum(0.);
         char title[10];
         sprintf(title, "xf bin %i", i);
         leg->AddEntry(h_1d[i], title, "l");
@@ -172,6 +184,7 @@ void draw_fit(char title_base[80], TH2F *h_data, TH2F *h_sym, TH2F *h_asym, TH2F
         TCanvas *c1 = new TCanvas("c1", "", 200, 10, 900, 700);
         h_1d[i-1]->SetLineColor(kRed);
         h_1d[i-1]->SetStats(0);
+        h_1d[i-1]->SetMinimum(0.);
         h_fits[i-1]->SetLineColor(kBlue);
         h_fits[i-1]->SetStats(0);
         auto rp = new TRatioPlot(h_1d[i-1], h_fits[i-1], "diffsig");
@@ -195,14 +208,16 @@ void draw_templates(){
 
         setup();
         printf("\n\n\n Printing QCD template in each bin:\n");
-        print_hist(h_qcd);
+        //print_hist(h_qcd);
         printf("\n\n\n Print back template \n");
-        print_hist(h_back);
+        //print_hist(h_back);
 
         printf("Integrals are %f %f %f %f %f  \n", h_data->Integral(), h_sym->Integral(), 
                                                h_asym->Integral(), h_back->Integral(), h_qcd->Integral() );
         draw_template("ElEl_QCD_template.pdf", h_qcd);
         draw_template("ElEl_back_template.pdf", h_back);
+        draw_template("ElEl_sym_template.pdf", h_sym);
+        draw_template("ElEl_asym_template.pdf", h_asym);
         draw_fit("ElEl_fit_qcd_sep", h_data, h_sym, h_asym, h_back, h_qcd, 0.7, 0.22, 0.00);
     }
 }

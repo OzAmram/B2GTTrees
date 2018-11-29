@@ -11,8 +11,8 @@
 #define JET_SIZE 20
 
 const double root2 = sqrt(2);
-const char* filename("SingleMuon_files_aug7.txt");
-const TString fout_name("FakeRate/root_files/SingleMuon_data_fake_rate_v2_sep4.root");
+const char* filename("SingleMuon_files_nov12.txt");
+const TString fout_name("output_files/SingleMuon_data_fake_rate_v2_nov27.root");
 const double alpha = 0.05;
 
 const bool data_2016 = true;
@@ -46,7 +46,7 @@ bool in_Z_window(Double_t m){
 }
 
 
-void SingleMuon_data_fake_rate_v2()
+void SingleMuon_data_fake_rate_v2(int nJobs =1, int iJob=0)
 {
 
 
@@ -90,6 +90,7 @@ void SingleMuon_data_fake_rate_v2()
     while(fgets(lines, 300, root_files)){
         if(lines[0] == '#' || is_empty_line(lines)) continue; // comment line
         nFiles++;
+        if(nFiles % nJobs != iJob) continue; 
         char * cur_file;
 
         char * end;
@@ -155,8 +156,8 @@ void SingleMuon_data_fake_rate_v2()
             if(mu_size > MU_SIZE) printf("Warning: too many muons\n");
             bool good_trigger = HLT_IsoMu || HLT_IsoTkMu;
             if( mu_size >= 3 && mu_Pt[0] > 26. && mu_IsHighPtMuon[0] && abs(mu_Eta[0]) < 2.4
-                    && mu_Pt[1] > 10. && mu_IsHighPtMuon[1] && abs(mu_Eta[1]) < 2.4
-                    && mu_Pt[2] > 10. && mu_IsHighPtMuon[2] && abs(mu_Eta[2]) < 2.4){
+                    && mu_Pt[1] > 15. && mu_IsHighPtMuon[1] && abs(mu_Eta[1]) < 2.4
+                    && mu_Pt[2] > 15. && mu_IsHighPtMuon[2] && abs(mu_Eta[2]) < 2.4){
                 //Want events with 3 muons, 2 from Z and 1 extra
                 //See https://twiki.cern.ch/twiki/bin/viewauth/CMS/SWGuideMuonIdRun2 for iso cuts
 

@@ -15,7 +15,7 @@
 
 const double root2 = sqrt(2);
 char *filename("diboson_files_aug7.txt");
-const TString fout_name("FakeRate/root_files/SingleMu_mc_fakerate_contam_v2_sep11.root");
+const TString fout_name("output_files/SingleMu_mc_fakerate_contam_v2_nov27.root");
 
 
 bool is_empty_line(const char *s) {
@@ -86,7 +86,7 @@ void compute_norms(Double_t *norms, unsigned int *nFiles){
 
 }
 
-void SingleMuon_mc_fake_rate_v2()
+void SingleMuon_mc_fake_rate_v2(int nJobs=1, int iJob=0)
 {
 
     Double_t norms[MAX_SAMPLES]; // computed normalizations to apply to each event in a sample (based on xsection and total weight)
@@ -137,6 +137,7 @@ void SingleMuon_mc_fake_rate_v2()
 
     FILE *root_files = fopen(filename, "r");
     char lines[300];
+    int count = 0;
     while(fgets(lines, 300, root_files)){
         if(lines[0] == '#' || is_empty_line(lines)) continue; //comment line
         else if(lines[0] == '!'){//sample header
@@ -153,7 +154,8 @@ void SingleMuon_mc_fake_rate_v2()
         else if(normalization > 0) {//root file
 
 
-
+            count++;
+            if(count % nJobs != iJob) continue; 
             char * end;
             //remove trailing whitespace
             end = lines + strlen(lines) - 1;
