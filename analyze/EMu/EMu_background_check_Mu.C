@@ -19,8 +19,8 @@ const double root2 = sqrt(2);
 double Ebeam = 6500.;
 double Pbeam = sqrt(Ebeam*Ebeam - 0.938*0.938);
 
-char *filename("WT_files_aug7.txt");
-const TString fout_name("output_files/EMu_WT_nov1.root");
+char *filename("diboson_files_aug7.txt");
+const TString fout_name("output_files/EMu_diboson_dec4.root");
 const bool PRINT=false;
 
 
