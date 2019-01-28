@@ -17,12 +17,13 @@ const double root2 = sqrt(2);
 double Ebeam = 6500.;
 double Pbeam = sqrt(Ebeam*Ebeam - 0.938*0.938);
 
-char *filename("diboson_files_aug7.txt");
-const TString fout_name("output_files/ElEl_diboson_sep4.root");
+char *filename("TTbar_WT_files_aug7.txt.txt");
+const TString fout_name("output_files/ElEl_ttbar_wt_samesign_sep4.root");
 const double alpha = 0.05;
 const bool PRINT=false;
 
 const bool data_2016 = true;
+const bool do_samesign = true;
 
 bool is_empty_line(const char *s) {
     while (*s != '\0') {
@@ -268,9 +269,11 @@ void ElEl_reco_background_batch(int nJobs =1, int iJob=0)
                 t1->GetEntry(i);
                 if(el_size > EL_SIZE) printf("WARNING: MU_SIZE TOO LARGE \n");
                 if(met_size != 1) printf("WARNING: Met size not equal to 1\n");
+                bool opp_sign = ((abs(el_Charge[0] - el_Charge[1])) > 0.01);
+                bool good_sign = opp_sign ^ do_samesign;
                 bool good_trigger = HLT_El;
                 if(good_trigger &&
-                        el_size >= 2 && ((abs(el_Charge[0] - el_Charge[1])) > 0.01) &&
+                        el_size >= 2 && good_sign &&
                         el_IDMedium[0] && el_IDMedium[1] &&
                         el_ScaleCorr[0] * el_Pt[0] > 29. &&  el_ScaleCorr[1] * el_Pt[1] > 15. &&
                         goodElEta(el_SCEta[0]) && goodElEta(el_SCEta[1])){ 

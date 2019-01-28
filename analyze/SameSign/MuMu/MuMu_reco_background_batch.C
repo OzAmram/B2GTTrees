@@ -19,8 +19,8 @@ const double root2 = sqrt(2);
 double Ebeam = 6500.;
 double Pbeam = sqrt(Ebeam*Ebeam - 0.938*0.938);
 
-char *filename("diboson_files_aug7.txt");
-const TString fout_name("output_files/MuMu_diboson_same_sign_sep4.root");
+char *filename("DY_files_oct22.txt");
+const TString fout_name("output_files/MuMu_DY_samesign_sep4.root");
 const double alpha = 0.05;
 const bool PRINT=false;
 
@@ -107,6 +107,7 @@ void MuMu_reco_background_batch(int nJobs =1, int iJob=0)
     printf("\n");
     printf("Getting RC \n");
     RoccoR  rc("rcdata.2016.v3"); //directory path as input for now; initialize only once, contains all variations
+    printf("got RC\n");
     TRandom *rand = new TRandom3();
 
     mu_SFs runs_bcdef, runs_gh;

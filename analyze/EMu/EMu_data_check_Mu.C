@@ -16,9 +16,10 @@
 
 const double root2 = sqrt(2);
 const char* filename("SingleMuon_files_nov12.txt");
-const TString fout_name("output_files/EMu_SingleMuon_data_nov26.root");
+const TString fout_name("output_files/EMu_SingleMuon_samesign_data_nov26.root");
 
 const bool data_2016 = true;
+const bool do_samesign = true;
 
 bool is_empty_line(const char *s) {
     while (*s != '\0') {
@@ -155,9 +156,12 @@ void EMu_data_check_Mu(int nJobs =1, int iJob = 0)
             if(met_size != 1) printf("WARNING: Met size not equal to 1\n");
             if(mu_size > MU_SIZE) printf("Warning: too many muons\n");
             bool good_trigger = HLT_IsoMu || HLT_IsoTkMu;
+            bool opp_sign = ((abs(mu_Charge[0] - el_Charge[0])) > 0.01);
+            bool good_sign = opp_sign ^ do_samesign;
+
             if(good_trigger &&
                         mu_size >= 1 && el_size >=1 && 
-                        ((abs(mu_Charge[0] - el_Charge[0])) > 0.01) &&
+                         good_sign &&
                         mu_IsHighPtMuon[0] && el_IDMedium[0] && 
                         el_ScaleCorr[0] * el_Pt[0] > 10. && mu_Pt[0] > 26. &&
                         abs(mu_Eta[0]) < 2.4 && goodElEta(el_SCEta[0])){ 
