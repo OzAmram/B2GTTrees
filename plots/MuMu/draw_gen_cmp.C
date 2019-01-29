@@ -12,8 +12,7 @@
 #include "TROOT.h"
 #include "TFile.h"
 #include "TObject.h"
-#include "TH1F.h"
-#include "TProfile.h"
+#include "TH1F.h" #include "TProfile.h"
 #include "TStyle.h"
 #include "TCanvas.h"
 #include "TPostScript.h"
@@ -273,7 +272,7 @@ void make_ratio_plot(char title[80], TH1F* h1, char h1_label[80], TH1F* h2, char
 
 
 void draw_gen_cmp(){
-    TFile *f_mc_unbinned = TFile::Open("../analyze/output_files/MuMu_DY_april9_unbinned.root");
+    TFile *f_mc_unbinned = TFile::Open("../analyze/output_files/MuMu_DY_unbinned_slim_sep11.root");
     TTree *t_mc_unbinned = (TTree *)f_mc_unbinned->Get("T_data");
 
     TFile *f_mc_binned = TFile::Open("../analyze/output_files/MuMu_DY_slim_nov2.root");

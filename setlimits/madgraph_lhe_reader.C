@@ -24,6 +24,8 @@ struct eventcm {          //!< useful info in various frames
     double mtt;             //! invariant mass of ttbar pair
     double xF;              //! Feynman x of ttbar pair
 } ;
+Double_t get_AFB(char  infile[120], double m_low, double m_high, int correct_AFB_mbin = -1, bool print = false);
+Double_t get_AFB(int Zp_mass, Double_t cpl, int m_bin, bool correct_AFB = false, bool print = false);
 
 Double_t apply_AFB_correction(Double_t AFB, Double_t u_frac, int m_bin, bool print=false){
     //slopes and intercepts from fits (As a function of uquark frac
@@ -35,30 +37,13 @@ Double_t apply_AFB_correction(Double_t AFB, Double_t u_frac, int m_bin, bool pri
     return corr_factor * AFB;
 }
 
-
-
-
-// Main program  
-
 Double_t get_AFB(int Zp_mass, Double_t cpl, int m_bin, bool correct_AFB = false, bool print = false)
     //reweight PYTHIA samples to get AFB for given Zprime mass at a given
     //dilepton mass
 {
-    // Local variables 
-    int i, j, k, iqk=0, iqb=0, itq=0, itb=0, ig1=0, ig2=0, ijt, njet=0, npflavor=0, nevent, nfit;
-    int iqk_extra = 0, iqb_extra=0;
-    int nqqb=0, ngg=0, itbq, itbb, itqk, itqb, itlp, itnu;
-    int nup, idrup; 
-    float xwgtup, scalup, aqedup, aqcdup;
-    double alpha;
-    static char infile[80], header[80], inp1[80], outfile0[80], outfile1[80], outfile2[80];
-    FILE *ifp;
-    particle in;
-
-    long deltas, deltaus;
-    double deltat;
 
     // Construct file name to analyze
+    static char infile[80];
 
     //strcpy(infile, "Zprime_m200.lhe");
     Float_t m_bins[] = {150,200,   250,    350,    500,    700, 100000};
@@ -79,11 +64,33 @@ Double_t get_AFB(int Zp_mass, Double_t cpl, int m_bin, bool correct_AFB = false,
     //printf("Opening file %s \n", infile);
     //printf("M bins from %.0f to %.0f \n", m_low, m_high);
 
+    int correct_AFB_mbin = -1; //-1 means don't do correction
+    if(correct_AFB) correct_AFB_mbin = m_bin;
+
+    return get_AFB(infile, m_low, m_high, correct_AFB_mbin, print);
+}
 
 
-        // Make sure file is available 
+Double_t get_AFB(char infile[120], double m_low, double m_high, int correct_AFB_mbin = -1, bool print = false){
 
-        ifp = fopen(infile, "r");
+    // Local variables 
+    int i, j, k, iqk=0, iqb=0, itq=0, itb=0, ig1=0, ig2=0, ijt, njet=0, npflavor=0, nevent, nfit;
+    int iqk_extra = 0, iqb_extra=0;
+    int nqqb=0, ngg=0, itbq, itbb, itqk, itqb, itlp, itnu;
+    int nup, idrup; 
+    float xwgtup, scalup, aqedup, aqcdup;
+    double alpha;
+    static char header[80], inp1[80], outfile0[80], outfile1[80], outfile2[80];
+    FILE *ifp;
+    particle in;
+
+    long deltas, deltaus;
+    double deltat;
+
+
+    // Make sure file is available 
+
+    ifp = fopen(infile, "r");
     if (ifp==NULL) {
         printf("can't find %s\n",infile);
         return -1.;
@@ -170,8 +177,8 @@ Double_t get_AFB(int Zp_mass, Double_t cpl, int m_bin, bool correct_AFB = false,
 
 
             if(((iqk == -1) && (ig1 == -1 && iqb_extra == -1)) ||
-               ((iqb == -1) && (ig1 == -1 && iqk_extra ==-1)) ||
-                ((iqk == -1 && iqb == -1) && (ig2 == -1)) )   {
+                    ((iqb == -1) && (ig1 == -1 && iqk_extra ==-1)) ||
+                    ((iqk == -1 && iqb == -1) && (ig2 == -1)) )   {
                 printf("unable to determine initial state for event %i \n", event_num);
                 printf("indices are %i %i %i %i \n", iqk, iqb, ig1, ig2);
                 printf("printing particles \n");
@@ -252,9 +259,9 @@ Double_t get_AFB(int Zp_mass, Double_t cpl, int m_bin, bool correct_AFB = false,
                 else {
                     nB += 1.;}
 
-                 if(up[iqk].id % 2 == 0 || up[iqb].id % 2 == 0) //even id means u-type (unfilled will be -1)
-                     n_utype++;
-                 else n_dtype++;
+                if(up[iqk].id % 2 == 0 || up[iqb].id % 2 == 0) //even id means u-type (unfilled will be -1)
+                    n_utype++;
+                else n_dtype++;
 
 
             }
@@ -269,10 +276,10 @@ Double_t get_AFB(int Zp_mass, Double_t cpl, int m_bin, bool correct_AFB = false,
     Double_t dAFB = (1.-AFB*AFB)/sqrt((nF+nB));
     Double_t u_frac = n_utype/(n_utype + n_dtype);
 
-    if(correct_AFB)
+    if(correct_AFB_mbin > -1)
         //correct the predicted AFB to account for expected shift from
         //different dilution factor
-        AFB = apply_AFB_correction(AFB, u_frac,m_bin, print);
+        AFB = apply_AFB_correction(AFB, u_frac, correct_AFB_mbin, print);
 
     if(print){
         printf( "A_FB count = %.3f +- %.3f\n" 

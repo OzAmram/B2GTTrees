@@ -88,13 +88,7 @@ void make_m_cost_pt_gen_hist(TTree *t1, TH1F *h_m, TH1F *h_cost, TH1F *h_pt){
             if(cost > 0) gen_cost = fabs(gen_cost);
             else gen_cost = -fabs(gen_cost);
 
-            Double_t evt_weight = gen_weight *pu_SF * el_id_SF * el_reco_SF * el_HLT_SF * tot_lumi *1000.;
-            if (nJets >= 1){
-                evt_weight *= jet1_b_weight;
-            }
-            if (nJets >= 2){
-                evt_weight *= jet2_b_weight;
-            }
+            Double_t evt_weight = gen_weight *pu_SF * el_id_SF * el_reco_SF * el_HLT_SF * el_lumi *1000.;
             h_m->Fill(m, evt_weight);
             h_cost->Fill(cost, evt_weight);
             h_pt->Fill(pt, evt_weight);
@@ -172,11 +166,11 @@ void make_ratio_plot(char title[80], TH1F* h1, char h1_label[80], TH1F* h2, char
 
 
 void draw_gen_cmp(){
-    TFile *f_mc_unbinned = TFile::Open("../analyze/output_files/ElEl_DY_unbinned_zpeak_may29.root");
+    TFile *f_mc_unbinned = TFile::Open("../analyze/output_files/ElEl_DY_slim_nov2.root");
     TTree *t_mc_unbinned = (TTree *)f_mc_unbinned->Get("T_data");
 
 
-    TFile *f_mc_binned = TFile::Open("../analyze/output_files/ElEl_DY_zpeak_june14.root");
+    TFile *f_mc_binned = TFile::Open("../analyze/output_files/ElEl_DY_unbinned_slim_sep11.root");
     TTree *t_mc_binned = (TTree *)f_mc_binned->Get("T_data");
     setTDRStyle();
 

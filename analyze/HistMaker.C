@@ -179,7 +179,7 @@ static Double_t get_new_fakerate_prob(Double_t pt, Double_t eta, TH2D *h){
 }
 
 
-void make_emu_m_hist(TTree *t1, TH1F *h_m, bool is_data = false, int flag1 = FLAG_MUONS){
+void make_emu_m_cost_xf_hist(TTree *t1, TH1F *h_m, TH1F *h_cost, TH1F *h_xf, bool is_data = false, int flag1 = FLAG_MUONS){
     Long64_t size  =  t1->GetEntries();
     Double_t m, xF, cost, mu1_pt, mu2_pt, jet1_cmva, jet2_cmva, gen_weight;
     Double_t bcdef_HLT_SF, bcdef_iso_SF, bcdef_id_SF;
@@ -191,8 +191,6 @@ void make_emu_m_hist(TTree *t1, TH1F *h_m, bool is_data = false, int flag1 = FLA
     Int_t nJets;
     nJets = 2;
     pu_SF=1;
-    TH2D *h_m_bcdef = (TH2D *)h_m->Clone("h_m_bcdef");
-    TH2D *h_m_gh = (TH2D *)h_m->Clone("h_m_gh");
     TLorentzVector *el=0;
     TLorentzVector *mu=0;
     int nEvents =0;
@@ -207,8 +205,6 @@ void make_emu_m_hist(TTree *t1, TH1F *h_m, bool is_data = false, int flag1 = FLA
     t1->SetBranchAddress("nJets", &nJets);
     if(!is_data){
         t1->SetBranchAddress("gen_weight", &gen_weight);
-        t1->SetBranchAddress("jet1_b_weight", &jet1_b_weight);
-        t1->SetBranchAddress("jet2_b_weight", &jet2_b_weight);
         t1->SetBranchAddress("pu_SF", &pu_SF);
         t1->SetBranchAddress("bcdef_HLT_SF", &bcdef_HLT_SF);
         t1->SetBranchAddress("bcdef_iso_SF", &bcdef_iso_SF);
@@ -229,10 +225,15 @@ void make_emu_m_hist(TTree *t1, TH1F *h_m, bool is_data = false, int flag1 = FLA
         TLorentzVector cm;
         cm = *el + *mu;
         m = cm.M();
+        double cost = get_cost_v2(*el, *mu);
+        double xf = compute_xF(cm); 
 
         if(m >= 150. && met_pt < 50. && no_bjets){
             if(is_data){
                 h_m->Fill(m);
+                h_cost->Fill(cost, 0.5);
+                h_cost->Fill(-cost, 0.5);
+                h_xf->Fill(xf);
             }
             else{
                 nEvents++;
@@ -252,8 +253,11 @@ void make_emu_m_hist(TTree *t1, TH1F *h_m, bool is_data = false, int flag1 = FLA
                     evt_weight *= jet2_b_weight;
                 }
                 //printf(" %.2e %.2e %.2e \n", evt_weight, evt_weight *bcdef_weight, evt_weight *gh_weight);
-                h_m_bcdef->Fill(m,evt_weight * bcdef_weight);
-                h_m_gh->Fill(m, evt_weight * gh_weight);
+                double total_weight = 1000 * (evt_weight * gh_weight * gh_lumi + evt_weight * bcdef_weight * bcdef_lumi);
+                h_m->Fill(m, total_weight);
+                h_cost->Fill(cost, 0.5 *total_weight);
+                h_cost->Fill(-cost, 0.5 *total_weight);
+                h_xf->Fill(xf, total_weight);
             }
 
 
@@ -261,13 +265,58 @@ void make_emu_m_hist(TTree *t1, TH1F *h_m, bool is_data = false, int flag1 = FLA
         }
     }
     if(!is_data){
-        h_m_bcdef ->Scale(bcdef_lumi * 1000);
-        h_m_gh ->Scale(gh_lumi * 1000);
         //Printf("%.1f %.1f", h_m_bcdef->Integral(), h_m_gh->Integral());
-        h_m->Add(h_m_bcdef, h_m_gh);
         printf("%i MC events. Poission unc. is %.2f \n", nEvents, 1./(sqrt(nEvents)));
     }
 }
+void make_qcd_from_emu_m_cost_xf_hist(TTree *t_data, TTree *t_ttbar, TTree *t_diboson, TTree *t_dy, 
+        TH1F *h_m, TH1F *h_cost, TH1F *h_xf){
+    int type = FLAG_MUONS;
+    TH1F *data_m = (TH1F*)h_m->Clone("data_m");
+    TH1F *ttbar_m = (TH1F*)h_m->Clone("ttbar_m");
+    TH1F *diboson_m = (TH1F*)h_m->Clone("diboson_m");
+    TH1F *dy_m = (TH1F*)h_m->Clone("dy_m");
+    TH1F *data_cost = (TH1F*)h_cost->Clone("data_cost");
+    TH1F *ttbar_cost = (TH1F*)h_cost->Clone("ttbar_cost");
+    TH1F *diboson_cost = (TH1F*)h_cost->Clone("diboson_cost");
+    TH1F *dy_cost = (TH1F*)h_cost->Clone("dy_cost");
+    TH1F *data_xf = (TH1F*)h_xf->Clone("data_xf");
+    TH1F *ttbar_xf = (TH1F*)h_xf->Clone("ttbar_xf");
+    TH1F *diboson_xf = (TH1F*)h_xf->Clone("diboson_xf");
+    TH1F *dy_xf = (TH1F*)h_xf->Clone("dy_xf");
+
+    make_emu_m_cost_xf_hist(t_data, data_m, data_cost, data_xf, true, type);
+    make_emu_m_cost_xf_hist(t_ttbar, ttbar_m, ttbar_cost, ttbar_xf, false, type);
+    make_emu_m_cost_xf_hist(t_diboson, diboson_m, diboson_cost, diboson_xf, false, type);
+    make_emu_m_cost_xf_hist(t_dy, dy_m, dy_cost, dy_xf, false, type);
+
+
+    //h_m = data_m - ttbar_m  - dy_m - diboson_m;
+    //h_xf = data_xf - ttbar_xf  - dy_xf - diboson_xf;
+    //h_cost = data_cost - ttbar_cost  - dy_cost - diboson_cost;
+    //
+    TH1F *temp1, *temp2;
+
+    temp1 = (TH1F*) data_m->Clone("temp1");
+    temp2 = (TH1F*) data_m->Clone("temp2");
+    temp1->Add(data_m, ttbar_m ,1, -1);
+    temp2->Add(dy_m, diboson_m ,-1, -1);
+    h_m->Add(temp1, temp2);
+
+    temp1 = (TH1F*) data_cost->Clone("temp1");
+    temp2 = (TH1F*) data_cost->Clone("temp2");
+    temp1->Add(data_cost, ttbar_cost ,1, -1);
+    temp2->Add(dy_cost, diboson_cost ,-1, -1);
+    h_cost->Add(temp1, temp2);
+
+    temp1 = (TH1F*) data_xf->Clone("temp1");
+    temp2 = (TH1F*) data_xf->Clone("temp2");
+    temp1->Add(data_xf, ttbar_xf ,1, -1);
+    temp2->Add(dy_xf, diboson_xf ,-1, -1);
+    h_xf->Add(temp1, temp2);
+
+}
+
 
 void make_m_cost_pt_xf_hist(TTree *t1, TH1F *h_m, TH1F *h_cost, TH1F *h_pt, TH1F *h_xf, bool is_data=false, int flag1 = FLAG_MUONS, bool emu_scale =false, bool turn_on_RC = true,
         Double_t m_low = 150., Double_t m_high = 9999999.){
