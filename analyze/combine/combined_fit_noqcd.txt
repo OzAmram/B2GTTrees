@@ -1,0 +1,22 @@
+
+# Shape-based analysis setup for combined AFB
+imax 2 # There are two channels (ee and mumu)
+jmax 2 # There are 4 backgrounds with QCD
+kmax * # Let Combine figure out how many nuisance parameters there are
+-------------------------------------------------------------------------------
+# Next declare how to find the histograms in the file
+-------------------------------------------------------------------------------
+shapes * * templates.root  $M_BIN/$CHANNEL_$PROCESS $M_BIN/$CHANNEL_$PROCESS_$SYSTEMATIC
+#shapes data_obs * templates.root $M_BIN/$CHANNEL_data_obs
+
+bin             ee     mumu
+observation     -1      -1 
+-------------------------------------------------------------------------------
+# Add the processes contributing to the data expectation
+bin         ee      ee      ee        mumu    mumu    mumu        
+process     fpl     fmn     bk          fpl     fmn     bk   
+process     0       -1      1           0       -1      1    
+rate        -1      -1      -1         -1      -1      -1    
+-------------------------------------------------------------------------------
+# Add the systematics
+

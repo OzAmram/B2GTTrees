@@ -20,6 +20,7 @@
 #include "TVector3.h"
 #include "TFitter.h"
 #include "TSystem.h"
+#include "TH2D.h"
 #include "Math/Functor.h"
 
 using namespace std;
@@ -135,7 +136,6 @@ static void setup_new_mu_fakerate(FakeRate *FR){
     TDirectory *subdir = gDirectory;
     TH2D *h1 = (TH2D *) subdir->Get("h_rate_new")->Clone();
     h1->SetDirectory(0);
-    h1->Print();
     FR->h = h1;
     f0->Close();
 }

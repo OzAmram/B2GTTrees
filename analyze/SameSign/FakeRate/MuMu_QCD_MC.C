@@ -8,17 +8,16 @@
 #include <algorithm>
 #include "TFile.h"
 #include "TFile.h"
-#include "../../ScaleFactors.C"
 #include "../../TemplateMaker.C"
 
 #define GEN_SIZE 300
 #define MU_SIZE 100
-#define JET_SIZE 20
+#define JET_SIZE 60
 #define MAX_SAMPLES 20
 
 const double root2 = sqrt(2);
-const char* filename("diboson_files_aug29.txt");
-const TString fout_name("SameSign/output_files/MuMu_fakerate_QCD_MC_dec4.root");
+const char* filename("diboson_files_aug7.txt");
+const TString fout_name("output_files/MuMu_fakerate_QCD_MC_samesign_oct29.root");
 
 
 bool is_empty_line(const char *s) {
@@ -83,7 +82,7 @@ void compute_norms(Double_t *norms, unsigned int *nFiles){
 
 }
 
-void MuMu_QCD_MC()
+void MuMu_QCD_MC(int nJobs = 1, int iJob = 0)
 {
 
     Double_t norms[MAX_SAMPLES]; // computed normalizations to apply to each event in a sample (based on xsection and total weight)
@@ -94,11 +93,9 @@ void MuMu_QCD_MC()
 
     mu_SFs runs_bcdef, runs_gh;
     pileup_SFs pu_SFs;
-    BTag_readers b_reader;
-    BTag_effs btag_effs;
     el_SFs el_SF;
     //separate SFs for runs BCDEF and GH
-    setup_SFs(&runs_bcdef, &runs_gh, &b_reader, &btag_effs, &pu_SFs);
+    setup_SFs(&runs_bcdef, &runs_gh, &pu_SFs);
     printf("Retrieved Scale Factors \n\n");
 
     TTree *tout= new TTree("T_data", "Tree with reco events");
@@ -152,6 +149,7 @@ void MuMu_QCD_MC()
 
     FILE *root_files = fopen(filename, "r");
     char lines[300];
+    int count = 0;
     while(fgets(lines, 300, root_files)){
         if(lines[0] == '#' || is_empty_line(lines)) continue; //comment line
         else if(lines[0] == '!'){//sample header
@@ -166,6 +164,8 @@ void MuMu_QCD_MC()
             printf("Moving on to sample %i which has normalization %e \n", sample_idx, normalization);
         }
         else if(normalization > 0) {//root file
+            count++;
+            if(count % nJobs != iJob) continue; 
 
 
 
@@ -192,7 +192,7 @@ void MuMu_QCD_MC()
             UInt_t mu_size, jet_size, met_size;
 
             Float_t mu_Pt[MU_SIZE], mu_Eta[MU_SIZE], mu_Phi[MU_SIZE], mu_E[MU_SIZE], 
-                    mu_Charge[MU_SIZE], mu_IsTightMuon[MU_SIZE];
+                    mu_Charge[MU_SIZE], mu_IsHighPtMuon[MU_SIZE];
             Float_t mu_SumChargedHadronPt[MU_SIZE], mu_SumNeutralHadronPt[MU_SIZE], mu_SumPUPt[MU_SIZE], mu_SumPhotonPt[MU_SIZE];
 
 
@@ -200,19 +200,21 @@ void MuMu_QCD_MC()
                     jet_CSV[JET_SIZE], jet_CMVA[JET_SIZE], jet_partonflavour[JET_SIZE];
 
             Float_t evt_Gen_Weight;
+            Float_t mu_TrackerIso[MU_SIZE];
 
             Int_t  HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL, HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL, 
                 HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ, HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ;
 
             Int_t HLT_IsoMu, HLT_IsoTkMu, pu_NtrueInt;
             t1->SetBranchAddress("mu_size", &mu_size); //number of muons in the event
-            t1->SetBranchAddress("mu_Pt", &mu_Pt);
+            t1->SetBranchAddress("mu_TunePMuonBestTrackPt", &mu_Pt);
             t1->SetBranchAddress("mu_Eta", &mu_Eta);
             t1->SetBranchAddress("mu_Phi", &mu_Phi);
             t1->SetBranchAddress("mu_E", &mu_E);
             t1->SetBranchAddress("mu_Charge", &mu_Charge);
 
-            t1->SetBranchAddress("mu_IsTightMuon", &mu_IsTightMuon);
+            t1->SetBranchAddress("mu_IsHighPtMuon", &mu_IsHighPtMuon);
+            t1->SetBranchAddress("mu_TrackerIso", &mu_TrackerIso);
             t1->SetBranchAddress("mu_SumChargedHadronPt", &mu_SumChargedHadronPt);
             t1->SetBranchAddress("mu_SumNeutralHadronPt", &mu_SumNeutralHadronPt);
             t1->SetBranchAddress("mu_SumPUPt", &mu_SumPUPt);
@@ -229,17 +231,13 @@ void MuMu_QCD_MC()
 
             t1->SetBranchAddress("HLT_IsoMu24", &HLT_IsoMu);
             t1->SetBranchAddress("HLT_IsoTkMu24", &HLT_IsoTkMu);
-            t1->SetBranchAddress("HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ", &HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ);
-            t1->SetBranchAddress("HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL", &HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL);
-            t1->SetBranchAddress("HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ", &HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ);
-            t1->SetBranchAddress("HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL", &HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL);
         
             t1->SetBranchAddress("evt_Gen_Weight", &evt_Gen_Weight);
             t1->SetBranchAddress("pu_NtrueInt",&pu_NtrueInt);
 
 
-            t1->SetBranchAddress("met_size", &met_size);
-            t1->SetBranchAddress("met_Pt", &met_pt);
+            t1->SetBranchAddress("met_MuCleanOnly_size", &met_size);
+            t1->SetBranchAddress("met_MuCleanOnly_Pt", &met_pt);
 
             Long64_t nEntries =  t1->GetEntries();
 
@@ -253,24 +251,25 @@ void MuMu_QCD_MC()
                 bool good_trigger = HLT_IsoMu || HLT_IsoTkMu;
                 //bool good_trigger = true;
                 if(good_trigger &&
-                        mu_size >= 2 && (mu_Charge[0] * mu_Charge[1] > 0.) &&
-                        mu_IsTightMuon[0] && mu_IsTightMuon[1] &&
-                        mu_Pt[0] > 26. &&  mu_Pt[1] > 10. &&
+                        mu_size >= 2 && ((abs(mu_Charge[0] - mu_Charge[1])) < 0.01) &&
+                        mu_IsHighPtMuon[0] && mu_IsHighPtMuon[1] &&
+                        mu_Pt[0] > 26. &&  mu_Pt[1] > 15. &&
                         abs(mu_Eta[0]) < 2.4 && abs(mu_Eta[1]) < 2.4){ 
                     //only want events with 2 oppositely charged muons
                     //with pt above threshold
                     //See https://twiki.cern.ch/twiki/bin/viewauth/CMS/SWGuideMuonIdRun2 for iso cuts
-                    float iso_0 = (mu_SumChargedHadronPt[0] + max(0., mu_SumNeutralHadronPt[0] + mu_SumPhotonPt[0] - 0.5 * mu_SumPUPt[0]))/mu_Pt[0];
-                    float iso_1 = (mu_SumChargedHadronPt[1] + max(0., mu_SumNeutralHadronPt[1] + mu_SumPhotonPt[1] - 0.5 * mu_SumPUPt[1]))/mu_Pt[1];
-                    const float tight_iso = 0.15;
-                    const float loose_iso = 0.25;
+                    float iso_0 = mu_TrackerIso[0];
+                    float iso_1 = mu_TrackerIso[1];
+                    const float tight_iso = 0.10;
+                    const float loose_iso = 0.10;
+                    const float mu_mass = 0.1056; // in GEV
                     if(mu_Charge[0] >0){
-                        mu_p.SetPtEtaPhiE(mu_Pt[0], mu_Eta[0], mu_Phi[0], mu_E[0]);
-                        mu_m.SetPtEtaPhiE(mu_Pt[1], mu_Eta[1], mu_Phi[1], mu_E[1]);
+                        mu_p.SetPtEtaPhiM(mu_Pt[0], mu_Eta[0], mu_Phi[0], mu_mass);
+                        mu_m.SetPtEtaPhiM(mu_Pt[1], mu_Eta[1], mu_Phi[1], mu_mass);
                     }
                     else{
-                        mu_m.SetPtEtaPhiE(mu_Pt[0], mu_Eta[0], mu_Phi[0], mu_E[0]);
-                        mu_p.SetPtEtaPhiE(mu_Pt[1], mu_Eta[1], mu_Phi[1], mu_E[1]);
+                        mu_m.SetPtEtaPhiM(mu_Pt[0], mu_Eta[0], mu_Phi[0], mu_mass);
+                        mu_p.SetPtEtaPhiM(mu_Pt[1], mu_Eta[1], mu_Phi[1], mu_mass);
                     }
 
                     cm = mu_p + mu_m;
@@ -295,7 +294,8 @@ void MuMu_QCD_MC()
                         }
                     }
                     bool no_bjets = has_no_bjets(nJets, jet1_pt, jet2_pt, jet1_cmva, jet2_cmva);
-                    if ( (iso_0 > tight_iso) && (iso_1 > tight_iso) && cm_m >=150. && no_bjets && met_pt < 50.){
+                    if ( (iso_0 > tight_iso) && (iso_1 > tight_iso) && cm_m >=25. && no_bjets && met_pt < 50.){
+
                         xF = abs(2.*cm.Pz()/13000.); 
 
                         // compute Colins soper angle with formula
@@ -310,6 +310,8 @@ void MuMu_QCD_MC()
                         double cost = 2*(mu_m_pls*mu_p_min - mu_m_min*mu_p_pls)/(cm_m*sqrt(cm_m*cm_m + qt2));
                         if(cm.Pz() < 0.) cost_r = -cost;
                         else cost_r = cost;
+
+
 
                         double_muon_trig = HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL || HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL || HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ || HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ;
                         mu1_pt = mu_Pt[0];

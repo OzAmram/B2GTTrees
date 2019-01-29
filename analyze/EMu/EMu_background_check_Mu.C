@@ -1,13 +1,17 @@
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
 #include <iostream>
 #include <cstring>
 #include <algorithm>
-
 #include "TFile.h"
-#include "../TemplateMaker.C"
+#include "TRandom3.h"
+#include "TTree.h"
+#include "TLorentzVector.h"
+#include "../ScaleFactors.C"
+#include "../RoccoR.cc"
+#include "../HistMaker.C"
+
 
 #define GEN_SIZE 300
 #define MU_SIZE 100
@@ -19,10 +23,11 @@ const double root2 = sqrt(2);
 double Ebeam = 6500.;
 double Pbeam = sqrt(Ebeam*Ebeam - 0.938*0.938);
 
-char *filename("WT_files_aug7.txt");
-const TString fout_name("output_files/EMu_WT_nov1.root");
+char *filename("diboson_files_aug7.txt");
+const TString fout_name("output_files/EMu_diboson_samesign_dec4.root");
 const bool PRINT=false;
 
+const bool do_samesign = true;
 
 bool is_empty_line(const char *s) {
     while (*s != '\0') {
@@ -100,13 +105,10 @@ void EMu_background_check_Mu(int nJobs = 1, int iJob = 0)
     printf("getting SFs \n");
     pileup_SFs pu_SFs;
     mu_SFs runs_bcdef, runs_gh;
-    BTag_readers b_reader;
-    BTag_effs btag_effs;
     el_SFs el_SF;
     //separate SFs for runs BCDEF and GH
     setup_SFs(&runs_bcdef, &runs_gh, &pu_SFs);
     setup_el_SF(&el_SF);
-    setup_btag_SFs(&b_reader, &btag_effs);
     printf("got Sfs\n");
 
     TTree *tout= new TTree("T_data", "Tree with reco events");
@@ -114,7 +116,7 @@ void EMu_background_check_Mu(int nJobs = 1, int iJob = 0)
     Double_t cm_m, xF, cost_r, mu1_pt, el1_pt, jet1_pt, jet2_pt, gen_weight,
              jet1_cmva, jet2_cmva, mu1_eta, el1_eta, jet1_eta, jet2_eta;
     Double_t bcdef_HLT_SF, bcdef_iso_SF, bcdef_id_SF, gh_HLT_SF, gh_iso_SF, gh_id_SF,
-             el_id_SF, el_reco_SF, btag_weight, jet1_b_weight, jet2_b_weight, pu_SF;
+             el_id_SF, el_reco_SF, pu_SF;
 
     Double_t bcdef_trk_SF, gh_trk_SF;
     Float_t met_pt;
@@ -148,9 +150,6 @@ void EMu_background_check_Mu(int nJobs = 1, int iJob = 0)
     tout->Branch("bcdef_trk_SF", &bcdef_trk_SF);
     tout->Branch("el_id_SF", &el_id_SF);
     tout->Branch("el_reco_SF", &el_reco_SF);
-    tout->Branch("jet1_b_weight", &jet1_b_weight);
-    tout->Branch("jet2_b_weight", &jet2_b_weight);
-    tout->Branch("btag_weight", &btag_weight);
 
 
 
@@ -281,9 +280,12 @@ void EMu_background_check_Mu(int nJobs = 1, int iJob = 0)
                 if(mu_size > MU_SIZE) printf("WARNING: MU_SIZE TOO LARGE \n");
                 if(met_size != 1) printf("WARNING: Met size not equal to 1\n");
                 bool good_trigger = HLT_IsoMu || HLT_IsoTkMu;
-            if(good_trigger &&
+                bool opp_sign = ((abs(mu_Charge[0] - el_Charge[0])) > 0.01);
+                bool good_sign = opp_sign ^ do_samesign;
+
+                if(good_trigger &&
                         mu_size >= 1 && el_size >=1 && 
-                        ((abs(mu_Charge[0] - el_Charge[0])) > 0.01) &&
+                        good_sign &&
                         mu_IsHighPtMuon[0] && el_IDMedium[0] && 
                         el_ScaleCorr[0] * el_Pt[0] > 10. && mu_Pt[0] > 26. &&
                         abs(mu_Eta[0]) < 2.4 && goodElEta(el_SCEta[0])){ 
@@ -318,9 +320,8 @@ void EMu_background_check_Mu(int nJobs = 1, int iJob = 0)
                             }
                         }
                     }
-                    bool no_bjets = has_no_bjets(nJets, jet1_pt, jet2_pt, jet1_cmva, jet2_cmva);
 
-                    if (no_bjets && (met_pt < 50) && (cm_m >=150.) && iso_0 < tight_iso){
+                    if ((cm_m >=150.) && iso_0 < tight_iso){
                         if(PRINT) sprintf(out_buff + strlen(out_buff),"Event %i \n", i);
 
                         nJets =0;
@@ -331,7 +332,6 @@ void EMu_background_check_Mu(int nJobs = 1, int iJob = 0)
                                     jet2_eta = jet_Eta[j];
                                     jet2_cmva = jet_CMVA[j];
                                     jet2_flavour = jet_partonflavour[j];
-                                    jet2_b_weight = get_btag_weight(jet_Pt[j], jet_Eta[j],jet_partonflavour[j],btag_effs, b_reader);
                                     nJets =2;
                                     break;
                                 }
@@ -340,7 +340,6 @@ void EMu_background_check_Mu(int nJobs = 1, int iJob = 0)
                                     jet1_eta = jet_Eta[j];
                                     jet1_cmva = jet_CMVA[j];
                                     jet1_flavour = jet_partonflavour[j];
-                                    jet1_b_weight = get_btag_weight(jet_Pt[j], jet_Eta[j],jet_partonflavour[j],btag_effs, b_reader);
                                     nJets = 1;
                                 }
                             }

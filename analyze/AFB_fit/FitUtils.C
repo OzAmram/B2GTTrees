@@ -4,8 +4,8 @@ double get_chi_sq(TH2F *h_data, TH2F *h_sym, TH2F* h_asym, TH2F* h_back, double 
     h_data->Scale(1./h_data->Integral());
     float sum=0;
 
-    for(int i=1; i<n_xf_bins; i++){
-        for(int j=1; j<n_cost_bins; j++){
+    for(int i=1; i<=n_xf_bins; i++){
+        for(int j=1; j<=n_cost_bins; j++){
             float sym = h_sym->GetBinContent(i,j);
             float asym = h_asym->GetBinContent(i,j);
             float back = h_back->GetBinContent(i,j);
@@ -26,8 +26,8 @@ double get_chi_sq_v2(TH2F *h_data, TH2F *h_sym, TH2F* h_asym, TH2F* h_back, TH2F
     h_data->Scale(1./h_data->Integral());
     float sum=0;
 
-    for(int i=1; i<n_xf_bins; i++){
-        for(int j=1; j<n_cost_bins; j++){
+    for(int i=1; i<=n_xf_bins; i++){
+        for(int j=1; j<=n_cost_bins; j++){
             float sym = h_sym->GetBinContent(i,j);
             float asym = h_asym->GetBinContent(i,j);
             float back = h_back->GetBinContent(i,j);

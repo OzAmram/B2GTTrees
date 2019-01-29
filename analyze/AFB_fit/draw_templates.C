@@ -142,7 +142,7 @@ void draw_template(char title[80], TH2F *h){
         else if(i==3){
             h_1d[2]->SetLineColor(kRed);
         }
-        else if((i==4){
+        else if(i==4){
             h_1d[3]->SetLineColor(kGreen);
         }
         else if(i==5){

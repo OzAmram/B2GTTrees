@@ -5,19 +5,22 @@
 #include <cstring>
 #include <algorithm>
 #include "TFile.h"
+#include "TRandom3.h"
+#include "TTree.h"
+#include "TLorentzVector.h"
 #include "../../ScaleFactors.C"
+#include "../../RoccoR.cc"
 
-#define GEN_SIZE 300
-#define MU_SIZE 100
-#define JET_SIZE 20
+#define MU_SIZE 200
+#define JET_SIZE 60
 #define MAX_SAMPLES 20
 
 const double root2 = sqrt(2);
 double Ebeam = 6500.;
 double Pbeam = sqrt(Ebeam*Ebeam - 0.938*0.938);
 
-char *filename("diboson_files_aug29.txt");
-const TString fout_name("output_files/MuMu_diboson_samesign_may31.root");
+char *filename("DY_files_oct22.txt");
+const TString fout_name("output_files/MuMu_DY_samesign_sep4.root");
 const double alpha = 0.05;
 const bool PRINT=false;
 
@@ -87,30 +90,43 @@ void compute_norms(Double_t *norms, unsigned int *nFiles){
 
 
 
-void MuMu_reco_background_batch()
+void MuMu_reco_background_batch(int nJobs =1, int iJob=0)
 {
 
     Double_t norms[MAX_SAMPLES]; // computed normalizations to apply to each event in a sample (based on xsection and total weight)
+    for(int i=0; i<MAX_SAMPLES; i++) norms[i]= 0.;
     unsigned int nFiles = 0;
     printf("Computing normalizations for each sample \n");
     compute_norms(norms, &nFiles);
     printf("Done with normalizations \n\n\n");
 
+    printf("NORMS: \n");
+    for(int i=0; i< MAX_SAMPLES; i++){
+        printf("%.2e ", norms[i]);
+    }
+    printf("\n");
+    printf("Getting RC \n");
+    RoccoR  rc("rcdata.2016.v3"); //directory path as input for now; initialize only once, contains all variations
+    printf("got RC\n");
+    TRandom *rand = new TRandom3();
+
     mu_SFs runs_bcdef, runs_gh;
     pileup_SFs pu_SFs;
-    BTag_readers b_reader;
-    BTag_effs btag_effs;
     el_SFs el_SF;
     //separate SFs for runs BCDEF and GH
-    setup_SFs(&runs_bcdef, &runs_gh, &b_reader, &btag_effs, &pu_SFs);
+    setup_SFs(&runs_bcdef, &runs_gh, &pu_SFs);
     printf("Retrieved Scale Factors \n\n");
 
+
+    TFile *fout = TFile::Open(fout_name, "RECREATE");
+    fout->cd();
     TTree *tout= new TTree("T_data", "Tree with reco events");
-    tout->SetDirectory(0);
+    //tout->SetDirectory(0);
     Double_t cm_m, xF, cost_r, mu1_pt, mu2_pt, mu1_eta, mu2_eta, jet1_pt, jet2_pt, deltaC, jet1_eta, jet2_eta, gen_weight,
              jet1_cmva, jet1_csv, jet2_cmva, jet2_csv;
-    Double_t bcdef_HLT_SF, bcdef_iso_SF, bcdef_id_SF, gh_HLT_SF, gh_iso_SF, gh_id_SF,
+    Double_t bcdef_HLT_SF, bcdef_iso_SF, bcdef_id_SF, gh_HLT_SF, gh_iso_SF, gh_id_SF, bcdef_trk_SF, gh_trk_SF,
              jet1_b_weight, jet2_b_weight, pu_SF;
+    Double_t mu_p_SF, mu_m_SF, mu_p_SF_alt, mu_m_SF_alt, mu_p_SF_up, mu_p_SF_down, mu_m_SF_up, mu_m_SF_down;
     Int_t nJets, jet1_flavour, jet2_flavour, pu_NtrueInt;
     Float_t met_pt;
     TLorentzVector mu_p, mu_m, cm, q1, q2;
@@ -119,6 +135,14 @@ void MuMu_reco_background_batch()
     tout->Branch("cost", &cost_r, "cost/D");
     tout->Branch("mu1_pt", &mu1_pt, "mu1_pt/D");
     tout->Branch("mu2_pt", &mu2_pt, "mu2_pt/D");
+    tout->Branch("mu_p_SF", &mu_p_SF, "mu_p_SF/D");
+    tout->Branch("mu_m_SF", &mu_m_SF, "mu_m_SF/D");
+    tout->Branch("mu_p_SF_up", &mu_p_SF_up, "mu_p_SF_up/D");
+    tout->Branch("mu_m_SF_up", &mu_m_SF, "mu_m_SF_up/D");
+    tout->Branch("mu_p_SF_down", &mu_p_SF_down, "mu_p_SF_down/D");
+    tout->Branch("mu_m_SF_down", &mu_m_SF, "mu_m_SF_down/D");
+    tout->Branch("mu_p_SF_alt", &mu_p_SF_alt, "mu_p_SF_alt/D");
+    tout->Branch("mu_m_SF_alt", &mu_m_SF_alt, "mu_m_SF_alt/D");
     tout->Branch("mu1_eta", &mu1_eta, "mu1_eta/D");
     tout->Branch("mu2_eta", &mu2_eta, "mu2_eta/D");
     tout->Branch("mu_m", "TLorentzVector", &mu_m);
@@ -139,8 +163,8 @@ void MuMu_reco_background_batch()
     tout->Branch("gh_HLT_SF", &gh_HLT_SF);
     tout->Branch("gh_iso_SF", &gh_iso_SF);
     tout->Branch("gh_id_SF", &gh_id_SF);
-    tout->Branch("jet1_b_weight", &jet1_b_weight);
-    tout->Branch("jet2_b_weight", &jet2_b_weight);
+    tout->Branch("gh_trk_SF", &gh_trk_SF);
+    tout->Branch("bcdef_trk_SF", &bcdef_trk_SF);
     tout->Branch("nJets", &nJets, "nJets/I");
     tout->Branch("jet1_flavour", &jet1_flavour, "jet1_flavour/I");
     tout->Branch("jet2_flavour", &jet2_flavour, "jet2_flavour/I");
@@ -154,6 +178,7 @@ void MuMu_reco_background_batch()
 
     FILE *root_files = fopen(filename, "r");
     char lines[300];
+    int count = 0;
     while(fgets(lines, 300, root_files)){
         if(lines[0] == '#' || is_empty_line(lines)) continue; //comment line
         else if(lines[0] == '!'){//sample header
@@ -168,7 +193,8 @@ void MuMu_reco_background_batch()
             printf("Moving on to sample %i which has normalization %e \n", sample_idx, normalization);
         }
         else if(normalization > 0) {//root file
-
+            count++;
+            if(count % nJobs != iJob) continue; 
 
 
             char * end;
@@ -194,10 +220,12 @@ void MuMu_reco_background_batch()
             UInt_t mu_size, jet_size, met_size;
 
             Float_t mu_Pt[MU_SIZE], mu_Eta[MU_SIZE], mu_Phi[MU_SIZE], mu_E[MU_SIZE], 
-                    mu_Charge[MU_SIZE], mu_IsTightMuon[MU_SIZE];
-            Float_t mu_SumChargedHadronPt[MU_SIZE], mu_SumNeutralHadronPt[MU_SIZE], mu_SumPUPt[MU_SIZE], mu_SumPhotonPt[MU_SIZE];
+                    mu_Charge[MU_SIZE], mu_IsHighPtMuon[MU_SIZE];
+            Float_t mu_SumChargedHadronPt[MU_SIZE], mu_SumNeutralHadronPt[MU_SIZE], mu_SumPUPt[MU_SIZE], mu_SumPhotonPt[MU_SIZE],
+                    mu_NumberTrackerLayers[MU_SIZE];
 
 
+            Float_t mu_TrackerIso[MU_SIZE];
             Float_t jet_Pt[JET_SIZE], jet_Eta[JET_SIZE], jet_Phi[JET_SIZE], jet_E[JET_SIZE],
                     jet_CSV[JET_SIZE], jet_CMVA[JET_SIZE], jet_partonflavour[JET_SIZE];
 
@@ -205,17 +233,19 @@ void MuMu_reco_background_batch()
 
             Int_t HLT_IsoMu, HLT_IsoTkMu;
             t1->SetBranchAddress("mu_size", &mu_size); //number of muons in the event
-            t1->SetBranchAddress("mu_Pt", &mu_Pt);
+            t1->SetBranchAddress("mu_TunePMuonBestTrackPt", &mu_Pt);
             t1->SetBranchAddress("mu_Eta", &mu_Eta);
             t1->SetBranchAddress("mu_Phi", &mu_Phi);
             t1->SetBranchAddress("mu_E", &mu_E);
             t1->SetBranchAddress("mu_Charge", &mu_Charge);
 
-            t1->SetBranchAddress("mu_IsTightMuon", &mu_IsTightMuon);
+            t1->SetBranchAddress("mu_IsHighPtMuon", &mu_IsHighPtMuon);
+            t1->SetBranchAddress("mu_TrackerIso", &mu_TrackerIso);
             t1->SetBranchAddress("mu_SumChargedHadronPt", &mu_SumChargedHadronPt);
             t1->SetBranchAddress("mu_SumNeutralHadronPt", &mu_SumNeutralHadronPt);
             t1->SetBranchAddress("mu_SumPUPt", &mu_SumPUPt);
             t1->SetBranchAddress("mu_SumPhotonPt", &mu_SumPhotonPt);
+            t1->SetBranchAddress("mu_NumberTrackerLayers", &mu_NumberTrackerLayers);
 
             if(data_2016){
                 t1->SetBranchAddress("jetAK4CHS_size", &jet_size);
@@ -247,44 +277,50 @@ void MuMu_reco_background_batch()
 
             t1->SetBranchAddress("pu_NtrueInt",&pu_NtrueInt);
 
-            t1->SetBranchAddress("met_size", &met_size);
-            t1->SetBranchAddress("met_Pt", &met_pt);
+            t1->SetBranchAddress("met_MuCleanOnly_size", &met_size);
+            t1->SetBranchAddress("met_MuCleanOnly_Pt", &met_pt);
 
             Long64_t nEntries =  t1->GetEntries();
 
             char out_buff[10000];
             bool print_out = false;
 
+            bool printed = false;
+            printf("\n");
             for (int i=0; i<nEntries; i++) {
                 t1->GetEntry(i);
+
+
                 if(mu_size > MU_SIZE) printf("WARNING: MU_SIZE TOO LARGE \n");
+                if(jet_size > JET_SIZE) printf("WARNING: JET_SIZE TOO LARGE. Jet size is %i \n", (int) jet_size);
                 if(met_size != 1) printf("WARNING: Met size not equal to 1\n");
                 bool good_trigger = HLT_IsoMu || HLT_IsoTkMu;
                 if(good_trigger &&
-                        mu_size >= 2 && (mu_Charge[0] * mu_Charge[1] > 0.) &&
-                        mu_IsTightMuon[0] && mu_IsTightMuon[1] &&
-                        mu_Pt[0] > 26. &&  mu_Pt[1] > 10. &&
+                        mu_size >= 2 && ((abs(mu_Charge[0] - mu_Charge[1])) < 0.01) &&
+                        mu_IsHighPtMuon[0] && mu_IsHighPtMuon[1] &&
+                        mu_Pt[0] > 26. &&  mu_Pt[1] > 15. &&
                         abs(mu_Eta[0]) < 2.4 && abs(mu_Eta[1]) < 2.4){ 
 
                     //See https://twiki.cern.ch/twiki/bin/viewauth/CMS/SWGuideMuonIdRun2 for iso cuts
-                    float iso_0 = (mu_SumChargedHadronPt[0] + max(0., mu_SumNeutralHadronPt[0] + mu_SumPhotonPt[0] - 0.5 * mu_SumPUPt[0]))/mu_Pt[0];
-                    float iso_1 = (mu_SumChargedHadronPt[1] + max(0., mu_SumNeutralHadronPt[1] + mu_SumPhotonPt[1] - 0.5 * mu_SumPUPt[1]))/mu_Pt[1];
-                    float tight_iso = 0.15;
-                    float loose_iso = 0.25;
+                    float iso_0 = mu_TrackerIso[0];
+                    float iso_1 = mu_TrackerIso[1];
+                    float tight_iso = 0.10;
+                    float loose_iso = 0.10;
                     //only want events with 2 oppositely charged muons
+                    const float mu_mass = 0.1056; // in GEV
                     if(mu_Charge[0] >0){
-                        mu_p.SetPtEtaPhiE(mu_Pt[0], mu_Eta[0], mu_Phi[0], mu_E[0]);
-                        mu_m.SetPtEtaPhiE(mu_Pt[1], mu_Eta[1], mu_Phi[1], mu_E[1]);
+                        mu_p.SetPtEtaPhiM(mu_Pt[0], mu_Eta[0], mu_Phi[0], mu_mass);
+                        mu_m.SetPtEtaPhiM(mu_Pt[1], mu_Eta[1], mu_Phi[1], mu_mass);
                     }
                     else{
-                        mu_m.SetPtEtaPhiE(mu_Pt[0], mu_Eta[0], mu_Phi[0], mu_E[0]);
-                        mu_p.SetPtEtaPhiE(mu_Pt[1], mu_Eta[1], mu_Phi[1], mu_E[1]);
+                        mu_m.SetPtEtaPhiM(mu_Pt[0], mu_Eta[0], mu_Phi[0], mu_mass);
+                        mu_p.SetPtEtaPhiM(mu_Pt[1], mu_Eta[1], mu_Phi[1], mu_mass);
                     }
 
                     cm = mu_p + mu_m;
                     cm_m = cm.M();
                     //met and cmva cuts to reduce ttbar background
-                    if (iso_0 < tight_iso && iso_1 < tight_iso && cm_m >=25.){
+                    if (iso_0 < tight_iso && iso_1 < tight_iso && cm_m >=50.){
                         if(PRINT) sprintf(out_buff + strlen(out_buff),"Event %i \n", i);
 
                         //RECO LEVEL
@@ -323,14 +359,13 @@ void MuMu_reco_background_batch()
 
                         //pick out 2 highest pt jets with eta < 2.4
                         nJets =0;
-                        for(int j=0; j < jet_size; j++){
+                        for(unsigned j=0; j < jet_size; j++){
                             if(jet_Pt[j] > 20. && std::abs(jet_Eta[j]) < 2.4){
                                 if(nJets == 1){
                                     jet2_pt = jet_Pt[j];
                                     jet2_eta = jet_Eta[j];
                                     jet2_cmva = jet_CMVA[j];
                                     jet2_flavour = jet_partonflavour[j];
-                                    jet2_b_weight = get_btag_weight(jet_Pt[j], jet_Eta[j],jet_partonflavour[j],btag_effs, b_reader);
                                     nJets =2;
                                     break;
                                 }
@@ -339,7 +374,6 @@ void MuMu_reco_background_batch()
                                     jet1_eta = jet_Eta[j];
                                     jet1_cmva = jet_CMVA[j];
                                     jet1_flavour = jet_partonflavour[j];
-                                    jet1_b_weight = get_btag_weight(jet_Pt[j], jet_Eta[j],jet_partonflavour[j],btag_effs, b_reader);
                                     nJets = 1;
                                 }
                             }
@@ -371,8 +405,42 @@ void MuMu_reco_background_batch()
                         gh_iso_SF = get_SF(mu1_pt, mu1_eta, runs_gh.ISO_SF) * get_SF(mu2_pt, mu2_eta, runs_gh.ISO_SF);
                         gh_id_SF = get_SF(mu1_pt, mu1_eta, runs_gh.ID_SF) * get_SF(mu2_pt, mu2_eta, runs_gh.ID_SF);
 
+                        bcdef_trk_SF = get_Mu_trk_SF(abs(mu1_eta), runs_bcdef.TRK_SF) * get_Mu_trk_SF(abs(mu2_eta), runs_bcdef.TRK_SF);
+                        gh_trk_SF = get_Mu_trk_SF(abs(mu1_eta), runs_gh.TRK_SF) * get_Mu_trk_SF(abs(mu2_eta), runs_gh.TRK_SF);
+
                         pu_SF = get_pileup_SF(pu_NtrueInt, pu_SFs.pileup_ratio);
 
+                        int mu_p_n_TL, mu_m_n_TL;
+                        if(mu_Charge[0] < 0){
+                            mu_m_n_TL = (int) mu_NumberTrackerLayers[0];
+                            mu_p_n_TL = (int) mu_NumberTrackerLayers[1];
+                        }
+                        else{
+                            mu_m_n_TL = (int) mu_NumberTrackerLayers[1];
+                            mu_p_n_TL = (int) mu_NumberTrackerLayers[0];
+                        }
+                        double rand1a = rand->Rndm(); 
+                        double rand1b = rand->Rndm(); 
+                        double rand2a = rand->Rndm(); 
+                        double rand2b = rand->Rndm(); 
+
+
+                        mu_p_SF = rc.kScaleAndSmearMC(1, mu_p.Pt(), mu_p.Eta(), mu_p.Phi(), mu_p_n_TL, rand1a, rand1b, 0, 0);
+                        mu_m_SF = rc.kScaleAndSmearMC(-1, mu_m.Pt(), mu_m.Eta(), mu_m.Phi(), mu_m_n_TL, rand2a, rand2b, 0, 0);
+                        mu_p_SF_alt = rc.kScaleAndSmearMC(1, mu_p.Pt(), mu_p.Eta(), mu_p.Phi(), mu_p_n_TL, rand1a, rand1b, 2, 0);
+                        mu_m_SF_alt = rc.kScaleAndSmearMC(-1, mu_m.Pt(), mu_m.Eta(), mu_m.Phi(), mu_m_n_TL, rand2a, rand2b, 2, 0);
+
+                        Double_t mu_p_SF_vars[100], mu_m_SF_vars[100];
+                        for(int k=0; k<100; k++){
+                            mu_p_SF_vars[k] = rc.kScaleAndSmearMC(1, mu_p.Pt(), mu_p.Eta(), mu_p.Phi(), mu_p_n_TL, rand1a, rand1b, 1, k);
+                            mu_m_SF_vars[k] = rc.kScaleAndSmearMC(-1, mu_m.Pt(), mu_m.Eta(), mu_m.Phi(), mu_m_n_TL, rand2a, rand2b, 1, k);
+                        }
+                        double mu_p_SF_std = sqrt(get_var(mu_p_SF_vars));
+                        double mu_m_SF_std = sqrt(get_var(mu_m_SF_vars));
+                        mu_p_SF_up = mu_p_SF + mu_p_SF_std;
+                        mu_p_SF_down = mu_p_SF - mu_p_SF_std;
+                        mu_m_SF_up = mu_m_SF + mu_m_SF_std;
+                        mu_m_SF_down = mu_m_SF - mu_m_SF_std;
 
                         tout->Fill();
                         nEvents++;
@@ -390,19 +458,18 @@ void MuMu_reco_background_batch()
 
             f1->Close();
             printf("moving on to next file, currently %i events \n\n", nEvents);
+
         }
     }
     fclose(root_files);
     printf("There were %i ttbar events in %i files.\n",
             nEvents, nFiles);
 
-    TFile *fout = TFile::Open(fout_name, "RECREATE");
+    printf("Writing output to file at %s \n", fout_name.Data());
+
     fout->cd();
 
-
     tout->Write();
-
-    printf("Writing output to file at %s \n", fout_name.Data());
 
     fout->Close();
 

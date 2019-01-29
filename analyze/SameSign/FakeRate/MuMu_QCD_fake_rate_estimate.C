@@ -7,11 +7,11 @@
 #include "TFile.h"
 #include "../../TemplateMaker.C"
 #define MU_SIZE 200
-#define JET_SIZE 20
+#define JET_SIZE 60
 
 const double root2 = sqrt(2);
-const char* filename("SingleMuon_files_sep25.txt");
-const TString fout_name("SameSign/output_files/MuMu_QCD_est_samesign_dec10.root");
+const char* filename("SingleMuon_files_nov12.txt");
+const TString fout_name("output_files/MuMu_QCD_est_samesign_nov26.root");
 
 const bool data_2016 = true;
 
@@ -61,7 +61,7 @@ Double_t get_fakerate_prob(Double_t pt, Double_t eta, TH2D *h){
     return prob;
 }
 
-void MuMu_QCD_fake_rate_estimate()
+void MuMu_QCD_fake_rate_estimate(int nJobs=1, int iJob=0)
 {
     //FakeRate FR;
     //setup_fakerate(&FR);
@@ -112,6 +112,7 @@ void MuMu_QCD_fake_rate_estimate()
     while(fgets(lines, 300, root_files)){
         if(lines[0] == '#' || is_empty_line(lines)) continue; // comment line
         nFiles++;
+        if(nFiles % nJobs != iJob) continue; 
         char * cur_file;
 
         char * end;
@@ -129,10 +130,11 @@ void MuMu_QCD_fake_rate_estimate()
 
         UInt_t mu_size, met_size, jet_size;
         Float_t mu_Pt[MU_SIZE], mu_Eta[MU_SIZE], mu_Phi[MU_SIZE], mu_E[MU_SIZE], 
-                mu_IsTightMuon[MU_SIZE], mu_Charge[MU_SIZE];
+                mu_IsHighPtMuon[MU_SIZE], mu_Charge[MU_SIZE];
 
         Float_t mu_SumChargedHadronPt[MU_SIZE], mu_SumNeutralHadronPt[MU_SIZE], mu_SumPUPt[MU_SIZE], mu_SumPhotonPt[MU_SIZE];
 
+        Float_t mu_TrackerIso[MU_SIZE];
 
         Float_t jet_Pt[JET_SIZE], jet_Eta[JET_SIZE], jet_Phi[JET_SIZE], jet_E[JET_SIZE],
                 jet_CSV[JET_SIZE], jet_CMVA[JET_SIZE];
@@ -140,13 +142,14 @@ void MuMu_QCD_fake_rate_estimate()
         Int_t HLT_IsoMu, HLT_IsoTkMu, HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL, HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL, 
               HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ, HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ;
         t1->SetBranchAddress("mu_size", &mu_size); //number of muons in the event
-        t1->SetBranchAddress("mu_Pt", &mu_Pt);
+        t1->SetBranchAddress("mu_TunePMuonBestTrackPt", &mu_Pt);
         t1->SetBranchAddress("mu_Eta", &mu_Eta);
         t1->SetBranchAddress("mu_Phi", &mu_Phi);
         t1->SetBranchAddress("mu_E", &mu_E);
         t1->SetBranchAddress("mu_Charge", &mu_Charge);
 
-        t1->SetBranchAddress("mu_IsTightMuon", &mu_IsTightMuon);
+        t1->SetBranchAddress("mu_IsHighPtMuon", &mu_IsHighPtMuon);
+        t1->SetBranchAddress("mu_TrackerIso", &mu_TrackerIso);
         t1->SetBranchAddress("mu_SumChargedHadronPt", &mu_SumChargedHadronPt);
         t1->SetBranchAddress("mu_SumNeutralHadronPt", &mu_SumNeutralHadronPt);
         t1->SetBranchAddress("mu_SumPUPt", &mu_SumPUPt);
@@ -163,12 +166,8 @@ void MuMu_QCD_fake_rate_estimate()
 
         t1->SetBranchAddress("HLT_IsoMu24", &HLT_IsoMu);
         t1->SetBranchAddress("HLT_IsoTkMu24", &HLT_IsoTkMu);
-        t1->SetBranchAddress("HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ", &HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ);
-        t1->SetBranchAddress("HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL", &HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL);
-        t1->SetBranchAddress("HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ", &HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ);
-        t1->SetBranchAddress("HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL", &HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL);
-        t1->SetBranchAddress("met_size", &met_size);
-        t1->SetBranchAddress("met_Pt", &met_pt);
+        t1->SetBranchAddress("met_MuCleanOnly_size", &met_size);
+        t1->SetBranchAddress("met_MuCleanOnly_Pt", &met_pt);
 
         unsigned int nEntries =  t1->GetEntries();
         printf("there are %i entries in this tree\n", nEntries);
@@ -177,24 +176,25 @@ void MuMu_QCD_fake_rate_estimate()
             if(met_size != 1) printf("WARNING: Met size not equal to 1\n");
             if(mu_size > MU_SIZE) printf("Warning: too many muons\n");
             bool good_trigger = HLT_IsoMu || HLT_IsoTkMu;
-            if( mu_size >= 2 && (mu_Charge[0] * mu_Charge[1] > 0.) &&
-                    mu_IsTightMuon[0] && mu_IsTightMuon[1] &&
-                    mu_Pt[0] > 26. &&  mu_Pt[1] > 10. &&
+            if( mu_size >= 2 && ((abs(mu_Charge[0] - mu_Charge[1])) < 0.01) &&
+                    mu_IsHighPtMuon[0] && mu_IsHighPtMuon[1] &&
+                    mu_Pt[0] > 26. &&  mu_Pt[1] > 15. &&
                     abs(mu_Eta[0]) < 2.4 && abs(mu_Eta[1]) < 2.4){ 
                 //only want events with 2 oppositely charged muons
                 //with pt above threshold
                 //See https://twiki.cern.ch/twiki/bin/viewauth/CMS/SWGuideMuonIdRun2 for iso cuts
-                float iso_0 = (mu_SumChargedHadronPt[0] + max(0., mu_SumNeutralHadronPt[0] + mu_SumPhotonPt[0] - 0.5 * mu_SumPUPt[0]))/mu_Pt[0];
-                float iso_1 = (mu_SumChargedHadronPt[1] + max(0., mu_SumNeutralHadronPt[1] + mu_SumPhotonPt[1] - 0.5 * mu_SumPUPt[1]))/mu_Pt[1];
-                const float tight_iso = 0.15;
-                const float loose_iso = 0.25;
+                float iso_0 = mu_TrackerIso[0];
+                float iso_1 = mu_TrackerIso[1];
+                const float tight_iso = 0.10;
+                const float loose_iso = 0.10;
+                const float mu_mass = 0.1056; // in GEV
                 if(mu_Charge[0] >0){
-                    mu_p.SetPtEtaPhiE(mu_Pt[0], mu_Eta[0], mu_Phi[0], mu_E[0]);
-                    mu_m.SetPtEtaPhiE(mu_Pt[1], mu_Eta[1], mu_Phi[1], mu_E[1]);
+                    mu_p.SetPtEtaPhiM(mu_Pt[0], mu_Eta[0], mu_Phi[0], mu_mass);
+                    mu_m.SetPtEtaPhiM(mu_Pt[1], mu_Eta[1], mu_Phi[1], mu_mass);
                 }
                 else{
-                    mu_m.SetPtEtaPhiE(mu_Pt[0], mu_Eta[0], mu_Phi[0], mu_E[0]);
-                    mu_p.SetPtEtaPhiE(mu_Pt[1], mu_Eta[1], mu_Phi[1], mu_E[1]);
+                    mu_m.SetPtEtaPhiM(mu_Pt[0], mu_Eta[0], mu_Phi[0], mu_mass);
+                    mu_p.SetPtEtaPhiM(mu_Pt[1], mu_Eta[1], mu_Phi[1], mu_mass);
                 }
 
                 cm = mu_p + mu_m;
@@ -219,7 +219,7 @@ void MuMu_QCD_fake_rate_estimate()
                     }
                 }
                 bool no_bjets = has_no_bjets(nJets, jet1_pt, jet2_pt, jet1_cmva, jet2_cmva);
-                if (iso_0 > tight_iso && iso_1 > tight_iso && cm_m >=25. && no_bjets && met_pt < 50.){
+                if (iso_0 > tight_iso && iso_1 > tight_iso && cm_m >=50. && no_bjets && met_pt < 50.){
                     //both muons FAIL ISO
                     xF = abs(2.*cm.Pz()/13000.); 
 
