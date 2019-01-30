@@ -35,17 +35,17 @@ const int type = FLAG_ELECTRONS;
 void draw_samesign_cmp(){
 
     TFile *f_emu_data = TFile::Open("../analyze/output_files/EMu_data_samesign_jan17.root");
-    TTree *t_emu_data = (TTree *)f_emu_data->Get("T_data");
+    TTree *t_emu_ss_data = (TTree *)f_emu_data->Get("T_data");
 
                                 
     TFile *f_emu_ttbar = TFile::Open("../analyze/output_files/EMu_ttbar_wt_samesign_jan17.root");
-    TTree *t_emu_ttbar = (TTree *)f_emu_ttbar->Get("T_data");
+    TTree *t_emu_ss_ttbar = (TTree *)f_emu_ttbar->Get("T_data");
 
     TFile *f_emu_DYToLL = TFile::Open("../analyze/output_files/EMu_DY_samesign_jan17.root");
-    TTree *t_emu_dy = (TTree *)f_emu_DYToLL->Get("T_data");
+    TTree *t_emu_ss_dy = (TTree *)f_emu_DYToLL->Get("T_data");
 
     TFile *f_emu_diboson = TFile::Open("../analyze/output_files/EMu_diboson_samesign_jan18.root");
-    TTree *t_emu_diboson = (TTree *)f_emu_diboson->Get("T_data");
+    TTree *t_emu_ss_diboson = (TTree *)f_emu_diboson->Get("T_data");
 
 
 

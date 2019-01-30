@@ -8,6 +8,15 @@ TTree *t_elel_mc, *t_elel_back, *t_elel_data, *t_elel_QCD, *t_elel_WJets, *t_ele
 TFile *f_mumu_mc, *f_mumu_back, *f_mumu_data, *f_mumu_QCD, *f_mumu_WJets, *f_mumu_WJets_contam, *f_mumu_QCD_contam;
 TTree *t_mumu_mc, *t_mumu_back, *t_mumu_data, *t_mumu_QCD, *t_mumu_WJets, *t_mumu_WJets_contam, *t_mumu_QCD_contam, *t_mumu_nosig;
 
+TFile *f_elel_ss_dy, *f_elel_ss_back, *f_elel_ss_data, *f_elel_ss_QCD, *f_elel_ss_WJets, *f_elel_ss_WJets_mc, *f_elel_ss_QCD_mc;
+TTree *t_elel_ss_dy, *t_elel_ss_back, *t_elel_ss_data, *t_elel_ss_QCD, *t_elel_ss_WJets, *t_elel_ss_WJets_mc, *t_elel_ss_QCD_mc, *t_elel_ss_nosig;
+
+TFile *f_mumu_ss_dy, *f_mumu_ss_back, *f_mumu_ss_data, *f_mumu_ss_QCD, *f_mumu_ss_WJets, *f_mumu_ss_WJets_mc, *f_mumu_ss_QCD_mc;
+TTree *t_mumu_ss_dy, *t_mumu_ss_back, *t_mumu_ss_data, *t_mumu_ss_QCD, *t_mumu_ss_WJets, *t_mumu_ss_WJets_mc, *t_mumu_ss_QCD_mc, *t_mumu_ss_nosig;
+
+TFile *f_emu_ss_data, *f_emu_ss_ttbar, *f_emu_ss_dy, *f_emu_ss_diboson;
+TTree *t_emu_ss_data, *t_emu_ss_ttbar, *t_emu_ss_dy, *t_emu_ss_diboson;
+
 //int n_xf_bins = 5;
 //Float_t xf_bins[] = {0., 0.02, 0.04, 0.07, 0.10, 1.0};
 int n_xf_bins = 4;
@@ -88,3 +97,65 @@ void init(){
 
     return;
 }
+
+void init_emu_ss(){
+
+
+    f_emu_ss_data = TFile::Open("../analyze/output_files/EMu_data_samesign_jan17.root");
+    t_emu_ss_data = (TTree *)f_emu_ss_data->Get("T_data");
+
+                         
+    f_emu_ss_ttbar = TFile::Open("../analyze/output_files/EMu_ttbar_wt_samesign_jan17.root");
+    t_emu_ss_ttbar = (TTree *)f_emu_ss_ttbar->Get("T_data");
+
+    f_emu_ss_DYToLL = TFile::Open("../analyze/output_files/EMu_DY_samesign_jan17.root");
+    t_emu_ss_dy = (TTree *)f_emu_ss_DYToLL->Get("T_data");
+
+    f_emu_ss_diboson = TFile::Open("../analyze/output_files/EMu_diboson_samesign_jan18.root");
+    t_emu_ss_diboson = (TTree *)f_emu_ss_diboson->Get("T_data");
+}
+
+
+void init_ss(){
+    f_elel_ss_data = TFile::Open("../analyze/output_files/ElEl_samesign_data_dec3.root");
+    t_elel_ss_data = (TTree *)f_elel_ss_data->Get("T_data");
+
+    f_elel_ss_dy = TFile::Open("../analyze/output_files/ElEl_samesign_DY_jan16.root");
+    t_elel_ss_dy = (TTree *)f_elel_ss_dy->Get("T_data");
+
+    f_elel_ss_QCD = TFile::Open("../analyze/output_files/ElEl_samesign_fakerate_qcd_est_dec3.root");
+    t_elel_ss_QCD = (TTree *)f_elel_ss_QCD->Get("T_data");
+
+    f_elel_ss_WJets = TFile::Open("../analyze/output_files/ElEl_samesign_wjets_est_jan16.root");
+    t_elel_ss_WJets = (TTree *)f_elel_ss_WJets->Get("T_data");
+    f_elel_ss_WJets_mc = TFile::Open("../analyze/output_files/ElEl_samesign_fakerate_wjets_MC_dec3.root");
+    t_elel_ss_WJets_mc = (TTree *)f_elel_ss_WJets_mc->Get("T_data");
+
+    //dummy tree
+    t_elel_ss_QCD_mc = new TTree();
+
+    f_elel_ss_back = TFile::Open("../analyze/output_files/ElEl_samesign_combined_back_jan29.root");
+    t_elel_ss_back = (TTree *)f_elel_ss_back->Get("T_data");
+
+//////////////////////////////////////////////
+    f_mumu_ss_data = TFile::Open("../analyze/output_files/MuMu_samesign_data_dec3.root");
+    t_mumu_ss_data = (TTree *)f_mumu_ss_data->Get("T_data");
+
+    f_mumu_ss_dy = TFile::Open("../analyze/output_files/ElEl_samesign_DY_jan16.root");
+    t_mumu_ss_dy = (TTree *)f_mumu_ss_dy->Get("T_data");
+
+    f_mumu_ss_QCD = TFile::Open("../analyze/output_files/MuMu_samesign_fakerate_qcd_est_dec3.root");
+    t_mumu_ss_QCD = (TTree *)f_mumu_ss_QCD->Get("T_data");
+
+    f_mumu_ss_WJets = TFile::Open("../analyze/output_files/MuMu_samesign_fakerate_wjets_est_dec3.root");
+    t_mumu_ss_WJets = (TTree *)f_mumu_ss_WJets->Get("T_data");
+    f_mumu_ss_WJets_mc = TFile::Open("../analyze/output_files/MuMu_samesign_fakerate_wjets_MC_dec3.root");
+    t_mumu_ss_WJets_mc = (TTree *)f_mumu_ss_WJets_mc->Get("T_data");
+
+    //dummy tree
+    t_mumu_ss_QCD_mc = new TTree();
+
+    f_mumu_ss_back = TFile::Open("../analyze/output_files/MuMu_samesign_background_dec3.root");
+    t_mumu_ss_back = (TTree *)f_mumu_ss_back->Get("T_data");
+}
+

@@ -17,7 +17,7 @@ const double root2 = sqrt(2);
 double Ebeam = 6500.;
 double Pbeam = sqrt(Ebeam*Ebeam - 0.938*0.938);
 
-char *filename("TTbar_WT_files_aug7.txt.txt");
+char *filename("TTbar_WT_files_aug7.txt");
 const TString fout_name("output_files/ElEl_ttbar_wt_samesign_sep4.root");
 const double alpha = 0.05;
 const bool PRINT=false;
