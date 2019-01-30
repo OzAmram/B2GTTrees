@@ -102,24 +102,31 @@ void draw_samesign_cmp(){
     QCD_cost->SetFillColor(kRed -7);
 
     bool do_RC = false;
+    bool qcd_from_emu = true;
+    float m_low = 150.;
+    float m_high = 200.;
 
-    make_m_cost_pt_xf_hist(t_data, data_m, data_cost, data_pt, data_xf, true, type, false, do_RC);
-    make_m_cost_pt_xf_hist(t_diboson, diboson_m, diboson_cost, diboson_pt, diboson_xf, false, type, true, do_RC);
-    make_m_cost_pt_xf_hist(t_mc, DY_m, DY_cost, DY_pt, DY_xf, false, type, true, do_RC);
-    //make_qcd_from_emu_m_cost_xf_hist(t_emu_data, t_emu_ttbar, t_emu_diboson, t_emu_dy, QCD_m, QCD_cost, QCD_xf);
+    make_m_cost_pt_xf_hist(t_data, data_m, data_cost, data_pt, data_xf, true, type, false, do_RC, m_low, m_high);
+    make_m_cost_pt_xf_hist(t_diboson, diboson_m, diboson_cost, diboson_pt, diboson_xf, false, type, true, do_RC, m_low, m_high);
+    make_m_cost_pt_xf_hist(t_mc, DY_m, DY_cost, DY_pt, DY_xf, false, type, true, do_RC, m_low, m_high);
 
-    Fakerate_est_el(t_WJets, t_QCD, t_WJets_mc, t_QCD_mc, QCD_m, QCD_cost, QCD_pt, QCD_xf);
+    
+    if(qcd_from_emu) make_qcd_from_emu_m_cost_xf_hist(t_emu_data, t_emu_ttbar, t_emu_diboson, t_emu_dy, QCD_m, QCD_cost, QCD_xf, m_low, m_high);
+    
+
+    else Fakerate_est_el(t_WJets, t_QCD, t_WJets_mc, t_QCD_mc, QCD_m, QCD_cost, QCD_pt, QCD_xf, m_low, m_high);
     printf("qcd Integrals are %.2f %.2f %.2f \n", QCD_m->Integral(), QCD_cost->Integral(), QCD_xf->Integral());
 
 
-    Double_t n_data = data_m->Integral();
-    Double_t n_mc = diboson_m->Integral() +  DY_m->Integral();
-    Double_t n_QCD = QCD_m->Integral();
-    Double_t qcd_ratio = (n_data - n_mc) / n_QCD;
-    printf("Ratio of obs to expected QCD is %.2f \n", qcd_ratio);
-    bool normalize = true;
+    bool normalize = false;
+    bool from_fit = false;
     
     if(normalize){
+        Double_t n_data = data_m->Integral();
+        Double_t n_mc = diboson_m->Integral() +  DY_m->Integral();
+        Double_t n_QCD = QCD_m->Integral();
+        Double_t qcd_ratio = (n_data - n_mc) / n_QCD;
+        printf("Ratio of obs to expected QCD is %.2f \n", qcd_ratio);
 
 
         QCD_m->Scale(qcd_ratio);
@@ -127,6 +134,29 @@ void draw_samesign_cmp(){
         QCD_cost->Scale(qcd_ratio);
         QCD_xf->Scale(qcd_ratio);
     }
+    if(from_fit){
+        float qcd_ratio, dy_ratio;
+        if(qcd_from_emu){
+            //qcd_ratio = 0.51;
+            qcd_ratio = 0.8;
+            dy_ratio = 1.4;
+        }
+        else{
+            qcd_ratio = 0.43;
+            dy_ratio = 0.955;
+        }
+
+        QCD_m->Scale(qcd_ratio);
+        QCD_pt->Scale(qcd_ratio);
+        QCD_cost->Scale(qcd_ratio);
+        QCD_xf->Scale(qcd_ratio);
+
+        DY_m->Scale(qcd_ratio);
+        DY_pt->Scale(qcd_ratio);
+        DY_cost->Scale(qcd_ratio);
+        DY_xf->Scale(qcd_ratio);
+    }
+
 
 
 
