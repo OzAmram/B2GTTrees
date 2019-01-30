@@ -179,7 +179,7 @@ static Double_t get_new_fakerate_prob(Double_t pt, Double_t eta, TH2D *h){
 }
 
 
-void make_emu_m_cost_xf_hist(TTree *t1, TH1F *h_m, TH1F *h_cost, TH1F *h_xf, bool is_data = false, int flag1 = FLAG_MUONS){
+void make_emu_m_cost_xf_hist(TTree *t1, TH1F *h_m, TH1F *h_cost, TH1F *h_xf, bool is_data = false, int flag1 = FLAG_MUONS, float m_low = 150., float m_high = 999999.){
     Long64_t size  =  t1->GetEntries();
     Double_t m, xF, cost, mu1_pt, mu2_pt, jet1_cmva, jet2_cmva, gen_weight;
     Double_t bcdef_HLT_SF, bcdef_iso_SF, bcdef_id_SF;
@@ -228,7 +228,7 @@ void make_emu_m_cost_xf_hist(TTree *t1, TH1F *h_m, TH1F *h_cost, TH1F *h_xf, boo
         double cost = get_cost_v2(*el, *mu);
         double xf = compute_xF(cm); 
 
-        if(m >= 150. && met_pt < 50. && no_bjets){
+        if(m >= m_low && m <= m_high && met_pt < 50. && no_bjets){
             if(is_data){
                 h_m->Fill(m);
                 h_cost->Fill(cost, 0.5);
@@ -270,7 +270,7 @@ void make_emu_m_cost_xf_hist(TTree *t1, TH1F *h_m, TH1F *h_cost, TH1F *h_xf, boo
     }
 }
 void make_qcd_from_emu_m_cost_xf_hist(TTree *t_data, TTree *t_ttbar, TTree *t_diboson, TTree *t_dy, 
-        TH1F *h_m, TH1F *h_cost, TH1F *h_xf){
+        TH1F *h_m, TH1F *h_cost, TH1F *h_xf, float m_low = 150., float m_high = 99999.){
     int type = FLAG_MUONS;
     TH1F *data_m = (TH1F*)h_m->Clone("data_m");
     TH1F *ttbar_m = (TH1F*)h_m->Clone("ttbar_m");
@@ -285,10 +285,10 @@ void make_qcd_from_emu_m_cost_xf_hist(TTree *t_data, TTree *t_ttbar, TTree *t_di
     TH1F *diboson_xf = (TH1F*)h_xf->Clone("diboson_xf");
     TH1F *dy_xf = (TH1F*)h_xf->Clone("dy_xf");
 
-    make_emu_m_cost_xf_hist(t_data, data_m, data_cost, data_xf, true, type);
-    make_emu_m_cost_xf_hist(t_ttbar, ttbar_m, ttbar_cost, ttbar_xf, false, type);
-    make_emu_m_cost_xf_hist(t_diboson, diboson_m, diboson_cost, diboson_xf, false, type);
-    make_emu_m_cost_xf_hist(t_dy, dy_m, dy_cost, dy_xf, false, type);
+    make_emu_m_cost_xf_hist(t_data, data_m, data_cost, data_xf, true, type, m_low, m_high);
+    make_emu_m_cost_xf_hist(t_ttbar, ttbar_m, ttbar_cost, ttbar_xf, false, type, m_low, m_high);
+    make_emu_m_cost_xf_hist(t_diboson, diboson_m, diboson_cost, diboson_xf, false, type, m_low, m_high);
+    make_emu_m_cost_xf_hist(t_dy, dy_m, dy_cost, dy_xf, false, type, m_low, m_high);
 
 
     //h_m = data_m - ttbar_m  - dy_m - diboson_m;
@@ -438,7 +438,7 @@ void make_m_cost_pt_xf_hist(TTree *t1, TH1F *h_m, TH1F *h_cost, TH1F *h_pt, TH1F
             t1->GetEntry(i);
             bool no_bjets = has_no_bjets(nJets, jet1_pt, jet2_pt, jet1_cmva, jet2_cmva);
             bool not_cosmic = notCosmic(*el_p, *el_m);
-            if(m >= 150 && met_pt < 50.  && no_bjets && not_cosmic){
+            if(m >= m_low && m <= m_high && met_pt < 50.  && no_bjets && not_cosmic){
                 TLorentzVector cm = *el_p + *el_m;
                 Double_t pt = cm.Pt();
                 cost = get_cost_v2(*el_p, *el_m);
@@ -472,7 +472,7 @@ void make_m_cost_pt_xf_hist(TTree *t1, TH1F *h_m, TH1F *h_cost, TH1F *h_pt, TH1F
 }
 
 
-void Fakerate_est_mu(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_contam, TTree *t_QCD_contam, TH1F *h_m, TH1F *h_cost, TH1F *h_pt, TH1F *h_xf){
+void Fakerate_est_mu(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_contam, TTree *t_QCD_contam, TH1F *h_m, TH1F *h_cost, TH1F *h_pt, TH1F *h_xf, float m_low=150., float m_high = 99999.){
     FakeRate FR;
     //TH2D *FR;
     setup_new_mu_fakerate(&FR);
@@ -565,7 +565,7 @@ void Fakerate_est_mu(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_contam, TTree 
 
 
 
-            if(m>= 150. && met_pt < 50.  && no_bjets && not_cosmic){
+            if(m>= m_low && m<= m_high && met_pt < 50.  && no_bjets && not_cosmic){
                 //if(l==3) printf("Evt rate %.2e \n", evt_fakerate);
                 TLorentzVector cm = *mu_p + *mu_m;
 
@@ -577,10 +577,11 @@ void Fakerate_est_mu(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_contam, TTree 
         }
         printf("After iter %i current fakerate est is %.0f \n", l, h_cost->Integral());
     }
-    printf("Total fakerate est is %.0f \n", h_m->Integral());
+    printf("Total fakerate est is %.0f \n", h_cost->Integral());
 }
 
-void Fakerate_est_el(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_MC, TTree *t_QCD_MC, TH1F *h_m, TH1F *h_cost, TH1F *h_pt, TH1F *h_xf){
+void Fakerate_est_el(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_MC, TTree *t_QCD_MC, TH1F *h_m, TH1F *h_cost, TH1F *h_pt, TH1F *h_xf,
+        float m_low = 150., float m_high = 99999.){
     FakeRate FR;
     //TH2D *FR;
     setup_new_el_fakerate(&FR);
@@ -665,7 +666,7 @@ void Fakerate_est_el(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_MC, TTree *t_Q
 
 
 
-            if(m >= 150. && met_pt < 50.  && no_bjets && not_cosmic){
+            if(m >= m_low && m <= m_high && met_pt < 50.  && no_bjets && not_cosmic){
                 //if(l==3) printf("Evt fr %.2e \n", evt_fakerate);
                 //if(l==3) printf("cost, fr %.2f %.2e \n", cost, evt_fakerate);
                 TLorentzVector cm = *el_p + *el_m;

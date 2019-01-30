@@ -19,10 +19,11 @@ const double root2 = sqrt(2);
 double Ebeam = 6500.;
 double Pbeam = sqrt(Ebeam*Ebeam - 0.938*0.938);
 
-char *filename("diboson_files_aug7.txt");
+char *filename("TTbar_WT_files_aug7.txt");
 const TString fout_name("output_files/MuMu_diboson_sep4.root");
 const double alpha = 0.05;
 const bool PRINT=false;
+const bool do_samesign = true;
 
 const bool data_2016 = true;
 
@@ -293,9 +294,11 @@ void MuMu_reco_background_batch(int nJobs =1, int iJob=0)
                 if(mu_size > MU_SIZE) printf("WARNING: MU_SIZE TOO LARGE \n");
                 if(jet_size > JET_SIZE) printf("WARNING: JET_SIZE TOO LARGE. Jet size is %i \n", (int) jet_size);
                 if(met_size != 1) printf("WARNING: Met size not equal to 1\n");
+                bool opp_sign = ((abs(mu_Charge[0] - mu_Charge[1])) > 0.01);
+                bool good_sign = opp_sign ^ do_samesign;
                 bool good_trigger = HLT_IsoMu || HLT_IsoTkMu;
                 if(good_trigger &&
-                        mu_size >= 2 && ((abs(mu_Charge[0] - mu_Charge[1])) > 0.01) &&
+                        mu_size >= 2 && good_sign && 
                         mu_IsHighPtMuon[0] && mu_IsHighPtMuon[1] &&
                         mu_Pt[0] > 26. &&  mu_Pt[1] > 15. &&
                         abs(mu_Eta[0]) < 2.4 && abs(mu_Eta[1]) < 2.4){ 

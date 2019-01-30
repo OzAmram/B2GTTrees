@@ -35,17 +35,17 @@ const int type = FLAG_ELECTRONS;
 void draw_samesign_cmp(){
 
     TFile *f_emu_data = TFile::Open("../analyze/output_files/EMu_data_samesign_jan17.root");
-    TTree *t_emu_data = (TTree *)f_emu_data->Get("T_data");
+    TTree *t_emu_ss_data = (TTree *)f_emu_data->Get("T_data");
 
                                 
     TFile *f_emu_ttbar = TFile::Open("../analyze/output_files/EMu_ttbar_wt_samesign_jan17.root");
-    TTree *t_emu_ttbar = (TTree *)f_emu_ttbar->Get("T_data");
+    TTree *t_emu_ss_ttbar = (TTree *)f_emu_ttbar->Get("T_data");
 
     TFile *f_emu_DYToLL = TFile::Open("../analyze/output_files/EMu_DY_samesign_jan17.root");
-    TTree *t_emu_dy = (TTree *)f_emu_DYToLL->Get("T_data");
+    TTree *t_emu_ss_dy = (TTree *)f_emu_DYToLL->Get("T_data");
 
     TFile *f_emu_diboson = TFile::Open("../analyze/output_files/EMu_diboson_samesign_jan18.root");
-    TTree *t_emu_diboson = (TTree *)f_emu_diboson->Get("T_data");
+    TTree *t_emu_ss_diboson = (TTree *)f_emu_diboson->Get("T_data");
 
 
 
@@ -106,7 +106,7 @@ void draw_samesign_cmp(){
     make_m_cost_pt_xf_hist(t_data, data_m, data_cost, data_pt, data_xf, true, type, false, do_RC);
     make_m_cost_pt_xf_hist(t_diboson, diboson_m, diboson_cost, diboson_pt, diboson_xf, false, type, true, do_RC);
     make_m_cost_pt_xf_hist(t_mc, DY_m, DY_cost, DY_pt, DY_xf, false, type, true, do_RC);
-    //make_qcd_from_emu_m_cost_xf_hist(t_emu_data, t_emu_ttbar, t_emu_diboson, t_emu_dy, QCD_m, QCD_cost, QCD_xf);
+    //make_qcd_from_emu_m_cost_xf_hist(t_emu_ss_data, t_emu_ss_ttbar, t_emu_ss_diboson, t_emu_ss_dy, QCD_m, QCD_cost, QCD_xf);
 
     Fakerate_est_el(t_WJets, t_QCD, t_WJets_mc, t_QCD_mc, QCD_m, QCD_cost, QCD_pt, QCD_xf);
     printf("qcd Integrals are %.2f %.2f %.2f \n", QCD_m->Integral(), QCD_cost->Integral(), QCD_xf->Integral());

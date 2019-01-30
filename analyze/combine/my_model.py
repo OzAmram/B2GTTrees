@@ -73,6 +73,26 @@ class DY_AFB_noQCD(PhysicsModel):
         else:
             return 1
 
+class ElEl_samesign(PhysicsModel):
+    def __init__(self):
+        return
 
+    def doParametersOfInterest(self):
+        """Create POI and other parameters, and define the POI set."""
+
+        self.modelBuilder.doVar("Rdy_ee[1.,0.0,10.0]");
+        self.modelBuilder.doVar("RQCD_ee[1,0.0,10.0]");
+        self.modelBuilder.doSet("POI","Rdy_ee,RQCD_ee")
+      
+ 
+ 
+ 
+    def getYieldScale(self,bin,process):
+        if 'dy' in process : return "Rdy_ee"
+        if 'qcd' in process : return "RQCD_ee"
+        else:
+            return 1
+
+elel_samesign = ElEl_samesign()
 dy_AFB = DY_AFB() 
 dy_AFB_noQCD = DY_AFB_noQCD() 
