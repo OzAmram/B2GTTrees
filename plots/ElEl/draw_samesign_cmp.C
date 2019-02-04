@@ -52,14 +52,17 @@ void draw_samesign_cmp(){
 
     setTDRStyle();
     init();
+    int n_cost_bins = 10;
 
     TH1F *data_m = new TH1F("data_m", "Data Dimuon Mass Distribution", 30, 150, 2000);
 
-    TH1F *data_cost = new TH1F("data_cost", "Data", 20, -1.,1.);
-    TH1F *data_pt = new TH1F("data_pt", "MC signal", 40, 0, 1000);
-    TH1F *diboson_pt = new TH1F("diboson_pt", "MC signal", 40, 0, 1000);
-    TH1F *QCD_pt = new TH1F("QCD_pt", "MC signal", 40, 0, 1000);
-    TH1F *DY_pt = new TH1F("DY_pt", "MC signal", 40, 0, 1000);
+    TH1F *data_cost = new TH1F("data_cost", "Data", n_cost_bins, 0.,1.);
+
+    int pt_bins = 20.;
+    TH1F *data_pt = new TH1F("data_pt", "MC signal", pt_bins, 0, 800);
+    TH1F *diboson_pt = new TH1F("diboson_pt", "MC signal", pt_bins, 0, 800);
+    TH1F *QCD_pt = new TH1F("QCD_pt", "MC signal", pt_bins, 0, 800);
+    TH1F *DY_pt = new TH1F("DY_pt", "MC signal", pt_bins, 0, 800);
 
     int xf_nbins = 16;
     TH1F *data_xf = new TH1F("data_xf", "MC signal", xf_nbins, 0, 0.8);
@@ -72,18 +75,18 @@ void draw_samesign_cmp(){
 
 
     TH1F *diboson_m = new TH1F("diboson_m", "DiBoson (WW, WZ, ZZ)", 30, 150, 2000);
-    TH1F *diboson_cost = new TH1F("diboson_cost", "DiBoson (WW, WZ,ZZ)", 20, -1,1);
+    TH1F *diboson_cost = new TH1F("diboson_cost", "DiBoson (WW, WZ,ZZ)", n_cost_bins, 0.,1);
     TH1F *diboson_xf = new TH1F("diboson_xf", "MC signal", xf_nbins, 0, 0.8);
 
     TH1F *DY_m = new TH1F("DY_m", "DY (WW, WZ, ZZ)", 30, 150, 2000);
-    TH1F *DY_cost = new TH1F("DY_cost", "DY (WW, WZ,ZZ)", 20, -1,1);
+    TH1F *DY_cost = new TH1F("DY_cost", "DY (WW, WZ,ZZ)", n_cost_bins, 0.,1);
     TH1F *DY_xf = new TH1F("DY_xf", "MC signal", xf_nbins, 0, 0.8);
 
     TH1F *QCD_m = new TH1F("QCD_m", "QCD", 30, 150, 2000);
-    TH1F *QCD_cost = new TH1F("QCD_cost", "QCD", 20, -1,1);
+    TH1F *QCD_cost = new TH1F("QCD_cost", "QCD", n_cost_bins, 0.,1);
 
     TH1F *WJets_m = new TH1F("WJets_m", "WJets", 30, 150, 2000);
-    TH1F *WJets_cost = new TH1F("WJets_cost", "WJets", 20, -1,1);
+    TH1F *WJets_cost = new TH1F("WJets_cost", "WJets", n_cost_bins, 0.,1);
 
     DY_pt->SetFillColor(kRed+1);
     diboson_pt->SetFillColor(kGreen+3);
@@ -102,23 +105,24 @@ void draw_samesign_cmp(){
     QCD_cost->SetFillColor(kRed -7);
 
     bool do_RC = false;
-    bool qcd_from_emu = true;
+    bool qcd_from_emu = false;
     float m_low = 150.;
-    float m_high = 200.;
+    float m_high = 10000.;
+    bool ss = true;
 
-    make_m_cost_pt_xf_hist(t_data, data_m, data_cost, data_pt, data_xf, true, type, false, do_RC, m_low, m_high);
-    make_m_cost_pt_xf_hist(t_diboson, diboson_m, diboson_cost, diboson_pt, diboson_xf, false, type, true, do_RC, m_low, m_high);
-    make_m_cost_pt_xf_hist(t_mc, DY_m, DY_cost, DY_pt, DY_xf, false, type, true, do_RC, m_low, m_high);
+    make_m_cost_pt_xf_hist(t_data, data_m, data_cost, data_pt, data_xf, true, type, false, do_RC, m_low, m_high, ss);
+    make_m_cost_pt_xf_hist(t_diboson, diboson_m, diboson_cost, diboson_pt, diboson_xf, false, type, true, do_RC, m_low, m_high, ss);
+    make_m_cost_pt_xf_hist(t_mc, DY_m, DY_cost, DY_pt, DY_xf, false, type, true, do_RC, m_low, m_high, ss);
 
     
-    if(qcd_from_emu) make_qcd_from_emu_m_cost_xf_hist(t_emu_data, t_emu_ttbar, t_emu_diboson, t_emu_dy, QCD_m, QCD_cost, QCD_xf, m_low, m_high);
+    if(qcd_from_emu) make_qcd_from_emu_m_cost_pt_xf_hist(t_emu_ss_data, t_emu_ss_ttbar, t_emu_ss_diboson, t_emu_ss_dy, QCD_m, QCD_cost, QCD_pt, QCD_xf, m_low, m_high);
     
 
-    else Fakerate_est_el(t_WJets, t_QCD, t_WJets_mc, t_QCD_mc, QCD_m, QCD_cost, QCD_pt, QCD_xf, m_low, m_high);
+    else Fakerate_est_el(t_WJets, t_QCD, t_WJets_mc, t_QCD_mc, QCD_m, QCD_cost, QCD_pt, QCD_xf, m_low, m_high, ss);
     printf("qcd Integrals are %.2f %.2f %.2f \n", QCD_m->Integral(), QCD_cost->Integral(), QCD_xf->Integral());
 
 
-    bool normalize = false;
+    bool normalize = true;
     bool from_fit = false;
     
     if(normalize){
@@ -291,7 +295,7 @@ void draw_samesign_cmp(){
     data_cost->SetMarkerStyle(kFullCircle);
     data_cost->SetMarkerColor(1);
     cost_stack->SetMinimum(1);
-    cost_stack->SetMaximum(1000);
+    cost_stack->SetMaximum(2000);
     data_cost->Draw("P E same");
     cost_pad1->Update();
     leg1->Draw();
@@ -335,7 +339,7 @@ void draw_samesign_cmp(){
    cost_ratio->GetYaxis()->SetLabelFont(43); // Absolute font size in pixel (precision 3)
    cost_ratio->GetYaxis()->SetLabelSize(15);
    // X axis cost_ratio plot settings
-   cost_ratio->GetXaxis()->SetTitle("dielectron Cos(#theta)_{r} (GeV)");
+   cost_ratio->GetXaxis()->SetTitle("dielectron Cos(#theta)_{r}");
    cost_ratio->GetXaxis()->SetTitleSize(20);
    cost_ratio->GetXaxis()->SetTitleFont(43);
    cost_ratio->GetXaxis()->SetTitleOffset(3.);
