@@ -40,6 +40,15 @@ Double_t emu_scaling_nom = 0.978;
 Double_t emu_unc = 0.04;
 Double_t emu_scaling = emu_scaling_nom;
 
+void cleanup_hist(TH1 *h){
+    int nBins = h->GetNbinsX();
+    for(int i=1; i<= nBins; i++){
+        float val = h->GetBinContent(i);
+        if(val<0.) h->SetBinContent(i,0.);
+    }
+}
+
+
 
 double get_cost(TLorentzVector lep_p, TLorentzVector lep_m){
 
@@ -323,6 +332,10 @@ void make_qcd_from_emu_m_cost_pt_xf_hist(TTree *t_data, TTree *t_ttbar, TTree *t
     temp1->Add(data_pt, ttbar_pt ,1, -1);
     temp2->Add(dy_pt, diboson_pt ,-1, -1);
     h_pt->Add(temp1, temp2);
+    cleanup_hist(h_m);
+    cleanup_hist(h_cost);
+    cleanup_hist(h_xf);
+    cleanup_hist(h_pt);
 
 }
 
