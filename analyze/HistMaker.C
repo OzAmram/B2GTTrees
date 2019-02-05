@@ -605,14 +605,25 @@ void Fakerate_est_mu(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_contam, TTree 
         }
         printf("After iter %i current fakerate est is %.0f \n", l, h_cost->Integral());
     }
+    cleanup_hist(h_m);
+    cleanup_hist(h_pt);
+    cleanup_hist(h_xf);
+    cleanup_hist(h_cost);
     printf("Total fakerate est is %.0f \n", h_cost->Integral());
 }
 
 void Fakerate_est_el(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_MC, TTree *t_QCD_MC, TH1F *h_m, TH1F *h_cost, TH1F *h_pt, TH1F *h_xf,
-        float m_low = 150., float m_high = 99999., bool ss = false){
+        float m_low = 150., float m_high = 99999., bool ss = false, bool pt_rw = false){
     FakeRate FR;
     //TH2D *FR;
     setup_new_el_fakerate(&FR);
+    TH1F *h_rw;
+    if(pt_rw){
+        TFile *f = new TFile("SFs/ElEl_fakerate_pt_rw.root", "READ");
+        h_rw = (TH1F *) f->Get("ElEl_fakerate_pt_rw");
+        h_rw->SetDirectory(0);
+        f->Close();
+    }
     //FR.h->Print();
     for (int l=0; l<=3; l++){
         TTree *t;
@@ -698,6 +709,12 @@ void Fakerate_est_el(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_MC, TTree *t_Q
                 //if(l==3) printf("Evt fr %.2e \n", evt_fakerate);
                 //if(l==3) printf("cost, fr %.2f %.2e \n", cost, evt_fakerate);
                 TLorentzVector cm = *el_p + *el_m;
+                cost = get_cost_v2(*el_p, *el_m);
+                float pt = cm.Pt();
+                int rw_bin = h_rw->GetXaxis()->FindBin(pt);
+                float rw = h_rw->GetBinContent(rw_bin);
+                evt_fakerate *= rw;
+
                 h_m->Fill(m, evt_fakerate);
                 if(ss) h_cost->Fill(abs(cost), evt_fakerate);
                 else h_cost->Fill(cost, evt_fakerate);
@@ -708,6 +725,10 @@ void Fakerate_est_el(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_MC, TTree *t_Q
 
         printf("After iter %i current fakerate est is %.0f \n", l, h_cost->Integral());
     }
+    cleanup_hist(h_m);
+    cleanup_hist(h_pt);
+    cleanup_hist(h_xf);
+    cleanup_hist(h_cost);
     printf("Total fakerate est is %.0f \n", h_m->Integral());
 }
 
