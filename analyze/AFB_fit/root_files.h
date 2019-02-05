@@ -108,8 +108,8 @@ void init_emu_ss(){
     f_emu_ss_ttbar = TFile::Open("../analyze/output_files/EMu_ttbar_wt_samesign_jan17.root");
     t_emu_ss_ttbar = (TTree *)f_emu_ss_ttbar->Get("T_data");
 
-    f_emu_ss_DYToLL = TFile::Open("../analyze/output_files/EMu_DY_samesign_jan17.root");
-    t_emu_ss_dy = (TTree *)f_emu_ss_DYToLL->Get("T_data");
+    f_emu_ss_dy = TFile::Open("../analyze/output_files/EMu_DY_samesign_jan17.root");
+    t_emu_ss_dy = (TTree *)f_emu_ss_dy->Get("T_data");
 
     f_emu_ss_diboson = TFile::Open("../analyze/output_files/EMu_diboson_samesign_jan18.root");
     t_emu_ss_diboson = (TTree *)f_emu_ss_diboson->Get("T_data");

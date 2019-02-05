@@ -26,32 +26,128 @@
 #include "../../analyze/HistMaker.C"
 #include "../tdrstyle.C"
 #include "../CMS_lumi.C"
-#include "root_files_samesign.h"
+#include "../../analyze/AFB_fit/root_files.h"
 
 const int type = FLAG_ELECTRONS;
 
+void Fakerate_est_el_rw(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_MC,  TTree *t_QCD_MC, TH1F *h_pt_rw, TH1F *h_m, TH1F *h_cost, TH1F *h_pt, TH1F *h_xf,
+        float m_low = 150., float m_high = 99999., bool ss = false){
+    FakeRate FR;
+    //TH2D *FR;
+    setup_new_el_fakerate(&FR);
+    //FR.h->Print();
+    for (int l=0; l<=3; l++){
+        TTree *t;
+        if (l==0) t = t_WJets;
+        if (l==1) t = t_QCD;
+        if (l==2) t = t_WJets_MC;
+        if (l==3) t = t_QCD_MC;
+        Double_t m, xF, cost, jet1_cmva, jet2_cmva, gen_weight;
+        Double_t jet1_pt, jet2_pt, jet1_b_weight, jet2_b_weight, pu_SF;
+        jet1_b_weight = jet2_b_weight =1.;
+        Double_t el_id_SF, el_reco_SF;
+        Double_t evt_fakerate, el1_fakerate, el2_fakerate, el1_eta, el1_pt, el2_eta, el2_pt;
+        TLorentzVector *el_p = 0;
+        TLorentzVector *el_m = 0;
+        Int_t iso_el;
+        Float_t met_pt;
+        Int_t nJets;
+        nJets = 2;
+        pu_SF=1;
+        t->SetBranchAddress("m", &m);
+        t->SetBranchAddress("xF", &xF);
+        t->SetBranchAddress("cost", &cost);
+        t->SetBranchAddress("met_pt", &met_pt);
+        t->SetBranchAddress("jet2_CMVA", &jet2_cmva);
+        t->SetBranchAddress("jet1_CMVA", &jet1_cmva);
+        t->SetBranchAddress("jet1_pt", &jet1_pt);
+        t->SetBranchAddress("jet2_pt", &jet2_pt);
+        //t1->SetBranchAddress("evt_fakerate", &evt_fakerate);
+        //t1->SetBranchAddress("el_fakerate", &el1_fakerate);
+        t->SetBranchAddress("el1_pt", &el1_pt);
+        t->SetBranchAddress("el2_pt", &el2_pt);
+        t->SetBranchAddress("el1_eta", &el1_eta);
+        t->SetBranchAddress("el2_eta", &el2_eta);
+        t->SetBranchAddress("nJets", &nJets);
+        t->SetBranchAddress("el_p", &el_p);
+        t->SetBranchAddress("el_m", &el_m);
+
+        if(l==0 || l==2 ){
+            t->SetBranchAddress("iso_el", &iso_el);
+        }
+        if(l==2 || l==3){
+            t->SetBranchAddress("el_id_SF", &el_id_SF);
+            t->SetBranchAddress("el_reco_SF", &el_reco_SF);
+            t->SetBranchAddress("gen_weight", &gen_weight);
+            t->SetBranchAddress("jet1_b_weight", &jet1_b_weight);
+            t->SetBranchAddress("jet2_b_weight", &jet2_b_weight);
+            t->SetBranchAddress("pu_SF", &pu_SF);
+        }
+
+        Long64_t size  =  t->GetEntries();
+        for (int i=0; i<size; i++) {
+            t->GetEntry(i);
+            bool no_bjets = has_no_bjets(nJets, jet1_pt, jet2_pt, jet1_cmva, jet2_cmva);
+            bool not_cosmic = notCosmic(*el_p, *el_m);
+            if(l==0){
+                if(iso_el ==0) el1_fakerate = get_new_fakerate_prob(el1_pt, el1_eta, FR.h);
+                if(iso_el ==1) el1_fakerate = get_new_fakerate_prob(el2_pt, el2_eta, FR.h);
+                evt_fakerate = el1_fakerate/(1-el1_fakerate);
+            }
+            if(l==1){
+                el1_fakerate = get_new_fakerate_prob(el1_pt, el1_eta, FR.h);
+                el2_fakerate = get_new_fakerate_prob(el2_pt, el2_eta, FR.h);
+                evt_fakerate = -(el1_fakerate/(1-el1_fakerate)) * (el2_fakerate/(1-el2_fakerate));
+            }
+            if(l==2){
+
+                Double_t mc_weight = gen_weight * el_id_SF * el_reco_SF  * 1000. * el_lumi;
+                if(iso_el ==0) el1_fakerate = get_new_fakerate_prob(el1_pt, el1_eta, FR.h);
+                if(iso_el ==1) el1_fakerate = get_new_fakerate_prob(el2_pt, el2_eta, FR.h);
+                evt_fakerate = -(el1_fakerate * mc_weight)/(1-el1_fakerate);
+            }
+            if(l==3){
+                Double_t mc_weight = gen_weight * el_id_SF * el_reco_SF * 1000. * el_lumi;
+
+                el1_fakerate = get_new_fakerate_prob(el1_pt, el1_eta, FR.h);
+                el2_fakerate = get_new_fakerate_prob(el2_pt, el2_eta, FR.h);
+                evt_fakerate = mc_weight * (el1_fakerate/(1-el1_fakerate)) * (el2_fakerate/(1-el2_fakerate));
+            }
+
+
+
+            if(m >= m_low && m <= m_high && met_pt < 50.  && no_bjets && not_cosmic){
+                //if(l==3) printf("Evt fr %.2e \n", evt_fakerate);
+                //if(l==3) printf("cost, fr %.2f %.2e \n", cost, evt_fakerate);
+                TLorentzVector cm = *el_p + *el_m;
+                cost = get_cost_v2(*el_p, *el_m);
+                float pt = cm.Pt();
+                int rw_bin = h_pt_rw->GetXaxis()->FindBin(pt);
+                float rw = h_pt_rw->GetBinContent(rw_bin);
+                evt_fakerate *= rw;
+
+                h_m->Fill(m, evt_fakerate);
+                if(ss) h_cost->Fill(abs(cost), evt_fakerate);
+                else h_cost->Fill(cost, evt_fakerate);
+                h_pt->Fill(cm.Pt(), evt_fakerate);
+                h_xf->Fill(compute_xF(cm), evt_fakerate);
+            }
+        }
+
+        printf("After iter %i current fakerate est is %.0f \n", l, h_cost->Integral());
+    }
+    printf("Total fakerate est is %.0f \n", h_m->Integral());
+}
 
 
 void draw_samesign_cmp(){
-
-    TFile *f_emu_data = TFile::Open("../analyze/output_files/EMu_data_samesign_jan17.root");
-    TTree *t_emu_ss_data = (TTree *)f_emu_data->Get("T_data");
-
-                                
-    TFile *f_emu_ttbar = TFile::Open("../analyze/output_files/EMu_ttbar_wt_samesign_jan17.root");
-    TTree *t_emu_ss_ttbar = (TTree *)f_emu_ttbar->Get("T_data");
-
-    TFile *f_emu_DYToLL = TFile::Open("../analyze/output_files/EMu_DY_samesign_jan17.root");
-    TTree *t_emu_ss_dy = (TTree *)f_emu_DYToLL->Get("T_data");
-
-    TFile *f_emu_diboson = TFile::Open("../analyze/output_files/EMu_diboson_samesign_jan18.root");
-    TTree *t_emu_ss_diboson = (TTree *)f_emu_diboson->Get("T_data");
+    init_ss();
+    init_emu_ss();
 
 
 
 
     setTDRStyle();
-    init();
     int n_cost_bins = 10;
 
     TH1F *data_m = new TH1F("data_m", "Data Dimuon Mass Distribution", 30, 150, 2000);
@@ -60,7 +156,7 @@ void draw_samesign_cmp(){
 
     int pt_bins = 20.;
     TH1F *data_pt = new TH1F("data_pt", "MC signal", pt_bins, 0, 800);
-    TH1F *diboson_pt = new TH1F("diboson_pt", "MC signal", pt_bins, 0, 800);
+    TH1F *back_pt = new TH1F("back_pt", "MC signal", pt_bins, 0, 800);
     TH1F *QCD_pt = new TH1F("QCD_pt", "MC signal", pt_bins, 0, 800);
     TH1F *DY_pt = new TH1F("DY_pt", "MC signal", pt_bins, 0, 800);
 
@@ -74,9 +170,9 @@ void draw_samesign_cmp(){
 
 
 
-    TH1F *diboson_m = new TH1F("diboson_m", "DiBoson (WW, WZ, ZZ)", 30, 150, 2000);
-    TH1F *diboson_cost = new TH1F("diboson_cost", "DiBoson (WW, WZ,ZZ)", n_cost_bins, 0.,1);
-    TH1F *diboson_xf = new TH1F("diboson_xf", "MC signal", xf_nbins, 0, 0.8);
+    TH1F *back_m = new TH1F("back_m", "back (WW, WZ, ZZ)", 30, 150, 2000);
+    TH1F *back_cost = new TH1F("back_cost", "back (WW, WZ,ZZ)", n_cost_bins, 0.,1);
+    TH1F *back_xf = new TH1F("back_xf", "MC signal", xf_nbins, 0, 0.8);
 
     TH1F *DY_m = new TH1F("DY_m", "DY (WW, WZ, ZZ)", 30, 150, 2000);
     TH1F *DY_cost = new TH1F("DY_cost", "DY (WW, WZ,ZZ)", n_cost_bins, 0.,1);
@@ -89,18 +185,18 @@ void draw_samesign_cmp(){
     TH1F *WJets_cost = new TH1F("WJets_cost", "WJets", n_cost_bins, 0.,1);
 
     DY_pt->SetFillColor(kRed+1);
-    diboson_pt->SetFillColor(kGreen+3);
+    back_pt->SetFillColor(kGreen+3);
     QCD_pt->SetFillColor(kRed -7);
 
     DY_xf->SetFillColor(kRed+1);
-    diboson_xf->SetFillColor(kGreen+3);
+    back_xf->SetFillColor(kGreen+3);
     QCD_xf->SetFillColor(kRed -7);
 
 
     DY_m->SetFillColor(kRed+1);
     DY_cost->SetFillColor(kRed+1);
-    diboson_m->SetFillColor(kGreen+3);
-    diboson_cost->SetFillColor(kGreen + 3);
+    back_m->SetFillColor(kGreen+3);
+    back_cost->SetFillColor(kGreen + 3);
     QCD_m->SetFillColor(kRed -7);
     QCD_cost->SetFillColor(kRed -7);
 
@@ -110,16 +206,35 @@ void draw_samesign_cmp(){
     float m_high = 10000.;
     bool ss = true;
 
-    make_m_cost_pt_xf_hist(t_data, data_m, data_cost, data_pt, data_xf, true, type, false, do_RC, m_low, m_high, ss);
-    make_m_cost_pt_xf_hist(t_diboson, diboson_m, diboson_cost, diboson_pt, diboson_xf, false, type, true, do_RC, m_low, m_high, ss);
-    make_m_cost_pt_xf_hist(t_mc, DY_m, DY_cost, DY_pt, DY_xf, false, type, true, do_RC, m_low, m_high, ss);
+    make_m_cost_pt_xf_hist(t_elel_ss_data, data_m, data_cost, data_pt, data_xf, true, type, false, do_RC, m_low, m_high, ss);
+    make_m_cost_pt_xf_hist(t_elel_ss_back, back_m, back_cost, back_pt, back_xf, false, type, true, do_RC, m_low, m_high, ss);
+    make_m_cost_pt_xf_hist(t_elel_ss_dy, DY_m, DY_cost, DY_pt, DY_xf, false, type, true, do_RC, m_low, m_high, ss);
 
     
     if(qcd_from_emu) make_qcd_from_emu_m_cost_pt_xf_hist(t_emu_ss_data, t_emu_ss_ttbar, t_emu_ss_diboson, t_emu_ss_dy, QCD_m, QCD_cost, QCD_pt, QCD_xf, m_low, m_high);
     
 
-    else Fakerate_est_el(t_WJets, t_QCD, t_WJets_mc, t_QCD_mc, QCD_m, QCD_cost, QCD_pt, QCD_xf, m_low, m_high, ss);
-    printf("qcd Integrals are %.2f %.2f %.2f \n", QCD_m->Integral(), QCD_cost->Integral(), QCD_xf->Integral());
+    else{ 
+        TH1F *QCD1_m = (TH1F*) QCD_m->Clone();
+        TH1F *QCD1_pt = (TH1F*) QCD_pt->Clone();
+        TH1F *QCD1_cost = (TH1F*) QCD_cost->Clone();
+        TH1F *QCD1_xf = (TH1F*) QCD_xf->Clone();
+        Fakerate_est_el(t_elel_ss_WJets, t_elel_ss_QCD, t_elel_ss_WJets_mc, t_elel_ss_QCD_mc, QCD1_m, QCD1_cost, QCD1_pt, QCD1_xf, m_low, m_high, ss);
+        printf("qcd Integrals are %.2f %.2f %.2f \n", QCD1_m->Integral(), QCD1_cost->Integral(), QCD1_xf->Integral());
+        TH1F *h_rw = (TH1F *) data_pt->Clone("ElEl_fakerate_pt_rw");
+        h_rw->Add(back_pt, -1);
+        h_rw->Add(DY_pt, -1);
+        h_rw->Divide(QCD1_pt);
+        h_rw->Scale(1./h_rw->Integral());
+        Fakerate_est_el_rw(t_elel_ss_WJets, t_elel_ss_QCD, t_elel_ss_WJets_mc, t_elel_ss_QCD_mc,h_rw,  QCD_m, QCD_cost, QCD_pt, QCD_xf, m_low, m_high, ss);
+
+        TFile *fout = new TFile("ElEl_fakerate_pt_rw.root", "RECREATE");
+        fout->cd();
+        h_rw->Write();
+        fout->Close();
+    }
+
+
 
 
     bool normalize = true;
@@ -127,7 +242,7 @@ void draw_samesign_cmp(){
     
     if(normalize){
         Double_t n_data = data_m->Integral();
-        Double_t n_mc = diboson_m->Integral() +  DY_m->Integral();
+        Double_t n_mc = back_m->Integral() +  DY_m->Integral();
         Double_t n_QCD = QCD_m->Integral();
         Double_t qcd_ratio = (n_data - n_mc) / n_QCD;
         printf("Ratio of obs to expected QCD is %.2f \n", qcd_ratio);
@@ -171,6 +286,7 @@ void draw_samesign_cmp(){
     int nBins_x = QCD_m->GetXaxis()->GetNbins();
     int nBins_y = QCD_cost->GetYaxis()->GetNbins();
     //printf("Get size %i \n", nBins);
+    /*
     for (int i=1; i <= nBins_x; i++){
         for (int j=1; j <= nBins_y; j++){
 
@@ -181,6 +297,7 @@ void draw_samesign_cmp(){
             QCD_cost->SetBinError(i,j, 0.2*cost_val);
         }
     }
+    */
 
 
 
@@ -190,23 +307,23 @@ void draw_samesign_cmp(){
 
     THStack *m_stack = new THStack("m_stack", "MuMu Mass Distribution: Data vs MC ; m_{e^{+}e^{-}} (GeV)");
     m_stack->Add(QCD_m);
-    m_stack->Add(diboson_m);
+    m_stack->Add(back_m);
     m_stack->Add(DY_m);
 
 
     THStack *cost_stack = new THStack("cost_stack", "Cos(#theta) Distribution: Data vs MC; ee Cos(#theta)_{r}");
     cost_stack->Add(QCD_cost);
-    cost_stack->Add(diboson_cost);
+    cost_stack->Add(back_cost);
     cost_stack->Add(DY_cost);
 
     THStack *pt_stack = new THStack("pt_stack", "Dimuon Pt Distribution: Data vs MC; Dielectron Pt (GeV)");
     pt_stack->Add(QCD_pt);
-    pt_stack->Add(diboson_pt);
+    pt_stack->Add(back_pt);
     pt_stack->Add(DY_pt);
 
     THStack *xf_stack = new THStack("xf_stack", "Dimuon x_F Distribution: Data vs MC; x_F");
     xf_stack->Add(QCD_xf);
-    xf_stack->Add(diboson_xf);
+    xf_stack->Add(back_xf);
     xf_stack->Add(DY_xf);
 
     TCanvas *c_m = new TCanvas("c_m", "Histograms", 200, 10, 900, 700);
@@ -226,7 +343,7 @@ void draw_samesign_cmp(){
     gStyle->SetLegendBorderSize(0);
     TLegend *leg1 = new TLegend(0.5, 0.65, 0.75, 0.8);
     leg1->AddEntry(data_m, "data", "p");
-    leg1->AddEntry(diboson_m, "WW + WZ + ZZ", "f");
+    leg1->AddEntry(back_m, "t#bar{t} + wt  & WW + WZ + ZZ", "f");
     leg1->AddEntry(DY_m, "DY (miss-sign)", "f");
     leg1->AddEntry(QCD_m, "QCD + WJets", "f");
     leg1->Draw();
@@ -463,7 +580,7 @@ void draw_samesign_cmp(){
 
     xf_ratio->SetTitle("");
     // Y axis xf_ratio plot settings
-   xf_ratio->GetYaxis()->SetTitle("Data/MC");
+   xf_ratio->GetYaxis()->SetTitle("Obs/Exp");
    xf_ratio->GetYaxis()->SetNdivisions(505);
    xf_ratio->GetYaxis()->SetTitleSize(20);
    xf_ratio->GetYaxis()->SetTitleFont(43);

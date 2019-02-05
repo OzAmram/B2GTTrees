@@ -152,7 +152,7 @@ void make_qcd_templates(){
             my_cost_bins, -1., 1.);
     h_mumu_qcd->SetDirectory(0);
 
-    make_qcd_from_emu_m_cost_xf_hist(t_emu_ss_data, t_emu_ss_ttbar, t_emu_ss_diboson, t_emu_ss_dy, dummy1, h_mumu_qcd, dummy1, m_low, m_high);
+    make_qcd_from_emu_m_cost_pt_xf_hist(t_emu_ss_data, t_emu_ss_ttbar, t_emu_ss_diboson, t_emu_ss_dy, dummy1, h_mumu_qcd, dummy1, dummy1, m_low, m_high);
     h_elel_qcd = (TH1F*) h_mumu_qcd->Clone(h_elel_qcd->GetName());
 
     //Fakerate_est_mu(t_mumu_ss_WJets, t_mumu_ss_QCD, t_mumu_ss_WJets_mc, t_mumu_ss_QCD_mc, dummy1, h_mumu_qcd, dummy1, dummy1, m_low, m_high);
