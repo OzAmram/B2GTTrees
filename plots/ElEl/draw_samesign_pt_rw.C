@@ -154,11 +154,12 @@ void draw_samesign_cmp(){
 
     TH1F *data_cost = new TH1F("data_cost", "Data", n_cost_bins, 0.,1.);
 
-    int pt_bins = 20.;
-    TH1F *data_pt = new TH1F("data_pt", "MC signal", pt_bins, 0, 800);
-    TH1F *back_pt = new TH1F("back_pt", "MC signal", pt_bins, 0, 800);
-    TH1F *QCD_pt = new TH1F("QCD_pt", "MC signal", pt_bins, 0, 800);
-    TH1F *DY_pt = new TH1F("DY_pt", "MC signal", pt_bins, 0, 800);
+    int n_pt_bins = 8;
+    float pt_bins[] = {0., 25., 50., 75., 100., 150., 200., 300., 800.};
+    TH1F *data_pt = new TH1F("data_pt", "MC signal", n_pt_bins, pt_bins);
+    TH1F *back_pt = new TH1F("back_pt", "MC signal", n_pt_bins,  pt_bins);
+    TH1F *QCD_pt = new TH1F("QCD_pt", "MC signal", n_pt_bins,  pt_bins);
+    TH1F *DY_pt = new TH1F("DY_pt", "MC signal", n_pt_bins,  pt_bins);
 
     int xf_nbins = 16;
     TH1F *data_xf = new TH1F("data_xf", "MC signal", xf_nbins, 0, 0.8);
@@ -226,8 +227,13 @@ void draw_samesign_cmp(){
         h_rw->Add(DY_pt, -1);
         h_rw->Scale(QCD1_pt->Integral()/h_rw->Integral());
         h_rw->Divide(QCD1_pt);
+        h_rw->Draw();
         Fakerate_est_el_rw(t_elel_ss_WJets, t_elel_ss_QCD, t_elel_ss_WJets_mc, t_elel_ss_QCD_mc,h_rw,  QCD_m, QCD_cost, QCD_pt, QCD_xf, m_low, m_high, ss);
 
+        TFile *fout = new TFile("ElEl_fakerate_pt_rw.root", "RECREATE");
+        fout->cd();
+        h_rw->Write();
+        fout->Close();
     }
 
 
