@@ -90,8 +90,8 @@ void Fakerate_est_el_rw(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_MC,  TTree 
             bool no_bjets = has_no_bjets(nJets, jet1_pt, jet2_pt, jet1_cmva, jet2_cmva);
             bool not_cosmic = notCosmic(*el_p, *el_m);
             if(l==0){
-                if(iso_el ==0) el1_fakerate = get_new_fakerate_prob(el1_pt, el1_eta, FR.h);
-                if(iso_el ==1) el1_fakerate = get_new_fakerate_prob(el2_pt, el2_eta, FR.h);
+                if(iso_el ==1) el1_fakerate = get_new_fakerate_prob(el1_pt, el1_eta, FR.h);
+                if(iso_el ==0) el1_fakerate = get_new_fakerate_prob(el2_pt, el2_eta, FR.h);
                 evt_fakerate = el1_fakerate/(1-el1_fakerate);
             }
             if(l==1){
@@ -102,8 +102,8 @@ void Fakerate_est_el_rw(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_MC,  TTree 
             if(l==2){
 
                 Double_t mc_weight = gen_weight * el_id_SF * el_reco_SF  * 1000. * el_lumi;
-                if(iso_el ==0) el1_fakerate = get_new_fakerate_prob(el1_pt, el1_eta, FR.h);
-                if(iso_el ==1) el1_fakerate = get_new_fakerate_prob(el2_pt, el2_eta, FR.h);
+                if(iso_el ==1) el1_fakerate = get_new_fakerate_prob(el1_pt, el1_eta, FR.h);
+                if(iso_el ==0) el1_fakerate = get_new_fakerate_prob(el2_pt, el2_eta, FR.h);
                 evt_fakerate = -(el1_fakerate * mc_weight)/(1-el1_fakerate);
             }
             if(l==3){
@@ -140,7 +140,7 @@ void Fakerate_est_el_rw(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_MC,  TTree 
 }
 
 
-void draw_samesign_cmp(){
+void draw_samesign_pt_rw(){
     init_ss();
     init_emu_ss();
 
@@ -154,8 +154,8 @@ void draw_samesign_cmp(){
 
     TH1F *data_cost = new TH1F("data_cost", "Data", n_cost_bins, 0.,1.);
 
-    int n_pt_bins = 8;
-    float pt_bins[] = {0., 25., 50., 75., 100., 150., 200., 300., 800.};
+    int n_pt_bins = 6;
+    float pt_bins[] = {0., 25., 50., 75., 100. , 200., 800.};
     TH1F *data_pt = new TH1F("data_pt", "MC signal", n_pt_bins, pt_bins);
     TH1F *back_pt = new TH1F("back_pt", "MC signal", n_pt_bins,  pt_bins);
     TH1F *QCD_pt = new TH1F("QCD_pt", "MC signal", n_pt_bins,  pt_bins);

@@ -90,8 +90,8 @@ void Fakerate_est_el_rw(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_MC,  TTree 
             bool no_bjets = has_no_bjets(nJets, jet1_pt, jet2_pt, jet1_cmva, jet2_cmva);
             bool not_cosmic = notCosmic(*el_p, *el_m);
             if(l==0){
-                if(iso_el ==0) el1_fakerate = get_new_fakerate_prob(el1_pt, el1_eta, FR.h);
-                if(iso_el ==1) el1_fakerate = get_new_fakerate_prob(el2_pt, el2_eta, FR.h);
+                if(iso_el ==1) el1_fakerate = get_new_fakerate_prob(el1_pt, el1_eta, FR.h);
+                if(iso_el ==0) el1_fakerate = get_new_fakerate_prob(el2_pt, el2_eta, FR.h);
                 evt_fakerate = el1_fakerate/(1-el1_fakerate);
             }
             if(l==1){
@@ -102,8 +102,8 @@ void Fakerate_est_el_rw(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_MC,  TTree 
             if(l==2){
 
                 Double_t mc_weight = gen_weight * el_id_SF * el_reco_SF  * 1000. * el_lumi;
-                if(iso_el ==0) el1_fakerate = get_new_fakerate_prob(el1_pt, el1_eta, FR.h);
-                if(iso_el ==1) el1_fakerate = get_new_fakerate_prob(el2_pt, el2_eta, FR.h);
+                if(iso_el ==1) el1_fakerate = get_new_fakerate_prob(el1_pt, el1_eta, FR.h);
+                if(iso_el ==0) el1_fakerate = get_new_fakerate_prob(el2_pt, el2_eta, FR.h);
                 evt_fakerate = -(el1_fakerate * mc_weight)/(1-el1_fakerate);
             }
             if(l==3){
@@ -219,14 +219,17 @@ void draw_samesign_cmp(){
         TH1F *QCD1_pt = (TH1F*) QCD_pt->Clone();
         TH1F *QCD1_cost = (TH1F*) QCD_cost->Clone();
         TH1F *QCD1_xf = (TH1F*) QCD_xf->Clone();
-        Fakerate_est_el(t_elel_ss_WJets, t_elel_ss_QCD, t_elel_ss_WJets_mc, t_elel_ss_QCD_mc, QCD1_m, QCD1_cost, QCD1_pt, QCD1_xf, m_low, m_high, ss);
-        printf("qcd Integrals are %.2f %.2f %.2f \n", QCD1_m->Integral(), QCD1_cost->Integral(), QCD1_xf->Integral());
+        //Fakerate_est_el(t_elel_ss_WJets, t_elel_ss_QCD, t_elel_ss_WJets_mc, t_elel_ss_QCD_mc, QCD_m, QCD_cost, QCD_pt, QCD_xf, m_low, m_high, ss);
+        
+        Fakerate_est_el(t_elel_ss_WJets, t_elel_ss_QCD, t_elel_ss_WJets_mc, t_elel_ss_QCD_mc, QCD1_m, QCD1_cost, QCD1_pt, QCD1_xf, m_low, m_high, ss, false);
         TH1F *h_rw = (TH1F *) data_pt->Clone("ElEl_fakerate_pt_rw");
         h_rw->Add(back_pt, -1);
         h_rw->Add(DY_pt, -1);
         h_rw->Scale(QCD1_pt->Integral()/h_rw->Integral());
         h_rw->Divide(QCD1_pt);
         Fakerate_est_el_rw(t_elel_ss_WJets, t_elel_ss_QCD, t_elel_ss_WJets_mc, t_elel_ss_QCD_mc,h_rw,  QCD_m, QCD_cost, QCD_pt, QCD_xf, m_low, m_high, ss);
+        
+        printf("qcd Integrals are %.2f %.2f %.2f \n", QCD1_m->Integral(), QCD1_cost->Integral(), QCD1_xf->Integral());
 
     }
 
