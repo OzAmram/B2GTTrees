@@ -30,115 +30,6 @@
 
 const int type = FLAG_ELECTRONS;
 
-void Fakerate_est_el_rw(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_MC,  TTree *t_QCD_MC, TH1F *h_pt_rw, TH1F *h_m, TH1F *h_cost, TH1F *h_pt, TH1F *h_xf,
-        float m_low = 150., float m_high = 99999., bool ss = false){
-    FakeRate FR;
-    //TH2D *FR;
-    setup_new_el_fakerate(&FR);
-    //FR.h->Print();
-    for (int l=0; l<=3; l++){
-        TTree *t;
-        if (l==0) t = t_WJets;
-        if (l==1) t = t_QCD;
-        if (l==2) t = t_WJets_MC;
-        if (l==3) t = t_QCD_MC;
-        Double_t m, xF, cost, jet1_cmva, jet2_cmva, gen_weight;
-        Double_t jet1_pt, jet2_pt, jet1_b_weight, jet2_b_weight, pu_SF;
-        jet1_b_weight = jet2_b_weight =1.;
-        Double_t el_id_SF, el_reco_SF;
-        Double_t evt_fakerate, el1_fakerate, el2_fakerate, el1_eta, el1_pt, el2_eta, el2_pt;
-        TLorentzVector *el_p = 0;
-        TLorentzVector *el_m = 0;
-        Int_t iso_el;
-        Float_t met_pt;
-        Int_t nJets;
-        nJets = 2;
-        pu_SF=1;
-        t->SetBranchAddress("m", &m);
-        t->SetBranchAddress("xF", &xF);
-        t->SetBranchAddress("cost", &cost);
-        t->SetBranchAddress("met_pt", &met_pt);
-        t->SetBranchAddress("jet2_CMVA", &jet2_cmva);
-        t->SetBranchAddress("jet1_CMVA", &jet1_cmva);
-        t->SetBranchAddress("jet1_pt", &jet1_pt);
-        t->SetBranchAddress("jet2_pt", &jet2_pt);
-        //t1->SetBranchAddress("evt_fakerate", &evt_fakerate);
-        //t1->SetBranchAddress("el_fakerate", &el1_fakerate);
-        t->SetBranchAddress("el1_pt", &el1_pt);
-        t->SetBranchAddress("el2_pt", &el2_pt);
-        t->SetBranchAddress("el1_eta", &el1_eta);
-        t->SetBranchAddress("el2_eta", &el2_eta);
-        t->SetBranchAddress("nJets", &nJets);
-        t->SetBranchAddress("el_p", &el_p);
-        t->SetBranchAddress("el_m", &el_m);
-
-        if(l==0 || l==2 ){
-            t->SetBranchAddress("iso_el", &iso_el);
-        }
-        if(l==2 || l==3){
-            t->SetBranchAddress("el_id_SF", &el_id_SF);
-            t->SetBranchAddress("el_reco_SF", &el_reco_SF);
-            t->SetBranchAddress("gen_weight", &gen_weight);
-            t->SetBranchAddress("jet1_b_weight", &jet1_b_weight);
-            t->SetBranchAddress("jet2_b_weight", &jet2_b_weight);
-            t->SetBranchAddress("pu_SF", &pu_SF);
-        }
-
-        Long64_t size  =  t->GetEntries();
-        for (int i=0; i<size; i++) {
-            t->GetEntry(i);
-            bool no_bjets = has_no_bjets(nJets, jet1_pt, jet2_pt, jet1_cmva, jet2_cmva);
-            bool not_cosmic = notCosmic(*el_p, *el_m);
-            if(l==0){
-                if(iso_el ==1) el1_fakerate = get_new_fakerate_prob(el1_pt, el1_eta, FR.h);
-                if(iso_el ==0) el1_fakerate = get_new_fakerate_prob(el2_pt, el2_eta, FR.h);
-                evt_fakerate = el1_fakerate/(1-el1_fakerate);
-            }
-            if(l==1){
-                el1_fakerate = get_new_fakerate_prob(el1_pt, el1_eta, FR.h);
-                el2_fakerate = get_new_fakerate_prob(el2_pt, el2_eta, FR.h);
-                evt_fakerate = -(el1_fakerate/(1-el1_fakerate)) * (el2_fakerate/(1-el2_fakerate));
-            }
-            if(l==2){
-
-                Double_t mc_weight = gen_weight * el_id_SF * el_reco_SF  * 1000. * el_lumi;
-                if(iso_el ==1) el1_fakerate = get_new_fakerate_prob(el1_pt, el1_eta, FR.h);
-                if(iso_el ==0) el1_fakerate = get_new_fakerate_prob(el2_pt, el2_eta, FR.h);
-                evt_fakerate = -(el1_fakerate * mc_weight)/(1-el1_fakerate);
-            }
-            if(l==3){
-                Double_t mc_weight = gen_weight * el_id_SF * el_reco_SF * 1000. * el_lumi;
-
-                el1_fakerate = get_new_fakerate_prob(el1_pt, el1_eta, FR.h);
-                el2_fakerate = get_new_fakerate_prob(el2_pt, el2_eta, FR.h);
-                evt_fakerate = mc_weight * (el1_fakerate/(1-el1_fakerate)) * (el2_fakerate/(1-el2_fakerate));
-            }
-
-
-
-            if(m >= m_low && m <= m_high && met_pt < 50.  && no_bjets && not_cosmic){
-                //if(l==3) printf("Evt fr %.2e \n", evt_fakerate);
-                //if(l==3) printf("cost, fr %.2f %.2e \n", cost, evt_fakerate);
-                TLorentzVector cm = *el_p + *el_m;
-                cost = get_cost_v2(*el_p, *el_m);
-                float pt = cm.Pt();
-                int rw_bin = h_pt_rw->GetXaxis()->FindBin(pt);
-                float rw = h_pt_rw->GetBinContent(rw_bin);
-                evt_fakerate *= rw;
-
-                h_m->Fill(m, evt_fakerate);
-                if(ss) h_cost->Fill(abs(cost), evt_fakerate);
-                else h_cost->Fill(cost, evt_fakerate);
-                h_pt->Fill(cm.Pt(), evt_fakerate);
-                h_xf->Fill(compute_xF(cm), evt_fakerate);
-            }
-        }
-
-        printf("After iter %i current fakerate est is %.0f \n", l, h_cost->Integral());
-    }
-    printf("Total fakerate est is %.0f \n", h_m->Integral());
-}
-
 
 void draw_samesign_cmp(){
     init_ss();
@@ -214,24 +105,9 @@ void draw_samesign_cmp(){
     if(qcd_from_emu) make_qcd_from_emu_m_cost_pt_xf_hist(t_emu_ss_data, t_emu_ss_ttbar, t_emu_ss_diboson, t_emu_ss_dy, QCD_m, QCD_cost, QCD_pt, QCD_xf, m_low, m_high);
     
 
-    else{ 
-        TH1F *QCD1_m = (TH1F*) QCD_m->Clone();
-        TH1F *QCD1_pt = (TH1F*) QCD_pt->Clone();
-        TH1F *QCD1_cost = (TH1F*) QCD_cost->Clone();
-        TH1F *QCD1_xf = (TH1F*) QCD_xf->Clone();
-        //Fakerate_est_el(t_elel_ss_WJets, t_elel_ss_QCD, t_elel_ss_WJets_mc, t_elel_ss_QCD_mc, QCD_m, QCD_cost, QCD_pt, QCD_xf, m_low, m_high, ss);
-        
-        Fakerate_est_el(t_elel_ss_WJets, t_elel_ss_QCD, t_elel_ss_WJets_mc, t_elel_ss_QCD_mc, QCD1_m, QCD1_cost, QCD1_pt, QCD1_xf, m_low, m_high, ss, false);
-        TH1F *h_rw = (TH1F *) data_pt->Clone("ElEl_fakerate_pt_rw");
-        h_rw->Add(back_pt, -1);
-        h_rw->Add(DY_pt, -1);
-        h_rw->Scale(QCD1_pt->Integral()/h_rw->Integral());
-        h_rw->Divide(QCD1_pt);
-        Fakerate_est_el_rw(t_elel_ss_WJets, t_elel_ss_QCD, t_elel_ss_WJets_mc, t_elel_ss_QCD_mc,h_rw,  QCD_m, QCD_cost, QCD_pt, QCD_xf, m_low, m_high, ss);
-        
-        printf("qcd Integrals are %.2f %.2f %.2f \n", QCD1_m->Integral(), QCD1_cost->Integral(), QCD1_xf->Integral());
-
-    }
+    else
+        Fakerate_est_el(t_elel_ss_WJets, t_elel_ss_QCD, t_elel_ss_WJets_mc, t_elel_ss_QCD_mc, QCD_m, QCD_cost, QCD_pt, QCD_xf, m_low, m_high, ss);
+   
 
 
 
@@ -260,8 +136,8 @@ void draw_samesign_cmp(){
             dy_ratio = 1.4;
         }
         else{
-            qcd_ratio = 0.43;
-            dy_ratio = 0.955;
+            qcd_ratio = 0.85;
+            dy_ratio = 1.15;
         }
 
         QCD_m->Scale(qcd_ratio);

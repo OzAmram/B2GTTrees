@@ -661,19 +661,13 @@ void Fakerate_est_mu(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_contam, TTree 
 }
 
 void Fakerate_est_el(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_MC, TTree *t_QCD_MC, TH1F *h_m, TH1F *h_cost, TH1F *h_pt, TH1F *h_xf,
-        float m_low = 150., float m_high = 99999., bool ss = false, bool pt_rw = false){
+        float m_low = 150., float m_high = 99999., bool ss = false){
     FakeRate FR;
     //TH2D *FR;
     setup_new_el_fakerate(&FR);
     TH2D *h_err = (TH2D *) FR.h->Clone("h_err");
     h_err->Reset();
     TH1F *h_rw;
-    if(pt_rw){
-        TFile *f = new TFile("SFs/ElEl_fakerate_pt_rw.root", "READ");
-        h_rw = (TH1F *) f->Get("ElEl_fakerate_pt_rw");
-        h_rw->SetDirectory(0);
-        f->Close();
-    }
     //FR.h->Print();
     for (int l=0; l<=3; l++){
         TTree *t;
@@ -762,11 +756,6 @@ void Fakerate_est_el(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_MC, TTree *t_Q
                 TLorentzVector cm = *el_p + *el_m;
                 cost = get_cost_v2(*el_p, *el_m);
                 float pt = cm.Pt();
-                if(pt_rw){
-                    int rw_bin = h_rw->GetXaxis()->FindBin(pt);
-                    float rw = h_rw->GetBinContent(rw_bin);
-                    evt_fakerate *= rw;
-                }
 
                 if(l==0 && iso_el ==1) h_err->Fill(min(abs(el1_eta), 2.3), min(el1_pt, 150.));
                 if(l==0 && iso_el ==0) h_err->Fill(min(abs(el2_eta), 2.3), min(el2_pt, 150.));
