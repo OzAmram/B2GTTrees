@@ -570,8 +570,8 @@ void gen_fakes_template(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_contam,
                 bool no_bjets = has_no_bjets(nJets, jet1_pt, jet2_pt, jet1_cmva, jet2_cmva);
                 bool not_cosmic = notCosmic(*lep_p, *lep_m);
                 if(l==0){
-                    if(iso_mu ==0) mu1_fakerate = get_new_fakerate_prob(mu1_pt, mu1_eta, FR.h);
-                    if(iso_mu ==1) mu1_fakerate = get_new_fakerate_prob(mu2_pt, mu2_eta, FR.h);
+                    if(iso_mu ==1) mu1_fakerate = get_new_fakerate_prob(mu1_pt, mu1_eta, FR.h);
+                    if(iso_mu ==0) mu1_fakerate = get_new_fakerate_prob(mu2_pt, mu2_eta, FR.h);
                     evt_fakerate = mu1_fakerate/(1-mu1_fakerate);
                 }
                 if(l==1){
@@ -583,8 +583,8 @@ void gen_fakes_template(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_contam,
                     Double_t bcdef_weight = gen_weight * bcdef_HLT_SF *  bcdef_id_SF * bcdef_iso_SF;
                     Double_t gh_weight = gen_weight * gh_HLT_SF * gh_id_SF * gh_iso_SF;
                     Double_t mc_weight = (bcdef_weight *bcdef_lumi + gh_weight * gh_lumi) * 1000;
-                    if(iso_mu ==0) mu1_fakerate = get_new_fakerate_prob(mu1_pt, mu1_eta, FR.h);
-                    if(iso_mu ==1) mu1_fakerate = get_new_fakerate_prob(mu2_pt, mu2_eta, FR.h);
+                    if(iso_mu ==1) mu1_fakerate = get_new_fakerate_prob(mu1_pt, mu1_eta, FR.h);
+                    if(iso_mu ==0) mu1_fakerate = get_new_fakerate_prob(mu2_pt, mu2_eta, FR.h);
                     evt_fakerate = -(mu1_fakerate * mc_weight)/(1-mu1_fakerate);
                 }
                 if(l==3){
@@ -670,8 +670,8 @@ void gen_fakes_template(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_contam,
                 bool no_bjets = has_no_bjets(nJets, jet1_pt, jet2_pt, jet1_cmva, jet2_cmva);
                 bool not_cosmic = notCosmic(*lep_p, *lep_m);
                 if(l==0){
-                    if(iso_el ==0) el1_fakerate = get_new_fakerate_prob(el1_pt, el1_eta, FR.h);
-                    if(iso_el ==1) el1_fakerate = get_new_fakerate_prob(el2_pt, el2_eta, FR.h);
+                    if(iso_el ==1) el1_fakerate = get_new_fakerate_prob(el1_pt, el1_eta, FR.h);
+                    if(iso_el ==0) el1_fakerate = get_new_fakerate_prob(el2_pt, el2_eta, FR.h);
                     evt_fakerate = el1_fakerate/(1-el1_fakerate);
                 }
                 if(l==1){
@@ -682,8 +682,8 @@ void gen_fakes_template(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_contam,
                 if(l==2){
 
                     Double_t mc_weight = gen_weight * el_id_SF * el_reco_SF  * 1000. * el_lumi;
-                    if(iso_el ==0) el1_fakerate = get_new_fakerate_prob(el1_pt, el1_eta, FR.h);
-                    if(iso_el ==1) el1_fakerate = get_new_fakerate_prob(el2_pt, el2_eta, FR.h);
+                    if(iso_el ==1) el1_fakerate = get_new_fakerate_prob(el1_pt, el1_eta, FR.h);
+                    if(iso_el ==0) el1_fakerate = get_new_fakerate_prob(el2_pt, el2_eta, FR.h);
                     evt_fakerate = -(el1_fakerate * mc_weight)/(1-el1_fakerate);
                 }
                 if(l==3){
