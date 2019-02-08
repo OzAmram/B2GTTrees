@@ -251,7 +251,7 @@ void MuMu_QCD_MC(int nJobs = 1, int iJob = 0)
                 bool good_trigger = HLT_IsoMu || HLT_IsoTkMu;
                 //bool good_trigger = true;
                 if(good_trigger &&
-                        mu_size >= 2 && ((abs(mu_Charge[0] - mu_Charge[1])) > 0.01) &&
+                        mu_size >= 2 &&
                         mu_IsHighPtMuon[0] && mu_IsHighPtMuon[1] &&
                         mu_Pt[0] > 26. &&  mu_Pt[1] > 15. &&
                         abs(mu_Eta[0]) < 2.4 && abs(mu_Eta[1]) < 2.4){ 

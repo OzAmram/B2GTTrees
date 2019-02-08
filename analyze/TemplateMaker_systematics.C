@@ -65,8 +65,8 @@ void print_hist(TH2 *h){
 //
 //static type means functions scope is only this file, to avoid conflicts
 
-int gen_data_template(TTree *t1, TH2F* h, vector<double> *v_xF, vector<double> *v_cost, Double_t var_low, Double_t var_high, 
-        int flag1 = FLAG_MUONS, int flag2 = FLAG_M_BINS, bool turn_on_RC = true){
+int gen_data_template(TTree *t1, TH2F* h,  Double_t var_low, Double_t var_high, 
+        int flag1 = FLAG_MUONS, int flag2 = FLAG_M_BINS, bool turn_on_RC = true, bool ss = false){
     h->Sumw2();
     Long64_t nEntries  =  t1->GetEntries();
     //printf("size is %i \n", nEntries);
@@ -141,12 +141,14 @@ int gen_data_template(TTree *t1, TH2F* h, vector<double> *v_xF, vector<double> *
 
             if(m >= var_low && m <= var_high && met_pt < 50. && no_bjets && not_cosmic){
                 n++;
-                h->Fill(xF, cost, 1); 
+                if(!ss) h->Fill(xF, cost, 1); 
+                else{
+                    h->Fill(xF, cost, 0.5);
+                    h->Fill(xF, -cost, 0.5);
+                }
+
                 //printf("size %i \n", (int) v_cost->size());
                 //printf("xf\n");
-                v_xF->push_back(xF);
-                //printf("cost\n");
-                v_cost->push_back(cost);
                 //printf("end\n");
                 nEvents++;
             }
@@ -154,16 +156,17 @@ int gen_data_template(TTree *t1, TH2F* h, vector<double> *v_xF, vector<double> *
         else{
             if(m>= 150. &&  pt >= var_low && pt <= var_high && met_pt < 50. && no_bjets && not_cosmic){
                 n++;
-                h->Fill(xF, cost, 1); 
-                v_xF->push_back(xF);
-                v_cost->push_back(cost);
+                if(!ss) h->Fill(xF, cost, 1); 
+                else{
+                    h->Fill(xF, cost, 0.5);
+                    h->Fill(xF, -cost, 0.5);
+                }
                 nEvents++;
             }
         }
 
     }
 
-    h->Scale(1./h->Integral());
     t1->ResetBranchAddresses();
     return nEvents;
 }
@@ -285,7 +288,7 @@ int gen_mc_template(TTree *t1, Double_t alpha, TH2F* h_sym, TH2F *h_asym, TH2F *
     if(do_pileup_sys != 0) setup_pileup_systematic(&pu_sys); 
 
     if(!btag_setup){
-        setup_btag_SFs(&b_reader, &btag_effs, do_btag_sys);
+        setup_btag_SFs(&b_reader, &btag_effs);
     }
 
 
@@ -505,15 +508,18 @@ int gen_mc_template(TTree *t1, Double_t alpha, TH2F* h_sym, TH2F *h_asym, TH2F *
 
 void gen_fakes_template(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_contam, 
         TTree* t_QCD_contam, TH2F *h, Double_t var_low, Double_t var_high, 
-        int flag1 = FLAG_MUONS, int flag2 = FLAG_M_BINS){
+        int flag1 = FLAG_MUONS, int flag2 = FLAG_M_BINS, bool ss = false){
     h->Sumw2();
+    TH2D *h_err;
     TLorentzVector *lep_p=0;
     TLorentzVector *lep_m=0;
     Double_t pt;
+    FakeRate FR;
     if(flag1 == FLAG_MUONS){
-        FakeRate FR;
         //TH2D *FR;
         setup_new_mu_fakerate(&FR);
+        h_err = (TH2D *) FR.h->Clone("h_err");
+        h_err->Reset();
         for (int l=0; l<=3; l++){
             TTree *t;
             if (l==0) t = t_WJets;
@@ -604,10 +610,16 @@ void gen_fakes_template(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_contam,
                     && met_pt < 50.  && no_bjets && not_cosmic;
 
                 if(pass){
+                    if(l==0 && iso_mu ==1) h_err->Fill(min(abs(mu1_eta), 2.3), min(mu1_pt, 150.));
+                    if(l==0 && iso_mu ==0) h_err->Fill(min(abs(mu2_eta), 2.3), min(mu2_pt, 150.));
                     cost = get_cost_v2(*lep_p, *lep_m);
                     //if(l==3) printf("Evt fr %.2e \n", evt_fakerate);
                     //if(l==3) printf("cost, fr %.2f %.2e \n", cost, evt_fakerate);
-                    h->Fill(xF, cost, evt_fakerate);
+                    if(!ss) h->Fill(xF, cost, evt_fakerate);
+                    else{
+                        h->Fill(xF, cost, 0.5*evt_fakerate);
+                        h->Fill(xF, -cost, 0.5*evt_fakerate);
+                    }
                 }
 
 
@@ -617,9 +629,10 @@ void gen_fakes_template(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_contam,
     }
     else{
 
-        FakeRate FR;
         //TH2D *FR;
         setup_new_el_fakerate(&FR);
+        h_err = (TH2D *) FR.h->Clone("h_err");
+        h_err->Reset();
         for (int l=0; l<=3; l++){
             TTree *t;
             if (l==0) t = t_WJets;
@@ -703,10 +716,16 @@ void gen_fakes_template(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_contam,
                         (flag2 == FLAG_PT_BINS && m >= 150. && pt >= var_low && pt <= var_high))
                     && met_pt < 50.  && no_bjets && not_cosmic;
                 if(pass){
+                    if(l==0 && iso_el ==1) h_err->Fill(min(abs(el1_eta), 2.3), min(el1_pt, 150.));
+                    if(l==0 && iso_el ==0) h_err->Fill(min(abs(el2_eta), 2.3), min(el2_pt, 150.));
                     cost = get_cost_v2(*lep_p, *lep_m);
                     //if(l==3) printf("Evt fr %.2e \n", evt_fakerate);
                     //if(l==3) printf("cost, fr %.2f %.2e \n", cost, evt_fakerate);
-                    h->Fill(xF, cost, evt_fakerate);
+                    if(!ss) h->Fill(xF, cost, evt_fakerate);
+                    else{
+                        h->Fill(xF, cost, 0.5*evt_fakerate);
+                        h->Fill(xF, -cost, 0.5*evt_fakerate);
+                    }
                 }
             }
 
@@ -715,20 +734,19 @@ void gen_fakes_template(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_contam,
     }
     printf("Performing fakes cleanup (removing neg. bins) \n");
     cleanup_template(h);
+    set_fakerate_errors(h_err, FR.h, h);
     printf("Total Fakerate weight Weight is %.2f \n", h->Integral());
     if(h->Integral() < 0.){
         h->Scale(0.);
         printf("zeroing Fakes template \n");
     }
-    //if(flag1 == FLAG_MUONS) h->Scale(1.5);
-    //if(flag1 == FLAG_ELECTRONS) h->Scale(1.3);
     return;
 }
 
 
 int gen_combined_background_template(int nTrees, TTree **ts, TH2F* h,  
         Double_t var_low, Double_t var_high, int flag1 = FLAG_MUONS, int flag2 = FLAG_M_BINS,
-        bool turn_on_RC = true, const string &sys_label = "", int pdf_sys = -1){
+        bool turn_on_RC = true, bool ss =false, const string &sys_label = "", int pdf_sys = -1){
     h->Sumw2();
 
 
@@ -825,7 +843,7 @@ int gen_combined_background_template(int nTrees, TTree **ts, TH2F* h,
     if(do_pileup_sys != 0) setup_pileup_systematic(&pu_sys); 
 
     if(!btag_setup){
-        setup_btag_SFs(&b_reader, &btag_effs, do_btag_sys);
+        setup_btag_SFs(&b_reader, &btag_effs);
     }
         if(flag1 == FLAG_MUONS){
 
@@ -928,7 +946,11 @@ int gen_combined_background_template(int nTrees, TTree **ts, TH2F* h,
 
 
                     Double_t evt_weight = gh_weight * gh_lumi + bcdef_weight * bcdef_lumi * 1000 *emu_scaling;
-                    h->Fill(xF, cost, evt_weight);
+                    if(!ss) h->Fill(xF, cost, evt_weight);
+                    else{
+                        h->Fill(xF, cost, 0.5*evt_weight);
+                        h->Fill(xF, -cost, 0.5*evt_weight);
+                    }
                 }
             }
         }
@@ -963,7 +985,11 @@ int gen_combined_background_template(int nTrees, TTree **ts, TH2F* h,
                         evt_weight *= jet2_b_weight;
                     }
                     evt_weight *= 1000*el_lumi*emu_scaling;
-                    h->Fill(xF, cost, evt_weight);
+                    if(!ss) h->Fill(xF, cost, evt_weight);
+                    else{
+                        h->Fill(xF, cost, 0.5*evt_weight);
+                        h->Fill(xF, -cost, 0.5*evt_weight);
+                    }
                 }
             }
         }
@@ -973,7 +999,6 @@ int gen_combined_background_template(int nTrees, TTree **ts, TH2F* h,
     printf("Performing templ. cleanup (removing neg. bins) \n");
     cleanup_template(h);
     printf("Tot Weight is %.2f \n", h->Integral());
-    h->Scale(1./h->Integral());
     return 0;
 }
 

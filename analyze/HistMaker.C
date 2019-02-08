@@ -70,8 +70,51 @@ void set_fakerate_errors(TH2D *h_errs, TH2D *h_fr, TH1F *h){
         h->SetBinError(i, new_err);
     }
 }
+
+void set_fakerate_errors(TH2D *h_errs, TH2D *h_fr, TH2F *h){
+    float err_sum = 0.;
+    for(int i=1; i<= h_errs->GetNbinsX(); i++){
+        for(int j=1; j<= h_errs->GetNbinsY(); j++){
+            float err = h_fr->GetBinError(i,j);
+            float num = h_errs->GetBinContent(i,j);
+            err_sum += err*err*num*num;
+        }
+    }
+    //increase error sum by 50% to approximate subtraction of 2 fail template
+    err_sum *= 1.50;
+    float n_err_events = h_errs->Integral();
+    for(int i=1; i<= h->GetNbinsX(); i++){
+        for(int j=1; j<= h->GetNbinsY(); j++){
+            float bin_num = h->GetBinContent(i, j);
+            float scaling = pow(bin_num/n_err_events, 2);
+            float num_err = pow(h->GetBinError(i,j),2);
+            float weight_err = scaling * err_sum;
+            float new_err = sqrt(num_err + weight_err);
+            //printf("Err was %.1f, is now %.1f \n", sqrt(num_err), new_err);
+
+            h->SetBinError(i,j, new_err);
+        }
+    }
+}
     
 
+TH1F* convert2d(TH2F *h_2d){
+    int n_xf_bins = h_2d->GetNbinsX();
+    int n_cost_bins = h_2d->GetNbinsY();
+
+    TH1F *h_1d = new TH1F(h_2d->GetName(), "",  n_xf_bins * n_cost_bins, 0, n_xf_bins*n_cost_bins);
+    for(int i=1; i<=n_xf_bins; i++){
+        for(int j=1; j<= n_cost_bins; j++){
+            float content = h_2d->GetBinContent(i,j);
+            float error = h_2d->GetBinError(i,j);
+            int gbin = (i-1)*n_cost_bins + j;
+            //printf("gbin %i: i j %i %i \n", gbin, i, j);
+            h_1d->SetBinContent(gbin, content);
+            h_1d->SetBinError(gbin, error);
+        }
+    }
+    return h_1d;
+}
 
 
 
@@ -657,6 +700,7 @@ void Fakerate_est_mu(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_contam, TTree 
     cleanup_hist(h_pt);
     cleanup_hist(h_xf);
     cleanup_hist(h_cost);
+    set_fakerate_errors(h_err, FR.h, h_cost);
     printf("Total fakerate est is %.0f \n", h_cost->Integral());
 }
 
