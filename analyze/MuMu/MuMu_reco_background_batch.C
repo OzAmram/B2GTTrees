@@ -19,7 +19,7 @@ const double root2 = sqrt(2);
 double Ebeam = 6500.;
 double Pbeam = sqrt(Ebeam*Ebeam - 0.938*0.938);
 
-char *filename("TTbar_WT_files_aug7.txt");
+char *filename("DY_files_oct22.txt");
 const TString fout_name("output_files/MuMu_diboson_sep4.root");
 const double alpha = 0.05;
 const bool PRINT=false;
@@ -247,32 +247,18 @@ void MuMu_reco_background_batch(int nJobs =1, int iJob=0)
             t1->SetBranchAddress("mu_SumPhotonPt", &mu_SumPhotonPt);
             t1->SetBranchAddress("mu_NumberTrackerLayers", &mu_NumberTrackerLayers);
 
-            if(data_2016){
-                t1->SetBranchAddress("jetAK4CHS_size", &jet_size);
-                t1->SetBranchAddress("jetAK4CHS_Pt", &jet_Pt);
-                t1->SetBranchAddress("jetAK4CHS_Eta", &jet_Eta);
-                t1->SetBranchAddress("jetAK4CHS_Phi", &jet_Phi);
-                t1->SetBranchAddress("jetAK4CHS_E", &jet_E);
-                t1->SetBranchAddress("jetAK4CHS_CSVv2", &jet_CSV);
-                t1->SetBranchAddress("jetAK4CHS_CMVAv2", &jet_CMVA);
-                t1->SetBranchAddress("jetAK4CHS_PartonFlavour", &jet_partonflavour);
+            t1->SetBranchAddress("jetAK4CHS_size", &jet_size);
+            t1->SetBranchAddress("jetAK4CHS_Pt", &jet_Pt);
+            t1->SetBranchAddress("jetAK4CHS_Eta", &jet_Eta);
+            t1->SetBranchAddress("jetAK4CHS_Phi", &jet_Phi);
+            t1->SetBranchAddress("jetAK4CHS_E", &jet_E);
+            t1->SetBranchAddress("jetAK4CHS_CSVv2", &jet_CSV);
+            t1->SetBranchAddress("jetAK4CHS_CMVAv2", &jet_CMVA);
+            t1->SetBranchAddress("jetAK4CHS_PartonFlavour", &jet_partonflavour);
 
-                t1->SetBranchAddress("HLT_IsoMu24", &HLT_IsoMu);
-                t1->SetBranchAddress("HLT_IsoTkMu24", &HLT_IsoTkMu);
-            }
+            t1->SetBranchAddress("HLT_IsoMu24", &HLT_IsoMu);
+            t1->SetBranchAddress("HLT_IsoTkMu24", &HLT_IsoTkMu);
 
-            else{
-                t1->SetBranchAddress("jetAK4Puppi_size", &jet_size);
-                t1->SetBranchAddress("jetAK4Puppi_Pt", &jet_Pt);
-                t1->SetBranchAddress("jetAK4Puppi_Eta", &jet_Eta);
-                t1->SetBranchAddress("jetAK4Puppi_Phi", &jet_Phi);
-                t1->SetBranchAddress("jetAK4Puppi_E", &jet_E);
-                t1->SetBranchAddress("jetAK4Puppi_CSVv2", &jet_CSV);
-                t1->SetBranchAddress("jetAK4Puppi_CMVAv2", &jet_CMVA);
-
-                t1->SetBranchAddress("HLT_IsoMu20", &HLT_IsoMu);
-                t1->SetBranchAddress("HLT_IsoTkMu20", &HLT_IsoTkMu);
-            }
             t1->SetBranchAddress("evt_Gen_Weight", &evt_Gen_Weight);
 
             t1->SetBranchAddress("pu_NtrueInt",&pu_NtrueInt);

@@ -11,32 +11,35 @@ class DY_AFB(PhysicsModel):
         """Create POI and other parameters, and define the POI set."""
 
         self.modelBuilder.doVar("Afb[0.6,-0.75,0.75]");
-        self.modelBuilder.doVar("Rbk_ee[0.15,0.0,1.0]");
-        self.modelBuilder.doVar("RQCD_ee[0.05,0.0,1.0]");
-        self.modelBuilder.doVar("Rbk_mumu[0.15,0.0,1.0]");
-        self.modelBuilder.doVar("RQCD_mumu[0.05,0.0,1.0]");
-        self.modelBuilder.doSet("POI","Afb,Rbk_ee,Rbk_mumu,RQCD_ee,RQCD_mumu")
-      
-        self.modelBuilder.factory_('expr::Rpl_ee("(1.-@1-@2)*(1.+@0)",Afb, Rbk_ee, RQCD_ee)')
-        self.modelBuilder.factory_('expr::Rmn_ee("(1.-@1-@2)*(1.-@0)",Afb, Rbk_ee, RQCD_ee)')
+        self.modelBuilder.doVar("Rdy[1.0,0.0,10.0]");
+        #self.modelBuilder.doVar("Rbk_ee[1.0,0.0,10.0]");
+        #self.modelBuilder.doVar("Rbk_mumu[1.0,0.0,10.0]");
+        #self.modelBuilder.doVar("Rbk[1.0,0.0,10.0]");
+        self.modelBuilder.doVar("Rqcd_ee[1.0,0.0,10.0]");
+        self.modelBuilder.doVar("Rqcd_mumu[1.0,0.0,10.0]");
+        self.modelBuilder.doSet("POI","Afb,Rdy")
 
-        self.modelBuilder.factory_('expr::Rpl_mumu("(1.-@1-@2)*(1.+@0)",Afb, Rbk_mumu, RQCD_mumu)')
-        self.modelBuilder.factory_('expr::Rmn_mumu("(1.-@1-@2)*(1.-@0)",Afb, Rbk_mumu, RQCD_mumu)')
+        # ss templates
+        self.modelBuilder.doVar("Rdy_mumu_ss[1.0,0.0,10.0]");
+        self.modelBuilder.doVar("Rdy_ee_ss[1.0,0.0,10.0]");
+      
+        self.modelBuilder.factory_('expr::Rpl("0.5*@1*(1.+@0)",Afb, Rdy)')
+        self.modelBuilder.factory_('expr::Rmn("0.5*@1*(1.-@0)",Afb, Rdy)')
+
 
  
  
  
  
     def getYieldScale(self,bin,process):
-        if 'pl' in process and 'ee' in bin: return "Rpl_ee"
-        if 'mn' in process and 'ee' in bin: return "Rmn_ee"
-        if 'pl' in process and 'mumu' in bin: return "Rpl_mumu"
-        if 'mn' in process and 'mumu' in bin: return "Rmn_mumu"
+        if 'pl' in process: return "Rpl"
+        if 'mn' in process : return "Rmn"
+        if 'dy' in process and 'ee_ss' in bin: return "Rdy_ee_ss"
+        if 'dy' in process and 'mumu_ss' in bin: return "Rdy_mumu_ss"
 
-        if 'bk' in process and 'ee' in bin: return "Rbk_ee"
-        if 'bk' in process and 'mumu' in bin: return "Rbk_mumu"
-        if 'qcd' in process and 'ee' in bin: return "RQCD_ee"
-        if 'qcd' in process and 'mumu' in bin: return "RQCD_mumu"
+        #if 'bk' in process: return "Rbk"
+        if 'qcd' in process and 'ee' in bin: return "Rqcd_ee"
+        if 'qcd' in process and 'mumu' in bin: return "Rqcd_mumu"
         else:
             return 1
 
@@ -48,51 +51,48 @@ class DY_AFB_noQCD(PhysicsModel):
         """Create POI and other parameters, and define the POI set."""
 
         self.modelBuilder.doVar("Afb[0.6,-0.75,0.75]");
-        self.modelBuilder.doVar("Rbk_ee[0.15,0.0,1.0]");
-        self.modelBuilder.doVar("Rbk_mumu[0.15,0.0,1.0]");
-        self.modelBuilder.doSet("POI","Afb,Rbk_ee,Rbk_mumu")
-      
-        self.modelBuilder.factory_('expr::Rpl_ee("(1.-@1)*(1.+@0)",Afb, Rbk_ee)')
-        self.modelBuilder.factory_('expr::Rmn_ee("(1.-@1)*(1.-@0)",Afb, Rbk_ee)')
+        self.modelBuilder.doVar("Rbk[1.0,0.0,10.0]");
+        self.modelBuilder.doVar("Rdy[1.0,0.0,10.0]");
+        self.modelBuilder.doSet("POI","Afb,Rdy")
 
-        self.modelBuilder.factory_('expr::Rpl_mumu("(1.-@1)*(1.+@0)",Afb, Rbk_mumu)')
-        self.modelBuilder.factory_('expr::Rmn_mumu("(1.-@1)*(1.-@0)",Afb, Rbk_mumu)')
+      
+        self.modelBuilder.factory_('expr::Rpl("@1*(1.+@0)",Afb, Rdy)')
+        self.modelBuilder.factory_('expr::Rmn("@1*(1.-@0)",Afb, Rdy)')
+
 
  
  
  
  
     def getYieldScale(self,bin,process):
-        if 'pl' in process and 'ee' in bin: return "Rpl_ee"
-        if 'mn' in process and 'ee' in bin: return "Rmn_ee"
-        if 'pl' in process and 'mumu' in bin: return "Rpl_mumu"
-        if 'mn' in process and 'mumu' in bin: return "Rmn_mumu"
+        if 'pl' in process: return "Rpl"
+        if 'mn' in process : return "Rmn"
+        if 'dy' in process and 'ss' not in bin: return "Rdy"
 
-        if 'bk' in process and 'ee' in bin: return "Rbk_ee"
-        if 'bk' in process and 'mumu' in bin: return "Rbk_mumu"
+        if 'bk' in process: return "Rbk"
         else:
             return 1
 
-class ElEl_samesign(PhysicsModel):
+class Samesign(PhysicsModel):
     def __init__(self):
         return
 
     def doParametersOfInterest(self):
         """Create POI and other parameters, and define the POI set."""
 
-        self.modelBuilder.doVar("Rdy_ee[1.,0.0,10.0]");
-        self.modelBuilder.doVar("RQCD_ee[1,0.0,10.0]");
-        self.modelBuilder.doSet("POI","Rdy_ee,RQCD_ee")
+        self.modelBuilder.doVar("Rdy[1.,0.0,10.0]");
+        self.modelBuilder.doVar("Rqcd[1,0.0,10.0]");
+        self.modelBuilder.doSet("POI","Rdy,Rqcd")
       
  
  
  
     def getYieldScale(self,bin,process):
-        if 'dy' in process : return "Rdy_ee"
-        if 'qcd' in process : return "RQCD_ee"
+        if 'dy' in process : return "Rdy"
+        if 'qcd' in process : return "Rqcd"
         else:
             return 1
 
-elel_samesign = ElEl_samesign()
+samesign = Samesign()
 dy_AFB = DY_AFB() 
 dy_AFB_noQCD = DY_AFB_noQCD() 

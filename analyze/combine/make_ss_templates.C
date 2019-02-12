@@ -16,49 +16,26 @@
 #include "TVector3.h"
 #include "TFitter.h"
 #include "TSystem.h"
-#include "HiggsAnalysis/CombinedLimit/interface/RooParametricHist.h"
-#include "RooWorkspace.h"
 //#include"Minuit2/Minuit2Minimizer.h"
 #include "Math/Functor.h"
-#include "../TemplateMaker_systematics.C"
-//#include "../TemplateMaker.C"
-#include "../AFB_fit/FitUtils.C"
+#include "TemplateUtils.h"
 
-Double_t m_low;
-Double_t m_high;
 
-bool print = true;
-const TString fout_name("combine/templates/feb7_qcd_fakerate_param.root");
-TFile * fout;
-char dirname[40];
+const TString ss_fout_name("combine/templates/feb12_ss_qcd_fakerate_param.root");
+TFile * ss_fout;
 
 
 
 
-RooWorkspace *w;
-RooRealVar *var = new RooRealVar("var", "var", 0.,n_cost_bins * n_xf_bins);
-RooRealVar *qcd_norm = new RooRealVar("Rqcd", "QCD normalization", 1, 0., 10.);
-
-
-
-TH1F * dummy1 = new TH1F("dummy", "", 1, 0, 1);
-bool do_emu_scale = false;
-bool ss = true;
-bool do_RC = true;
-
-
-void write_roo_hist(TH1F *h){
-    RooDataHist r(h->GetName(), h->GetName(), *var, h);
-    w->import(r);
-}
-
-
-void convert_ss_qcd_to_param_hist(TH1F *h, FILE *f_log){
+void convert_ss_qcd_to_param_hist(TH1F *h, FILE *f_log, int flag){
     //convert a hist to a parametric hist 
     RooArgList *bin_list = new RooArgList();
 
     char h_name[40];
     sprintf(h_name, "%s_param", h->GetName());
+    RooRealVar *Rqcd;
+    if(flag == FLAG_MUONS) Rqcd = Rqcd_mumu_ss;
+    else Rqcd = Rqcd_ee_ss;
     for(int j=1; j <= h->GetNbinsX(); j++){
 
         float content = h->GetBinContent(j);
@@ -69,11 +46,12 @@ void convert_ss_qcd_to_param_hist(TH1F *h, FILE *f_log){
         char form_name[40];
         sprintf(bin_name, "%s_bin%i",h_name, j); 
         sprintf(form_name, "%s_form%i",h_name, j); 
-        RooRealVar *bin = new RooRealVar(bin_name, bin_name, content);
+        RooRealVar *bin = new RooRealVar(bin_name, bin_name, content, 0., 10000.);
         fprintf(f_log, "%s param %.2f %.2f \n", bin_name, content, error);
-        RooFormulaVar *form = new RooFormulaVar(form_name, form_name, "@0*@1", RooArgList(*bin, *qcd_norm));
         //bin->Print();
-        bin_list->add(*form);
+        bin_list->add(*bin);
+        //RooFormulaVar *form = new RooFormulaVar(form_name, form_name, "@0*@1", RooArgList(*bin, *Rqcd));
+        //bin_list->add(*form);
     }
     bin_list->Print();
 
@@ -95,6 +73,7 @@ void make_ss_data_templates(){
     auto h_mumu_data = new TH2F("mumu_ss_data_obs", "Data template of (x_f, cost_r)",
             n_xf_bins, xf_bins, n_cost_bins, cost_bins);
     h_mumu_data->SetDirectory(0);
+    bool ss = true;
 
     nElEl_DataEvents = gen_data_template(t_elel_ss_data, h_elel_data,  m_low, m_high, FLAG_ELECTRONS, FLAG_M_BINS, do_RC, ss);
     nMuMu_DataEvents = gen_data_template(t_mumu_ss_data, h_mumu_data,  m_low, m_high, FLAG_MUONS, FLAG_M_BINS, do_RC, ss);
@@ -103,8 +82,6 @@ void make_ss_data_templates(){
 
 
     printf("Integral of data templates were %.2f %.2f \n", h_elel_data->Integral(), h_mumu_data->Integral()); 
-    fout->cd();
-    gDirectory->cd(dirname);
     //h_elel_data->Write();
     //h_mumu_data->Write();
     write_roo_hist(h1_elel_data);
@@ -121,16 +98,15 @@ void make_ss_qcd_templates(FILE *f_log){
     h_mumu_qcd->SetDirectory(0);
 
 
-    gen_fakes_template(t_elel_ss_WJets, t_elel_ss_QCD, t_elel_ss_WJets_contam, t_elel_ss_QCD_contam, h_elel_qcd, m_low, m_high, FLAG_ELECTRONS, FLAG_M_BINS, ss);
-    gen_fakes_template(t_mumu_ss_WJets, t_mumu_ss_QCD, t_mumu_ss_WJets_contam, t_mumu_ss_QCD_contam, h_mumu_qcd, m_low, m_high, FLAG_MUONS, FLAG_M_BINS, ss);
+    bool ss = true;
+    gen_fakes_template(t_elel_WJets, t_elel_QCD, t_elel_WJets_contam, t_elel_QCD_contam, h_elel_qcd, m_low, m_high, FLAG_ELECTRONS, FLAG_M_BINS, ss);
+    gen_fakes_template(t_mumu_WJets, t_mumu_QCD, t_mumu_WJets_contam, t_mumu_QCD_contam, h_mumu_qcd, m_low, m_high, FLAG_MUONS, FLAG_M_BINS, ss);
     printf("Integral of qcd templates are %.2f %.2f \n", h_elel_qcd->Integral(), h_mumu_qcd->Integral()); 
     auto h1_elel_qcd = convert2d(h_elel_qcd);
     auto h1_mumu_qcd = convert2d(h_mumu_qcd);
 
-    RooParametricHist *p_elel_qcd, *p_mumu_qcd;
-    RooAddition *n_elel_qcd, *n_mumu_qcd;
-    convert_ss_qcd_to_param_hist(h1_elel_qcd, f_log);
-    convert_ss_qcd_to_param_hist(h1_mumu_qcd, f_log);
+    convert_ss_qcd_to_param_hist(h1_elel_qcd, f_log, FLAG_ELECTRONS);
+    convert_ss_qcd_to_param_hist(h1_mumu_qcd, f_log, FLAG_MUONS);
     printf("Made qcd templates \n");
 }
 
@@ -146,6 +122,7 @@ void make_ss_mc_templates(){
     auto h_mumu_bk = new TH2F((string("mumu_ss_bk") ).c_str(), "Combined background template",
             n_xf_bins, xf_bins, n_cost_bins, cost_bins);
 
+    bool ss = true;
 
 
     TTree *mumu_ts[1] = {t_mumu_ss_back};
@@ -186,17 +163,18 @@ void make_ss_mc_templates(){
 
 void make_ss_templates(){
 
+    init();
     init_ss();
-    init_emu_ss();
 
 
-    fout = TFile::Open(fout_name, "RECREATE");
+    ss_fout = TFile::Open(ss_fout_name, "RECREATE");
     FILE *f_log;
     char f_log_name[80];
+    char dirname[40];
 
 
     for(int i=0; i<n_m_bins; i++){
-        fout->cd();
+        ss_fout->cd();
         snprintf(dirname, 10, "w%i", i);
         gDirectory->mkdir(dirname);
         gDirectory->cd(dirname);
@@ -213,12 +191,12 @@ void make_ss_templates(){
         make_ss_data_templates();
         make_ss_qcd_templates(f_log);
         make_ss_mc_templates();
-        fout->cd();
+        ss_fout->cd();
         gDirectory->cd(dirname);
         w->Write();
         fclose(f_log);
     }
-    printf("Templates written to %s \n", fout_name.Data());
+    printf("Templates written to %s \n", ss_fout_name.Data());
 }
 
 
