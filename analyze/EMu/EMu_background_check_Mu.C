@@ -9,7 +9,6 @@
 #include "TTree.h"
 #include "TLorentzVector.h"
 #include "../ScaleFactors.C"
-#include "../RoccoR.cc"
 #include "../HistMaker.C"
 
 
@@ -23,11 +22,11 @@ const double root2 = sqrt(2);
 double Ebeam = 6500.;
 double Pbeam = sqrt(Ebeam*Ebeam - 0.938*0.938);
 
-char *filename("diboson_files_aug7.txt");
-const TString fout_name("output_files/EMu_diboson_samesign_dec4.root");
+char *filename("DY_files_oct22.txt");
+const TString fout_name("output_files/EMu_dy_feb12.root");
 const bool PRINT=false;
 
-const bool do_samesign = true;
+const bool do_samesign = false;
 
 bool is_empty_line(const char *s) {
     while (*s != '\0') {

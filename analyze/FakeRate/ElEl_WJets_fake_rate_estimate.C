@@ -174,7 +174,7 @@ void ElEl_WJets_fake_rate_estimate(int nJobs=1, int iJob=0)
             if(met_size != 1) printf("WARNING: Met size not equal to 1\n");
             if(el_size > EL_SIZE) printf("Warning: too many muons\n");
             bool good_trigger = HLT_El;
-            if( el_size >= 2 && ((abs(el_Charge[0] - el_Charge[1])) > 0.01) &&
+            if( el_size >= 2 && 
                     el_IDMedium_NoIso[0] && el_IDMedium_NoIso[1] &&
                     el_ScaleCorr[0] * el_Pt[0] > 29. &&  el_ScaleCorr[1] * el_Pt[1] > 15. &&
                     goodElEta(el_SCEta[0]) && goodElEta(el_SCEta[1])){ 

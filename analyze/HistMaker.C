@@ -36,7 +36,7 @@ Double_t bcdef_lumi = 6.04 + 2.68 + 4.37 + 4.06 + 3.17;
 Double_t gh_lumi =  7.69 + 0.216 + 8.67;
 Double_t mu_lumi = bcdef_lumi + gh_lumi;
 Double_t el_lumi = 36.5;
-Double_t emu_scaling_nom = 0.978;
+Double_t emu_scaling_nom = 1.0;
 Double_t emu_unc = 0.04;
 Double_t emu_scaling = emu_scaling_nom;
 
@@ -70,8 +70,51 @@ void set_fakerate_errors(TH2D *h_errs, TH2D *h_fr, TH1F *h){
         h->SetBinError(i, new_err);
     }
 }
+
+void set_fakerate_errors(TH2D *h_errs, TH2D *h_fr, TH2F *h){
+    float err_sum = 0.;
+    for(int i=1; i<= h_errs->GetNbinsX(); i++){
+        for(int j=1; j<= h_errs->GetNbinsY(); j++){
+            float err = h_fr->GetBinError(i,j);
+            float num = h_errs->GetBinContent(i,j);
+            err_sum += err*err*num*num;
+        }
+    }
+    //increase error sum by 50% to approximate subtraction of 2 fail template
+    err_sum *= 1.50;
+    float n_err_events = h_errs->Integral();
+    for(int i=1; i<= h->GetNbinsX(); i++){
+        for(int j=1; j<= h->GetNbinsY(); j++){
+            float bin_num = h->GetBinContent(i, j);
+            float scaling = pow(bin_num/n_err_events, 2);
+            float num_err = pow(h->GetBinError(i,j),2);
+            float weight_err = scaling * err_sum;
+            float new_err = sqrt(num_err + weight_err);
+            //printf("Err was %.1f, is now %.1f \n", sqrt(num_err), new_err);
+
+            h->SetBinError(i,j, new_err);
+        }
+    }
+}
     
 
+TH1F* convert2d(TH2F *h_2d){
+    int n_xf_bins = h_2d->GetNbinsX();
+    int n_cost_bins = h_2d->GetNbinsY();
+
+    TH1F *h_1d = new TH1F(h_2d->GetName(), "",  n_xf_bins * n_cost_bins, 0, n_xf_bins*n_cost_bins);
+    for(int i=1; i<=n_xf_bins; i++){
+        for(int j=1; j<= n_cost_bins; j++){
+            float content = h_2d->GetBinContent(i,j);
+            float error = h_2d->GetBinError(i,j);
+            int gbin = (i-1)*n_cost_bins + j;
+            //printf("gbin %i: i j %i %i \n", gbin, i, j);
+            h_1d->SetBinContent(gbin, content);
+            h_1d->SetBinError(gbin, error);
+        }
+    }
+    return h_1d;
+}
 
 
 
@@ -658,6 +701,12 @@ void Fakerate_est_mu(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_contam, TTree 
     cleanup_hist(h_xf);
     cleanup_hist(h_cost);
     set_fakerate_errors(h_err, FR.h, h_cost);
+    if(ss){
+        h_m->Scale(0.5);
+        h_pt->Scale(0.5);
+        h_xf->Scale(0.5);
+        h_cost->Scale(0.5);
+    }
     printf("Total fakerate est is %.0f \n", h_cost->Integral());
 }
 
@@ -775,11 +824,18 @@ void Fakerate_est_el(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_MC, TTree *t_Q
     cleanup_hist(h_xf);
     cleanup_hist(h_cost);
     set_fakerate_errors(h_err, FR.h, h_cost);
+    if(ss){
+        h_m->Scale(0.5);
+        h_pt->Scale(0.5);
+        h_xf->Scale(0.5);
+        h_cost->Scale(0.5);
+    }
     printf("Total fakerate est is %.0f \n", h_m->Integral());
 }
 
 
-void Fakerate_est_emu(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_MC, TH1F *h_m, int flag1 = FLAG_MUONS){
+void Fakerate_est_emu(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_MC, TH1F *h_m, int flag1 = FLAG_MUONS, 
+        float m_low = 150., float m_high = 10000.){
     FakeRate el_FR, mu_FR;
     //TH2D *FR;
     setup_new_el_fakerate(&el_FR);
@@ -862,16 +918,18 @@ void Fakerate_est_emu(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_MC, TH1F *h_m
                 evt_fakerate = -(lep1_fakerate * mc_weight)/(1-lep1_fakerate);
             }
 
-            bool pass = met_pt < 50.  && no_bjets && 
+            TLorentzVector cm = *el + *mu;
+            float m = cm.M();
+            bool pass = m>= m_low && m <= m_high && met_pt < 50.  && no_bjets && 
                 ((flag1 == FLAG_MUONS && mu1_pt > 27.) || (flag1 == FLAG_ELECTRONS && el1_pt > 29.));
             if(pass){
                 //if(l==3) printf("Evt fr %.2e \n", evt_fakerate);
-                TLorentzVector cm = *el + *mu;
-                h_m->Fill(cm.M(), evt_fakerate);
+                h_m->Fill(m, evt_fakerate);
             }
         }
 
         printf("After iter %i current fakerate est is %.0f \n", l, h_m->Integral());
     }
+    cleanup_hist(h_m);
     printf("Total fakerate est is %.0f \n", h_m->Integral());
 }
