@@ -249,7 +249,7 @@ void draw_cmp(){
 
     ratio->SetTitle("");
     // Y axis ratio plot settings
-   ratio->GetYaxis()->SetTitle("Data/MC");
+   ratio->GetYaxis()->SetTitle("Obs/Exp");
    ratio->GetYaxis()->SetNdivisions(505);
    ratio->GetYaxis()->SetTitleSize(20);
    ratio->GetYaxis()->SetTitleFont(43);
@@ -323,7 +323,7 @@ void draw_cmp(){
 
     cost_ratio->SetTitle("");
     // Y axis cost_ratio plot settings
-   cost_ratio->GetYaxis()->SetTitle("Data/MC");
+   cost_ratio->GetYaxis()->SetTitle("Obs/Exp");
    cost_ratio->GetYaxis()->SetNdivisions(505);
    cost_ratio->GetYaxis()->SetTitleSize(20);
    cost_ratio->GetYaxis()->SetTitleFont(43);
@@ -400,7 +400,7 @@ void draw_cmp(){
 
     pt_ratio->SetTitle("");
     // Y axis pt_ratio plot settings
-   pt_ratio->GetYaxis()->SetTitle("Data/MC");
+   pt_ratio->GetYaxis()->SetTitle("Obs/Exp");
    pt_ratio->GetYaxis()->SetNdivisions(505);
    pt_ratio->GetYaxis()->SetTitleSize(20);
    pt_ratio->GetYaxis()->SetTitleFont(43);
@@ -463,7 +463,7 @@ void draw_cmp(){
 
     xf_ratio->SetTitle("");
     // Y axis xf_ratio plot settings
-   xf_ratio->GetYaxis()->SetTitle("Data/MC");
+   xf_ratio->GetYaxis()->SetTitle("Obs/Exp");
    xf_ratio->GetYaxis()->SetNdivisions(505);
    xf_ratio->GetYaxis()->SetTitleSize(20);
    xf_ratio->GetYaxis()->SetTitleFont(43);

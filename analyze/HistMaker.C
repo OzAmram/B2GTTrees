@@ -657,6 +657,7 @@ void Fakerate_est_mu(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_contam, TTree 
     cleanup_hist(h_pt);
     cleanup_hist(h_xf);
     cleanup_hist(h_cost);
+    set_fakerate_errors(h_err, FR.h, h_cost);
     printf("Total fakerate est is %.0f \n", h_cost->Integral());
 }
 

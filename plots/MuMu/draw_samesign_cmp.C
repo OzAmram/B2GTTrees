@@ -37,7 +37,6 @@ void draw_samesign_cmp(){
 
     TH1F *data_m = new TH1F("data_m", "Data Dimuon Mass Distribution", 30, 150, 2000);
 
-    TH1F *data_cost = new TH1F("data_cost", "Data", 20, -1.,1.);
     TH1F *data_pt = new TH1F("data_pt", "MC signal", 40, 0, 1000);
     TH1F *diboson_pt = new TH1F("diboson_pt", "MC signal", 40, 0, 1000);
     TH1F *QCD_pt = new TH1F("QCD_pt", "MC signal", 40, 0, 1000);
@@ -53,18 +52,19 @@ void draw_samesign_cmp(){
 
 
 
+    TH1F *data_cost = new TH1F("data_cost", "Data", 20, 0.,1.);
+    TH1F *diboson_cost = new TH1F("diboson_cost", "DiBoson (WW, WZ,ZZ)", 20, 0.,1);
+    TH1F *QCD_cost = new TH1F("QCD_cost", "QCD", 20, 0.,1);
+    TH1F *WJets_cost = new TH1F("WJets_cost", "WJets", 20, 0.,1);
 
 
 
 
     TH1F *diboson_m = new TH1F("diboson_m", "DiBoson (WW, WZ, ZZ)", 30, 150, 2000);
-    TH1F *diboson_cost = new TH1F("diboson_cost", "DiBoson (WW, WZ,ZZ)", 20, -1,1);
 
     TH1F *QCD_m = new TH1F("QCD_m", "QCD", 30, 150, 2000);
-    TH1F *QCD_cost = new TH1F("QCD_cost", "QCD", 20, -1,1);
 
     TH1F *WJets_m = new TH1F("WJets_m", "WJets", 30, 150, 2000);
-    TH1F *WJets_cost = new TH1F("WJets_cost", "WJets", 20, -1,1);
 
 
 
@@ -74,15 +74,18 @@ void draw_samesign_cmp(){
     QCD_cost->SetFillColor(kRed -7);
 
     bool do_RC = true;
+    int m_low = 150.;
+    int m_high = 100000.;
+    bool ss = true;
 
-    make_m_cost_pt_xf_hist(t_data, data_m, data_cost, data_pt, data_xf, true, type, false, do_RC);
-    make_m_cost_pt_xf_hist(t_diboson, diboson_m, diboson_cost, diboson_pt, diboson_xf, false, type, true, do_RC);
+    make_m_cost_pt_xf_hist(t_data, data_m, data_cost, data_pt, data_xf, true, type, false, do_RC, m_low, m_high, ss);
+    make_m_cost_pt_xf_hist(t_diboson, diboson_m, diboson_cost, diboson_pt, diboson_xf, false, type, true, do_RC, m_low, m_high, ss);
 
-    Fakerate_est_mu(t_WJets, t_QCD, t_WJets_mc, t_QCD_mc, QCD_m, QCD_cost, QCD_pt, QCD_xf);
+    Fakerate_est_mu(t_WJets, t_QCD, t_WJets_mc, t_QCD_mc, QCD_m, QCD_cost, QCD_pt, QCD_xf, m_low, m_high, ss);
 
     Double_t n_data = data_m->Integral();
     Double_t n_est = diboson_m->Integral() + QCD_m->Integral();
-    bool normalize = false;
+    bool normalize = true;
     
     if(normalize){
         data_m->Scale(1./n_data);
@@ -111,16 +114,6 @@ void draw_samesign_cmp(){
     int nBins_x = QCD_m->GetXaxis()->GetNbins();
     int nBins_y = QCD_cost->GetYaxis()->GetNbins();
     //printf("Get size %i \n", nBins);
-    for (int i=1; i <= nBins_x; i++){
-        for (int j=1; j <= nBins_y; j++){
-
-            Double_t m_val = QCD_m->GetBinContent(i,j);
-            Double_t cost_val = QCD_cost->GetBinContent(i,j);
-
-            QCD_m->SetBinError(i,j, 0.2*m_val);
-            QCD_cost->SetBinError(i,j, 0.2*cost_val);
-        }
-    }
 
 
 
@@ -229,7 +222,7 @@ void draw_samesign_cmp(){
     cost_stack->Draw("hist");
     data_cost->SetMarkerStyle(kFullCircle);
     data_cost->SetMarkerColor(1);
-    if(!normalize) cost_stack->SetMaximum(150);
+    if(!normalize) cost_stack->SetMaximum(300);
     cost_stack->SetMinimum(1);
     data_cost->Draw("P E same");
     cost_pad1->Update();
