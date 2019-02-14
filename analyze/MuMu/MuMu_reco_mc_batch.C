@@ -23,7 +23,7 @@ double Pbeam = sqrt(Ebeam*Ebeam - 0.938*0.938);
 char *filename("DY_files_oct22.txt");
 const TString fout_name("output_files/MuMu_DY_ss_oct22.root");
 const bool PRINT=false;
-const bool do_samesign = true;
+const bool do_samesign = false;
 
 const bool data_2016 = true;
 
@@ -204,8 +204,8 @@ void MuMu_reco_mc_batch(int nJobs =1, int iJob = 0)
     t_back->Branch("mu_m_SF_down", &mu_m_SF, "mu_m_SF_down/D");
     t_back->Branch("mu_p_SF_alt", &mu_p_SF_alt, "mu_p_SF_alt/D");
     t_back->Branch("mu_m_SF_alt", &mu_m_SF_alt, "mu_m_SF_alt/D");
-    t_back->Branch("mu1_eta", &mu1_pt, "mu1_eta/D");
-    t_back->Branch("mu2_eta", &mu2_pt, "mu2_eta/D");
+    t_back->Branch("mu1_eta", &mu1_eta, "mu1_eta/D");
+    t_back->Branch("mu2_eta", &mu2_eta, "mu2_eta/D");
     t_back->Branch("mu_m", "TLorentzVector", &mu_m);
     t_back->Branch("mu_p", "TLorentzVector", &mu_p);
     t_back->Branch("gen_mu_m", "TLorentzVector", &gen_mu_m_vec);
@@ -384,7 +384,7 @@ void MuMu_reco_mc_batch(int nJobs =1, int iJob = 0)
                 bool good_sign = opp_sign ^ do_samesign;
                 bool good_trigger = HLT_IsoMu || HLT_IsoTkMu;
                 if(good_trigger &&
-                        mu_size >= 2 && good_sign & 
+                        mu_size >= 2 && good_sign &&
                         mu_IsHighPtMuon[0] && mu_IsHighPtMuon[1] &&
                         mu_Pt[0] > 26. &&  mu_Pt[1] > 15. &&
                         abs(mu_Eta[0]) < 2.4 && abs(mu_Eta[1]) < 2.4){ 

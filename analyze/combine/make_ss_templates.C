@@ -38,10 +38,12 @@ void convert_ss_qcd_to_param_hist(TH1F *h, FILE *f_log, int flag){
     else Rqcd = Rqcd_ee_ss;
     for(int j=1; j <= h->GetNbinsX(); j++){
 
-        float content = h->GetBinContent(j);
+        double content = h->GetBinContent(j);
         if(content<0) printf("Bin %i Content is %.0f \n", j, content);
-        float error = h->GetBinError(j);
-        printf("Bin %.1f error %.1f \n", content,error);
+        double error = h->GetBinError(j);
+        //printf("Bin %.1f error %.1f \n", content,error);
+        //prevent underflowing
+        content = max(content, error);
         char bin_name[40];
         char form_name[40];
         sprintf(bin_name, "%s_bin%i",h_name, j); 
@@ -86,7 +88,7 @@ void make_ss_data_templates(){
     //h_mumu_data->Write();
     write_roo_hist(h1_elel_data);
     write_roo_hist(h1_mumu_data);
-    printf("Made data templates \n");
+    printf("Made ss data templates \n");
 }
 
 void make_ss_qcd_templates(FILE *f_log){
@@ -107,7 +109,7 @@ void make_ss_qcd_templates(FILE *f_log){
 
     convert_ss_qcd_to_param_hist(h1_elel_qcd, f_log, FLAG_ELECTRONS);
     convert_ss_qcd_to_param_hist(h1_mumu_qcd, f_log, FLAG_MUONS);
-    printf("Made qcd templates \n");
+    printf("Made ss qcd templates \n");
 }
 
 void make_ss_mc_templates(){
@@ -148,11 +150,11 @@ void make_ss_mc_templates(){
     printf("Integral of bkg templates are %.2f %.2f \n", h_elel_bk->Integral(), h_mumu_bk->Integral()); 
     write_roo_hist(h1_elel_dy);
     write_roo_hist(h1_mumu_dy);
-    printf("Made dy templates \n");
+    printf("Made ss dy templates \n");
 
     write_roo_hist(h1_elel_bk);
     write_roo_hist(h1_mumu_bk);
-    printf("Made bk templates \n");
+    printf("Made ss bk templates \n");
 
 
 }

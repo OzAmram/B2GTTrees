@@ -37,20 +37,28 @@ void convert_emu_qcd_to_param_hist(TH1F *h, FILE *f_log){
     RooRealVar *Rqcd;
     for(int j=1; j <= h->GetNbinsX(); j++){
 
-        float content = h->GetBinContent(j);
+        double content = h->GetBinContent(j);
         if(content<0) printf("Bin %i Content is %.0f \n", j, content);
-        float error = h->GetBinError(j);
-        printf("Bin %.1f error %.1f \n", content,error);
+        double error = h->GetBinError(j);
+        //printf("Bin %.1f error %.1f \n", content,error);
         char bin_name[40];
         char form_name[40];
         sprintf(bin_name, "%s_bin%i",h_name, j); 
         sprintf(form_name, "%s_form%i",h_name, j); 
+        //prevent underflowing by fixing super small bins
+        content = max(content, 0.001);
+        error = max(error, 0.0001);
+        if (content < error){
+            content = error/2.;
+            error = 0.1*content;
+        }
+        else if(content < 2.5 * error){
+            error = 0.3*content;
+        }
         RooRealVar *bin = new RooRealVar(bin_name, bin_name, content, 0., 10000.);
-        fprintf(f_log, "%s param %.2f %.2f \n", bin_name, content, error);
+        fprintf(f_log, "%s param %.4f %.4f \n", bin_name, content, error);
         //bin->Print();
         bin_list->add(*bin);
-        //RooFormulaVar *form = new RooFormulaVar(form_name, form_name, "@0*@1", RooArgList(*bin, *Rqcd));
-        //bin_list->add(*form);
     }
     bin_list->Print();
 
@@ -78,7 +86,7 @@ void make_emu_data_templates(){
     printf("Integral of data templates were %.2f  \n", h_emu_data->Integral() ); 
     //h_emu_data->Write();
     write_roo_hist(h1_emu_data);
-    printf("Made data templates \n");
+    printf("Made emu data templates \n");
 }
 
 void make_emu_qcd_templates(FILE *f_log){
@@ -91,18 +99,16 @@ void make_emu_qcd_templates(FILE *f_log){
     auto h1_emu_qcd = convert2d(h_emu_qcd);
 
     convert_emu_qcd_to_param_hist(h1_emu_qcd, f_log);
-    printf("Made qcd templates \n");
+    printf("Made emu qcd templates \n");
 }
 
 void make_emu_mc_templates(){
-    printf("making mc \n");
     auto h_emu_dy = new TH2F("emu_dy", "dy template of (x_f, cost_r)",
             n_xf_bins, xf_bins, n_cost_bins, cost_bins);
     h_emu_dy->SetDirectory(0);
     auto h_emu_bk = new TH2F("emu_bk", "bk template of (x_f, cost_r)",
             n_xf_bins, xf_bins, n_cost_bins, cost_bins);
     h_emu_bk->SetDirectory(0);
-    printf("defined mc \n");
 
     bool ss = true;
     
@@ -110,11 +116,9 @@ void make_emu_mc_templates(){
 
     gen_emu_template(t_emu_back, h_emu_bk,  false, m_low, m_high);
     gen_emu_template(t_emu_dy, h_emu_dy,  false, m_low, m_high);
-    printf("gen'ed mc \n");
 
     auto h1_emu_bk = convert2d(h_emu_bk);
     auto h1_emu_dy = convert2d(h_emu_dy);
-    printf("cov'ed mc \n");
 
 
 
@@ -122,10 +126,10 @@ void make_emu_mc_templates(){
     printf("Integral of dy templates are %.2f \n", h_emu_dy->Integral()); 
     printf("Integral of bkg templates are %.2f \n", h_emu_bk->Integral()); 
     write_roo_hist(h1_emu_dy);
-    printf("Made dy templates \n");
+    printf("Made emu dy templates \n");
 
     write_roo_hist(h1_emu_bk);
-    printf("Made bk templates \n");
+    printf("Made emu bk templates \n");
 
 
 }

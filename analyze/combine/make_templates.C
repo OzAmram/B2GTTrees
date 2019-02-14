@@ -18,20 +18,20 @@
 //#include"Minuit2/Minuit2Minimizer.h"
 #include "Math/Functor.h"
 #include "make_ss_templates.C"
+#include "make_emu_templates.C"
 #include "TemplateUtils.h"
 
 
-const TString fout_name("combine/templates/feb8_test.root");
+const TString fout_name("combine/templates/feb14_combined_template_sys_test.root");
 TFile * fout;
 
 
 
-TH2F *h_elel_asym, *h_elel_sym, *h_elel_back,  *h_elel_data, *h_elel_mc, *h_elel_qcd;
-TH1F *h1_elel_mn, *h1_elel_pl, *h1_elel_back,  *h1_elel_data, *h1_elel_mc, *h1_elel_qcd;
+TH2F *h_elel_asym, *h_elel_sym, *h_elel_back,  *h_elel_dy_gg, *h_elel_data, *h_elel_mc, *h_elel_qcd;
+TH1F *h1_elel_mn, *h1_elel_pl, *h1_elel_back,  *h1_elel_dy_gg, *h1_elel_data, *h1_elel_mc, *h1_elel_qcd;
 TH2F *h_elel_mc_count, *h_elel_sym_count;
-TH2F *h_mumu_asym, *h_mumu_sym, *h_mumu_back,  *h_mumu_data, *h_mumu_mc, *h_mumu_qcd;
-TH1F *h1_mumu_mn, *h1_mumu_pl, *h1_mumu_back,  *h1_mumu_data, *h1_mumu_mc, *h1_mumu_qcd;
-TH2F *h_mumu_mc_count, *h_mumu_sym_count;
+TH2F *h_mumu_asym, *h_mumu_sym, *h_mumu_back,  *h_mumu_dy_gg, *h_mumu_data, *h_mumu_mc, *h_mumu_qcd;
+TH1F *h1_mumu_mn, *h1_mumu_pl, *h1_mumu_back,  *h1_mumu_dy_gg, *h1_mumu_data, *h1_mumu_mc, *h1_mumu_qcd;
 
 
 
@@ -62,18 +62,29 @@ void convert_qcd_to_param_hist(TH1F *h, FILE *f_log, int flag){
     }
     for(int j=1; j <= h->GetNbinsX(); j++){
 
-        float content = h->GetBinContent(j);
+        double content = h->GetBinContent(j);
         if(content<0) printf("Bin %i Content is %.0f \n", j, content);
-        float error = h->GetBinError(j);
-        printf("Bin %.1f error %.1f \n", content,error);
+        double error = h->GetBinError(j);
+
+        //printf("Bin %.1f error %.1f \n", content,error);
         char bin_name[40];
         char form_name[40];
         sprintf(bin_name, "%s_bin%i",h_ss_name, j); 
         sprintf(form_name, "%s_form%i",h_ss_name, j); 
+        //prevent underflowing by fixing super small bins
+        content = max(content, 0.001);
+        if (content < error){
+            content = error/2.;
+            error = 0.1*content;
+        }
+        else if(content < 2.5 * error){
+            error = 0.3*content;
+        }
         RooRealVar *bin = new RooRealVar(bin_name, bin_name, content, 0., 10000.);
-        fprintf(f_log, "%s param %.2f %.2f \n", bin_name, content, error);
-        bin_list_ss->add(*bin);
+        fprintf(f_log, "%s param %.4f %.4f \n", bin_name, content, error);
+        //bin->Print();
         bin_list->add(*bin);
+        bin_list_ss->add(*bin);
         
         //RooFormulaVar *form = new RooFormulaVar(form_name, form_name, "@0*@1", RooArgList(*bin, *Rqcd_ss));
         //bin_list_ss->add(*form);
@@ -139,76 +150,119 @@ void make_qcd_templates(FILE* f_log){
 }
 
 void make_mc_templates(const string &sys_label){
-    h_elel_sym = new TH2F((string("ee_sym") + sys_label).c_str(), "Symmetric template of mc",
-            n_xf_bins, xf_bins, n_cost_bins, cost_bins);
-    h_elel_sym->SetDirectory(0);
-    h_elel_asym = new TH2F((string("ee_asym") + sys_label).c_str(), "Asymmetric template of mc",
-            n_xf_bins, xf_bins, n_cost_bins, cost_bins);
-    h_elel_asym->SetDirectory(0);
-    h_elel_back = new TH2F((string("ee_bk") + sys_label).c_str(), "Combined background template",
-            n_xf_bins, xf_bins, n_cost_bins, cost_bins);
-    h_elel_back->SetDirectory(0);
+    bool do_mu, do_el;
+    if(sys_label.find("mu") != string::npos){
+        printf("Doing mu only \n");
+        do_mu = true;
+        do_el = false;
+    }
+    if(sys_label.find("el") != string::npos){
+        printf("Doing el only \n");
+        do_mu = false;
+        do_el = true;
+    }
+    else{
+        do_mu = true;
+        do_el = true;
+    }
+    bool ss= false;
+    
+    if(do_mu){
+        h_mumu_sym = new TH2F((string("mumu_sym") + sys_label).c_str(), "Symmetric template of mc",
+                n_xf_bins, xf_bins, n_cost_bins, cost_bins);
+        h_mumu_sym->SetDirectory(0);
+        h_mumu_asym = new TH2F((string("mumu_asym") + sys_label).c_str(), "Asymmetric template of mc",
+                n_xf_bins, xf_bins, n_cost_bins, cost_bins);
+        h_mumu_asym->SetDirectory(0);
+        h_mumu_back = new TH2F((string("mumu_bk") + sys_label).c_str(), "Combined background template",
+                n_xf_bins, xf_bins, n_cost_bins, cost_bins);
+        h_mumu_back->SetDirectory(0);
+        h_mumu_dy_gg = new TH2F((string("mumu_dy_gg") + sys_label).c_str(), "Combined background template",
+                n_xf_bins, xf_bins, n_cost_bins, cost_bins);
+        h_mumu_dy_gg->SetDirectory(0);
 
+        gen_mc_template(t_mumu_mc, alpha, h_mumu_sym, h_mumu_asym, m_low, m_high, FLAG_MUONS, FLAG_M_BINS, do_RC, sys_label );
+        TTree *mumu_ts[1] = {t_mumu_back};
+        gen_combined_background_template(1, mumu_ts, h_mumu_back, m_low, m_high, FLAG_MUONS, FLAG_M_BINS, do_RC, ss, sys_label);
+        mumu_ts[0] = t_mumu_nosig;
+        gen_combined_background_template(1, mumu_ts, h_mumu_dy_gg, m_low, m_high, FLAG_MUONS, FLAG_M_BINS, do_RC, ss, sys_label);
+    }
+    if(do_el){
+        h_elel_sym = new TH2F((string("ee_sym") + sys_label).c_str(), "Symmetric template of mc",
+                n_xf_bins, xf_bins, n_cost_bins, cost_bins);
+        h_elel_sym->SetDirectory(0);
+        h_elel_asym = new TH2F((string("ee_asym") + sys_label).c_str(), "Asymmetric template of mc",
+                n_xf_bins, xf_bins, n_cost_bins, cost_bins);
+        h_elel_asym->SetDirectory(0);
+        h_elel_back = new TH2F((string("ee_bk") + sys_label).c_str(), "Combined background template",
+                n_xf_bins, xf_bins, n_cost_bins, cost_bins);
+        h_elel_back->SetDirectory(0);
+        h_elel_dy_gg = new TH2F((string("ee_dy_gg") + sys_label).c_str(), "Combined background template",
+                n_xf_bins, xf_bins, n_cost_bins, cost_bins);
+        h_elel_dy_gg->SetDirectory(0);
 
+        gen_mc_template(t_elel_mc, alpha, h_elel_sym, h_elel_asym,  m_low, m_high, FLAG_ELECTRONS, FLAG_M_BINS, do_RC, sys_label);
+        TTree *elel_ts[1] = {t_elel_back};
 
-
-
-
-    h_mumu_sym = new TH2F((string("mumu_sym") + sys_label).c_str(), "Symmetric template of mc",
-            n_xf_bins, xf_bins, n_cost_bins, cost_bins);
-    h_mumu_sym->SetDirectory(0);
-    h_mumu_asym = new TH2F((string("mumu_asym") + sys_label).c_str(), "Asymmetric template of mc",
-            n_xf_bins, xf_bins, n_cost_bins, cost_bins);
-    h_mumu_asym->SetDirectory(0);
-    h_mumu_back = new TH2F((string("mumu_bk") + sys_label).c_str(), "Combined background template",
-            n_xf_bins, xf_bins, n_cost_bins, cost_bins);
-    h_mumu_back->SetDirectory(0);
-
-
-    gen_mc_template(t_mumu_mc, alpha, h_mumu_sym, h_mumu_asym, m_low, m_high, FLAG_MUONS, FLAG_M_BINS, do_RC);
-    TTree *mumu_ts[2] = {t_mumu_back, t_mumu_nosig};
-    gen_combined_background_template(2, mumu_ts, h_mumu_back, m_low, m_high, FLAG_MUONS, FLAG_M_BINS, do_RC);
-
-
-    gen_mc_template(t_elel_mc, alpha, h_elel_sym, h_elel_asym,  m_low, m_high, FLAG_ELECTRONS, FLAG_M_BINS);
-    TTree *elel_ts[2] = {t_elel_back, t_elel_nosig};
-
-    gen_combined_background_template(2, elel_ts, h_elel_back, m_low, m_high, FLAG_ELECTRONS, FLAG_M_BINS);
-
-
+        gen_combined_background_template(1, elel_ts, h_elel_back, m_low, m_high, FLAG_ELECTRONS, FLAG_M_BINS,do_RC,ss, sys_label);
+        elel_ts[0] = t_elel_nosig;
+        gen_combined_background_template(1, elel_ts, h_elel_dy_gg, m_low, m_high, FLAG_ELECTRONS, FLAG_M_BINS,do_RC,ss, sys_label);
+    }
 
 }
 
 
 
 void convert_mc_templates(const string &sys_label){
-    h1_mumu_back = convert2d(h_mumu_back);
-    auto h_mumu_pl = *h_mumu_sym + *h_mumu_asym;
-    auto h_mumu_mn = *h_mumu_sym - *h_mumu_asym;
-    h_mumu_pl.Scale(0.5);
-    h_mumu_mn.Scale(0.5);
-    h1_mumu_pl = convert2d(&h_mumu_pl);
-    h1_mumu_mn = convert2d(&h_mumu_mn);
-    h1_mumu_pl->SetName((string("mumu_fpl") + sys_label).c_str());
-    h1_mumu_mn->SetName((string("mumu_fmn") + sys_label).c_str());
+    bool do_mu, do_el;
+    if(sys_label.find("mu") != string::npos){
+        do_mu = true;
+        do_el = false;
+    }
+    else if(sys_label.find("el") != string::npos){
+        do_mu = false;
+        do_el = true;
+    }
+    else{
+        do_mu = true;
+        do_el = true;
+    }
+    if(do_mu){
+        h1_mumu_back = convert2d(h_mumu_back);
+        h1_mumu_dy_gg = convert2d(h_mumu_dy_gg);
+        auto h_mumu_pl = *h_mumu_sym + *h_mumu_asym;
+        auto h_mumu_mn = *h_mumu_sym - *h_mumu_asym;
+        h_mumu_pl.Scale(0.5);
+        h_mumu_mn.Scale(0.5);
+        h1_mumu_pl = convert2d(&h_mumu_pl);
+        h1_mumu_mn = convert2d(&h_mumu_mn);
+        h1_mumu_pl->SetName((string("mumu_fpl") + sys_label).c_str());
+        h1_mumu_mn->SetName((string("mumu_fmn") + sys_label).c_str());
 
-    h1_elel_back = convert2d(h_elel_back);
-    auto h_elel_pl = *h_elel_sym + *h_elel_asym;
-    auto h_elel_mn = *h_elel_sym - *h_elel_asym;
-    h_elel_pl.Scale(0.5);
-    h_elel_mn.Scale(0.5);
-    h1_elel_pl = convert2d(&h_elel_pl);
-    h1_elel_mn = convert2d(&h_elel_mn);
-    h1_elel_pl->SetName((string("ee_fpl") + sys_label).c_str());
-    h1_elel_mn->SetName((string("ee_fmn") + sys_label).c_str());
+        write_roo_hist(h1_mumu_back);
+        write_roo_hist(h1_mumu_dy_gg);
+        write_roo_hist(h1_mumu_pl);
+        write_roo_hist(h1_mumu_mn);
+    }
 
-    write_roo_hist(h1_mumu_back);
-    write_roo_hist(h1_mumu_pl);
-    write_roo_hist(h1_mumu_mn);
+    if(do_el){
+        h1_elel_back = convert2d(h_elel_back);
+        h1_elel_dy_gg = convert2d(h_elel_dy_gg);
+        auto h_elel_pl = *h_elel_sym + *h_elel_asym;
+        auto h_elel_mn = *h_elel_sym - *h_elel_asym;
+        h_elel_pl.Scale(0.5);
+        h_elel_mn.Scale(0.5);
+        h1_elel_pl = convert2d(&h_elel_pl);
+        h1_elel_mn = convert2d(&h_elel_mn);
+        h1_elel_pl->SetName((string("ee_fpl") + sys_label).c_str());
+        h1_elel_mn->SetName((string("ee_fmn") + sys_label).c_str());
 
-    write_roo_hist(h1_elel_back);
-    write_roo_hist(h1_elel_pl);
-    write_roo_hist(h1_elel_mn);
+
+        write_roo_hist(h1_elel_back);
+        write_roo_hist(h1_elel_dy_gg);
+        write_roo_hist(h1_elel_pl);
+        write_roo_hist(h1_elel_mn);
+    }
 }
 
 
@@ -218,8 +272,13 @@ void make_templates(){
 
     init();
     init_ss();
+    init_emu();
+    printf("Setting up SFs... ");
+    setup_all_SFs();
+    printf("   done \n");
 
-    vector<string> sys_labels {""};
+    //vector<string> sys_labels {""};
+    vector<string> sys_labels {"_BTAG_UP",  "_muHLT_DOWN",  "_elHLT_UP", "_alpha_UP", "_PILEUP_UP" };
 
     fout = TFile::Open(fout_name, "RECREATE");
     FILE *f_log;
@@ -240,15 +299,20 @@ void make_templates(){
 
         m_low = m_bins[i];
         m_high = m_bins[i+1];
-        alpha = alphas[i];
         printf("\n \n Start making templates for mass bin %.0f-%.0f \n", m_low, m_high);
 
         make_data_templates();
         make_ss_data_templates();
         make_ss_mc_templates();
+        make_emu_data_templates();
+        make_emu_qcd_templates(f_log);
+        make_emu_mc_templates();
         make_qcd_templates(f_log);
         for(auto iter = sys_labels.begin(); iter !=sys_labels.end(); iter++){
             printf("Making MC templates for sys %s \n", (*iter).c_str());
+            alpha = alphas[i];
+            if(iter->find("alpha_UP") != string::npos) alpha = alphas[i] + alpha_unc[i];
+            if(iter->find("alpha_DOWN") != string::npos) alpha = alphas[i] - alpha_unc[i];
 
             make_mc_templates(*iter);
             convert_mc_templates(*iter);

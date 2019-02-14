@@ -181,8 +181,8 @@ void ElEl_reco_mc_batch(int nJobs = 1, int iJob = 0)
     t_back->Branch("cost_st", &cost_st, "cost_st/D");
     t_back->Branch("el1_pt", &el1_pt, "el1_pt/D");
     t_back->Branch("el2_pt", &el2_pt, "el2_pt/D");
-    t_back->Branch("el1_eta", &el1_pt, "el1_eta/D");
-    t_back->Branch("el2_eta", &el2_pt, "el2_eta/D");
+    t_back->Branch("el1_eta", &el1_eta, "el1_eta/D");
+    t_back->Branch("el2_eta", &el2_eta, "el2_eta/D");
     t_back->Branch("elp_scale_up", &elp_scale_up);
     t_back->Branch("elp_scale_down", &elp_scale_down);
     t_back->Branch("elm_scale_up", &elm_scale_up);

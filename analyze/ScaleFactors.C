@@ -124,7 +124,7 @@ Double_t get_SF(Double_t pt, Double_t eta, TH2D *h, int systematic = 0){
         result += (systematic * err);
     }
     if(result < 0.001){ 
-        printf("0 muon id SF for Pt %.1f, Eta %1.2f \n", pt, eta);
+        printf("0 muon SF for Pt %.1f, Eta %1.2f \n", pt, eta);
         result = 1;
     }
     return result;
@@ -146,7 +146,7 @@ Double_t get_HLT_SF_1mu(Double_t mu1_pt, Double_t mu1_eta, TH2D *h_SF){
     Double_t result = SF1;
     if(result < 0.01) printf("0 HLT SF for Pt %.1f, Eta %1.2f \n", mu1_pt, mu1_eta);
     if(TMath::IsNaN(result)){ 
-        printf("Nan HLT SF for Pt %.1f, Eta %1.2f \n", mu1_pt, mu1_eta);
+        printf("Nan HLT SF 1 mu for Pt %.1f, Eta %1.2f \n", mu1_pt, mu1_eta);
         result = 1;
     }
     //printf("Result, SF1 = (%0.3f, %0.3f) \n", result, SF1);
@@ -177,6 +177,7 @@ Double_t get_HLT_SF_1el(Double_t el1_pt, Double_t el1_eta, TH2D *h_SF){
 }
 
 Double_t get_HLT_SF(Double_t mu1_pt, Double_t mu1_eta, Double_t mu2_pt, Double_t mu2_eta, TH2D *h_SF, TH2D *h_MC_EFF, int systematic = 0){
+    //printf("Getting HLT for %.2f %.2f %.2f %.2f \n", mu1_pt, mu1_eta, mu2_pt, mu2_eta);
     //Get HLT SF for event with 2 Muons
     //stay in range of histogram
     if(mu1_pt < 26.) mu1_pt = 26.01;
@@ -220,7 +221,7 @@ Double_t get_HLT_SF(Double_t mu1_pt, Double_t mu1_eta, Double_t mu2_pt, Double_t
                       (1 - (1-MC_EFF1)*(1-MC_EFF2));
     if(result < 0.01) printf("0 HLT SF for Pt %.1f, Eta %1.2f \n", mu1_pt, mu1_eta);
     if(TMath::IsNaN(result)){ 
-        printf("Nan HLT SF for Pt %.1f, Eta %1.2f  %.2f %.2f %.2f %.2f \n", mu1_pt, mu1_eta, MC_EFF1, MC_EFF2, SF1, SF2);
+        printf("Nan mu HLT SF for Pt1 %.2f, Eta1 %.2f Pt2 %.2f Eta2 %.2f  %.2f %.2f %.2f %.2f \n", mu1_pt, mu1_eta, mu2_pt, mu2_eta, MC_EFF1, MC_EFF2, SF1, SF2);
         result = 1;
     }
     //printf("Result, SF1 = (%0.3f, %0.3f) \n", result, SF1);
@@ -268,10 +269,10 @@ Double_t get_el_HLT_SF(Double_t el1_pt, Double_t el1_eta, Double_t el2_pt, Doubl
     Double_t MC_EFF2 = h_MC_EFF->GetBinContent(xbin2_MC_EFF, ybin2_MC_EFF);
     Double_t result = (1 - (1-MC_EFF1*SF1)*(1-MC_EFF2*SF2))/
                       (1 - (1-MC_EFF1)*(1-MC_EFF2));
-    if(result < 0.01) printf("0 HLT SF for Pt %.1f, Eta %1.2f \n", el1_pt, el1_eta);
+    if(result < 0.01) printf("0 EL HLT SF for Pt %.1f, Eta %1.2f \n", el1_pt, el1_eta);
     
     if(TMath::IsNaN(result)){ 
-        printf("Nan HLT SF for Pt %.1f, Eta %1.2f  %.2f %.2f %.2f %.2f \n", el1_pt, el1_eta, MC_EFF1, MC_EFF2, SF1, SF2);
+        printf("Nan EL HLT SF for Pt %.1f, Eta %1.2f  %.2f %.2f %.2f %.2f \n", el1_pt, el1_eta, MC_EFF1, MC_EFF2, SF1, SF2);
         result = 1;
     }
     //if(abs(result -1.0) > 0.2) printf("Result, SF1 = (%0.3f, %0.3f) \n", result, SF1);
@@ -323,7 +324,6 @@ void setup_SFs(mu_SFs *runs_BCDEF, mu_SFs *runs_GH, pileup_SFs *pu_SF){
     runs_BCDEF->HLT_MC_EFF = MC_EFF1;
     f1->Close();
 
-    printf("2 \n");
 
     TFile *f2 = TFile::Open("SFs/EfficienciesAndSF_BCDEF_ID.root");
     f2->cd("MC_NUM_HighPtID_DEN_genTracks_PAR_newpt_eta");
@@ -332,7 +332,6 @@ void setup_SFs(mu_SFs *runs_BCDEF, mu_SFs *runs_GH, pileup_SFs *pu_SF){
     ID_1->SetDirectory(0);
     runs_BCDEF->ID_SF = ID_1;
     f2->Close();
-    printf("3 \n");
 
 
     TFile *f3 = TFile::Open("SFs/EfficienciesAndSF_BCDEF_ISO.root");
@@ -342,7 +341,6 @@ void setup_SFs(mu_SFs *runs_BCDEF, mu_SFs *runs_GH, pileup_SFs *pu_SF){
     ISO_1->SetDirectory(0);
     runs_BCDEF->ISO_SF = ISO_1;
     f3->Close();
-    printf("4\n");
 
 
     TFile *f4 = TFile::Open("SFs/EfficienciesAndSF_Period4.root");
