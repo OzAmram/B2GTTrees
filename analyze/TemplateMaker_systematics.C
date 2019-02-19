@@ -42,7 +42,6 @@ pileup_systematics pu_sys;
 BTag_readers b_reader;
 BTag_effs btag_effs;
 bool btag_setup = false;
-bool do_RC_alt = false;
 
 void setup_all_SFs(){
     setup_btag_SFs(&b_reader, &btag_effs);
@@ -132,14 +131,8 @@ int gen_data_template(TTree *t1, TH2F* h,  Double_t var_low, Double_t var_high,
 
         if(flag1 == FLAG_MUONS && turn_on_RC){
             TLorentzVector mu_p_new, mu_m_new;
-            if(!do_RC_alt){
-                mu_p_new.SetPtEtaPhiE(lep_p->Pt() * mu_p_SF, lep_p->Eta(), lep_p->Phi(), mu_p_SF * lep_p->E());
-                mu_m_new.SetPtEtaPhiE(lep_m->Pt() * mu_m_SF, lep_m->Eta(), lep_m->Phi(), mu_m_SF * lep_m->E());
-            }
-            else{
-                mu_p_new.SetPtEtaPhiE(lep_p->Pt() * mu_p_SF_alt, lep_p->Eta(), lep_p->Phi(), mu_p_SF_alt * lep_p->E());
-                mu_m_new.SetPtEtaPhiE(lep_m->Pt() * mu_m_SF_alt, lep_m->Eta(), lep_m->Phi(), mu_m_SF_alt * lep_m->E());
-            }
+            mu_p_new.SetPtEtaPhiE(lep_p->Pt() * mu_p_SF, lep_p->Eta(), lep_p->Phi(), mu_p_SF * lep_p->E());
+            mu_m_new.SetPtEtaPhiE(lep_m->Pt() * mu_m_SF, lep_m->Eta(), lep_m->Phi(), mu_m_SF * lep_m->E());
 
             double new_cost = get_cost(mu_p_new, mu_m_new);
             cm = mu_p_new + mu_m_new;
@@ -206,7 +199,7 @@ int gen_mc_template(TTree *t1, Double_t alpha, TH2F* h_sym, TH2F *h_asym,
     Double_t el1_pt, el1_eta, el2_pt, el2_eta;
     Double_t mu_R_up, mu_R_down, mu_F_up, mu_F_down, 
              mu_RF_up, mu_RF_down, pdf_up, pdf_down;
-    Double_t mu_p_SF, mu_m_SF, mu_p_SF_alt, mu_m_SF_alt;
+    Double_t mu_p_SF, mu_m_SF, mu_p_SF_up, mu_m_SF_up, mu_p_SF_down, mu_m_SF_down;
     Float_t cost_pt, met_pt;
     Float_t pdf_weights[100];
     TLorentzVector *lep_p=0;
@@ -246,10 +239,10 @@ int gen_mc_template(TTree *t1, Double_t alpha, TH2F* h_sym, TH2F *h_asym,
     int shift = 0;
     if(!sys_label.empty()){
         //doing some systematic
-        if(sys_label.find("_UP") != string::npos){
+        if(sys_label.find("Up") != string::npos){
             shift = 1;
         }
-        else if(sys_label.find("_DOWN") != string::npos){
+        else if(sys_label.find("Down") != string::npos){
             shift = -1;
         }
 
@@ -260,32 +253,47 @@ int gen_mc_template(TTree *t1, Double_t alpha, TH2F* h_sym, TH2F *h_asym,
     // do_sys: 0 = nominal, 1= var up, -1 = var down
     int do_btag_sys = 0;
     int do_pileup_sys = 0;
+
     int do_muHLT_sys = 0;
     int do_muID_sys = 0;
     int do_muISO_sys = 0;
     int do_muTRK_sys = 0;
+    int do_muRC_sys = 0;
+
     int do_elID_sys = 0;
     int do_elHLT_sys = 0;
     int do_elRECO_sys = 0;
+    int do_elScale_sys = 0;
+    int do_elSmear_sys = 0;
+    float elp_rescale, elm_rescale;
+
+
 
     if(shift !=0){
         if(sys_label.find("BTAG") != string::npos) do_btag_sys = shift;
-        if(sys_label.find("PILEUP") != string::npos) do_pileup_sys = shift;
-        if(sys_label.find("muHLT") != string::npos) do_muHLT_sys = shift;
-        if(sys_label.find("muID") != string::npos) do_muID_sys = shift;
-        if(sys_label.find("muISO") != string::npos) do_muISO_sys = shift;
-        if(sys_label.find("muTRK") != string::npos) do_muTRK_sys = shift;
+        else if(sys_label.find("Pu") != string::npos) do_pileup_sys = shift;
+        else if(sys_label.find("muHLT") != string::npos) do_muHLT_sys = shift;
+        else if(sys_label.find("muID") != string::npos) do_muID_sys = shift;
+        else if(sys_label.find("muISO") != string::npos) do_muISO_sys = shift;
+        else if(sys_label.find("muTRK") != string::npos) do_muTRK_sys = shift;
+        else if(sys_label.find("muRC") != string::npos) do_muRC_sys = shift;
 
-        if(sys_label.find("elID") != string::npos) do_elID_sys = shift;
-        if(sys_label.find("elHLT") != string::npos) do_elHLT_sys = shift;
-        if(sys_label.find("elRECO") != string::npos) do_elRECO_sys = shift;
+        else if(sys_label.find("elID") != string::npos) do_elID_sys = shift;
+        else if(sys_label.find("elHLT") != string::npos) do_elHLT_sys = shift;
+        else if(sys_label.find("elRECO") != string::npos) do_elRECO_sys = shift;
+        else if(sys_label.find("elScale") != string::npos) do_elScale_sys = shift;
+        else if(sys_label.find("elSmear") != string::npos) do_elSmear_sys = shift;
 
 
-        if(sys_label.find("muR") != string::npos && shift > 0) systematic = &mu_R_up;
-        if(sys_label.find("muR") != string::npos && shift < 0) systematic = &mu_R_down;
-        if(sys_label.find("muF") != string::npos && shift > 0) systematic = &mu_F_up;
-        if(sys_label.find("muF") != string::npos && shift < 0) systematic = &mu_F_down;
+        else if(sys_label.find("RENORM") != string::npos && shift > 0) systematic = &mu_R_up;
+        else if(sys_label.find("RENORM") != string::npos && shift < 0) systematic = &mu_R_down;
+        else if(sys_label.find("FAC") != string::npos && shift > 0) systematic = &mu_F_up;
+        else if(sys_label.find("FAC") != string::npos && shift < 0) systematic = &mu_F_down;
 
+        else if(sys_label.find("pdf") != string::npos && shift < 0) systematic = &pdf_down;
+        else if(sys_label.find("pdf") != string::npos && shift > 0) systematic = &pdf_up;
+        else if(sys_label.find("alpha") != string::npos && shift < 0) systematic = &one;
+        else printf("COULDN'T PARSE SYSTEMATIC %s !!! \n \n", sys_label.c_str());
     }
 
 
@@ -312,8 +320,10 @@ int gen_mc_template(TTree *t1, Double_t alpha, TH2F* h_sym, TH2F *h_asym,
         if(turn_on_RC){
             t1->SetBranchAddress("mu_p_SF", &mu_p_SF);
             t1->SetBranchAddress("mu_m_SF", &mu_m_SF);
-            t1->SetBranchAddress("mu_p_SF_alt", &mu_p_SF_alt);
-            t1->SetBranchAddress("mu_m_SF_alt", &mu_m_SF_alt);
+            t1->SetBranchAddress("mu_p_SF_up", &mu_p_SF_up);
+            t1->SetBranchAddress("mu_m_SF_up", &mu_m_SF_up);
+            t1->SetBranchAddress("mu_p_SF_down", &mu_p_SF_down);
+            t1->SetBranchAddress("mu_m_SF_down", &mu_m_SF_down);
         }
 
 
@@ -330,14 +340,18 @@ int gen_mc_template(TTree *t1, Double_t alpha, TH2F* h_sym, TH2F *h_asym,
             }
             if(turn_on_RC){
                 TLorentzVector mu_p_new, mu_m_new, cm;
-                if(!do_RC_alt){
-                    mu_p_new.SetPtEtaPhiE(lep_p->Pt() * mu_p_SF, lep_p->Eta(), lep_p->Phi(), mu_p_SF * lep_p->E());
-                    mu_m_new.SetPtEtaPhiE(lep_m->Pt() * mu_m_SF, lep_m->Eta(), lep_m->Phi(), mu_m_SF * lep_m->E());
+
+                if(do_muRC_sys > 0){
+                    mu_p_SF = mu_p_SF_up;
+                    mu_m_SF = mu_m_SF_up;
                 }
-                else{
-                    mu_p_new.SetPtEtaPhiE(lep_p->Pt() * mu_p_SF_alt, lep_p->Eta(), lep_p->Phi(), mu_p_SF_alt * lep_p->E());
-                    mu_m_new.SetPtEtaPhiE(lep_m->Pt() * mu_m_SF_alt, lep_m->Eta(), lep_m->Phi(), mu_m_SF_alt * lep_m->E());
+                else if(do_muRC_sys < 0){
+                    mu_p_SF = mu_p_SF_down;
+                    mu_m_SF = mu_m_SF_down;
                 }
+                mu_p_new.SetPtEtaPhiE(lep_p->Pt() * mu_p_SF, lep_p->Eta(), lep_p->Phi(), mu_p_SF * lep_p->E());
+                mu_m_new.SetPtEtaPhiE(lep_m->Pt() * mu_m_SF, lep_m->Eta(), lep_m->Phi(), mu_m_SF * lep_m->E());
+
                 cost = get_cost(mu_p_new, mu_m_new);
                 cm = mu_p_new + mu_m_new;
                 m = cm.M();
@@ -413,6 +427,26 @@ int gen_mc_template(TTree *t1, Double_t alpha, TH2F* h_sym, TH2F *h_asym,
         t1->SetBranchAddress("el_id_SF", &el_id_SF);
         t1->SetBranchAddress("el_HLT_SF", &el_HLT_SF);
         t1->SetBranchAddress("el_reco_SF", &el_reco_SF);
+        if(do_elScale_sys || do_elSmear_sys){
+            if(do_elScale_sys >0){
+                t1->SetBranchAddress("elp_scale_up", &elp_rescale);
+                t1->SetBranchAddress("elm_scale_up", &elm_rescale);
+            }
+            else if(do_elScale_sys < 0){
+                t1->SetBranchAddress("elp_scale_down", &elp_rescale);
+                t1->SetBranchAddress("elm_scale_down", &elm_rescale);
+            }
+            else if(do_elSmear_sys < 0){
+                t1->SetBranchAddress("elp_smear_down", &elp_rescale);
+                t1->SetBranchAddress("elm_smear_down", &elm_rescale);
+            }
+            else if(do_elSmear_sys > 0){
+                t1->SetBranchAddress("elp_smear_up", &elp_rescale);
+                t1->SetBranchAddress("elm_smear_up", &elm_rescale);
+            }
+
+        }
+
 
         //separate SFs for runs BCDEF and GH
         for (int i=0; i<nEntries; i++) {
@@ -422,6 +456,14 @@ int gen_mc_template(TTree *t1, Double_t alpha, TH2F* h_sym, TH2F *h_asym,
             if(flag2 == FLAG_PT_BINS){
                 TLorentzVector cm = *lep_p + *lep_m;
                 pt = cm.Pt();
+            }
+            if(do_elScale_sys || do_elSmear_sys){
+                lep_p->SetPtEtaPhiE(lep_p->Pt() * (elp_rescale), lep_p->Eta(), lep_p->Phi(), lep_p->E() *(elp_rescale));
+                lep_m->SetPtEtaPhiE(lep_m->Pt() * (elm_rescale), lep_m->Eta(), lep_m->Phi(), lep_m->E() *(elm_rescale));
+                TLorentzVector cm = *lep_p + *lep_m;
+                m = cm.M();
+                xF = compute_xF(cm);
+
             }
             bool pass = ((flag2 == FLAG_M_BINS && m >= var_low && m <= var_high) ||
                     (flag2 == FLAG_PT_BINS && m >= 150. && pt >= var_low && pt <= var_high))
@@ -841,7 +883,7 @@ int gen_combined_background_template(int nTrees, TTree **ts, TH2F* h,
         Double_t el1_pt, el1_eta, el2_pt, el2_eta;
         Double_t mu_R_up, mu_R_down, mu_F_up, mu_F_down, 
                  mu_RF_up, mu_RF_down, pdf_up, pdf_down;
-        Double_t mu_p_SF, mu_m_SF, mu_p_SF_alt, mu_m_SF_alt;
+        Double_t mu_p_SF, mu_m_SF, mu_p_SF_up, mu_m_SF_up, mu_p_SF_down, mu_m_SF_down;
         Float_t cost_pt, met_pt;
         Float_t pdf_weights[100];
         TLorentzVector *lep_p=0;
@@ -859,6 +901,14 @@ int gen_combined_background_template(int nTrees, TTree **ts, TH2F* h,
         t1->SetBranchAddress("nJets", &nJets);
         t1->SetBranchAddress("gen_weight", &gen_weight);
         t1->SetBranchAddress("pu_SF", &pu_SF);
+        //t1->SetBranchAddress("mu_R_up", &mu_R_up);
+        //t1->SetBranchAddress("mu_R_down", &mu_R_down);
+        //t1->SetBranchAddress("mu_F_up", &mu_F_up);
+        //t1->SetBranchAddress("mu_F_down", &mu_F_down);
+        //t1->SetBranchAddress("mu_RF_up", &mu_RF_up);
+        //t1->SetBranchAddress("mu_RF_down", &mu_RF_down);
+        //t1->SetBranchAddress("pdf_up", &pdf_up);
+        //t1->SetBranchAddress("pdf_down", &pdf_down);
         t1->SetBranchAddress("pu_NtrueInt", &pu_NtrueInt);
         t1->SetBranchAddress("jet1_eta", &jet1_eta);
         t1->SetBranchAddress("jet2_eta", &jet2_eta);
@@ -872,38 +922,59 @@ int gen_combined_background_template(int nTrees, TTree **ts, TH2F* h,
         int shift = 0;
         if(!sys_label.empty()){
             //doing some systematic
-            if(sys_label.find("_UP") != string::npos){
+            if(sys_label.find("Up") != string::npos){
                 shift = 1;
             }
-            else if(sys_label.find("_DOWN") != string::npos){
+            else if(sys_label.find("Down") != string::npos){
                 shift = -1;
             }
 
             else{
-                printf("systematic label not empty, but doesn't have UP or DOWN \n");
+                printf("systematic label not empty, but doesn't have Up or Down \n");
             }
         }
         // do_sys: 0 = nominal, 1= var up, -1 = var down
         int do_btag_sys = 0;
         int do_pileup_sys = 0;
+
         int do_muHLT_sys = 0;
         int do_muID_sys = 0;
         int do_muISO_sys = 0;
         int do_muTRK_sys = 0;
+        int do_muRC_sys = 0;
+
         int do_elID_sys = 0;
         int do_elHLT_sys = 0;
         int do_elRECO_sys = 0;
+        int do_elScale_sys = 0;
+        int do_elSmear_sys = 0;
+        float elp_rescale, elm_rescale;
 
         if(shift !=0){
             if(sys_label.find("BTAG") != string::npos) do_btag_sys = shift;
-            if(sys_label.find("PILEUP") != string::npos) do_pileup_sys = shift;
-            if(sys_label.find("muHLT") != string::npos) do_muHLT_sys = shift;
-            if(sys_label.find("muID") != string::npos) do_muID_sys = shift;
-            if(sys_label.find("muISO") != string::npos) do_muISO_sys = shift;
-            if(sys_label.find("muTRK") != string::npos) do_muTRK_sys = shift;
-            if(sys_label.find("elID") != string::npos) do_elID_sys = shift;
-            if(sys_label.find("elHLT") != string::npos) do_elHLT_sys = shift;
-            if(sys_label.find("elRECO") != string::npos) do_elRECO_sys = shift;
+            else if(sys_label.find("Pu") != string::npos) do_pileup_sys = shift;
+            else if(sys_label.find("muHLT") != string::npos) do_muHLT_sys = shift;
+            else if(sys_label.find("muID") != string::npos) do_muID_sys = shift;
+            else if(sys_label.find("muISO") != string::npos) do_muISO_sys = shift;
+            else if(sys_label.find("muTRK") != string::npos) do_muTRK_sys = shift;
+            else if(sys_label.find("muRC") != string::npos) do_muRC_sys = shift;
+
+            else if(sys_label.find("elID") != string::npos) do_elID_sys = shift;
+            else if(sys_label.find("elHLT") != string::npos) do_elHLT_sys = shift;
+            else if(sys_label.find("elRECO") != string::npos) do_elRECO_sys = shift;
+            else if(sys_label.find("elScale") != string::npos) do_elScale_sys = shift;
+            else if(sys_label.find("elSmear") != string::npos) do_elSmear_sys = shift;
+
+
+            /*
+               else if(sys_label.find("RENORM") != string::npos && shift > 0) systematic = &mu_R_up;
+               else if(sys_label.find("RENORM") != string::npos && shift < 0) systematic = &mu_R_down;
+               else if(sys_label.find("FAC") != string::npos && shift > 0) systematic = &mu_F_up;
+               else if(sys_label.find("FAC") != string::npos && shift < 0) systematic = &mu_F_down;
+               */
+            else if(sys_label.find("alpha") != string::npos && shift < 0) systematic = &one;
+
+            else printf("COULDN'T PARSE SYSTEMATIC %s !!! \n \n", sys_label.c_str());
 
         }
 
@@ -930,8 +1001,10 @@ int gen_combined_background_template(int nTrees, TTree **ts, TH2F* h,
             if(turn_on_RC){
                 t1->SetBranchAddress("mu_p_SF", &mu_p_SF);
                 t1->SetBranchAddress("mu_m_SF", &mu_m_SF);
-                t1->SetBranchAddress("mu_p_SF_alt", &mu_p_SF_alt);
-                t1->SetBranchAddress("mu_m_SF_alt", &mu_m_SF_alt);
+                t1->SetBranchAddress("mu_p_SF_up", &mu_p_SF_up);
+                t1->SetBranchAddress("mu_m_SF_up", &mu_m_SF_up);
+                t1->SetBranchAddress("mu_p_SF_down", &mu_p_SF_down);
+                t1->SetBranchAddress("mu_m_SF_down", &mu_m_SF_down);
             }
 
             //separate SFs for runs BCDEF and GH
@@ -947,14 +1020,16 @@ int gen_combined_background_template(int nTrees, TTree **ts, TH2F* h,
                 cost = get_cost(*lep_p, *lep_m);
                 if(turn_on_RC){
                     TLorentzVector mu_p_new, mu_m_new, cm;
-                    if(!do_RC_alt){
-                        mu_p_new.SetPtEtaPhiE(lep_p->Pt() * mu_p_SF, lep_p->Eta(), lep_p->Phi(), mu_p_SF * lep_p->E());
-                        mu_m_new.SetPtEtaPhiE(lep_m->Pt() * mu_m_SF, lep_m->Eta(), lep_m->Phi(), mu_m_SF * lep_m->E());
+                    if(do_muRC_sys > 0){
+                        mu_p_SF = mu_p_SF_up;
+                        mu_m_SF = mu_m_SF_up;
                     }
-                    else{
-                        mu_p_new.SetPtEtaPhiE(lep_p->Pt() * mu_p_SF_alt, lep_p->Eta(), lep_p->Phi(), mu_p_SF_alt * lep_p->E());
-                        mu_m_new.SetPtEtaPhiE(lep_m->Pt() * mu_m_SF_alt, lep_m->Eta(), lep_m->Phi(), mu_m_SF_alt * lep_m->E());
+                    else if(do_muRC_sys < 0){
+                        mu_p_SF = mu_p_SF_down;
+                        mu_m_SF = mu_m_SF_down;
                     }
+                    mu_p_new.SetPtEtaPhiE(lep_p->Pt() * mu_p_SF, lep_p->Eta(), lep_p->Phi(), mu_p_SF * lep_p->E());
+                    mu_m_new.SetPtEtaPhiE(lep_m->Pt() * mu_m_SF, lep_m->Eta(), lep_m->Phi(), mu_m_SF * lep_m->E());
                     double new_cost = get_cost(mu_p_new, mu_m_new);
                     cm = mu_p_new + mu_m_new;
                     //if(cm.M() < 150.) continue;
@@ -1021,6 +1096,25 @@ int gen_combined_background_template(int nTrees, TTree **ts, TH2F* h,
             t1->SetBranchAddress("el_id_SF", &el_id_SF);
             t1->SetBranchAddress("el_HLT_SF", &el_HLT_SF);
             t1->SetBranchAddress("el_reco_SF", &el_reco_SF);
+            if(do_elScale_sys || do_elSmear_sys){
+                if(do_elScale_sys >0){
+                    t1->SetBranchAddress("elp_scale_up", &elp_rescale);
+                    t1->SetBranchAddress("elm_scale_up", &elm_rescale);
+                }
+                else if(do_elScale_sys < 0){
+                    t1->SetBranchAddress("elp_scale_down", &elp_rescale);
+                    t1->SetBranchAddress("elm_scale_down", &elm_rescale);
+                }
+                else if(do_elSmear_sys < 0){
+                    t1->SetBranchAddress("elp_smear_down", &elp_rescale);
+                    t1->SetBranchAddress("elm_smear_down", &elm_rescale);
+                }
+                else if(do_elSmear_sys > 0){
+                    t1->SetBranchAddress("elp_smear_up", &elp_rescale);
+                    t1->SetBranchAddress("elm_smear_up", &elm_rescale);
+                }
+
+            }
             for (int i=0; i<nEntries; i++) {
                 t1->GetEntry(i);
                 bool no_bjets = has_no_bjets(nJets, jet1_pt, jet2_pt, jet1_cmva, jet2_cmva);
@@ -1028,6 +1122,14 @@ int gen_combined_background_template(int nTrees, TTree **ts, TH2F* h,
                 if(flag2 == FLAG_PT_BINS){
                     TLorentzVector cm = *lep_p + *lep_m;
                     pt = cm.Pt();
+                }
+                if(do_elScale_sys || do_elSmear_sys){
+                    lep_p->SetPtEtaPhiE(lep_p->Pt() * (elp_rescale), lep_p->Eta(), lep_p->Phi(), lep_p->E() *(elp_rescale));
+                    lep_m->SetPtEtaPhiE(lep_m->Pt() * (elm_rescale), lep_m->Eta(), lep_m->Phi(), lep_m->E() *(elm_rescale));
+                    TLorentzVector cm = *lep_p + *lep_m;
+                    m = cm.M();
+                    xF = compute_xF(cm);
+
                 }
                 bool pass = ((flag2 == FLAG_M_BINS && m >= var_low && m <= var_high) ||
                         (flag2 == FLAG_PT_BINS && m >= 150. && pt >= var_low && pt <= var_high))
@@ -1040,7 +1142,7 @@ int gen_combined_background_template(int nTrees, TTree **ts, TH2F* h,
                     if(do_pileup_sys == -1) pu_SF_sys = get_pileup_SF(pu_NtrueInt, pu_sys.pileup_down);
                     if(do_pileup_sys == 1) pu_SF_sys = get_pileup_SF(pu_NtrueInt, pu_sys.pileup_up);
                     gen_weight *= *systematic * pu_SF * pu_SF_sys;
-                    
+
                     if(do_elID_sys) el_id_SF = get_el_SF(el1_pt, el1_eta, el_SF.ID_SF, do_elID_sys) * get_el_SF(el2_pt, el2_eta, el_SF.ID_SF, do_elID_sys);
                     if(do_elRECO_sys) el_reco_SF = get_el_SF(el1_pt, el1_eta, el_SF.RECO_SF, do_elRECO_sys) * get_el_SF(el2_pt, el2_eta, el_SF.RECO_SF, do_elRECO_sys);
                     if(do_elHLT_sys) el_HLT_SF = get_el_HLT_SF(el1_pt, el1_eta, el2_pt, el2_eta, el_SF.HLT_SF, el_SF.HLT_MC_EFF, do_elHLT_sys);

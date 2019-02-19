@@ -17,13 +17,13 @@ const double root2 = sqrt(2);
 double Ebeam = 6500.;
 double Pbeam = sqrt(Ebeam*Ebeam - 0.938*0.938);
 
-char *filename("TTbar_WT_files_aug7.txt");
-const TString fout_name("output_files/ElEl_ttbar_wt_samesign_sep4.root");
+char *filename("combined_back_files_aug7.txt");
+const TString fout_name("output_files/ElEl_combined_back_test.root");
 const double alpha = 0.05;
 const bool PRINT=false;
 
 const bool data_2016 = true;
-const bool do_samesign = true;
+const bool do_samesign = false;
 
 bool is_empty_line(const char *s) {
     while (*s != '\0') {
@@ -371,15 +371,15 @@ void ElEl_reco_background_batch(int nJobs =1, int iJob=0)
 
                         //get el cut SFs
 
-                        elp_scale_up = el_ScaleCorrUp[elp_index];
-                        elp_scale_down = el_ScaleCorrDown[elp_index];
-                        elp_smear_up = el_ScaleSmearUp[elp_index];
-                        elp_smear_down = el_ScaleSmearDown[elp_index];
+                        elp_scale_up = el_ScaleCorrUp[elp_index] / el_ScaleCorr[elp_index];
+                        elp_scale_down = el_ScaleCorrDown[elp_index]/ el_ScaleCorr[elp_index];
+                        elp_smear_up = el_ScaleSmearUp[elp_index]/ el_ScaleCorr[elp_index];
+                        elp_smear_down = el_ScaleSmearDown[elp_index]/ el_ScaleCorr[elp_index];
 
-                        elm_scale_up = el_ScaleCorrUp[elm_index];
-                        elm_scale_down = el_ScaleCorrDown[elm_index];
-                        elm_smear_up = el_ScaleSmearUp[elm_index];
-                        elm_smear_down = el_ScaleSmearDown[elm_index];
+                        elm_scale_up = el_ScaleCorrUp[elm_index]/ el_ScaleCorr[elm_index];
+                        elm_scale_down = el_ScaleCorrDown[elm_index]/ el_ScaleCorr[elm_index];
+                        elm_smear_up = el_ScaleSmearUp[elm_index]/ el_ScaleCorr[elm_index];
+                        elm_smear_down = el_ScaleSmearDown[elm_index]/ el_ScaleCorr[elm_index];
 
                         el_id_SF = get_el_SF(el1_pt, el1_eta, el_SF.ID_SF) * get_el_SF(el2_pt, el2_eta, el_SF.ID_SF);
                         el_reco_SF = get_el_SF(el1_pt, el1_eta, el_SF.RECO_SF) * get_el_SF(el2_pt, el2_eta, el_SF.RECO_SF);

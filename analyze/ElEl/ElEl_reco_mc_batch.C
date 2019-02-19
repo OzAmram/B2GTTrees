@@ -724,18 +724,19 @@ void ElEl_reco_mc_batch(int nJobs = 1, int iJob = 0)
                                     jet1_flavour = jet_partonflavour[j];
                                     nJets = 1;
                                 }
+                                
                             }
                         }
 
-                        elp_scale_up = el_ScaleCorrUp[elp_index];
-                        elp_scale_down = el_ScaleCorrDown[elp_index];
-                        elp_smear_up = el_ScaleSmearUp[elp_index];
-                        elp_smear_down = el_ScaleSmearDown[elp_index];
+                        elp_scale_up = el_ScaleCorrUp[elp_index] / el_ScaleCorr[elp_index];
+                        elp_scale_down = el_ScaleCorrDown[elp_index]/ el_ScaleCorr[elp_index];
+                        elp_smear_up = el_ScaleSmearUp[elp_index]/ el_ScaleCorr[elp_index];
+                        elp_smear_down = el_ScaleSmearDown[elp_index]/ el_ScaleCorr[elp_index];
 
-                        elm_scale_up = el_ScaleCorrUp[elm_index];
-                        elm_scale_down = el_ScaleCorrDown[elm_index];
-                        elm_smear_up = el_ScaleSmearUp[elm_index];
-                        elm_smear_down = el_ScaleSmearDown[elm_index];
+                        elm_scale_up = el_ScaleCorrUp[elm_index]/ el_ScaleCorr[elm_index];
+                        elm_scale_down = el_ScaleCorrDown[elm_index]/ el_ScaleCorr[elm_index];
+                        elm_smear_up = el_ScaleSmearUp[elm_index]/ el_ScaleCorr[elm_index];
+                        elm_smear_down = el_ScaleSmearDown[elm_index]/ el_ScaleCorr[elm_index];
 
 
                         //get el cut SFs

@@ -22,7 +22,7 @@
 #include "TemplateUtils.h"
 
 
-const TString fout_name("combine/templates/feb14_combined_template_sys_test.root");
+const TString fout_name("combine/templates/feb19_combined_template_sys_v2.root");
 TFile * fout;
 
 
@@ -203,7 +203,6 @@ void make_mc_templates(const string &sys_label){
 
         gen_mc_template(t_elel_mc, alpha, h_elel_sym, h_elel_asym,  m_low, m_high, FLAG_ELECTRONS, FLAG_M_BINS, do_RC, sys_label);
         TTree *elel_ts[1] = {t_elel_back};
-
         gen_combined_background_template(1, elel_ts, h_elel_back, m_low, m_high, FLAG_ELECTRONS, FLAG_M_BINS,do_RC,ss, sys_label);
         elel_ts[0] = t_elel_nosig;
         gen_combined_background_template(1, elel_ts, h_elel_dy_gg, m_low, m_high, FLAG_ELECTRONS, FLAG_M_BINS,do_RC,ss, sys_label);
@@ -268,7 +267,7 @@ void convert_mc_templates(const string &sys_label){
 
 
 
-void make_templates(){
+void make_templates(int nJobs = 6, int iJob =-1){
 
     init();
     init_ss();
@@ -278,7 +277,12 @@ void make_templates(){
     printf("   done \n");
 
     //vector<string> sys_labels {""};
-    vector<string> sys_labels {"_BTAG_UP",  "_muHLT_DOWN",  "_elHLT_UP", "_alpha_UP", "_PILEUP_UP" };
+    //vector<string> sys_labels {"_elScale_UP", "_elSmear_DOWN" };
+    vector<string> sys_labels {"", "_elScaleUp", "_elScaleDown", "_elSmearUp", "_elSmearDown", 
+        "_muRCUp", "_muRCDown", "_muHLTUp", "_muHLTDown", "_muIDUp", "_muIDDown", "_muISOUp", "_muISODown", "_muTRKUp", "_muTRKDown",  
+        "_elHLTUp", "_elHLTDown", "_elIDUp", "_elIDDown", "_elRECOUp", "_elRECODown", 
+        "_RENORMUp", "_RENORMDown", "_FACUp", "_FACDown","_pdfUp", "_pdfDown",
+        "_PuUp", "_PuDown", "_BTAGUp", "_BTAGDown", "_alphaUp", "_alphaDown" };
 
     fout = TFile::Open(fout_name, "RECREATE");
     FILE *f_log;
@@ -286,8 +290,15 @@ void make_templates(){
 
     char dirname[40];
 
+    int i_start=0;
+    int i_max = n_m_bins;
+    if(iJob >0){
+        i_start =iJob;
+        i_max = iJob +1;
+    }
 
-    for(int i=0; i<n_m_bins; i++){
+
+    for(int i=i_start; i<i_max; i++){
     //for(int i=0; i<1; i++){
         fout->cd();
         snprintf(dirname, 10, "w%i", i);
@@ -324,6 +335,7 @@ void make_templates(){
     }
 
 
+    fout->Close();
     printf("Templates written to %s \n", fout_name.Data());
 
 }
