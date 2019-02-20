@@ -27,6 +27,7 @@ using namespace std;
 
 #define FLAG_MUONS  0
 #define FLAG_ELECTRONS  1
+#define FLAG_EMU  2
 
 #define FLAG_M_BINS 0
 #define FLAG_PT_BINS 1
@@ -321,7 +322,7 @@ void make_emu_m_cost_pt_xf_hist(TTree *t1, TH1F *h_m, TH1F *h_cost,  TH1F *h_pt,
         TLorentzVector cm;
         cm = *el + *mu;
         m = cm.M();
-        double cost = get_cost_v2(*el, *mu);
+        double cost = get_cost(*el, *mu);
         double xf = compute_xF(cm); 
 
         if(m >= m_low && m <= m_high && met_pt < 50. && no_bjets){
@@ -427,7 +428,7 @@ void make_qcd_from_emu_m_cost_pt_xf_hist(TTree *t_data, TTree *t_ttbar, TTree *t
 }
 
 
-void make_m_cost_pt_xf_hist(TTree *t1, TH1F *h_m, TH1F *h_cost, TH1F *h_pt, TH1F *h_xf, bool is_data=false, int flag1 = FLAG_MUONS, bool emu_scale =false, bool turn_on_RC = true,
+void make_m_cost_pt_xf_hist(TTree *t1, TH1F *h_m, TH1F *h_cost, TH1F *h_pt, TH1F *h_xf, bool is_data=false, int flag1 = FLAG_MUONS, bool turn_on_RC = true,
         Double_t m_low = 150., Double_t m_high = 9999999., bool ss = false){
     //read event data
     Long64_t size  =  t1->GetEntries();
@@ -490,12 +491,13 @@ void make_m_cost_pt_xf_hist(TTree *t1, TH1F *h_m, TH1F *h_cost, TH1F *h_pt, TH1F
 
             cm = *mu_p + *mu_m;
             Double_t pt = cm.Pt();
-            cost = get_cost_v2(*mu_p, *mu_m);
+            cost = get_cost(*mu_p, *mu_m);
             if(turn_on_RC){
                 TLorentzVector mu_p_new, mu_m_new;
                 mu_p_new.SetPtEtaPhiE(mu_p->Pt() * mu_p_SF, mu_p->Eta(), mu_p->Phi(), mu_p_SF * mu_p->E());
                 mu_m_new.SetPtEtaPhiE(mu_m->Pt() * mu_m_SF, mu_m->Eta(), mu_m->Phi(), mu_m_SF * mu_m->E());
-                double new_cost = get_cost_v2(mu_p_new, mu_m_new);
+                //double new_cost = get_cost(mu_p_new, mu_m_new);
+                double new_cost = get_cost(mu_p_new, mu_m_new);
                 cm = mu_p_new + mu_m_new;
                 //if(cm.M() < 150.) continue;
                 cost = new_cost;
@@ -526,7 +528,6 @@ void make_m_cost_pt_xf_hist(TTree *t1, TH1F *h_m, TH1F *h_cost, TH1F *h_pt, TH1F
                         gh_weight *= jet2_b_weight;
                     }
                     Double_t evt_weight = 1000*(bcdef_lumi * bcdef_weight + gh_lumi *gh_weight);
-                    if(emu_scale) evt_weight *= emu_scaling_nom;
                     //Double_t weight = gen_weight;
                     h_m->Fill(m,evt_weight);
                     if(ss) h_cost->Fill(abs(cost), evt_weight);
@@ -552,7 +553,7 @@ void make_m_cost_pt_xf_hist(TTree *t1, TH1F *h_m, TH1F *h_cost, TH1F *h_pt, TH1F
             if(m >= m_low && m <= m_high && met_pt < 50.  && no_bjets && not_cosmic){
                 TLorentzVector cm = *el_p + *el_m;
                 Double_t pt = cm.Pt();
-                cost = get_cost_v2(*el_p, *el_m);
+                cost = get_cost(*el_p, *el_m);
                 if(is_data){
                     h_m->Fill(m);
                     if(ss) h_cost->Fill(abs(cost));
@@ -569,7 +570,6 @@ void make_m_cost_pt_xf_hist(TTree *t1, TH1F *h_m, TH1F *h_cost, TH1F *h_pt, TH1F
                     if (nJets >= 2){
                         evt_weight *= jet2_b_weight;
                     }
-                    if(emu_scale) evt_weight *= emu_scaling_nom;
                     h_m->Fill(m, evt_weight);
                     if(ss) h_cost->Fill(abs(cost), evt_weight);
                     else h_cost->Fill(cost, evt_weight);
@@ -804,7 +804,7 @@ void Fakerate_est_el(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_MC, TTree *t_Q
                 //if(l==3) printf("Evt fr %.2e \n", evt_fakerate);
                 //if(l==3) printf("cost, fr %.2f %.2e \n", cost, evt_fakerate);
                 TLorentzVector cm = *el_p + *el_m;
-                cost = get_cost_v2(*el_p, *el_m);
+                cost = get_cost(*el_p, *el_m);
                 float pt = cm.Pt();
 
                 if(l==0 && iso_el ==1) h_err->Fill(min(abs(el1_eta), 2.3), min(el1_pt, 150.));

@@ -85,16 +85,17 @@ void draw_cmp(){
     ttbar_m->SetMarkerColor(kBlue);
 
 
-    TH1F *data_cost = new TH1F("data_cost", "Data", 20, -1.,1.);
-    TH1F *mc_cost = new TH1F("mc_cost", "MC Signal (qqbar, qglu, qbarglu)", 20, -1,1);
+    int num_cost_bins = 10;
+    TH1F *data_cost = new TH1F("data_cost", "Data", num_cost_bins, -1.,1.);
+    TH1F *mc_cost = new TH1F("mc_cost", "MC Signal (qqbar, qglu, qbarglu)", num_cost_bins, -1,1);
     mc_cost->SetFillColor(kRed+1);
     mc_cost->SetMarkerStyle(21);
     mc_cost->SetMarkerColor(kRed+1);
-    TH1F *mc_nosig_cost = new TH1F("mc_nosig_cost", "MC no signal (qq, gluglu qbarqbar)", 20, -1.,1.);
+    TH1F *mc_nosig_cost = new TH1F("mc_nosig_cost", "MC no signal (qq, gluglu qbarqbar)", num_cost_bins, -1.,1.);
     mc_nosig_cost->SetFillColor(kMagenta);
     mc_nosig_cost->SetMarkerStyle(21);
     mc_nosig_cost->SetMarkerColor(kMagenta);
-    TH1F *ttbar_cost = new TH1F("ttbar_cost", "TTbar Background", 20, -1.,1.);
+    TH1F *ttbar_cost = new TH1F("ttbar_cost", "TTbar Background", num_cost_bins, -1.,1.);
     ttbar_cost->SetFillColor(kBlue);
     ttbar_cost->SetMarkerStyle(21);
     ttbar_cost->SetMarkerColor(kBlue);
@@ -103,16 +104,16 @@ void draw_cmp(){
 
 
     TH1F *diboson_m = new TH1F("diboson_m", "DiBoson (WW, WZ, ZZ)", 30, 150, 2000);
-    TH1F *diboson_cost = new TH1F("diboson_cost", "DiBoson (WW, WZ,ZZ)", 20, -1,1);
+    TH1F *diboson_cost = new TH1F("diboson_cost", "DiBoson (WW, WZ,ZZ)", num_cost_bins, -1,1);
 
     TH1F *QCD_m = new TH1F("QCD_m", "QCD", 30, 150, 2000);
-    TH1F *QCD_cost = new TH1F("QCD_cost", "QCD", 20, -1,1);
+    TH1F *QCD_cost = new TH1F("QCD_cost", "QCD", num_cost_bins, -1,1);
 
     TH1F *WJets_m = new TH1F("WJets_m", "WJets", 30, 150, 2000);
-    TH1F *WJets_cost = new TH1F("WJets_cost", "WJets", 20, -1,1);
+    TH1F *WJets_cost = new TH1F("WJets_cost", "WJets", num_cost_bins, -1,1);
 
     TH1F *wt_m = new TH1F("wt_m", "tw + #bar{t}w", 30, 150, 2000);
-    TH1F *wt_cost = new TH1F("wt_cost", "tw + #bar{t}w", 20, -1,1);
+    TH1F *wt_cost = new TH1F("wt_cost", "tw + #bar{t}w", num_cost_bins, -1,1);
 
 
     wt_m->SetFillColor(kOrange+7); 
@@ -123,15 +124,17 @@ void draw_cmp(){
     QCD_cost->SetFillColor(kRed -7);
 
     bool do_RC = true;
+    float m_low = 200.;
+    float m_high = 250.;
 
-    make_m_cost_pt_xf_hist(t_data, data_m, data_cost, data_pt, data_xf, true, type, false, do_RC);
-    make_m_cost_pt_xf_hist(t_mc, mc_m, mc_cost, mc_pt, mc_xf, false, type, false, do_RC);
-    make_m_cost_pt_xf_hist(t_mc_nosig, mc_nosig_m, mc_nosig_cost, mc_nosig_pt, mc_nosig_xf, false, type, false, do_RC);
-    make_m_cost_pt_xf_hist(t_ttbar, ttbar_m, ttbar_cost, ttbar_pt, ttbar_xf, false, type, true, do_RC);
-    make_m_cost_pt_xf_hist(t_wt, wt_m, wt_cost, wt_pt, wt_xf, false, type, true, do_RC);
-    make_m_cost_pt_xf_hist(t_diboson, diboson_m, diboson_cost, diboson_pt, diboson_xf, false, type, true, do_RC);
+    make_m_cost_pt_xf_hist(t_data, data_m, data_cost, data_pt, data_xf, true, type, do_RC, m_low, m_high);
+    make_m_cost_pt_xf_hist(t_mc, mc_m, mc_cost, mc_pt, mc_xf, false, type,  do_RC, m_low, m_high);
+    make_m_cost_pt_xf_hist(t_mc_nosig, mc_nosig_m, mc_nosig_cost, mc_nosig_pt, mc_nosig_xf, false, type, do_RC, m_low, m_high);
+    make_m_cost_pt_xf_hist(t_ttbar, ttbar_m, ttbar_cost, ttbar_pt, ttbar_xf, false, type, do_RC, m_low, m_high);
+    make_m_cost_pt_xf_hist(t_wt, wt_m, wt_cost, wt_pt, wt_xf, false, type, do_RC, m_low, m_high);
+    make_m_cost_pt_xf_hist(t_diboson, diboson_m, diboson_cost, diboson_pt, diboson_xf, false, type,  do_RC, m_low, m_high);
 
-    Fakerate_est_mu(t_WJets, t_QCD, t_WJets_mc, t_QCD_mc, QCD_m, QCD_cost, QCD_pt, QCD_xf);
+    Fakerate_est_mu(t_WJets, t_QCD, t_WJets_mc, t_QCD_mc, QCD_m, QCD_cost, QCD_pt, QCD_xf, m_low, m_high);
 
 
 
