@@ -489,7 +489,7 @@ int gen_mc_template(TTree *t1, Double_t alpha, TH2F* h_sym, TH2F *h_asym,
                 jet2_b_weight = get_btag_weight(jet2_pt, jet2_eta,(Float_t) jet2_flavour , btag_effs, b_reader, do_btag_sys);
 
 
-                Double_t evt_weight = gen_weight * el_id_SF *el_reco_SF * el_HLT_SF;
+                Double_t evt_weight = gen_weight * el_id_SF *el_reco_SF * el_HLT_SF * 1000. * el_lumi;
                 if (nJets >= 1){
                     evt_weight *= jet1_b_weight;
                 }
@@ -506,8 +506,6 @@ int gen_mc_template(TTree *t1, Double_t alpha, TH2F* h_sym, TH2F *h_asym,
 
             }
         }
-        h_sym->Scale(1000*(bcdef_lumi + gh_lumi));
-        h_asym->Scale(1000*(bcdef_lumi + gh_lumi));
 
     }
 
@@ -1077,7 +1075,7 @@ int gen_combined_background_template(int nTrees, TTree **ts, TH2F* h,
                     }
 
 
-                    Double_t evt_weight = gh_weight * gh_lumi + bcdef_weight * bcdef_lumi * 1000;
+                    Double_t evt_weight = 1000*(bcdef_lumi * bcdef_weight + gh_lumi *gh_weight);
                     if(!ss) h->Fill(xF, cost, evt_weight);
                     else{
                         h->Fill(xF, cost, 0.5*evt_weight);
@@ -1149,14 +1147,13 @@ int gen_combined_background_template(int nTrees, TTree **ts, TH2F* h,
                     jet1_b_weight = get_btag_weight(jet1_pt, jet1_eta,(Float_t) jet1_flavour , btag_effs, b_reader, do_btag_sys);
                     jet2_b_weight = get_btag_weight(jet2_pt, jet2_eta,(Float_t) jet2_flavour , btag_effs, b_reader, do_btag_sys);
 
-                    Double_t evt_weight = gen_weight * pu_SF * el_id_SF * el_reco_SF * el_HLT_SF;
+                    Double_t evt_weight = gen_weight * el_id_SF * el_reco_SF * el_HLT_SF * 1000. * el_lumi;
                     if (nJets >= 1){
                         evt_weight *= jet1_b_weight;
                     }
                     if (nJets >= 2){
                         evt_weight *= jet2_b_weight;
                     }
-                    evt_weight *= 1000*el_lumi;
                     if(!ss) h->Fill(xF, cost, evt_weight);
                     else{
                         h->Fill(xF, cost, 0.5*evt_weight);
