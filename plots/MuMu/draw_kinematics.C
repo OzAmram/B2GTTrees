@@ -96,40 +96,40 @@ void make_4vec_hists(TTree *t1, kin_hists *k, bool is_data=false){
                 
 
                 if(is_data){
-                    //k->m_hist->Fill(obs.E());
-                    //k->pt_hist->Fill(obs.Pt());
-                    //k->eta_hist->Fill(obs.Eta());
-                    //k->phi_hist->Fill(obs.Phi());
+                    k->m_hist->Fill(obs.E());
+                    k->pt_hist->Fill(obs.Pt());
+                    k->eta_hist->Fill(obs.Rapidity());
+                    k->phi_hist->Fill(obs.Phi());
                   
-                    k->m_hist->Fill(mu_p->E());
-                    k->pt_hist->Fill(mu_p->Pt());
-                    k->eta_hist->Fill(mu_p->Eta());
-                    k->phi_hist->Fill(mu_p->Phi());
+                    //k->m_hist->Fill(mu_p->E());
+                    //k->pt_hist->Fill(mu_p->Pt());
+                    //k->eta_hist->Fill(mu_p->Eta());
+                    //k->phi_hist->Fill(mu_p->Phi());
 
-                    k->m_hist->Fill(mu_m->E());
-                    k->pt_hist->Fill(mu_m->Pt());
-                    k->eta_hist->Fill(mu_m->Eta());
-                    k->phi_hist->Fill(mu_m->Phi());
+                    //k->m_hist->Fill(mu_m->E());
+                    //k->pt_hist->Fill(mu_m->Pt());
+                    //k->eta_hist->Fill(mu_m->Eta());
+                    //k->phi_hist->Fill(mu_m->Phi());
                 }
                 else{
                     Double_t bcdef_weight = gen_weight *pu_SF * bcdef_HLT_SF * bcdef_iso_SF * bcdef_id_SF * bcdef_trk_SF;
                     Double_t gh_weight = gen_weight *pu_SF * gh_HLT_SF * gh_iso_SF * gh_id_SF * gh_trk_SF;
                     Double_t combined_weight = (bcdef_weight *bcdef_lumi + gh_weight*gh_lumi)*1000;
 
-                    //k->m_hist->Fill(obs.E(), combined_weight);
-                    //k->pt_hist->Fill(obs.Pt(), combined_weight);
-                    //k->eta_hist->Fill(obs.Eta(), combined_weight);
-                    //k->phi_hist->Fill(obs.Phi(), combined_weight);
+                    k->m_hist->Fill(obs.E(), combined_weight);
+                    k->pt_hist->Fill(obs.Pt(), combined_weight);
+                    k->eta_hist->Fill(obs.Rapidity(), combined_weight);
+                    k->phi_hist->Fill(obs.Phi(), combined_weight);
 
-                    k->m_hist->Fill(mu_p->E(), combined_weight);
-                    k->pt_hist->Fill(mu_p->Pt(), combined_weight);
-                    k->eta_hist->Fill(mu_p->Eta(), combined_weight);
-                    k->phi_hist->Fill(mu_p->Phi(), combined_weight);
+                    //k->m_hist->Fill(mu_p->E(), combined_weight);
+                    //k->pt_hist->Fill(mu_p->Pt(), combined_weight);
+                    //k->eta_hist->Fill(mu_p->Eta(), combined_weight);
+                    //k->phi_hist->Fill(mu_p->Phi(), combined_weight);
 
-                    k->m_hist->Fill(mu_m->E(), combined_weight);
-                    k->pt_hist->Fill(mu_m->Pt(), combined_weight);
-                    k->eta_hist->Fill(mu_m->Eta(), combined_weight);
-                    k->phi_hist->Fill(mu_m->Phi(), combined_weight);
+                    //k->m_hist->Fill(mu_m->E(), combined_weight);
+                    //k->pt_hist->Fill(mu_m->Pt(), combined_weight);
+                    //k->eta_hist->Fill(mu_m->Eta(), combined_weight);
+                    //k->phi_hist->Fill(mu_m->Phi(), combined_weight);
 
                 }
 
@@ -345,7 +345,7 @@ void make_plots(char name[80], kin_hists *k_data, kin_hists *k_mc, kin_hists *k_
 }
 
 void draw_kinematics(){
-    init(); 
+    mumu_init(); 
     kin_hists k_data, k_mc, k_mc_nosig, k_ttbar, k_diboson, k_wt;
 
     setup_kin_hists(&k_data, "data");

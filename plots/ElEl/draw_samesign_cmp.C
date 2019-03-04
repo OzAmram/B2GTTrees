@@ -32,6 +32,7 @@ const int type = FLAG_ELECTRONS;
 
 
 void draw_samesign_cmp(){
+    init();
     init_ss();
     init_emu_ss();
 
@@ -39,11 +40,9 @@ void draw_samesign_cmp(){
 
 
     setTDRStyle();
-    int n_cost_bins = 10;
 
     TH1F *data_m = new TH1F("data_m", "Data Dimuon Mass Distribution", 30, 150, 2000);
 
-    TH1F *data_cost = new TH1F("data_cost", "Data", n_cost_bins, 0.,1.);
 
     int pt_bins = 20.;
     TH1F *data_pt = new TH1F("data_pt", "MC signal", pt_bins, 0, 800);
@@ -62,18 +61,21 @@ void draw_samesign_cmp(){
 
 
     TH1F *back_m = new TH1F("back_m", "back (WW, WZ, ZZ)", 30, 150, 2000);
-    TH1F *back_cost = new TH1F("back_cost", "back (WW, WZ,ZZ)", n_cost_bins, 0.,1);
     TH1F *back_xf = new TH1F("back_xf", "MC signal", xf_nbins, 0, 0.8);
 
     TH1F *DY_m = new TH1F("DY_m", "DY (WW, WZ, ZZ)", 30, 150, 2000);
-    TH1F *DY_cost = new TH1F("DY_cost", "DY (WW, WZ,ZZ)", n_cost_bins, 0.,1);
     TH1F *DY_xf = new TH1F("DY_xf", "MC signal", xf_nbins, 0, 0.8);
 
     TH1F *QCD_m = new TH1F("QCD_m", "QCD", 30, 150, 2000);
-    TH1F *QCD_cost = new TH1F("QCD_cost", "QCD", n_cost_bins, 0.,1);
 
     TH1F *WJets_m = new TH1F("WJets_m", "WJets", 30, 150, 2000);
-    TH1F *WJets_cost = new TH1F("WJets_cost", "WJets", n_cost_bins, 0.,1);
+
+    int n_cost_bins = 10;
+    TH1F *data_cost = new TH1F("data_cost", "Data", n_cost_bins, -1.,1.);
+    TH1F *back_cost = new TH1F("back_cost", "back (WW, WZ,ZZ)", n_cost_bins, -1.,1);
+    TH1F *DY_cost = new TH1F("DY_cost", "DY (WW, WZ,ZZ)", n_cost_bins, -1.,1);
+    TH1F *QCD_cost = new TH1F("QCD_cost", "QCD", n_cost_bins, -1.,1);
+    TH1F *WJets_cost = new TH1F("WJets_cost", "WJets", n_cost_bins, -1.,1);
 
     DY_pt->SetFillColor(kRed+1);
     back_pt->SetFillColor(kGreen+3);
@@ -97,22 +99,23 @@ void draw_samesign_cmp(){
     float m_high = 10000.;
     bool ss = true;
 
-    make_m_cost_pt_xf_hist(t_elel_ss_data, data_m, data_cost, data_pt, data_xf, true, type, false, do_RC, m_low, m_high, ss);
-    make_m_cost_pt_xf_hist(t_elel_ss_back, back_m, back_cost, back_pt, back_xf, false, type, true, do_RC, m_low, m_high, ss);
-    make_m_cost_pt_xf_hist(t_elel_ss_dy, DY_m, DY_cost, DY_pt, DY_xf, false, type, true, do_RC, m_low, m_high, ss);
+    make_m_cost_pt_xf_hist(t_elel_ss_data, data_m, data_cost, data_pt, data_xf, true, type,  do_RC, m_low, m_high, ss);
+    make_m_cost_pt_xf_hist(t_elel_ss_back, back_m, back_cost, back_pt, back_xf, false, type,  do_RC, m_low, m_high, ss);
+    make_m_cost_pt_xf_hist(t_elel_ss_dy, DY_m, DY_cost, DY_pt, DY_xf, false, type,  do_RC, m_low, m_high, ss);
 
     
     if(qcd_from_emu) make_qcd_from_emu_m_cost_pt_xf_hist(t_emu_ss_data, t_emu_ss_ttbar, t_emu_ss_diboson, t_emu_ss_dy, QCD_m, QCD_cost, QCD_pt, QCD_xf, m_low, m_high);
     
 
     else
-        Fakerate_est_el(t_elel_ss_WJets, t_elel_ss_QCD, t_elel_ss_WJets_mc, t_elel_ss_QCD_mc, QCD_m, QCD_cost, QCD_pt, QCD_xf, m_low, m_high, ss);
+        Fakerate_est_el(t_elel_WJets, t_elel_QCD, t_elel_WJets_contam, t_elel_QCD_contam, QCD_m, QCD_cost, QCD_pt, QCD_xf, m_low, m_high, ss);
    
 
+    printf("Integrals of data, QCD, back, DY are %.2f %.2f %.2f %.2f \n", data_m->Integral(), QCD_m->Integral(), back_m->Integral(), DY_m->Integral());
 
 
 
-    bool normalize = true;
+    bool normalize = false;
     bool from_fit = false;
     
     if(normalize){
@@ -181,24 +184,24 @@ void draw_samesign_cmp(){
     
 
     THStack *m_stack = new THStack("m_stack", "MuMu Mass Distribution: Data vs MC ; m_{e^{+}e^{-}} (GeV)");
-    m_stack->Add(QCD_m);
     m_stack->Add(back_m);
+    m_stack->Add(QCD_m);
     m_stack->Add(DY_m);
 
 
     THStack *cost_stack = new THStack("cost_stack", "Cos(#theta) Distribution: Data vs MC; ee Cos(#theta)_{r}");
-    cost_stack->Add(QCD_cost);
     cost_stack->Add(back_cost);
+    cost_stack->Add(QCD_cost);
     cost_stack->Add(DY_cost);
 
     THStack *pt_stack = new THStack("pt_stack", "Dimuon Pt Distribution: Data vs MC; Dielectron Pt (GeV)");
-    pt_stack->Add(QCD_pt);
     pt_stack->Add(back_pt);
+    pt_stack->Add(QCD_pt);
     pt_stack->Add(DY_pt);
 
     THStack *xf_stack = new THStack("xf_stack", "Dimuon x_F Distribution: Data vs MC; x_F");
-    xf_stack->Add(QCD_xf);
     xf_stack->Add(back_xf);
+    xf_stack->Add(QCD_xf);
     xf_stack->Add(DY_xf);
 
     TCanvas *c_m = new TCanvas("c_m", "Histograms", 200, 10, 900, 700);
@@ -216,11 +219,11 @@ void draw_samesign_cmp(){
 
 
     gStyle->SetLegendBorderSize(0);
-    TLegend *leg1 = new TLegend(0.5, 0.65, 0.75, 0.8);
+    TLegend *leg1 = new TLegend(0.25, 0.25);
     leg1->AddEntry(data_m, "data", "p");
-    leg1->AddEntry(back_m, "t#bar{t} + wt  & WW + WZ + ZZ", "f");
     leg1->AddEntry(DY_m, "DY (miss-sign)", "f");
     leg1->AddEntry(QCD_m, "QCD + WJets", "f");
+    leg1->AddEntry(back_m, "t#bar{t} + wt + WW (miss-sign) & WZ + ZZ", "f");
     leg1->Draw();
 
     //gPad->BuildLegend();
@@ -273,7 +276,7 @@ void draw_samesign_cmp(){
  
     //lumi_sqrtS = "";       // used with iPeriod = 0, e.g. for simulation-only plots (default is an empty string)
     int iPeriod = 4; 
-    CMS_lumi(pad1, iPeriod, 33 );
+    //CMS_lumi(pad1, iPeriod, 33 );
 
 
 
@@ -338,13 +341,7 @@ void draw_samesign_cmp(){
    cost_ratio->GetXaxis()->SetLabelFont(43); // Absolute font size in pixel (precision 3)
    cost_ratio->GetXaxis()->SetLabelSize(20);
 
-    CMS_lumi(cost_pad1, iPeriod, 11);
-    /*
-    leg = new TLegend(0.1,0.6,0.5,0.9);
-    leg->AddEntry(h_cost1, "No extra cuts", "f");
-    leg->AddEntry(h_cost_cut, "met_pt < 80, mu1_pt > 40, mu2_pt > 20", "f");
-    leg->Draw();
-    */
+    //CMS_lumi(cost_pad1, iPeriod, 11);
 
     //TCanvas *c_cost_cut = new TCanvas("c_cost_cut", "Histograms", 200, 10, 900, 700);
     //c_cost_cut->cd();
@@ -406,7 +403,7 @@ void draw_samesign_cmp(){
    pt_ratio->GetXaxis()->SetTitleOffset(3.);
    pt_ratio->GetXaxis()->SetLabelFont(43); // Absolute font size in pixel (precision 3)
    pt_ratio->GetXaxis()->SetLabelSize(20);
-    CMS_lumi(pt_pad1, iPeriod, 11 );
+    //CMS_lumi(pt_pad1, iPeriod, 11 );
     c_pt->Update();
 
 
@@ -469,7 +466,7 @@ void draw_samesign_cmp(){
    xf_ratio->GetXaxis()->SetTitleOffset(3.);
    xf_ratio->GetXaxis()->SetLabelFont(43); // Absolute font size in pixel (precision 3)
    xf_ratio->GetXaxis()->SetLabelSize(20);
-    CMS_lumi(xf_pad1, iPeriod, 11 );
+    //CMS_lumi(xf_pad1, iPeriod, 11 );
     c_xf->Update();
  
 }

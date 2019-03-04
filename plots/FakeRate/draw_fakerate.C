@@ -147,7 +147,6 @@ void draw_fakerate(){
     ///*
     TFile *f = TFile::Open("../analyze/FakeRate/root_files/SingleMuon_data_fakerate_nov27.root");
     TFile *f_mc = TFile::Open("../analyze/FakeRate/root_files/SingleMuon_mc_fakerate_contam_nov27.root");
-    TFile *f_new = TFile::Open("../analyze/FakeRate/root_files/SingleMuon_data_fakerate_corrected_nov27.root", "RECREATE");
     int FLAG = FLAG_MUONS;
     Float_t pt_bins[] = {10,20,26,35,1000};
     int n_pt_bins = 4;
@@ -187,11 +186,12 @@ void draw_fakerate(){
     h_contam_rate->Divide(h_contam_total);
     */
 
-    bool write_out = true;
+    bool write_out = false;
     SetCorrectedRate(h_rate_new, h_total_new, h_contam_rate, h_contam_total);
 
     SetErrors(h_rate_new, h_total_new);
     if(write_out){
+        TFile *f_new = TFile::Open("../analyze/FakeRate/root_files/SingleMuon_data_fakerate_corrected_nov27.root", "RECREATE");
         f_new->cd();
         h_rate_new->Write();
         h_total_new->Write();

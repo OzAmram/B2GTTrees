@@ -40,6 +40,7 @@ Double_t el_lumi = 36.5;
 Double_t emu_scaling_nom = 1.0;
 Double_t emu_unc = 0.04;
 Double_t emu_scaling = emu_scaling_nom;
+Double_t R_mu_ss_os = 0.59;
 
 void cleanup_hist(TH1 *h){
     int nBins = h->GetNbinsX();
@@ -503,6 +504,7 @@ void make_m_cost_pt_xf_hist(TTree *t1, TH1F *h_m, TH1F *h_cost, TH1F *h_pt, TH1F
                 cost = new_cost;
                 m = cm.M();
                 pt = cm.Pt();
+                xF = compute_xF(cm);
                 //printf("old mass %.3f new mass %.3f \n", mu_p->M(), mu_p_new.M());
                    
 
@@ -511,7 +513,10 @@ void make_m_cost_pt_xf_hist(TTree *t1, TH1F *h_m, TH1F *h_cost, TH1F *h_pt, TH1F
 
                 if(is_data){
                     h_m->Fill(m);
-                    if(ss) h_cost->Fill(abs(cost));
+                    if(ss){
+                        h_cost->Fill(cost, 0.5);
+                        h_cost->Fill(-cost, 0.5);
+                    }
                     else h_cost->Fill(cost);
                     h_pt->Fill(pt);
                     h_xf->Fill(xF);
@@ -530,7 +535,10 @@ void make_m_cost_pt_xf_hist(TTree *t1, TH1F *h_m, TH1F *h_cost, TH1F *h_pt, TH1F
                     Double_t evt_weight = 1000*(bcdef_lumi * bcdef_weight + gh_lumi *gh_weight);
                     //Double_t weight = gen_weight;
                     h_m->Fill(m,evt_weight);
-                    if(ss) h_cost->Fill(abs(cost), evt_weight);
+                    if(ss){
+                        h_cost->Fill(-cost, 0.5* evt_weight);
+                        h_cost->Fill(cost, 0.5* evt_weight);
+                    }
                     else h_cost->Fill(cost, evt_weight);
                     h_pt->Fill(pt,evt_weight);
                     h_xf->Fill(xF, evt_weight);
@@ -556,7 +564,10 @@ void make_m_cost_pt_xf_hist(TTree *t1, TH1F *h_m, TH1F *h_cost, TH1F *h_pt, TH1F
                 cost = get_cost(*el_p, *el_m);
                 if(is_data){
                     h_m->Fill(m);
-                    if(ss) h_cost->Fill(abs(cost));
+                    if(ss){
+                        h_cost->Fill(cost, 0.5);
+                        h_cost->Fill(-cost, 0.5);
+                    }
                     else h_cost->Fill(cost);
                     h_pt->Fill(pt);
                     h_xf->Fill(xF);
@@ -571,7 +582,10 @@ void make_m_cost_pt_xf_hist(TTree *t1, TH1F *h_m, TH1F *h_cost, TH1F *h_pt, TH1F
                         evt_weight *= jet2_b_weight;
                     }
                     h_m->Fill(m, evt_weight);
-                    if(ss) h_cost->Fill(abs(cost), evt_weight);
+                    if(ss){
+                        h_cost->Fill(-cost, 0.5* evt_weight);
+                        h_cost->Fill(cost, 0.5* evt_weight);
+                    }
                     else h_cost->Fill(cost, evt_weight);
                     h_pt->Fill(pt, evt_weight);
                     h_xf->Fill(xF, evt_weight);
@@ -586,7 +600,8 @@ void make_m_cost_pt_xf_hist(TTree *t1, TH1F *h_m, TH1F *h_cost, TH1F *h_pt, TH1F
 
 
 void Fakerate_est_mu(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_contam, TTree *t_QCD_contam, TH1F *h_m, TH1F *h_cost, TH1F *h_pt, TH1F *h_xf, 
-        float m_low=150., float m_high = 99999., bool ss = false){
+        float m_low=150., float m_high = 99999., bool ss = false, bool in_os_region=true){
+    
     FakeRate FR;
     //TH2D *FR;
     setup_new_mu_fakerate(&FR);
@@ -688,7 +703,10 @@ void Fakerate_est_mu(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_contam, TTree 
                 if(l==0 && iso_mu ==1) h_err->Fill(min(abs(mu1_eta), 2.3), min(mu1_pt, 150.));
                 if(l==0 && iso_mu ==0) h_err->Fill(min(abs(mu2_eta), 2.3), min(mu2_pt, 150.));
                 h_m->Fill(m, evt_fakerate);
-                if(ss) h_cost->Fill(abs(cost), evt_fakerate);
+                if(ss){
+                    h_cost->Fill(cost, 0.5*evt_fakerate);
+                    h_cost->Fill(-cost, 0.5*evt_fakerate);
+                }
                 else h_cost->Fill(cost, evt_fakerate);
                 h_pt->Fill(cm.Pt(), evt_fakerate);
                 h_xf->Fill(compute_xF(cm), evt_fakerate);
@@ -702,10 +720,13 @@ void Fakerate_est_mu(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_contam, TTree 
     cleanup_hist(h_cost);
     set_fakerate_errors(h_err, FR.h, h_cost);
     if(ss){
-        h_m->Scale(0.5);
-        h_pt->Scale(0.5);
-        h_xf->Scale(0.5);
-        h_cost->Scale(0.5);
+        float scaling;
+        if(in_os_region) scaling = 1./(1. + R_mu_ss_os);
+        else scaling = (1. - 1./(1. + R_mu_ss_os));
+        h_m->Scale(scaling);
+        h_pt->Scale(scaling);
+        h_xf->Scale(scaling);
+        h_cost->Scale(scaling);
     }
     printf("Total fakerate est is %.0f \n", h_cost->Integral());
 }
@@ -810,7 +831,10 @@ void Fakerate_est_el(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_MC, TTree *t_Q
                 if(l==0 && iso_el ==1) h_err->Fill(min(abs(el1_eta), 2.3), min(el1_pt, 150.));
                 if(l==0 && iso_el ==0) h_err->Fill(min(abs(el2_eta), 2.3), min(el2_pt, 150.));
                 h_m->Fill(m, evt_fakerate);
-                if(ss) h_cost->Fill(abs(cost), evt_fakerate);
+                if(ss){
+                    h_cost->Fill(cost, 0.5*evt_fakerate);
+                    h_cost->Fill(-cost, 0.5*evt_fakerate);
+                }
                 else h_cost->Fill(cost, evt_fakerate);
                 h_pt->Fill(cm.Pt(), evt_fakerate);
                 h_xf->Fill(compute_xF(cm), evt_fakerate);
