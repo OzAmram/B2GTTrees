@@ -25,7 +25,7 @@
 #include "../../analyze/HistMaker.C"
 #include "../tdrstyle.C"
 #include "../CMS_lumi.C"
-#include "root_files_samesign.h"
+#include "../../analyze/AFB_fit/root_files.h"
 
 const int type = FLAG_MUONS;
 
@@ -34,6 +34,7 @@ const int type = FLAG_MUONS;
 void draw_samesign_cmp(){
     setTDRStyle();
     init();
+    init_ss();
 
     TH1F *data_m = new TH1F("data_m", "Data Dimuon Mass Distribution", 30, 150, 2000);
 
@@ -52,10 +53,10 @@ void draw_samesign_cmp(){
 
 
 
-    TH1F *data_cost = new TH1F("data_cost", "Data", 20, 0.,1.);
-    TH1F *diboson_cost = new TH1F("diboson_cost", "DiBoson (WW, WZ,ZZ)", 20, 0.,1);
-    TH1F *QCD_cost = new TH1F("QCD_cost", "QCD", 20, 0.,1);
-    TH1F *WJets_cost = new TH1F("WJets_cost", "WJets", 20, 0.,1);
+    TH1F *data_cost = new TH1F("data_cost", "Data", 10, -1.,1.);
+    TH1F *diboson_cost = new TH1F("diboson_cost", "DiBoson (WW, WZ,ZZ)", 10, -1.,1);
+    TH1F *QCD_cost = new TH1F("QCD_cost", "QCD", 10, -1.,1);
+    TH1F *WJets_cost = new TH1F("WJets_cost", "WJets", 10, -1.,1);
 
 
 
@@ -66,6 +67,10 @@ void draw_samesign_cmp(){
 
     TH1F *WJets_m = new TH1F("WJets_m", "WJets", 30, 150, 2000);
 
+    TH1F *DY_m = new TH1F("DY_m", "DY (WW, WZ, ZZ)", 30, 150, 2000);
+    TH1F *DY_cost = new TH1F("DY_cost", "DY (WW, WZ,ZZ)", 10, -1.,1);
+    TH1F *DY_xf = new TH1F("DY_xf", "MC signal", xf_nbins, 0, 0.8);
+    TH1F *DY_pt = new TH1F("DY_pt", "MC signal", 40, 0, 1000);
 
 
     diboson_m->SetFillColor(kGreen+3);
@@ -73,36 +78,41 @@ void draw_samesign_cmp(){
     QCD_m->SetFillColor(kRed -7);
     QCD_cost->SetFillColor(kRed -7);
 
+    DY_xf->SetFillColor(kRed+1);
+    DY_pt->SetFillColor(kRed+1);
+    DY_m->SetFillColor(kRed+1);
+    DY_cost->SetFillColor(kRed+1);
+
     bool do_RC = true;
     int m_low = 150.;
-    int m_high = 100000.;
+    int m_high = 10000.;
     bool ss = true;
 
-    make_m_cost_pt_xf_hist(t_data, data_m, data_cost, data_pt, data_xf, true, type, false, do_RC, m_low, m_high, ss);
-    make_m_cost_pt_xf_hist(t_diboson, diboson_m, diboson_cost, diboson_pt, diboson_xf, false, type, true, do_RC, m_low, m_high, ss);
+    make_m_cost_pt_xf_hist(t_mumu_ss_data, data_m, data_cost, data_pt, data_xf, true, type,  do_RC, m_low, m_high, ss);
+    make_m_cost_pt_xf_hist(t_mumu_ss_back, diboson_m, diboson_cost, diboson_pt, diboson_xf, false, type,  do_RC, m_low, m_high, ss);
+    make_m_cost_pt_xf_hist(t_mumu_ss_dy, DY_m, DY_cost, DY_pt, DY_xf, false, type,  do_RC, m_low, m_high, ss);
 
-    Fakerate_est_mu(t_WJets, t_QCD, t_WJets_mc, t_QCD_mc, QCD_m, QCD_cost, QCD_pt, QCD_xf, m_low, m_high, ss);
+    bool in_os_region = false;
+    Fakerate_est_mu(t_mumu_WJets, t_mumu_QCD, t_mumu_WJets_contam, t_mumu_QCD_contam, QCD_m, QCD_cost, QCD_pt, QCD_xf, m_low, m_high, ss, in_os_region);
+
+    printf("Integrals of data, QCD, diboson, DY are %.2f %.2f %.2f %.2f \n", data_m->Integral(), QCD_m->Integral(), diboson_m->Integral(), DY_m->Integral());
 
     Double_t n_data = data_m->Integral();
-    Double_t n_est = diboson_m->Integral() + QCD_m->Integral();
+    Double_t n_est = diboson_m->Integral() + QCD_m->Integral() + DY_m->Integral();
     bool normalize = true;
     
     if(normalize){
-        data_m->Scale(1./n_data);
-        data_pt->Scale(1./n_data);
-        data_cost->Scale(1./n_data);
-        data_xf->Scale(1./n_data);
-
-        diboson_m->Scale(1./n_est);
-        diboson_pt->Scale(1./n_est);
-        diboson_cost->Scale(1./n_est);
-        diboson_xf->Scale(1./n_est);
+        Double_t n_data = data_m->Integral();
+        Double_t n_mc = diboson_m->Integral() +  DY_m->Integral();
+        Double_t n_QCD = QCD_m->Integral();
+        Double_t qcd_ratio = (n_data - n_mc) / n_QCD;
+        printf("Ratio of obs to expected QCD is %.2f \n", qcd_ratio);
 
 
-        QCD_m->Scale(1./n_est);
-        QCD_pt->Scale(1./n_est);
-        QCD_cost->Scale(1./n_est);
-        QCD_xf->Scale(1./n_est);
+        QCD_m->Scale(qcd_ratio);
+        QCD_pt->Scale(qcd_ratio);
+        QCD_cost->Scale(qcd_ratio);
+        QCD_xf->Scale(qcd_ratio);
     }
 
 
@@ -122,21 +132,26 @@ void draw_samesign_cmp(){
     
 
     THStack *m_stack = new THStack("m_stack", "MuMu Mass Distribution: Data vs MC ; m_{#mu^{+}#mu^{-}} (GeV)");
-    m_stack->Add(QCD_m);
     m_stack->Add(diboson_m);
+    m_stack->Add(QCD_m);
+    m_stack->Add(DY_m);
+
 
 
     THStack *cost_stack = new THStack("cost_stack", "Cos(#theta) Distribution: Data vs MC; MuMu Cos(#theta)_{r}");
-    cost_stack->Add(QCD_cost);
     cost_stack->Add(diboson_cost);
+    cost_stack->Add(QCD_cost);
+    cost_stack->Add(DY_cost);
 
     THStack *pt_stack = new THStack("pt_stack", "Dimuon Pt Distribution: Data vs MC; Dimuon Pt (GeV)");
-    pt_stack->Add(QCD_pt);
     pt_stack->Add(diboson_pt);
+    pt_stack->Add(QCD_pt);
+    pt_stack->Add(DY_pt);
 
     THStack *xf_stack = new THStack("xf_stack", "Dimuon x_F Distribution: Data vs MC; x_F");
-    xf_stack->Add(QCD_xf);
     xf_stack->Add(diboson_xf);
+    xf_stack->Add(QCD_xf);
+    xf_stack->Add(DY_xf);
 
     TCanvas *c_m = new TCanvas("c_m", "Histograms", 200, 10, 900, 700);
     TPad *pad1 = new TPad("pad1", "pad1", 0.,0.3,0.98,1.);
@@ -153,11 +168,12 @@ void draw_samesign_cmp(){
 
 
     gStyle->SetLegendBorderSize(0);
-    TLegend *leg1 = new TLegend(0.5, 0.65, 0.75, 0.8);
-    leg1->AddEntry(data_m, "data", "p");
-    leg1->AddEntry(diboson_m, "WW + WZ + ZZ", "f");
-    leg1->AddEntry(QCD_m, "QCD + WJets", "f");
-    leg1->Draw();
+    TLegend *leg3 = new TLegend(0.3, 0.3);
+    leg3->AddEntry(data_pt, "data", "p");
+    leg3->AddEntry(DY_pt, "DY (miss-sign)", "f");
+    leg3->AddEntry(QCD_pt, "QCD + WJets", "f");
+    leg3->AddEntry(diboson_m, "t#bar{t} + wt + WW (miss-sign) & WZ + ZZ", "f");
+    leg3->Draw();
 
     //gPad->BuildLegend();
     c_m->cd();
@@ -209,7 +225,7 @@ void draw_samesign_cmp(){
  
     //lumi_sqrtS = "";       // used with iPeriod = 0, e.g. for simulation-only plots (default is an empty string)
     int iPeriod = 4; 
-    CMS_lumi(pad1, iPeriod, 33 );
+    //CMS_lumi(pad1, iPeriod, 33 );
 
 
 
@@ -222,15 +238,12 @@ void draw_samesign_cmp(){
     cost_stack->Draw("hist");
     data_cost->SetMarkerStyle(kFullCircle);
     data_cost->SetMarkerColor(1);
-    if(!normalize) cost_stack->SetMaximum(300);
+    cost_stack->SetMaximum(300);
     cost_stack->SetMinimum(1);
     data_cost->Draw("P E same");
+
+    leg3->Draw();
     cost_pad1->Update();
-    TLegend *leg2 = new TLegend(0.5, 0.65, 0.75, 0.8);
-    leg2->AddEntry(data_m, "data", "p");
-    leg2->AddEntry(diboson_m, "WW + WZ + ZZ", "f");
-    leg2->AddEntry(QCD_m, "QCD + WJets", "f");
-    leg2->Draw();
 
     c_cost->Update();
 
@@ -278,13 +291,7 @@ void draw_samesign_cmp(){
    cost_ratio->GetXaxis()->SetLabelFont(43); // Absolute font size in pixel (precision 3)
    cost_ratio->GetXaxis()->SetLabelSize(20);
 
-    CMS_lumi(cost_pad1, iPeriod, 11);
-    /*
-    leg = new TLegend(0.1,0.6,0.5,0.9);
-    leg->AddEntry(h_cost1, "No extra cuts", "f");
-    leg->AddEntry(h_cost_cut, "met_pt < 80, mu1_pt > 40, mu2_pt > 20", "f");
-    leg->Draw();
-    */
+    //CMS_lumi(cost_pad1, iPeriod, 11);
 
     //TCanvas *c_cost_cut = new TCanvas("c_cost_cut", "Histograms", 200, 10, 900, 700);
     //c_cost_cut->cd();
@@ -304,11 +311,6 @@ void draw_samesign_cmp(){
     data_pt->Draw("P E same");
     pt_pad1->SetLogy();
     c_pt->Update();
-    TLegend *leg3 = new TLegend(0.5, 0.65, 0.75, 0.8);
-    leg3->AddEntry(data_pt, "data", "p");
-    leg3->AddEntry(diboson_pt, "WW + WZ + ZZ", "f");
-    leg3->AddEntry(QCD_pt, "QCD + WJets", "f");
-    leg3->Draw();
 
     c_pt->cd();
     TPad *pt_pad2 = new TPad("pt_pad2", "pad2", 0.,0,.98,0.3);
@@ -350,7 +352,7 @@ void draw_samesign_cmp(){
    pt_ratio->GetXaxis()->SetTitleOffset(3.);
    pt_ratio->GetXaxis()->SetLabelFont(43); // Absolute font size in pixel (precision 3)
    pt_ratio->GetXaxis()->SetLabelSize(20);
-    CMS_lumi(pt_pad1, iPeriod, 11 );
+    //CMS_lumi(pt_pad1, iPeriod, 11 );
     c_pt->Update();
 
 
@@ -413,7 +415,7 @@ void draw_samesign_cmp(){
    xf_ratio->GetXaxis()->SetTitleOffset(3.);
    xf_ratio->GetXaxis()->SetLabelFont(43); // Absolute font size in pixel (precision 3)
    xf_ratio->GetXaxis()->SetLabelSize(20);
-    CMS_lumi(xf_pad1, iPeriod, 11 );
+    //CMS_lumi(xf_pad1, iPeriod, 11 );
     c_xf->Update();
  
 }

@@ -5,7 +5,7 @@ TFile *f_data, *f_mc, *f_mc_nosig, *f_ttbar, *f_QCD, *f_WJets, *f_WJets_mc, *f_Q
 TTree *t_data, *t_mc, *t_mc_nosig, *t_ttbar, *t_QCD, *t_WJets, *t_WJets_mc, *t_QCD_mc, *t_diboson, *t_wt;
 
 
-void init(){
+void mumu_init(){
     f_data = TFile::Open("../analyze/output_files/SingleMuon_data_slim_nov26.root");
     t_data = (TTree *)f_data->Get("T_data");
     f_mc = TFile::Open("../analyze/output_files/MuMu_DY_slim_nov2.root");

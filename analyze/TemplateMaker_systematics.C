@@ -748,8 +748,10 @@ void gen_fakes_template(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_contam,
     }
     printf("Performing fakes cleanup (removing neg. bins) \n");
     cleanup_template(h);
+    
     set_fakerate_errors(h_err, FR.h, h);
-    if(ss)h->Scale(0.5);
+    //scale ss electrons by 0.5, muons get a more complicated norm
+    if(ss && flag1==FLAG_ELECTRONS) h->Scale(0.5);
     printf("Total Fakerate weight Weight is %.2f \n", h->Integral());
     if(h->Integral() < 0.){
         h->Scale(0.);

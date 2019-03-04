@@ -24,6 +24,7 @@
 #include "../../analyze/HistMaker.C"
 #include "../tdrstyle.C"
 #include "../CMS_lumi.C"
+#include "../../analyze/AFB_fit/root_files.h"
 #include "root_files.h"
 
 const int type = FLAG_MUONS;
@@ -33,6 +34,7 @@ const int type = FLAG_MUONS;
 void draw_cmp(){
     setTDRStyle();
     init();
+    mumu_init();
 
     TH1F *data_m = new TH1F("data_m", "Data Dimuon Mass Distribution", 30, 150, 2000);
 
@@ -53,14 +55,14 @@ void draw_cmp(){
     QCD_pt->SetFillColor(kRed -7);
     wt_pt->SetFillColor(kOrange+7); 
 
-    int xf_nbins = 16;
-    TH1F *mc_xf = new TH1F("mc_xf", "MC signal", xf_nbins, 0, 0.8);
-    TH1F *mc_nosig_xf = new TH1F("mc_nosig_xf", "MC signal", xf_nbins, 0, 0.8);
-    TH1F *data_xf = new TH1F("data_xf", "MC signal", xf_nbins, 0, 0.8);
-    TH1F *ttbar_xf = new TH1F("ttbar_xf", "MC signal", xf_nbins, 0, 0.8);
-    TH1F *diboson_xf = new TH1F("diboson_xf", "MC signal", xf_nbins, 0, 0.8);
-    TH1F *wt_xf = new TH1F("wt_xf", "MC signal", xf_nbins, 0, 0.8);
-    TH1F *QCD_xf = new TH1F("QCD_xf", "MC signal", xf_nbins, 0, 0.8);
+    int xf_nbins = 10;
+    TH1F *mc_xf = new TH1F("mc_xf", "MC signal", xf_nbins, 0, 0.5);
+    TH1F *mc_nosig_xf = new TH1F("mc_nosig_xf", "MC signal", xf_nbins, 0, 0.5);
+    TH1F *data_xf = new TH1F("data_xf", "MC signal", xf_nbins, 0, 0.5);
+    TH1F *ttbar_xf = new TH1F("ttbar_xf", "MC signal", xf_nbins, 0, 0.5);
+    TH1F *diboson_xf = new TH1F("diboson_xf", "MC signal", xf_nbins, 0, 0.5);
+    TH1F *wt_xf = new TH1F("wt_xf", "MC signal", xf_nbins, 0, 0.5);
+    TH1F *QCD_xf = new TH1F("QCD_xf", "MC signal", xf_nbins, 0, 0.5);
     mc_xf->SetFillColor(kRed+1);
     mc_xf->SetMarkerColor(kRed+1);
     mc_nosig_xf->SetFillColor(kMagenta);
@@ -124,8 +126,8 @@ void draw_cmp(){
     QCD_cost->SetFillColor(kRed -7);
 
     bool do_RC = true;
-    float m_low = 200.;
-    float m_high = 250.;
+    float m_low = 150.;
+    float m_high = 10000.;
 
     make_m_cost_pt_xf_hist(t_data, data_m, data_cost, data_pt, data_xf, true, type, do_RC, m_low, m_high);
     make_m_cost_pt_xf_hist(t_mc, mc_m, mc_cost, mc_pt, mc_xf, false, type,  do_RC, m_low, m_high);
@@ -134,24 +136,31 @@ void draw_cmp(){
     make_m_cost_pt_xf_hist(t_wt, wt_m, wt_cost, wt_pt, wt_xf, false, type, do_RC, m_low, m_high);
     make_m_cost_pt_xf_hist(t_diboson, diboson_m, diboson_cost, diboson_pt, diboson_xf, false, type,  do_RC, m_low, m_high);
 
-    Fakerate_est_mu(t_WJets, t_QCD, t_WJets_mc, t_QCD_mc, QCD_m, QCD_cost, QCD_pt, QCD_xf, m_low, m_high);
+    bool ss_qcd = true;
+    bool in_os_region = true;
+    Fakerate_est_mu(t_mumu_WJets, t_mumu_QCD, t_mumu_WJets_contam, t_mumu_QCD_contam, QCD_m, QCD_cost, QCD_pt, QCD_xf, m_low, m_high, ss_qcd, in_os_region);
 
 
 
+    printf("DY integral is %.2f \n", mc_cost->Integral());
+    printf("ttbar integral is %.2f \n", ttbar_cost->Integral());
 
 
+    bool scale_qcd_error=true;
+    float qcd_err = 0.3;
+    if(scale_qcd_error){
+        int nBins_x = QCD_m->GetXaxis()->GetNbins();
+        int nBins_y = QCD_cost->GetYaxis()->GetNbins();
+        //printf("Get size %i \n", nBins);
+        for (int i=1; i <= nBins_x; i++){
+            for (int j=1; j <= nBins_y; j++){
 
-    int nBins_x = QCD_m->GetXaxis()->GetNbins();
-    int nBins_y = QCD_cost->GetYaxis()->GetNbins();
-    //printf("Get size %i \n", nBins);
-    for (int i=1; i <= nBins_x; i++){
-        for (int j=1; j <= nBins_y; j++){
+                Double_t m_val = QCD_m->GetBinContent(i,j);
+                Double_t cost_val = QCD_cost->GetBinContent(i,j);
 
-            Double_t m_val = QCD_m->GetBinContent(i,j);
-            Double_t cost_val = QCD_cost->GetBinContent(i,j);
-
-            QCD_m->SetBinError(i,j, 0.2*m_val);
-            QCD_cost->SetBinError(i,j, 0.2*cost_val);
+                QCD_m->SetBinError(i,j, 0.2*m_val);
+                QCD_cost->SetBinError(i,j, 0.2*cost_val);
+            }
         }
     }
 
@@ -162,27 +171,27 @@ void draw_cmp(){
     
 
     THStack *m_stack = new THStack("m_stack", "MuMu Mass Distribution: Data vs MC ; m_{#mu^{+}#mu^{-}} (GeV)");
-    m_stack->Add(ttbar_m);
+    m_stack->Add(diboson_m);
     m_stack->Add(QCD_m);
     m_stack->Add(wt_m);
-    m_stack->Add(diboson_m);
+    m_stack->Add(ttbar_m);
     m_stack->Add(mc_nosig_m);
     m_stack->Add(mc_m);
 
 
     THStack *cost_stack = new THStack("cost_stack", "Cos(#theta) Distribution: Data vs MC; MuMu Cos(#theta)_{r}");
-    cost_stack->Add(ttbar_cost);
+    cost_stack->Add(diboson_cost);
     cost_stack->Add(QCD_cost);
     cost_stack->Add(wt_cost);
-    cost_stack->Add(diboson_cost);
+    cost_stack->Add(ttbar_cost);
     cost_stack->Add(mc_nosig_cost);
     cost_stack->Add(mc_cost);
 
     THStack *pt_stack = new THStack("pt_stack", "Dimuon Pt Distribution: Data vs MC; Dimuon Pt (GeV)");
-    pt_stack->Add(ttbar_pt);
+    pt_stack->Add(diboson_pt);
     pt_stack->Add(QCD_pt);
     pt_stack->Add(wt_pt);
-    pt_stack->Add(diboson_pt);
+    pt_stack->Add(ttbar_pt);
     pt_stack->Add(mc_nosig_pt);
     pt_stack->Add(mc_pt);
 
@@ -209,14 +218,14 @@ void draw_cmp(){
 
 
     gStyle->SetLegendBorderSize(0);
-    TLegend *leg1 = new TLegend(0.5, 0.65, 0.75, 0.8);
+    TLegend *leg1 = new TLegend(0.3, 0.3);
     leg1->AddEntry(data_m, "data", "p");
     leg1->AddEntry(mc_m, "DY (q#bar{q}, qg #bar{q}g)", "f");
     leg1->AddEntry(mc_nosig_m, "DY no asymmety(gg, qq, #bar{q}#bar{q})", "f");
-    leg1->AddEntry(diboson_m, "WW + WZ + ZZ", "f");
+    leg1->AddEntry(ttbar_m, "t#bar{t}", "f");
     leg1->AddEntry(wt_m, "tW + #bar{t}W", "f");
     leg1->AddEntry(QCD_m, "QCD + WJets", "f");
-    leg1->AddEntry(ttbar_m, "t#bar{t}", "f");
+    leg1->AddEntry(diboson_m, "WW + WZ + ZZ", "f");
     leg1->Draw();
 
     //gPad->BuildLegend();
@@ -269,7 +278,7 @@ void draw_cmp(){
  
     //lumi_sqrtS = "";       // used with iPeriod = 0, e.g. for simulation-only plots (default is an empty string)
     int iPeriod = 4; 
-    CMS_lumi(pad1, iPeriod, 33 );
+    //CMS_lumi(pad1, iPeriod, 33 );
 
 
 
@@ -285,15 +294,7 @@ void draw_cmp(){
     cost_stack->SetMinimum(1);
     data_cost->Draw("P E same");
     cost_pad1->Update();
-    TLegend *leg2 = new TLegend(0.5, 0.65, 0.75, 0.8);
-    leg2->AddEntry(data_m, "data", "p");
-    leg2->AddEntry(mc_m, "DY (q#bar{q}, qg #bar{q}g)", "f");
-    leg2->AddEntry(mc_nosig_m, "DY no asymmety(gg, qq, #bar{q}#bar{q})", "f");
-    leg2->AddEntry(diboson_m, "WW + WZ + ZZ", "f");
-    leg2->AddEntry(wt_m, "tW + #bar{t}W", "f");
-    leg2->AddEntry(QCD_m, "QCD + WJets", "f");
-    leg2->AddEntry(ttbar_m, "t#bar{t}", "f");
-    leg2->Draw();
+    leg1->Draw();
 
     c_cost->Update();
 
@@ -341,13 +342,7 @@ void draw_cmp(){
    cost_ratio->GetXaxis()->SetLabelFont(43); // Absolute font size in pixel (precision 3)
    cost_ratio->GetXaxis()->SetLabelSize(20);
 
-    CMS_lumi(cost_pad1, iPeriod, 11);
-    /*
-    leg = new TLegend(0.1,0.6,0.5,0.9);
-    leg->AddEntry(h_cost1, "No extra cuts", "f");
-    leg->AddEntry(h_cost_cut, "met_pt < 80, mu1_pt > 40, mu2_pt > 20", "f");
-    leg->Draw();
-    */
+    //CMS_lumi(cost_pad1, iPeriod, 11);
 
     //TCanvas *c_cost_cut = new TCanvas("c_cost_cut", "Histograms", 200, 10, 900, 700);
     //c_cost_cut->cd();
@@ -367,15 +362,7 @@ void draw_cmp(){
     data_pt->Draw("P E same");
     pt_pad1->SetLogy();
     c_pt->Update();
-    TLegend *leg3 = new TLegend(0.5, 0.65, 0.75, 0.8);
-    leg3->AddEntry(data_pt, "data", "p");
-    leg3->AddEntry(mc_pt, "DY (q#bar{q}, qg #bar{q}g)", "f");
-    leg3->AddEntry(mc_nosig_pt, "DY no asymmety(gg, qq, #bar{q}#bar{q})", "f");
-    leg3->AddEntry(diboson_pt, "WW + WZ + ZZ", "f");
-    leg3->AddEntry(wt_pt, "tW + #bar{t}W", "f");
-    leg3->AddEntry(QCD_pt, "QCD + WJets", "f");
-    leg3->AddEntry(ttbar_pt, "t#bar{t}", "f");
-    leg3->Draw();
+    leg1->Draw();
 
     c_pt->cd();
     TPad *pt_pad2 = new TPad("pt_pad2", "pad2", 0.,0,.98,0.3);
@@ -417,7 +404,7 @@ void draw_cmp(){
    pt_ratio->GetXaxis()->SetTitleOffset(3.);
    pt_ratio->GetXaxis()->SetLabelFont(43); // Absolute font size in pixel (precision 3)
    pt_ratio->GetXaxis()->SetLabelSize(20);
-    CMS_lumi(pt_pad1, iPeriod, 11 );
+    //CMS_lumi(pt_pad1, iPeriod, 11 );
     c_pt->Update();
 
 
@@ -438,7 +425,7 @@ void draw_cmp(){
     data_xf->Draw("P E same");
     xf_pad1->SetLogy();
     c_xf->Update();
-    leg3->Draw();
+    leg1->Draw();
 
     c_xf->cd();
     TPad *xf_pad2 = new TPad("xf_pad2", "pad2", 0.,0,.98,0.3);
@@ -480,7 +467,7 @@ void draw_cmp(){
    xf_ratio->GetXaxis()->SetTitleOffset(3.);
    xf_ratio->GetXaxis()->SetLabelFont(43); // Absolute font size in pixel (precision 3)
    xf_ratio->GetXaxis()->SetLabelSize(20);
-    CMS_lumi(xf_pad1, iPeriod, 11 );
+    //CMS_lumi(xf_pad1, iPeriod, 11 );
     c_xf->Update();
  
 }

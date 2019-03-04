@@ -19,9 +19,9 @@ Double_t test_stat(Double_t *x, Double_t *params){
     Double_t log_L = 0; 
     for(int i=0; i<6; i++){
         //Null hypothesis is Zprime, Alternate is SM
-        Double_t term1 = pow((x[i] - AFB_SM[i]),2);
-        Double_t term2 = pow((x[i] - params[i]),2);
-        log_L += (-term1 + term2)/(2*pow(AFB_unc[i],2));
+        Double_t chi_sm = pow((x[i] - AFB_SM[i])/AFB_unc[i],2);
+        Double_t chi_zp = pow((x[i] - params[i])/AFB_unc[i],2);
+        log_L += (chi_zp - chi_sm);
     }
     Double_t ret_val = log_L;
     //printf("%.2e \n", ret_val);
@@ -58,7 +58,7 @@ Double_t test_Zp(FILE *f1, int M_Zp, Double_t cpl, Double_t *AFB_test){
 
     int n_trials = 50000;
 
-    TH1D * h_dist = new TH1D("h_dist1", "Distribution of test statistic", 400,-200,200);
+    TH1D * h_dist = new TH1D("h_dist1", "Distribution of test statistic", 400,-50,50);
     TRandom3 *r3 = new TRandom3();
     Double_t x[6]; //randomly generated x vals
     //Find distribution of test statistic under Null hypothesis (ZPrime is
@@ -70,8 +70,12 @@ Double_t test_Zp(FILE *f1, int M_Zp, Double_t cpl, Double_t *AFB_test){
         Double_t test_val = test_stat(x, AFB_Zp);
         h_dist->Fill(test_val);
     }
-    h_dist->Scale(1./n_trials);
+    float bin_width = 100./400.;
+    h_dist->Scale(1./n_trials/bin_width);
     //printf("h_dist mean and std dev are %.2f %.2f \n", h_dist->GetMean(), h_dist->GetStdDev()); 
+    //TF1 *f = new TF1("chi2", "ROOT::Math::chisquared_pdf(x,6)", 0., 50);
+    h_dist->Draw("hist");
+    //f->Draw("same");
 
     Double_t t_obs = test_stat(AFB_test, AFB_Zp);
     //prin2.2"T_obs is %.2f \n", t_obs);
@@ -79,7 +83,7 @@ Double_t test_Zp(FILE *f1, int M_Zp, Double_t cpl, Double_t *AFB_test){
     Double_t pval = get_pval(h_dist, t_obs);
     //if pval < 0.05 we will reject Null hypothesis (of Zprime existiing)
 
-    delete h_dist; 
+    //delete h_dist; 
     
     return pval;
 }
@@ -104,6 +108,17 @@ void find_kl_limit(){
 
     f1 = fopen("AFBs.txt", "r");
 
+    m=2300.;
+    kl = 1.0;
+
+    pval = test_Zp(f1, m, kl, AFB_test);
+    Double_t AFB_Zp[6];
+    read_AFBs(f1, AFB_Zp, m, kl);
+    Double_t t_obs = test_stat(AFB_test, AFB_Zp);
+    Double_t pval2 = ROOT::Math::chisquared_cdf(t_obs, 6);
+    printf("test stat %.2f numeric %.3f analytic %.3f \n", t_obs, pval, pval2);
+
+    /*
     for(m = m_start; m <=m_max; m+=m_step){
         for(kl = kl_start; kl >= kl_min && kl <= kl_max; kl-=kl_step){
             if(m > 2490. || m<1990.) m_step = 50;
@@ -133,6 +148,7 @@ void find_kl_limit(){
     }
 
     return;
+    */
 }
    
 
