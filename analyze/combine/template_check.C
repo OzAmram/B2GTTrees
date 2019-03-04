@@ -66,10 +66,27 @@ void make_mc_templates(){
         float afb = 0.61;
 
         printf("trying to add");
+        /*
         h_elel_dy = (TH2F *) h_elel_sym->Clone("h_elel_dy");
         h_mumu_dy = (TH2F *) h_mumu_sym->Clone("h_mumu_dy");
         h_elel_dy->Add(h_elel_sym, h_elel_asym, 1., afb);
         h_mumu_dy->Add(h_mumu_sym, h_mumu_asym, 1., afb);
+        */
+
+        auto h_mumu_pl = *h_mumu_sym + *h_mumu_asym;
+        auto h_mumu_mn = *h_mumu_sym - *h_mumu_asym;
+        h_mumu_pl.Scale(0.5);
+        h_mumu_mn.Scale(0.5);
+
+        auto h_elel_pl = *h_elel_sym + *h_elel_asym;
+        auto h_elel_mn = *h_elel_sym - *h_elel_asym;
+        h_elel_pl.Scale(0.5);
+        h_elel_mn.Scale(0.5);
+        h_elel_dy = (TH2F *) h_elel_pl.Clone("h_elel_dy");
+        h_mumu_dy = (TH2F *) h_mumu_pl.Clone("h_mumu_dy");
+        h_elel_dy->Add(&h_elel_pl, &h_elel_mn, (1. + afb), (1-afb));
+        h_mumu_dy->Add(&h_mumu_pl, &h_mumu_mn, (1. + afb), (1-afb));
+        
 
         printf("trying to convert \n");
         h1_elel_dy = convert2d(h_elel_dy);
@@ -80,18 +97,6 @@ void make_mc_templates(){
         printf("MuMu Back is %.2f, mc is %.2f sym is %.2f \n", h1_mumu_back->Integral(), h1_mumu_dy->Integral(), h_mumu_sym->Integral());
 
         /*
-        auto h_mumu_pl = *h_mumu_sym + *h_mumu_asym;
-        auto h_mumu_mn = *h_mumu_sym - *h_mumu_asym;
-        h_mumu_pl.Scale(0.5);
-        h_mumu_mn.Scale(0.5);
-        h1_mumu_pl = convert2d(&h_mumu_pl);
-        h1_mumu_mn = convert2d(&h_mumu_mn);
-        auto h_elel_pl = *h_elel_sym + *h_elel_asym;
-        auto h_elel_mn = *h_elel_sym - *h_elel_asym;
-        h_elel_pl.Scale(0.5);
-        h_elel_mn.Scale(0.5);
-        h1_elel_pl = convert2d(&h_elel_pl);
-        h1_elel_mn = convert2d(&h_elel_mn);
         */
 
 }

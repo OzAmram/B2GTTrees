@@ -12,20 +12,19 @@
 #include "../RoccoR.cc"
 
 #define MU_SIZE 200
-#define JET_SIZE 60
+#define JET_SIZE 65
 #define MAX_SAMPLES 20
 
 const double root2 = sqrt(2);
 double Ebeam = 6500.;
 double Pbeam = sqrt(Ebeam*Ebeam - 0.938*0.938);
 
-char *filename("DY_files_oct22.txt");
-const TString fout_name("output_files/MuMu_diboson_sep4.root");
+char *filename("TTbar_files_aug7.txt");
+const TString fout_name("output_files/MuMu_ost_test_sep4.root");
 const double alpha = 0.05;
 const bool PRINT=false;
 const bool do_samesign = true;
 
-const bool data_2016 = true;
 
 bool is_empty_line(const char *s) {
     while (*s != '\0') {
@@ -278,7 +277,10 @@ void MuMu_reco_background_batch(int nJobs =1, int iJob=0)
 
 
                 if(mu_size > MU_SIZE) printf("WARNING: MU_SIZE TOO LARGE \n");
-                if(jet_size > JET_SIZE) printf("WARNING: JET_SIZE TOO LARGE. Jet size is %i \n", (int) jet_size);
+                if(jet_size > JET_SIZE){
+                    printf("WARNING: JET_SIZE TOO LARGE. Jet size is %i \n", (int) jet_size);
+                    continue;
+                }
                 if(met_size != 1) printf("WARNING: Met size not equal to 1\n");
                 bool opp_sign = ((abs(mu_Charge[0] - mu_Charge[1])) > 0.01);
                 bool good_sign = opp_sign ^ do_samesign;
@@ -309,6 +311,7 @@ void MuMu_reco_background_batch(int nJobs =1, int iJob=0)
                     cm_m = cm.M();
                     //met and cmva cuts to reduce ttbar background
                     if (iso_0 < tight_iso && iso_1 < tight_iso && cm_m >=50.){
+                        printf("Passed cuts, charges: %.0f %.0f pts: %.1f %.1f \n", mu_Charge[0], mu_Charge[1], mu_Pt[0], mu_Pt[1]);
                         if(PRINT) sprintf(out_buff + strlen(out_buff),"Event %i \n", i);
 
                         //RECO LEVEL

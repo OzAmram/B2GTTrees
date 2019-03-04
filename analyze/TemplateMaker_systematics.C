@@ -52,12 +52,12 @@ void setup_all_SFs(){
 
 
 void cleanup_template(TH2F *h){
-    int n_xf_bins = 5;
-    int n_cost_bins = 10;
-    for(int i=1; i<= n_xf_bins; i++){
-        for(int j=1; j<=n_cost_bins; j++){
+    printf("%i %i \n", h->GetNbinsX(), h->GetNbinsY());
+    for(int i=0; i<= h->GetNbinsX()+1; i++){
+        for(int j=0; j<= h->GetNbinsY()+1; j++){
+            //printf("%i %i \n", i,j);
             float val = h->GetBinContent(i,j);
-            if(val<0.) h->SetBinContent(i,j,0.);
+            if(val< 0.) h->SetBinContent(i,j,0.);
         }
     }
 }

@@ -12,6 +12,7 @@
 const double root2 = sqrt(2);
 const char* filename("SingleElectron_files_nov12.txt");
 const TString fout_name("output_files/SingleElectron_data_nov26.root");
+bool do_samesign = true;
 
 const bool data_2016 = true;
 
@@ -134,8 +135,10 @@ void ElEl_reco_data_batch(int nJobs=1, int iJob=0)
             if(el_size > EL_SIZE) printf("WARNING: MU_SIZE TOO LARGE \n");
             if(met_size != 1) printf("WARNING: Met size not equal to 1\n");
             bool good_trigger = HLT_El;
+            bool opp_sign = ((abs(el_Charge[0] - el_Charge[1])) > 0.01);
+            bool good_sign = opp_sign ^ do_samesign;
             if(good_trigger &&
-                    el_size >= 2 && ((abs(el_Charge[0] - el_Charge[1])) > 0.01) &&
+                    el_size >= 2 && good_sign && 
                     el_IDMedium[0] && el_IDMedium[1] &&
                     el_ScaleCorr[0] * el_Pt[0] > 29. &&  el_ScaleCorr[1] * el_Pt[1] > 15. &&
                     goodElEta(el_SCEta[0]) && goodElEta(el_SCEta[1])){ 

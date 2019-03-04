@@ -211,7 +211,7 @@ void ElEl_QCD_fake_rate_estimate(int nJobs=1, int iJob=0)
                 }
                 bool no_bjets = has_no_bjets(nJets, jet1_pt, jet2_pt, jet1_cmva, jet2_cmva);
                 
-                if (!el_IDMedium[0] && !el_IDMedium[1] && cm_m >=50. && no_bjets && met_pt < 50.){
+                if (!el_IDMedium[0] && !el_IDMedium[1] && cm_m >=15. && no_bjets && met_pt < 50.){
                     //both electrons FAIL ISO
                     xF = abs(2.*cm.Pz()/13000.); 
 

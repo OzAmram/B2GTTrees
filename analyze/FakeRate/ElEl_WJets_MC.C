@@ -17,7 +17,7 @@ const double root2 = sqrt(2);
 double Ebeam = 6500.;
 double Pbeam = sqrt(Ebeam*Ebeam - 0.938*0.938);
 
-char *filename("non_QCD_files_oct22.txt");
+const char* filename("DY_files_mlow.txt");
 const TString fout_name("output_files/ElEl_fakerate_WJets_MC_oct29.root");
 const bool PRINT=false;
 
@@ -283,7 +283,7 @@ void ElEl_WJets_MC(int nJobs = 1, int iJob =0)
                     bool no_bjets = has_no_bjets(nJets, jet1_pt, jet2_pt, jet1_cmva, jet2_cmva);
                     bool one_iso = el_IDMedium[0] ^ el_IDMedium[1];
 
-                    if ((one_iso && cm_m >=150. && no_bjets && met_pt < 50.)){
+                    if ((one_iso && cm_m >=15. && no_bjets && met_pt < 50.)){
 
                         //RECO LEVEL
                         xF = abs(2.*cm.Pz()/13000.); 

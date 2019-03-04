@@ -16,7 +16,7 @@
 #define MAX_SAMPLES 20
 
 const double root2 = sqrt(2);
-const char* filename("non_QCD_files_oct22.txt");
+const char* filename("DY_files_mlow.txt");
 const TString fout_name("output_files/MuMu_fakerate_Wjets_MC_oct29.root");
 
 
@@ -294,7 +294,7 @@ void MuMu_WJets_MC(int nJobs = 1, int iJob = 0)
                     }
                     bool no_bjets = has_no_bjets(nJets, jet1_pt, jet2_pt, jet1_cmva, jet2_cmva);
                     bool one_iso = (iso_0 < tight_iso) ^ (iso_1 < tight_iso);
-                    if (one_iso && cm_m >=25. && no_bjets && met_pt < 50.){
+                    if (one_iso && cm_m >=15. && no_bjets && met_pt < 50.){
                         xF = abs(2.*cm.Pz()/13000.); 
 
                         // compute Colins soper angle with formula

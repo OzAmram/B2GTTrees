@@ -22,7 +22,7 @@
 #include "TemplateUtils.h"
 
 
-const TString fout_name("combine/templates/feb19_combined_template_sys_v2.root");
+const TString fout_name("combine/templates/mar4_combined_template_test.root");
 TFile * fout;
 
 
@@ -51,15 +51,8 @@ void convert_qcd_to_param_hist(TH1F *h, FILE *f_log, int flag){
     char h_name[40];
     char h_ss_name[40];
     sprintf(h_name, "%s_param", h->GetName());
-    RooRealVar *Rqcd_ss;
-    if(flag == FLAG_MUONS){
-        Rqcd_ss = Rqcd_mumu_ss;
-        sprintf(h_ss_name, "%s", "mumu_ss_qcd_param");
-    }
-    else{
-        Rqcd_ss = Rqcd_ee_ss;
-        sprintf(h_ss_name, "%s", "ee_ss_qcd_param");
-    }
+    sprintf(h_ss_name, "%s_ss_param", h->GetName());
+    RooRealVar *R_mumu_qcd_sign_ratio = new RooRealVar("R_mumu_qcd_sign", "Ratio of ss/os dimuon qcd events", 0.59, 0., 10.);
     for(int j=1; j <= h->GetNbinsX(); j++){
 
         double content = h->GetBinContent(j);
@@ -68,9 +61,10 @@ void convert_qcd_to_param_hist(TH1F *h, FILE *f_log, int flag){
 
         //printf("Bin %.1f error %.1f \n", content,error);
         char bin_name[40];
-        char form_name[40];
-        sprintf(bin_name, "%s_bin%i",h_ss_name, j); 
-        sprintf(form_name, "%s_form%i",h_ss_name, j); 
+        char form_name_ss[40], form_name_os[40];
+        sprintf(bin_name, "%s_bin%i",h_name, j); 
+        sprintf(form_name_ss, "%s_form_%i",h_ss_name, j); 
+        sprintf(form_name_os, "%s_form_%i",h_name, j); 
         //prevent underflowing by fixing super small bins
         content = max(content, 0.001);
         if (content < error){
@@ -83,8 +77,10 @@ void convert_qcd_to_param_hist(TH1F *h, FILE *f_log, int flag){
         RooRealVar *bin = new RooRealVar(bin_name, bin_name, content, 0., 10000.);
         fprintf(f_log, "%s param %.4f %.4f \n", bin_name, content, error);
         //bin->Print();
+        //enforce ss = os for qcd
         bin_list->add(*bin);
         bin_list_ss->add(*bin);
+       
         
         //RooFormulaVar *form = new RooFormulaVar(form_name, form_name, "@0*@1", RooArgList(*bin, *Rqcd_ss));
         //bin_list_ss->add(*form);
@@ -138,6 +134,7 @@ void make_qcd_templates(FILE* f_log){
     bool ss = true;
     gen_fakes_template(t_elel_WJets, t_elel_QCD, t_elel_WJets_contam, t_elel_QCD_contam, h_elel_qcd, m_low, m_high, FLAG_ELECTRONS, FLAG_M_BINS, ss);
     gen_fakes_template(t_mumu_WJets, t_mumu_QCD, t_mumu_WJets_contam, t_mumu_QCD_contam, h_mumu_qcd, m_low, m_high, FLAG_MUONS, FLAG_M_BINS,ss);
+    h_mumu_qcd->Scale(
 
     h1_elel_qcd = convert2d(h_elel_qcd);
     h1_mumu_qcd = convert2d(h_mumu_qcd);
@@ -276,13 +273,15 @@ void make_templates(int nJobs = 6, int iJob =-1){
     setup_all_SFs();
     printf("   done \n");
 
-    //vector<string> sys_labels {""};
+    vector<string> sys_labels {""};
     //vector<string> sys_labels {"_elScale_UP", "_elSmear_DOWN" };
+    /*
     vector<string> sys_labels {"", "_elScaleUp", "_elScaleDown", "_elSmearUp", "_elSmearDown", 
         "_muRCUp", "_muRCDown", "_muHLTUp", "_muHLTDown", "_muIDUp", "_muIDDown", "_muISOUp", "_muISODown", "_muTRKUp", "_muTRKDown",  
         "_elHLTUp", "_elHLTDown", "_elIDUp", "_elIDDown", "_elRECOUp", "_elRECODown", 
         "_RENORMUp", "_RENORMDown", "_FACUp", "_FACDown","_pdfUp", "_pdfDown",
         "_PuUp", "_PuDown", "_BTAGUp", "_BTAGDown", "_alphaUp", "_alphaDown" };
+        */
 
     fout = TFile::Open(fout_name, "RECREATE");
     FILE *f_log;
