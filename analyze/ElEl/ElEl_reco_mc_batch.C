@@ -193,8 +193,8 @@ void ElEl_reco_mc_batch(int nJobs = 1, int iJob = 0)
     t_back->Branch("elm_smear_down", &elm_smear_down);
     t_back->Branch("el_m", "TLorentzVector", &el_m);
     t_back->Branch("el_p", "TLorentzVector", &el_p);
-    t_signal->Branch("gen_el_m", "TLorentzVector", &gen_el_m_vec);
-    t_signal->Branch("gen_el_p", "TLorentzVector", &gen_el_p_vec);
+    t_back->Branch("gen_el_m", "TLorentzVector", &gen_el_m_vec);
+    t_back->Branch("gen_el_p", "TLorentzVector", &gen_el_p_vec);
     t_back->Branch("jet1_pt", &jet1_pt, "jet1_pt/D");
     t_back->Branch("jet1_eta", &jet1_eta, "jet1_eta/D");
     t_back->Branch("jet1_CMVA", &jet1_cmva, "jet1_CMVA/D");
@@ -213,6 +213,14 @@ void ElEl_reco_mc_batch(int nJobs = 1, int iJob = 0)
     t_back->Branch("jet2_flavour", &jet2_flavour, "jet2_flavour/I");
     t_back->Branch("is_tau_event", &is_tau_event);
     t_back->Branch("pu_NtrueInt", &pu_NtrueInt);
+    t_back->Branch("mu_R_up", &mu_R_up);
+    t_back->Branch("mu_R_down", &mu_R_down);
+    t_back->Branch("mu_F_up", &mu_F_up);
+    t_back->Branch("mu_F_down", &mu_F_down);
+    t_back->Branch("mu_RF_up", &mu_RF_up);
+    t_back->Branch("mu_RF_down", &mu_RF_down);
+    t_back->Branch("pdf_up", &pdf_up);
+    t_back->Branch("pdf_down", &pdf_down);
 
 
 

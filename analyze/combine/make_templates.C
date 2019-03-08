@@ -22,7 +22,7 @@
 #include "TemplateUtils.h"
 
 
-const TString fout_name("combine/templates/mar4_combined_template_test.root");
+const TString fout_name("combine/templates/mar7_combined_template_sys.root");
 TFile * fout;
 
 
@@ -51,8 +51,13 @@ void convert_qcd_to_param_hist(TH1F *h, FILE *f_log, int flag){
     char h_name[40];
     char h_ss_name[40];
     sprintf(h_name, "%s_param", h->GetName());
-    sprintf(h_ss_name, "%s_ss_param", h->GetName());
-    RooRealVar *R_mumu_qcd_sign_ratio = new RooRealVar("R_mumu_qcd_sign", "Ratio of ss/os dimuon qcd events", 0.59, 0., 10.);
+    if(flag == FLAG_MUONS){
+        sprintf(h_ss_name, "%s", "mumu_ss_qcd_param");
+    }
+    else{
+        sprintf(h_ss_name, "%s", "ee_ss_qcd_param");
+    }
+    //RooRealVar *R_mumu_qcd_sign_ratio = new RooRealVar("R_mumu_qcd_sign", "Ratio of ss/os dimuon qcd events",R_mu_ss_os , 0., 10.);
     for(int j=1; j <= h->GetNbinsX(); j++){
 
         double content = h->GetBinContent(j);
@@ -77,7 +82,6 @@ void convert_qcd_to_param_hist(TH1F *h, FILE *f_log, int flag){
         RooRealVar *bin = new RooRealVar(bin_name, bin_name, content, 0., 10000.);
         fprintf(f_log, "%s param %.4f %.4f \n", bin_name, content, error);
         //bin->Print();
-        //enforce ss = os for qcd
         bin_list->add(*bin);
         bin_list_ss->add(*bin);
        
@@ -134,7 +138,11 @@ void make_qcd_templates(FILE* f_log){
     bool ss = true;
     gen_fakes_template(t_elel_WJets, t_elel_QCD, t_elel_WJets_contam, t_elel_QCD_contam, h_elel_qcd, m_low, m_high, FLAG_ELECTRONS, FLAG_M_BINS, ss);
     gen_fakes_template(t_mumu_WJets, t_mumu_QCD, t_mumu_WJets_contam, t_mumu_QCD_contam, h_mumu_qcd, m_low, m_high, FLAG_MUONS, FLAG_M_BINS,ss);
-    h_mumu_qcd->Scale(
+
+    //combined os and ss regions to estimate qcd, scale it to estimate amount
+    //in os region 
+    float scaling = 1./(1. + R_mu_ss_os);
+    h_mumu_qcd->Scale(scaling);
 
     h1_elel_qcd = convert2d(h_elel_qcd);
     h1_mumu_qcd = convert2d(h_mumu_qcd);
@@ -165,6 +173,7 @@ void make_mc_templates(const string &sys_label){
     bool ss= false;
     
     if(do_mu){
+        printf("making muon mc templates \n");
         h_mumu_sym = new TH2F((string("mumu_sym") + sys_label).c_str(), "Symmetric template of mc",
                 n_xf_bins, xf_bins, n_cost_bins, cost_bins);
         h_mumu_sym->SetDirectory(0);
@@ -185,6 +194,7 @@ void make_mc_templates(const string &sys_label){
         gen_combined_background_template(1, mumu_ts, h_mumu_dy_gg, m_low, m_high, FLAG_MUONS, FLAG_M_BINS, do_RC, ss, sys_label);
     }
     if(do_el){
+        printf("making electron mc templates \n");
         h_elel_sym = new TH2F((string("ee_sym") + sys_label).c_str(), "Symmetric template of mc",
                 n_xf_bins, xf_bins, n_cost_bins, cost_bins);
         h_elel_sym->SetDirectory(0);
@@ -273,15 +283,17 @@ void make_templates(int nJobs = 6, int iJob =-1){
     setup_all_SFs();
     printf("   done \n");
 
-    vector<string> sys_labels {""};
-    //vector<string> sys_labels {"_elScale_UP", "_elSmear_DOWN" };
-    /*
+    //vector<string> sys_labels {""};
+    //vector<string> sys_labels {"_FACUp", "_pdfDown", "_RENORMDown"};
+    
+    
     vector<string> sys_labels {"", "_elScaleUp", "_elScaleDown", "_elSmearUp", "_elSmearDown", 
         "_muRCUp", "_muRCDown", "_muHLTUp", "_muHLTDown", "_muIDUp", "_muIDDown", "_muISOUp", "_muISODown", "_muTRKUp", "_muTRKDown",  
         "_elHLTUp", "_elHLTDown", "_elIDUp", "_elIDDown", "_elRECOUp", "_elRECODown", 
         "_RENORMUp", "_RENORMDown", "_FACUp", "_FACDown","_pdfUp", "_pdfDown",
         "_PuUp", "_PuDown", "_BTAGUp", "_BTAGDown", "_alphaUp", "_alphaDown" };
-        */
+        
+        
 
     fout = TFile::Open(fout_name, "RECREATE");
     FILE *f_log;
@@ -321,8 +333,8 @@ void make_templates(int nJobs = 6, int iJob =-1){
         for(auto iter = sys_labels.begin(); iter !=sys_labels.end(); iter++){
             printf("Making MC templates for sys %s \n", (*iter).c_str());
             alpha = alphas[i];
-            if(iter->find("alpha_UP") != string::npos) alpha = alphas[i] + alpha_unc[i];
-            if(iter->find("alpha_DOWN") != string::npos) alpha = alphas[i] - alpha_unc[i];
+            if(iter->find("alphaUp") != string::npos) alpha = alphas[i] + alpha_unc[i];
+            if(iter->find("alphaDown") != string::npos) alpha = alphas[i] - alpha_unc[i];
 
             make_mc_templates(*iter);
             convert_mc_templates(*iter);

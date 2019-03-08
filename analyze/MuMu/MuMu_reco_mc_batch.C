@@ -233,6 +233,14 @@ void MuMu_reco_mc_batch(int nJobs =1, int iJob = 0)
     t_back->Branch("jet2_flavour", &jet2_flavour, "jet2_flavour/I");
     t_back->Branch("is_tau_event", &is_tau_event);
     t_back->Branch("pu_NtrueInt", &pu_NtrueInt);
+    t_back->Branch("mu_R_up", &mu_R_up);
+    t_back->Branch("mu_R_down", &mu_R_down);
+    t_back->Branch("mu_F_up", &mu_F_up);
+    t_back->Branch("mu_F_down", &mu_F_down);
+    t_back->Branch("mu_RF_up", &mu_RF_up);
+    t_back->Branch("mu_RF_down", &mu_RF_down);
+    t_back->Branch("pdf_up", &pdf_up);
+    t_back->Branch("pdf_down", &pdf_down);
 
 
 

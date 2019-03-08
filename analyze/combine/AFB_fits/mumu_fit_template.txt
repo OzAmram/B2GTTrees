@@ -9,41 +9,41 @@ kmax *
 shapes * * templates.root  w$M_BIN/w:$CHANNEL_$PROCESS w$M_BIN/w:$CHANNEL_$PROCESS_$SYSTEMATIC
 shapes qcd * templates.root  w$M_BIN/w:$CHANNEL_qcd_param w$M_BIN/w:$CHANNEL_qcd_param_$SYSTEMATIC
 
-bin              mumu     mumu_ss  emu
-observation       -1        -1     -1
+bin              mumu     emu
+observation       -1      -1
 -------------------------------------------------------------------------------
 # Add the processes contributing to the data expectation
-bin               mumu    mumu    mumu    mumu   mumu    mumu_ss   mumu_ss  mumu_ss    emu     emu     emu   
-process           fpl     fmn     bk      qcd    dy_gg   dy          qcd       bk       dy      qcd     bk   
-process           0       -1      1       2        4       3          1         1        3       2       1   
-rate             -1       -1      -1      1       -1      -1          1        -1       -1       1      -1   
------------------------------------------------------------------------------------------------------------------
-Pu  shape          1.0     1.0    1.0     -       -       -           -        -         -        -       -  
-BTAG    shape      1.0     1.0    1.0     -       -       -           -        -         -        -       -  
-alpha   shape      1.0     1.0     -      -       -       -           -        -         -        -       -  
+bin               mumu    mumu    mumu    mumu  mumu     emu     emu     emu   
+process           fpl     fmn     bk      qcd   dy_gg     dy      qcd     bk   
+process           0       -1      1       2       4        3       2       1   
+rate             -1       -1      -1      1      -1       -1       1      -1   
+-----------------------------------------------------------------------------------
+Pu      shape      1.0     1.0    1.0     -      -         -        -       -  
+BTAG    shape      1.0     1.0    1.0     -      -         -        -       -  
+alpha   shape      1.0     1.0     -      -      -         -        -       -  
 
+muRC    shape     1.0     1.0    1.0      -     1.0        -        -       -  
+muID    shape     1.0     1.0    1.0      -     1.0        -        -       -  
+muHLT   shape     1.0     1.0    1.0      -     1.0        -        -       -  
+muTRK   shape     1.0     1.0    1.0      -     1.0        -        -       -  
 
-muRC    shape     1.0     1.0    1.0      -      1.0      -           -        -         -        -       -  
-muID    shape     1.0     1.0    1.0      -      1.0      -           -        -         -        -       -  
-muHLT   shape     1.0     1.0    1.0      -      1.0      -           -        -         -        -       -  
-muTRK   shape     1.0     1.0    1.0      -      1.0      -           -        -         -        -       -  
+pdf     shape     1.0     1.0    1.0      -     1.0        -        -       -  
+RENORM  shape     1.0     1.0    1.0      -     1.0        -        -       -  
+FAC     shape     1.0     1.0    1.0      -     1.0        -        -       -  
 
-pdf     shape     1.0     1.0     -       -       -       -           -        -         -        -       -  
-RENORM  shape     1.0     1.0     -       -       -       -           -        -         -        -       -  
-FAC     shape     1.0     1.0     -       -       -       -           -        -         -        -       -  
+lumi    lnN      1.025   1.025   1.025    -     1.025    1.025      -      1.025
+dy_xsec lnN      1.01    1.01     -       -     1.01     1.01       -       -   
+bk_xsec lnN        -       -     1.05     -      -         -        -      1.05 
 
-lumi    lnN     11.025   1.025   1.025    -      1.025   1.025        -      1.025     1.025      -      1.025
-dy_xsec lnN     11.03    1.03     -       -      1.03    1.03         -        -       1.03       -       -   
-bk_xsec lnN        -       -     1.05     -       -       -           -       1.05       -        -      1.05 
-mu_qcd  lnU        -       -      -      1.4      -       -          1.4       -         -        -       -   
-emu_qcd lnU        -       -      -       -       -       -           -        -         -       1.4      -   
-
-#bk_xsec lnN        -       -      -       -       -       -           -        -         -        -       -   
 
 
 # Add the systematics
+emu_qcd rateParam emu* qcd 1.0
+mu_qcd rateParam mu* qcd 1.0
+
+emu_qcd param 1.0  0.4
+mu_qcd param 1.0  0.4
 #qcd ratio as a flat param
-Rdy_mumu_ss flatParam
 
 
 #individual bin params go here

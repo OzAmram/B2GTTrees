@@ -40,7 +40,7 @@ Double_t el_lumi = 36.5;
 Double_t emu_scaling_nom = 1.0;
 Double_t emu_unc = 0.04;
 Double_t emu_scaling = emu_scaling_nom;
-Double_t R_mu_ss_os = 0.59;
+Double_t R_mu_ss_os = 0.57;
 
 void cleanup_hist(TH1 *h){
     int nBins = h->GetNbinsX();

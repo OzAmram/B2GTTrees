@@ -17,7 +17,7 @@ const double root2 = sqrt(2);
 double Ebeam = 6500.;
 double Pbeam = sqrt(Ebeam*Ebeam - 0.938*0.938);
 
-const char* filename("DY_files_mlow.txt");
+const char* filename("non_QCD_files_oct22.txt");
 const TString fout_name("output_files/ElEl_fakerate_QCD_MC_oct29.root");
 const bool PRINT=false;
 

@@ -6,6 +6,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <cmath>
+#include <cfloat>
 #include <iostream>
 #include <cstring>
 #include <algorithm>
@@ -52,7 +54,7 @@ void setup_all_SFs(){
 
 
 void cleanup_template(TH2F *h){
-    printf("%i %i \n", h->GetNbinsX(), h->GetNbinsY());
+    //printf("%i %i \n", h->GetNbinsX(), h->GetNbinsY());
     for(int i=0; i<= h->GetNbinsX()+1; i++){
         for(int j=0; j<= h->GetNbinsY()+1; j++){
             //printf("%i %i \n", i,j);
@@ -901,14 +903,14 @@ int gen_combined_background_template(int nTrees, TTree **ts, TH2F* h,
         t1->SetBranchAddress("nJets", &nJets);
         t1->SetBranchAddress("gen_weight", &gen_weight);
         t1->SetBranchAddress("pu_SF", &pu_SF);
-        //t1->SetBranchAddress("mu_R_up", &mu_R_up);
-        //t1->SetBranchAddress("mu_R_down", &mu_R_down);
-        //t1->SetBranchAddress("mu_F_up", &mu_F_up);
-        //t1->SetBranchAddress("mu_F_down", &mu_F_down);
-        //t1->SetBranchAddress("mu_RF_up", &mu_RF_up);
-        //t1->SetBranchAddress("mu_RF_down", &mu_RF_down);
-        //t1->SetBranchAddress("pdf_up", &pdf_up);
-        //t1->SetBranchAddress("pdf_down", &pdf_down);
+        t1->SetBranchAddress("mu_R_up", &mu_R_up);
+        t1->SetBranchAddress("mu_R_down", &mu_R_down);
+        t1->SetBranchAddress("mu_F_up", &mu_F_up);
+        t1->SetBranchAddress("mu_F_down", &mu_F_down);
+        t1->SetBranchAddress("mu_RF_up", &mu_RF_up);
+        t1->SetBranchAddress("mu_RF_down", &mu_RF_down);
+        t1->SetBranchAddress("pdf_up", &pdf_up);
+        t1->SetBranchAddress("pdf_down", &pdf_down);
         t1->SetBranchAddress("pu_NtrueInt", &pu_NtrueInt);
         t1->SetBranchAddress("jet1_eta", &jet1_eta);
         t1->SetBranchAddress("jet2_eta", &jet2_eta);
@@ -966,13 +968,13 @@ int gen_combined_background_template(int nTrees, TTree **ts, TH2F* h,
             else if(sys_label.find("elSmear") != string::npos) do_elSmear_sys = shift;
 
 
-            /*
-               else if(sys_label.find("RENORM") != string::npos && shift > 0) systematic = &mu_R_up;
-               else if(sys_label.find("RENORM") != string::npos && shift < 0) systematic = &mu_R_down;
-               else if(sys_label.find("FAC") != string::npos && shift > 0) systematic = &mu_F_up;
-               else if(sys_label.find("FAC") != string::npos && shift < 0) systematic = &mu_F_down;
-               */
-            else if(sys_label.find("alpha") != string::npos && shift < 0) systematic = &one;
+            else if(sys_label.find("RENORM") != string::npos && shift > 0) systematic = &mu_R_up;
+            else if(sys_label.find("RENORM") != string::npos && shift < 0) systematic = &mu_R_down;
+            else if(sys_label.find("pdf") != string::npos && shift < 0) systematic = &pdf_down;
+            else if(sys_label.find("pdf") != string::npos && shift > 0) systematic = &pdf_up;
+            else if(sys_label.find("FAC") != string::npos && shift > 0) systematic = &mu_F_up;
+            else if(sys_label.find("FAC") != string::npos && shift < 0) systematic = &mu_F_down;
+            else if(sys_label.find("alpha") != string::npos) systematic = &one;
 
             else printf("COULDN'T PARSE SYSTEMATIC %s !!! \n \n", sys_label.c_str());
 
@@ -1011,6 +1013,10 @@ int gen_combined_background_template(int nTrees, TTree **ts, TH2F* h,
 
             for (int i=0; i<nEntries; i++) {
                 t1->GetEntry(i);
+                if(abs(*systematic) > 10.0 || abs(*systematic) < 0.01 || std::isnan(*systematic)){
+                    //printf("sys is %.4f  \n", *systematic);
+                    *systematic = 1.;
+                }
                 bool no_bjets = has_no_bjets(nJets, jet1_pt, jet2_pt, jet1_cmva, jet2_cmva);
                 bool not_cosmic = notCosmic(*lep_p, *lep_m);
                 if(flag2 == FLAG_PT_BINS){
@@ -1048,7 +1054,7 @@ int gen_combined_background_template(int nTrees, TTree **ts, TH2F* h,
                     Double_t pu_SF_sys = 1.;
                     if(do_pileup_sys == -1) pu_SF_sys = get_pileup_SF(pu_NtrueInt, pu_sys.pileup_down);
                     if(do_pileup_sys == 1) pu_SF_sys = get_pileup_SF(pu_NtrueInt, pu_sys.pileup_up);
-                    gen_weight *= *systematic * pu_SF * pu_SF_sys;
+                    gen_weight *= (*systematic) * pu_SF * pu_SF_sys;
 
                     if(do_muHLT_sys) bcdef_HLT_SF = get_HLT_SF(mu1_pt, mu1_eta, mu2_pt, mu2_eta, runs_bcdef.HLT_SF, runs_bcdef.HLT_MC_EFF, do_muHLT_sys);
                     if(do_muHLT_sys) gh_HLT_SF = get_HLT_SF(mu1_pt, mu1_eta, mu2_pt, mu2_eta, runs_gh.HLT_SF, runs_gh.HLT_MC_EFF, do_muHLT_sys);
@@ -1117,6 +1123,10 @@ int gen_combined_background_template(int nTrees, TTree **ts, TH2F* h,
             }
             for (int i=0; i<nEntries; i++) {
                 t1->GetEntry(i);
+                if(abs(*systematic) > 10.0 || abs(*systematic) < 0.01 || std::isnan(*systematic)){
+                    //printf("sys is %.4f  \n", *systematic);
+                    *systematic = 1.;
+                }
                 bool no_bjets = has_no_bjets(nJets, jet1_pt, jet2_pt, jet1_cmva, jet2_cmva);
                 bool not_cosmic = notCosmic(*lep_p, *lep_m);
                 if(flag2 == FLAG_PT_BINS){
@@ -1141,7 +1151,7 @@ int gen_combined_background_template(int nTrees, TTree **ts, TH2F* h,
                     Double_t pu_SF_sys = 1.;
                     if(do_pileup_sys == -1) pu_SF_sys = get_pileup_SF(pu_NtrueInt, pu_sys.pileup_down);
                     if(do_pileup_sys == 1) pu_SF_sys = get_pileup_SF(pu_NtrueInt, pu_sys.pileup_up);
-                    gen_weight *= *systematic * pu_SF * pu_SF_sys;
+                    gen_weight *= (*systematic) * pu_SF * pu_SF_sys;
 
                     if(do_elID_sys) el_id_SF = get_el_SF(el1_pt, el1_eta, el_SF.ID_SF, do_elID_sys) * get_el_SF(el2_pt, el2_eta, el_SF.ID_SF, do_elID_sys);
                     if(do_elRECO_sys) el_reco_SF = get_el_SF(el1_pt, el1_eta, el_SF.RECO_SF, do_elRECO_sys) * get_el_SF(el2_pt, el2_eta, el_SF.RECO_SF, do_elRECO_sys);

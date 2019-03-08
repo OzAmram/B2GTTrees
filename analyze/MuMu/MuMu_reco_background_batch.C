@@ -19,11 +19,11 @@ const double root2 = sqrt(2);
 double Ebeam = 6500.;
 double Pbeam = sqrt(Ebeam*Ebeam - 0.938*0.938);
 
-char *filename("TTbar_files_aug7.txt");
-const TString fout_name("output_files/MuMu_ost_test_sep4.root");
+const char *filename("diboson_files_aug7.txt");
+const TString fout_name("output_files/MuMu_background_test_sep4.root");
 const double alpha = 0.05;
 const bool PRINT=false;
-const bool do_samesign = true;
+const bool do_samesign = false;
 
 
 bool is_empty_line(const char *s) {
@@ -126,6 +126,8 @@ void MuMu_reco_background_batch(int nJobs =1, int iJob=0)
     Double_t bcdef_HLT_SF, bcdef_iso_SF, bcdef_id_SF, gh_HLT_SF, gh_iso_SF, gh_id_SF, bcdef_trk_SF, gh_trk_SF,
              jet1_b_weight, jet2_b_weight, pu_SF;
     Double_t mu_p_SF, mu_m_SF, mu_p_SF_alt, mu_m_SF_alt, mu_p_SF_up, mu_p_SF_down, mu_m_SF_up, mu_m_SF_down;
+    Double_t mu_R_up, mu_R_down, mu_F_up, mu_F_down, mu_RF_up, mu_RF_down, pdf_up, pdf_down;
+    Float_t scale_Weights[10], pdf_weights[100];
     Int_t nJets, jet1_flavour, jet2_flavour, pu_NtrueInt;
     Float_t met_pt;
     TLorentzVector mu_p, mu_m, cm, q1, q2;
@@ -168,6 +170,14 @@ void MuMu_reco_background_batch(int nJobs =1, int iJob=0)
     tout->Branch("jet1_flavour", &jet1_flavour, "jet1_flavour/I");
     tout->Branch("jet2_flavour", &jet2_flavour, "jet2_flavour/I");
     tout->Branch("pu_NtrueInt", &pu_NtrueInt);
+    tout->Branch("mu_R_up", &mu_R_up);
+    tout->Branch("mu_R_down", &mu_R_down);
+    tout->Branch("mu_F_up", &mu_F_up);
+    tout->Branch("mu_F_down", &mu_F_down);
+    tout->Branch("mu_RF_up", &mu_RF_up);
+    tout->Branch("mu_RF_down", &mu_RF_down);
+    tout->Branch("pdf_up", &pdf_up);
+    tout->Branch("pdf_down", &pdf_down);
 
 
 
@@ -255,6 +265,9 @@ void MuMu_reco_background_batch(int nJobs =1, int iJob=0)
             t1->SetBranchAddress("jetAK4CHS_CMVAv2", &jet_CMVA);
             t1->SetBranchAddress("jetAK4CHS_PartonFlavour", &jet_partonflavour);
 
+            t1->SetBranchAddress("scale_Weights", &scale_Weights);
+            t1->SetBranchAddress("pdf_Weights", &pdf_weights);
+
             t1->SetBranchAddress("HLT_IsoMu24", &HLT_IsoMu);
             t1->SetBranchAddress("HLT_IsoTkMu24", &HLT_IsoTkMu);
 
@@ -311,7 +324,6 @@ void MuMu_reco_background_batch(int nJobs =1, int iJob=0)
                     cm_m = cm.M();
                     //met and cmva cuts to reduce ttbar background
                     if (iso_0 < tight_iso && iso_1 < tight_iso && cm_m >=50.){
-                        printf("Passed cuts, charges: %.0f %.0f pts: %.1f %.1f \n", mu_Charge[0], mu_Charge[1], mu_Pt[0], mu_Pt[1]);
                         if(PRINT) sprintf(out_buff + strlen(out_buff),"Event %i \n", i);
 
                         //RECO LEVEL
@@ -432,6 +444,22 @@ void MuMu_reco_background_batch(int nJobs =1, int iJob=0)
                         mu_p_SF_down = mu_p_SF - mu_p_SF_std;
                         mu_m_SF_up = mu_m_SF + mu_m_SF_std;
                         mu_m_SF_down = mu_m_SF - mu_m_SF_std;
+
+
+                        mu_R_up = scale_Weights[2];
+                        mu_R_down = scale_Weights[4];
+                        mu_F_up = scale_Weights[0];
+                        mu_F_down = scale_Weights[1];
+                        mu_RF_up = scale_Weights[3];
+                        mu_RF_down = scale_Weights[5];
+
+                        Float_t pdf_avg, pdf_std_dev;
+
+                        get_pdf_avg_std_dev(pdf_weights, &pdf_avg, &pdf_std_dev);
+
+                        pdf_up = pdf_avg + pdf_std_dev;
+                        pdf_down = pdf_avg - pdf_std_dev;
+                        //printf("%.2f \n", pdf_up);
 
                         tout->Fill();
                         nEvents++;

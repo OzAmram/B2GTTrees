@@ -16,7 +16,7 @@
 #define MAX_SAMPLES 20
 
 const double root2 = sqrt(2);
-const char* filename("DY_files_mlow.txt");
+const char* filename("non_QCD_files_oct22.txt");
 const TString fout_name("output_files/MuMu_fakerate_Wjets_MC_oct29.root");
 
 

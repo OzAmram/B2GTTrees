@@ -17,7 +17,7 @@ const double root2 = sqrt(2);
 double Ebeam = 6500.;
 double Pbeam = sqrt(Ebeam*Ebeam - 0.938*0.938);
 
-char *filename("ss_mc_files_aug7.txt");
+const char *filename("diboson_files_aug7.txt");
 const TString fout_name("output_files/ElEl_combined_back_test.root");
 const double alpha = 0.05;
 const bool PRINT=false;
@@ -113,7 +113,9 @@ void ElEl_reco_background_batch(int nJobs =1, int iJob=0)
     Float_t elp_scale_up, elp_scale_down, elm_scale_up, elm_scale_down,
              elp_smear_up, elp_smear_down, elm_smear_up, elm_smear_down;
 
+    Double_t mu_R_up, mu_R_down, mu_F_up, mu_F_down, mu_RF_up, mu_RF_down, pdf_up, pdf_down;
     Int_t nJets, jet1_flavour, jet2_flavour, pu_NtrueInt;
+    Float_t scale_Weights[10], pdf_weights[100];
     Float_t met_pt;
     TLorentzVector el_p, el_m, cm, q1, q2;
     tout->Branch("m", &cm_m, "m/D");
@@ -150,6 +152,14 @@ void ElEl_reco_background_batch(int nJobs =1, int iJob=0)
     tout->Branch("jet1_flavour", &jet1_flavour, "jet1_flavour/I");
     tout->Branch("jet2_flavour", &jet2_flavour, "jet2_flavour/I");
     tout->Branch("pu_NtrueInt", &pu_NtrueInt);
+    tout->Branch("mu_R_up", &mu_R_up);
+    tout->Branch("mu_R_down", &mu_R_down);
+    tout->Branch("mu_F_up", &mu_F_up);
+    tout->Branch("mu_F_down", &mu_F_down);
+    tout->Branch("mu_RF_up", &mu_RF_up);
+    tout->Branch("mu_RF_down", &mu_RF_down);
+    tout->Branch("pdf_up", &pdf_up);
+    tout->Branch("pdf_down", &pdf_down);
 
 
 
@@ -242,6 +252,8 @@ void ElEl_reco_background_batch(int nJobs =1, int iJob=0)
             t1->SetBranchAddress("evt_Gen_Weight", &evt_Gen_Weight);
             t1->SetBranchAddress("pu_NtrueInt",&pu_NtrueInt);
 
+            t1->SetBranchAddress("scale_Weights", &scale_Weights);
+            t1->SetBranchAddress("pdf_Weights", &pdf_weights);
 
             t1->SetBranchAddress("met_MuCleanOnly_size", &met_size);
             t1->SetBranchAddress("met_MuCleanOnly_Pt", &met_pt);
@@ -374,6 +386,21 @@ void ElEl_reco_background_batch(int nJobs =1, int iJob=0)
 
                         pu_SF = get_pileup_SF(pu_NtrueInt, pu_SFs.pileup_ratio);
 
+                        mu_R_up = scale_Weights[2];
+                        mu_R_down = scale_Weights[4];
+                        mu_F_up = scale_Weights[0];
+                        mu_F_down = scale_Weights[1];
+                        mu_RF_up = scale_Weights[3];
+                        mu_RF_down = scale_Weights[5];
+
+                        Float_t pdf_avg, pdf_std_dev;
+
+                        get_pdf_avg_std_dev(pdf_weights, &pdf_avg, &pdf_std_dev);
+
+                        pdf_up = pdf_avg + pdf_std_dev;
+                        pdf_down = pdf_avg - pdf_std_dev;
+
+                        //printf("%.2f \n", pdf_up);
                         tout->Fill();
                         nEvents++;
 
