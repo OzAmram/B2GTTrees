@@ -147,7 +147,7 @@ void draw_cmp(){
 
 
     bool scale_qcd_error=true;
-    float qcd_err = 0.3;
+    float qcd_err = 0.4;
     if(scale_qcd_error){
         int nBins_x = QCD_m->GetXaxis()->GetNbins();
         int nBins_y = QCD_cost->GetYaxis()->GetNbins();
@@ -157,9 +157,11 @@ void draw_cmp(){
 
                 Double_t m_val = QCD_m->GetBinContent(i,j);
                 Double_t cost_val = QCD_cost->GetBinContent(i,j);
+                Double_t xf_val = QCD_xf->GetBinContent(i,j);
 
-                QCD_m->SetBinError(i,j, 0.2*m_val);
-                QCD_cost->SetBinError(i,j, 0.2*cost_val);
+                QCD_m->SetBinError(i,j, qcd_err*m_val);
+                QCD_cost->SetBinError(i,j, qcd_err*cost_val);
+                QCD_xf->SetBinError(i,j, qcd_err*cost_val);
             }
         }
     }

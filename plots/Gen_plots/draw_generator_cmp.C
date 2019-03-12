@@ -43,7 +43,7 @@ void make_hists_from_tree(TTree *t1, TH1F *h_m, TH1F *h_cost){
         t1->GetEntry(i);
         cm = *lep_pls + *lep_mns;
         //printf("M= %.2f \n", cm.M());
-        if(cm.M() >= 150. && cm.M() <200. && (lep1_id < 14) && (lep2_id < 14)){
+        if(cm.M() >= 150. && (lep1_id < 14) && (lep2_id < 14)){
             nSelected++;
             h_m->Fill(cm.M());
 
@@ -142,15 +142,16 @@ void make_ratio_plot(char title[80], TH1F* h1, char h1_label[80], TH1F* h2, char
 
 void draw_generator_cmp(){
     gStyle->SetOptStat(0);
-    TFile *f_mad = TFile::Open("../generator_stuff/mass_binned_200k.root");
+    //TFile *f_mad = TFile::Open("../generator_stuff/mass_binned_200k.root");
+    TFile *f_mad = TFile::Open("../generator_stuff/madgraph_m500_evts.root");
     TTree *t_mad = (TTree *)f_mad->Get("T_lhe");
 
     TFile *f_pwg = TFile::Open("../generator_stuff/powheg_m150_evts.root");
     TTree *t_pwg = (TTree *)f_pwg->Get("T_lhe");
 
     char title[80] = "POWHEG vs. aMC@NLO DY Samples (150 < M < 200)";
-    TH1F *h_pwg_m = new TH1F("h_pwg_m", title, 10, 150, 200);
-    TH1F *h_mad_m = new TH1F("h_mad_m", title, 10, 150, 200);
+    TH1F *h_pwg_m = new TH1F("h_pwg_m", title, 10, 150, 1000);
+    TH1F *h_mad_m = new TH1F("h_mad_m", title, 10, 150, 1000);
     TH1F *h_pwg_cost = new TH1F("h_pwg_cost", title, 20, -1., 1.);
     TH1F *h_mad_cost = new TH1F("h_mad_cost", title, 20, -1., 1.);
 
@@ -168,7 +169,7 @@ void draw_generator_cmp(){
     h_pwg_cost->SetLineWidth(3);
 
     make_ratio_plot("pwg_vs_mad_m150_m_cmp.pdf", h_mad_m, "amc@NLO",h_pwg_m, "POWHEG", "aMC/POWHEG", "M (GeV)", true);
-    make_ratio_plot("pwg_vs_mad_m150_cost_cmp.pdf", h_mad_cost, "amc@NLO",h_pwg_cost, "POWHEG", "aMC/POWHEG", "cos(#theta_{*})", false);
+    //make_ratio_plot("pwg_vs_mad_m150_cost_cmp.pdf", h_mad_cost, "amc@NLO",h_pwg_cost, "POWHEG", "aMC/POWHEG", "cos(#theta_{*})", false);
 
     return;
 }

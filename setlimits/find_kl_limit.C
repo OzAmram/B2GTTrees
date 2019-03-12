@@ -4,8 +4,8 @@
 
 //Double_t AFB_SM[6] =  {0.620,  0.615, 0.603, 0.590, 0.586, 0.588};
 Double_t AFB_SM[6] = {0.60, 0.612, 0.603, 0.602, 0.60, 0.60};
-Double_t AFB_unc[6] = {0.019, 0.023,0.023,0.029,0.046, 0.063};
-Double_t AFB_measured[6] = {0.611, 0.612, 0.614, 0.608, 0.559, 0.532};
+Double_t AFB_unc[6] = {0.014, 0.020,0.020,0.027,0.044, 0.059};
+Double_t AFB_measured[6] = {0.609, 0.578, 0.600, 0.574, 0.579, 0.532};
 
 Double_t test_stat(Double_t *x, Double_t *params){
     //6 x values are asymmetries in the 6 different mass bins
@@ -35,7 +35,7 @@ Double_t get_pval(TH1D *h, Double_t x){
     TAxis *ax = h->GetXaxis();
     Int_t xbin = ax->FindBin(x);
     Int_t maxbin = ax->FindBin(ax->GetXmax());
-    return h->Integral(xbin, maxbin);
+    return h->Integral(xbin, maxbin)/ h->Integral();
 }
 
 
@@ -70,11 +70,11 @@ Double_t test_Zp(FILE *f1, int M_Zp, Double_t cpl, Double_t *AFB_test){
         Double_t test_val = test_stat(x, AFB_Zp);
         h_dist->Fill(test_val);
     }
-    float bin_width = 100./400.;
-    h_dist->Scale(1./n_trials/bin_width);
+    //float bin_width = 100./400.;
+    //h_dist->Scale(1./n_trials/bin_width);
     //printf("h_dist mean and std dev are %.2f %.2f \n", h_dist->GetMean(), h_dist->GetStdDev()); 
     //TF1 *f = new TF1("chi2", "ROOT::Math::chisquared_pdf(x,6)", 0., 50);
-    h_dist->Draw("hist");
+    //h_dist->Draw("hist");
     //f->Draw("same");
 
     Double_t t_obs = test_stat(AFB_test, AFB_Zp);
@@ -83,7 +83,7 @@ Double_t test_Zp(FILE *f1, int M_Zp, Double_t cpl, Double_t *AFB_test){
     Double_t pval = get_pval(h_dist, t_obs);
     //if pval < 0.05 we will reject Null hypothesis (of Zprime existiing)
 
-    //delete h_dist; 
+    delete h_dist; 
     
     return pval;
 }
@@ -111,14 +111,15 @@ void find_kl_limit(){
     m=2300.;
     kl = 1.0;
 
+    /*
     pval = test_Zp(f1, m, kl, AFB_test);
     Double_t AFB_Zp[6];
     read_AFBs(f1, AFB_Zp, m, kl);
     Double_t t_obs = test_stat(AFB_test, AFB_Zp);
     Double_t pval2 = ROOT::Math::chisquared_cdf(t_obs, 6);
     printf("test stat %.2f numeric %.3f analytic %.3f \n", t_obs, pval, pval2);
+    */
 
-    /*
     for(m = m_start; m <=m_max; m+=m_step){
         for(kl = kl_start; kl >= kl_min && kl <= kl_max; kl-=kl_step){
             if(m > 2490. || m<1990.) m_step = 50;
@@ -148,7 +149,6 @@ void find_kl_limit(){
     }
 
     return;
-    */
 }
    
 

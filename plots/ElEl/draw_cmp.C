@@ -138,6 +138,7 @@ void draw_cmp(){
     Fakerate_est_el(t_elel_WJets, t_elel_QCD, t_elel_WJets_contam, t_elel_QCD_contam, QCD_m, QCD_cost, QCD_pt, QCD_xf, m_low, m_high, ss_qcd);
 
 
+    printf("Data integral is %.2f \n", data_cost->Integral());
     printf("DY integral is %.2f \n", mc_cost->Integral());
     printf("ttbar integral is %.2f \n", ttbar_cost->Integral());
 
@@ -157,9 +158,11 @@ void draw_cmp(){
 
                 Double_t m_val = QCD_m->GetBinContent(i,j);
                 Double_t cost_val = QCD_cost->GetBinContent(i,j);
+                Double_t xf_val = QCD_xf->GetBinContent(i,j);
 
-                QCD_m->SetBinError(i,j, 0.2*m_val);
-                QCD_cost->SetBinError(i,j, 0.2*cost_val);
+                QCD_m->SetBinError(i,j, qcd_err*m_val);
+                QCD_cost->SetBinError(i,j, qcd_err*cost_val);
+                QCD_xf->SetBinError(i,j, qcd_err*cost_val);
             }
         }
     }
@@ -194,10 +197,10 @@ void draw_cmp(){
     pt_stack->Add(mc_pt);
 
     THStack *xf_stack = new THStack("xf_stack", "Di-electron x_F Distribution: Data vs MC; x_F");
-    xf_stack->Add(ttbar_xf);
+    xf_stack->Add(diboson_xf);
     xf_stack->Add(QCD_xf);
     xf_stack->Add(wt_xf);
-    xf_stack->Add(diboson_xf);
+    xf_stack->Add(ttbar_xf);
     xf_stack->Add(mc_nosig_xf);
     xf_stack->Add(mc_xf);
 

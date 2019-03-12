@@ -34,6 +34,7 @@ using namespace std;
 #include "TVector3.h"
 #include "TFitter.h"
 #include "TSystem.h"
+#include "../analyze/AFB_fit/root_files.h"
 
 // Global definitions 
 
@@ -55,7 +56,7 @@ struct particle {         //!< individual particle structure
 
 // Main program  
 
-int main(int argc, char *argv[])
+void analyze_LHE9_get_utype_ratio()
 {
     // Local variables 
     int i, j, k, iqk=0, iqb=0, itq=0, itb=0, ig1=0, ig2=0, ijt, njet=0, npflavor=0, nevent, nfit;
@@ -74,11 +75,12 @@ int main(int argc, char *argv[])
 
     // Construct file name to analyze
 
-    strcpy(infile, "/uscms_data/d3/oamram/condor_jobs/condor_output/Zp_M2000/Zp_events_M2000_kL.80_bin6.lhe");
-    TString fout_name("dilus/SM/M700_dilus.root");
-    bool write_out = false;
-    const double m_low = 700;
-    const double m_high = 10000.;
+    //strcpy(infile, "/uscms_data/d3/oamram/condor_jobs/condor_output/Zp_M2000/Zp_events_M2000_kL.80_bin6.lhe");
+    strcpy(infile, "/home/ozamram/Documents/Research/Generators/POWHEG-BOX-V2/Z_ew-BMNNPV/DY_m150_jun1/pwgevents.lhe");
+    TString fout_name("dilus/M200_dilus.root");
+    bool write_out = true;
+    const double m_low = 200.;
+    const double m_high = 250.;
     const double pt_low = 0.;
     const double pt_high = 100000.;
     char hist_name[200];
@@ -95,8 +97,6 @@ int main(int argc, char *argv[])
     }
 
     //  Book Histograms
-    int n_xf_bins = 5;
-    Float_t xf_bins[] = {0., 0.02, 0.04, 0.07, 0.10, 1.0};
     TH1F * utype_Ni= new TH1F("utype_Ni", "", n_xf_bins, xf_bins);
     TH1F * dtype_Ni= new TH1F("utype_Nc", "", n_xf_bins, xf_bins);
     TH1F * utype_Nc= new TH1F("dtype_Ni", "", n_xf_bins, xf_bins);
@@ -313,7 +313,6 @@ int main(int argc, char *argv[])
         printf("Wrote out dilus to %s \n", fout_name.Data());
     }
 
-    /*
     printf("dtype correct vs. incorrect \n");
     for(int i=0; i<= n_xf_bins; i++){
         printf("%.0f ", dtype_Nc->GetBinContent(i));
@@ -323,7 +322,6 @@ int main(int argc, char *argv[])
         printf("%.0f ", dtype_Ni->GetBinContent(i));
     }
     printf("\n");
-    */
 
     return 0;
 } // MAIN__ 

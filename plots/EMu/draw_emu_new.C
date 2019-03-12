@@ -22,9 +22,10 @@
 #include "TFitter.h"
 #include "TSystem.h"
 #include "Math/Functor.h"
-#include "../../analyze/HistMaker.C"
 #include "../tdrstyle.C"
 #include "../CMS_lumi.C"
+#include "../../analyze/HistMaker.C"
+#include "../../analyze/AFB_fit/root_files.h"
 
 
 
@@ -32,32 +33,18 @@
 
 void draw_emu_new(){
     setTDRStyle();
-    TFile *f_data = TFile::Open("../analyze/output_files/EMu_SingleMuon_data_june29.root");
-    TTree *t_data = (TTree *)f_data->Get("T_data");
+    init_emu();
 
                                 
     //TFile *f_ttbar = TFile::Open("../analyze/output_files/EMu_TTbar_Mu_june29.root");
     TFile *f_ttbar = TFile::Open("../analyze/output_files/EMu_background_ttbar_Mu_mar29.root");
     TTree *t_ttbar = (TTree *)f_ttbar->Get("T_data");
 
-    //TFile *f_DYToLL = TFile::Open("../analyze/output_files/EMu_DY_Mu_june29.root");
-    TFile *f_DYToLL = TFile::Open("../analyze/output_files/EMu_background_DY_Mu_mar29.root");
-    TTree *t_dy = (TTree *)f_DYToLL->Get("T_data");
-
     TFile *f_diboson = TFile::Open("../analyze/output_files/EMu_diboson_Mu_july05.root");
     TTree *t_diboson = (TTree *)f_diboson->Get("T_data");
 
     TFile *f_wt = TFile::Open("../analyze/output_files/EMu_WT_Mu_june29.root");
     TTree *t_wt = (TTree *)f_wt->Get("T_data");
-
-    TFile *f_QCD = TFile::Open("../analyze/output_files/EMu_QCD_fakerate_est_jan24.root");
-    TTree *t_QCD = (TTree *)f_QCD->Get("T_data");
-
-    TFile *f_WJets = TFile::Open("../analyze/output_files/EMu_WJets_fakerate_est_jan24.root");
-    TTree *t_WJets = (TTree *)f_WJets->Get("T_data");
-
-    TFile *f_WJets_mc = TFile::Open("../analyze/output_files/EMu_WJets_MC_jan24.root");
-    TTree *t_WJets_mc = (TTree *)f_WJets_mc->Get("T_data");
 
     TH1F *data_m = new TH1F("data_m", "MC Signal (qqbar, qglu, qbarglu)", 30, 150, 1000);
     TH1F *ttbar_m = new TH1F("ttbar_m", "MC Signal (qqbar, qglu, qbarglu)", 30, 150, 1000);
@@ -66,17 +53,19 @@ void draw_emu_new(){
     TH1F *dy_m = new TH1F("dy_m", "MC Signal (qqbar, qglu, qbarglu)", 30, 150, 1000);
     TH1F *qcd_m = new TH1F("qcd_m", "MC Signal (qqbar, qglu, qbarglu)", 30, 150, 1000);
 
+    TH1F *h_dummy = new TH1F("h_dummy", "", 100, 0, 100.);
+
     Double_t m_low = 150;
     Double_t m_high = 10000;
 
     int type  = FLAG_MUONS;
 
-    make_emu_m_hist(t_data, data_m, true, type);
-    make_emu_m_hist(t_ttbar, ttbar_m, false, type);
-    make_emu_m_hist(t_diboson, diboson_m, false, type);
-    make_emu_m_hist(t_wt, wt_m, false, type);
-    make_emu_m_hist(t_dy, dy_m, false, type);
-    Fakerate_est_emu(t_WJets, t_QCD,t_WJets_mc, qcd_m, type);
+    make_emu_m_cost_pt_xf_hist(t_emu_data, data_m, h_dummy, h_dummy, h_dummy, true, type);
+    make_emu_m_cost_pt_xf_hist(t_ttbar, ttbar_m, h_dummy, h_dummy, h_dummy, false, type);
+    make_emu_m_cost_pt_xf_hist(t_diboson, diboson_m, h_dummy, h_dummy, h_dummy, false, type);
+    make_emu_m_cost_pt_xf_hist(t_wt, wt_m, h_dummy, h_dummy, h_dummy, false, type);
+    make_emu_m_cost_pt_xf_hist(t_emu_dy, dy_m, h_dummy, h_dummy, h_dummy, false, type);
+    Fakerate_est_emu(t_emu_WJets, t_emu_QCD,t_emu_WJets_contam, qcd_m, type);
 
     //correct for wrong ttbar xsec
     //ttbar_m->Scale(831.76/730.6);

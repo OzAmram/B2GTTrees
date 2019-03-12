@@ -99,7 +99,7 @@ void draw_samesign_cmp(){
 
     Double_t n_data = data_m->Integral();
     Double_t n_est = diboson_m->Integral() + QCD_m->Integral() + DY_m->Integral();
-    bool normalize = true;
+    bool normalize = false;
     
     if(normalize){
         Double_t n_data = data_m->Integral();
@@ -117,6 +117,25 @@ void draw_samesign_cmp(){
 
 
 
+    bool scale_qcd_error=true;
+    float qcd_err = 0.4;
+    if(scale_qcd_error){
+        int nBins_x = QCD_m->GetXaxis()->GetNbins();
+        int nBins_y = QCD_cost->GetYaxis()->GetNbins();
+        //printf("Get size %i \n", nBins);
+        for (int i=1; i <= nBins_x; i++){
+            for (int j=1; j <= nBins_y; j++){
+
+                Double_t m_val = QCD_m->GetBinContent(i,j);
+                Double_t cost_val = QCD_cost->GetBinContent(i,j);
+                Double_t xf_val = QCD_xf->GetBinContent(i,j);
+
+                QCD_m->SetBinError(i,j, qcd_err*m_val);
+                QCD_cost->SetBinError(i,j, qcd_err*cost_val);
+                QCD_xf->SetBinError(i,j, qcd_err*cost_val);
+            }
+        }
+    }
 
 
 
@@ -172,7 +191,7 @@ void draw_samesign_cmp(){
     leg3->AddEntry(data_pt, "data", "p");
     leg3->AddEntry(DY_pt, "DY (miss-sign)", "f");
     leg3->AddEntry(QCD_pt, "QCD + WJets", "f");
-    leg3->AddEntry(diboson_m, "t#bar{t} + wt + WW (miss-sign) & WZ + ZZ", "f");
+    leg3->AddEntry(diboson_m, "t#bar{t} + wt + WW + WZ + ZZ", "f");
     leg3->Draw();
 
     //gPad->BuildLegend();
@@ -194,8 +213,8 @@ void draw_samesign_cmp(){
       m_mc_sum->Add((TH1*)stackHists->At(i));
     }
     auto ratio = (TH1F *) data_m->Clone("h_ratio");
-    ratio->SetMinimum(0.75);
-    ratio->SetMaximum(1.25);
+    ratio->SetMinimum(0.5);
+    ratio->SetMaximum(1.5);
     ratio->Sumw2();
     ratio->SetStats(0);
     ratio->Divide(m_mc_sum);
@@ -262,8 +281,8 @@ void draw_samesign_cmp(){
       cost_mc_sum->Add((TH1*)cost_stackHists->At(i));
     }
     auto cost_ratio = (TH1F *) data_cost->Clone("h_cost_ratio");
-    cost_ratio->SetMinimum(0.7);
-    cost_ratio->SetMaximum(1.3);
+    cost_ratio->SetMinimum(0.5);
+    cost_ratio->SetMaximum(1.5);
     cost_ratio->Sumw2();
     cost_ratio->SetStats(0);
     cost_ratio->Divide(cost_mc_sum);
@@ -327,8 +346,8 @@ void draw_samesign_cmp(){
       pt_mc_sum->Add((TH1*)pt_stackHists->At(i));
     }
     auto pt_ratio = (TH1F *) data_pt->Clone("h_pt_ratio");
-    pt_ratio->SetMinimum(0.7);
-    pt_ratio->SetMaximum(1.3);
+    pt_ratio->SetMinimum(0.5);
+    pt_ratio->SetMaximum(1.5);
     pt_ratio->Sumw2();
     pt_ratio->SetStats(0);
     pt_ratio->Divide(pt_mc_sum);
@@ -390,8 +409,8 @@ void draw_samesign_cmp(){
       xf_mc_sum->Add((TH1*)xf_stackHists->At(i));
     }
     auto xf_ratio = (TH1F *) data_xf->Clone("h_xf_ratio");
-    xf_ratio->SetMinimum(0.7);
-    xf_ratio->SetMaximum(1.3);
+    xf_ratio->SetMinimum(0.5);
+    xf_ratio->SetMaximum(1.5);
     xf_ratio->Sumw2();
     xf_ratio->SetStats(0);
     xf_ratio->Divide(xf_mc_sum);
