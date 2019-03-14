@@ -75,12 +75,12 @@ void analyze_LHE9_get_utype_ratio()
 
     // Construct file name to analyze
 
-    //strcpy(infile, "/uscms_data/d3/oamram/condor_jobs/condor_output/Zp_M2000/Zp_events_M2000_kL.80_bin6.lhe");
-    strcpy(infile, "/home/ozamram/Documents/Research/Generators/POWHEG-BOX-V2/Z_ew-BMNNPV/DY_m150_jun1/pwgevents.lhe");
+    strcpy(infile, "/uscms_data/d3/oamram/CMSSW_8_0_24_patch1/src/Analysis/B2GTTrees/generator_stuff/mass_binned/cmsgrid_final.lhe");
+    //strcpy(infile, "/home/ozamram/Documents/Research/Generators/POWHEG-BOX-V2/Z_ew-BMNNPV/DY_m150_jun1/pwgevents.lhe");
     TString fout_name("dilus/M200_dilus.root");
-    bool write_out = true;
-    const double m_low = 200.;
-    const double m_high = 250.;
+    bool write_out = false;
+    const double m_low = 150.;
+    const double m_high = 200.;
     const double pt_low = 0.;
     const double pt_high = 100000.;
     char hist_name[200];

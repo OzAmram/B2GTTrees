@@ -33,6 +33,37 @@ class DY_AFB(PhysicsModel):
         else:
             return 1
 
+class DY_AFB_dilu(PhysicsModel):
+    def __init__(self):
+        return
+
+    def doParametersOfInterest(self):
+        """Create POI and other parameters, and define the POI set."""
+
+        self.modelBuilder.doVar("Afb[0.6,-0.75,0.75]");
+        self.modelBuilder.doSet("POI","Afb")
+
+        # ss templates
+        self.modelBuilder.doVar("Dilu_ratio[1.0,0.0,10.0]");
+        self.modelBuilder.doVar("Rdy_mumu_ss[1.0,0.0,10.0]");
+        self.modelBuilder.doVar("Rdy_ee_ss[1.0,0.0,10.0]");
+      
+        self.modelBuilder.factory_('expr::Rpl("0.5*(1.+@0*@1)",Afb, Dilu_ratio)')
+        self.modelBuilder.factory_('expr::Rmn("0.5*(1.-@0*@1)",Afb, Dilu_ratio)')
+
+
+ 
+ 
+ 
+ 
+    def getYieldScale(self,bin,process):
+        if 'pl' in process: return "Rpl"
+        if 'mn' in process : return "Rmn"
+        if 'dy' in process and 'ee_ss' in bin: return "Rdy_ee_ss"
+        if 'dy' in process and 'mumu_ss' in bin: return "Rdy_mumu_ss"
+        else:
+            return 1
+
 class DY_AFB_noQCD(PhysicsModel):
     def __init__(self):
         return
@@ -107,4 +138,5 @@ class EMu(PhysicsModel):
 samesign = Samesign()
 emu = EMu()
 dy_AFB = DY_AFB() 
+dy_AFB_dilu = DY_AFB_dilu() 
 dy_AFB_noQCD = DY_AFB_noQCD() 

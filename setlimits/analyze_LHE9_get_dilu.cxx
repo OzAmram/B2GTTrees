@@ -55,15 +55,15 @@ struct particle {         //!< individual particle structure
 
 // Main program  
 
-int main(int argc, char *argv[])
+void analyze_LHE9_get_dilu()
 {
     // Local variables 
     int i, j, k, iqk=0, iqb=0, itq=0, itb=0, ig1=0, ig2=0, ijt, njet=0, npflavor=0, nevent, nfit;
     int nqqb=0, ngg=0, itbq, itbb, itqk, itqb, itlp, itnu, iqk_extra=0, iqb_extra=0;
-    int nup, idrup; 
+    int nup=0, idrup; 
     float xwgtup, scalup, aqedup, aqcdup;
     double alpha;
-    static char infile[80], header[80], inp1[80], outfile0[80], outfile1[80], outfile2[80];
+    static char infile[200], header[200], inp1[200], outfile0[200], outfile1[200], outfile2[200];
     FILE *ifp;
     particle in;
 
@@ -74,19 +74,20 @@ int main(int argc, char *argv[])
 
     // Construct file name to analyze
 
-    strcpy(infile, "lhe_files/DY_Gen_dtype/dtype_MZp_2000_M700.lhe");
-    TString fout_name("dilus/dtype_MZp_2000/M700_dilus.root");
+    //strcpy(infile, "/uscms_data/d3/oamram/CMSSW_8_0_24_patch1/src/Analysis/B2GTTrees/generator_stuff/mass_binned/cmsgrid_final_10k.lhe");
+    //strcpy(infile, "/uscms_data/d3/oamram/CMSSW_8_0_24_patch1/src/Analysis/B2GTTrees/generator_stuff/mass_binned/cmsgrid_final.lhe");
+    //strcpy(infile, "/uscms_data/d3/oamram/CMSSW_8_0_24_patch1/src/Analysis/B2GTTrees/generator_stuff/m200/cmsgrid_final.lhe");
+    strcpy(infile, "/uscms_data/d3/oamram/CMSSW_8_0_24_patch1/src/Analysis/B2GTTrees/generator_stuff/m500/cmsgrid_final.lhe");
+    TString fout_name("dilus/M700_dilus.root");
     //strcpy(infile, "../Z/DY_m150/pwgevents.lhe");
     //strcpy(infile, "../Z/DY_2/pwgevents.lhe");
-    const double m_low = 700;
-    const double m_high = 100000.;
-    const double pt_low = 0.;
-    const double pt_high = 100000.;
-    char out_file[80];
-    sprintf(out_file, "Out_pt%.0f.pdf", pt_low);
+    bool write_out = true;
+    const double m_low = 700.;
+    const double m_high =100000.;
+    char out_file[200];
     char hist_name[200];
-    sprintf (hist_name, "Dilepton Angular Distribution. M in [%.0f, %.0f]. Pt in [%.0f, %.0f]; cos(#theta^{*})", 
-            m_low, m_high, pt_low, pt_high);
+    sprintf (hist_name, "Dilepton Angular Distribution. M in [%.0f, %.0f].;  cos(#theta^{*})", 
+            m_low, m_high );
 
 
     // Make sure file is available 
@@ -113,12 +114,16 @@ int main(int argc, char *argv[])
     nevent=0; nfit=0;
     int event_num=0;
     int nFail =0;
+    int nTau = 0;
     double nF = 0, nB = 0;
+    char inp2[180], extra[180];
+
+    int itau, iatau;
 
     // Scan throught file first for the beginning of an event record	
 
-    while (fscanf(ifp,"%s", inp1) !=EOF) {
-        if(strcmp(inp1,"<event>") == 0) {
+    while (fgets(inp1, 200, ifp) !=NULL) {
+        if(strstr(inp1,"<event") != NULL) {
             event_num++;
 
             // event found
@@ -126,13 +131,17 @@ int main(int argc, char *argv[])
 
             // read event info
 
-            fscanf(ifp,"%d %d %f %f %f %f", &nup, &idrup, &xwgtup, &scalup, &aqedup, &aqcdup);
+            nup=0;
+
+            fgets(inp2, 200, ifp);
+            sscanf(inp2,"%d %[^\n]", &nup, extra);
+            if(nup == 0) printf("Can't parse line %s \n", inp2);
 
             // Make a vector to hold all particles for each event
 
             std::vector<particle> up;
 
-            iqk = -1; iqb = -1; itq = -1; itb = -1; ig1 = -1; ig2 = -1; ijt = -1;
+            iqk = -1; iqb = -1; itq = -1; itb = -1; ig1 = -1; ig2 = -1; ijt = -1; itau=-1; iatau=-1;
             iqk_extra = -1;
             iqb_extra = -1; //in case event with 2 quarks or 2 anti quarks
             njet = 0; npflavor = 0; nqqb = 0; ngg = 0;
@@ -140,7 +149,9 @@ int main(int argc, char *argv[])
             // Now loop over all particles
 
             for(i=0; i<nup; ++i) {
-                fscanf(ifp,"%d %d %d %d %d %d %lf %lf %lf %lf %lf %f %f", &in.id, &in.status, &in.mother[0], &in.mother[1],
+                fgets(inp2, 200, ifp);
+                //printf("%s \n", inp2);
+                sscanf(inp2,"%d %d %d %d %d %d %lf %lf %lf %lf %lf %f %f", &in.id, &in.status, &in.mother[0], &in.mother[1],
                         &in.color[0], &in.color[1], &in.p[0], &in.p[1], &in.p[2], &in.p[3], &in.p[4], &in.vtime, &in.spin);	
                 up.push_back(in);
             } 
@@ -148,7 +159,8 @@ int main(int argc, char *argv[])
             //  Do event by event analysis here	
 
             for(i=0; i<nup; ++i) {
-                if(up[i].mother[0] == 0 && up[i].mother[1] == 0) {
+                //printf("id %i status %i \n", up[i].id, up[i].status);
+                if(up[i].status == -1) {
                     if(up[i].id == 1 || (up[i].id == 2 || (up[i].id == 3 || (up[i].id == 4 || up[i].id == 5)))) {
                         if(iqk == -1) iqk = i; 
                         else{ 
@@ -165,11 +177,15 @@ int main(int argc, char *argv[])
                         }
                         continue;
                     }
-                    if(ig1 == -1) {ig1 = i;} else {ig2 = i;}
+                    if(up[i].id == 21){
+                        if(ig1 == -1) {ig1 = i;} else {ig2 = i;}
+                    }
                     continue;
                 }
-                if(up[i].id == 13) {itq = i; continue;}
-                if(up[i].id == -13) {itb = i; continue;}
+                if(up[i].id == 13 || up[i].id == 11) {itq = i; continue;}
+                if(up[i].id == -13 || up[i].id == -11) {itb = i; continue;}
+                if(up[i].id == 15) {itau = i; continue;}
+                if(up[i].id == -15) {iatau = i; continue;}
 
             }
 
@@ -187,8 +203,12 @@ int main(int argc, char *argv[])
                 nFail++;
                 continue;
             }
+            if(itau != -1 && iatau != -1){
+                nTau++;
+                continue;
+            }
             if(itq == -1 || itb == -1){
-                printf("no mus \n");
+                printf("can't find mus event %i \n", event_num);
                 nFail++;
                 continue;
             }
@@ -214,9 +234,8 @@ int main(int argc, char *argv[])
 
             // Create vectors for the parents
             TLorentzVector cm = tq + tb;
-            Double_t pt = cm.Pt();
 
-            if(cm.M() >= m_low && cm.M() <= m_high && pt >= pt_low && pt <= pt_high){
+            if(cm.M() >= m_low && cm.M() <= m_high){
                 ++nevent;
                 // Invariant mass of pair
                 double mtt = cm.M();
@@ -271,6 +290,7 @@ int main(int argc, char *argv[])
 
     /* close input file */
     fclose(ifp);
+    printf("M BIN %.0f to %.0f \n", m_low, m_high);
     printf("nf, nb = (%.0f, %.0f) \n", nF, nB);
     double AFB = ((nF - nB))/((nF+nB));
     double dAFB = (1.-AFB*AFB)/sqrt((nF+nB));
@@ -278,7 +298,7 @@ int main(int argc, char *argv[])
     printf( "A_FB count = %.3f +- %.3f\n" 
             "%i events failed to id \n",
             AFB, dAFB, nFail);
-    printf("total events %i %i fails \n \n", nevent, nFail++);
+    printf("%i events %i fails. %i ignored tautaus %i in lhe \n \n", nevent, nFail, nTau, event_num);
     printf("Total number of events: u-type %.0f d-type %.0f \n", utype_Ni->Integral() + utype_Nc->Integral(), dtype_Ni->Integral() + dtype_Nc->Integral());
     printf("Ratio u to d: %.3f \n", (utype_Ni->Integral() + utype_Nc->Integral())/ (dtype_Ni->Integral() + dtype_Nc->Integral()));
 
@@ -303,15 +323,15 @@ int main(int argc, char *argv[])
     TH1F *mix_dilu = (TH1F *)tot_num->Clone("mix_dilu");
     mix_dilu->Divide(tot_denom);
 
-
-    TFile *fout = TFile::Open(fout_name, "RECREATE");
-    fout->cd();
-    utype_dilu->Write();
-    dtype_dilu->Write();
-    mix_dilu->Write();
-    fout->Close();
-    printf("Wrote out dilus to %s \n", fout_name.Data());
-
+    if(write_out){
+        TFile *fout = TFile::Open(fout_name, "RECREATE");
+        fout->cd();
+        utype_dilu->Write();
+        dtype_dilu->Write();
+        mix_dilu->Write();
+        fout->Close();
+        printf("Wrote out dilus to %s \n", fout_name.Data());
+    }
     printf("dtype correct vs. incorrect \n");
     for(int i=0; i<= n_xf_bins; i++){
         printf("%.0f ", dtype_Nc->GetBinContent(i));
