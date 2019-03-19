@@ -24,45 +24,35 @@
 #include "../tdrstyle.C"
 #include "../CMS_lumi.C"
 
-void draw_AFB_shifts(){
+void draw_AFB_dilus(){
     setTDRStyle();
     Double_t x[11] = {0., 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0};
 
-    Double_t shifts[6][11]= 
-    {-0.141,  -0.124,  -0.107,  -0.089,  -0.071,  -0.053,  -0.035,  -0.017,  0.002 , 0.021 , 0.040,
-	-0.143,  -0.126,  -0.108,  -0.090,  -0.073,  -0.054,  -0.036,  -0.017,  0.001 , 0.021 , 0.040 , 
-	-0.166,  -0.147,  -0.127,  -0.107,  -0.086,  -0.066,  -0.045,  -0.023,  -0.002,  0.021,  0.044,
-	-0.115,  -0.102,  -0.088,  -0.075,  -0.060,  -0.046,  -0.032,  -0.017,  -0.002,  0.014,  0.030,
-	-0.124,  -0.109,  -0.094,  -0.079,  -0.064,  -0.049,  -0.033,  -0.017,  -0.001,  0.015,  0.032,
-	-0.104,  -0.092,  -0.080,  -0.067,  -0.054,  -0.042,  -0.028,  -0.015,  -0.001,  0.013,  0.028}; 
-
-    Double_t AFB_meas[6] = {0.611, 0.612, 0.614, 0.608, 0.559, 0.532};
-    //correct factor for AFB
-	Double_t corr[6][11];
-	for(int i=0; i<6; i++){
-		for(int j=0;j<11; j++){
-            corr[i][j] = (AFB_meas[i] + shifts[i][j])/AFB_meas[i];
-        }
-    }
+    Double_t meas0[11] ={0.750, 0.750, 0.750, 0.750, 0.734, 0.700, 0.668, 0.639, 0.612, 0.587, 0.564};
+    Double_t meas1[11] ={0.706, 0.688, 0.670, 0.653, 0.637, 0.622, 0.608, 0.594, 0.581, 0.568, 0.556};
+    Double_t meas2[11] ={0.728, 0.713, 0.697, 0.681, 0.666, 0.651, 0.636, 0.621, 0.607, 0.593, 0.579};
+    Double_t meas3[11] ={0.750, 0.747, 0.721, 0.696, 0.671, 0.648, 0.625, 0.603, 0.581, 0.561, 0.542};
+    Double_t meas4[11] ={0.714, 0.695, 0.677, 0.660, 0.644, 0.628, 0.613, 0.599, 0.586, 0.573, 0.560};
+    Double_t meas5[11] ={0.641, 0.628, 0.614, 0.601, 0.588, 0.575, 0.563, 0.552, 0.541, 0.529, 0.519};
 
 	TGraph *g[6];
-	g[0] = new TGraph(11, x, corr[0]);
-	g[1] = new TGraph(11, x, corr[1]);
-	g[2] = new TGraph(11, x, corr[2]);
-	g[3] = new TGraph(11, x, corr[3]);
-	g[4] = new TGraph(11, x, corr[4]);
-	g[5] = new TGraph(11, x, corr[5]);
+	g[0] = new TGraph(7, &x[4], &meas0[4]);
+	g[1] = new TGraph(11, x, meas1);
+	g[2] = new TGraph(11, x, meas2);
+	g[3] = new TGraph(10, &x[1], &meas3[1]);
+	g[4] = new TGraph(11, x, meas4);
+	g[5] = new TGraph(11, x, meas5);
 		
 
     g[0]->SetMarkerColor(kBlue);
     g[0]->SetLineColor(kBlue);
     g[0]->SetLineWidth(2);
-    g[0]->GetYaxis()->SetRangeUser(0.5,1.3);
 
 
     g[1]->SetMarkerColor(kGreen+3);
     g[1]->SetLineColor(kGreen+3);
     g[1]->SetLineWidth(2);
+    g[1]->GetYaxis()->SetRangeUser(0.4,0.8);
 
     g[2]->SetMarkerColor(kMagenta +3);
     g[2]->SetLineColor(kMagenta +3);
@@ -80,8 +70,8 @@ void draw_AFB_shifts(){
 
 
     TCanvas *c_m = new TCanvas("c_m", "Histograms", 200, 10, 900, 700);
-    g[0]->Draw("ALP");
-    g[1]->Draw("LP same");
+    g[1]->Draw("ALP");
+    g[0]->Draw("LP same");
     g[2]->Draw("LP same");
     g[3]->Draw("LP same");
     g[4]->Draw("LP same");
@@ -100,7 +90,7 @@ void draw_AFB_shifts(){
 
 
     g[0]->GetXaxis()->SetTitle("u-type quark fraction");
-    g[0]->GetYaxis()->SetTitle("AFB Correction Factor");
+    g[0]->GetYaxis()->SetTitle("AFB");
     int iPeriod = 4; 
     CMS_lumi(c_m, iPeriod, 11 );
     c_m->Update();
@@ -109,7 +99,7 @@ void draw_AFB_shifts(){
     TF1 *f[6];
     for(int i=0; i<6; i++){
         f[i] = new TF1("f", "[0]*x + [1]", 0,1);
-        g[i]->Fit(f[i], "Q");
+        g[i]->Fit(f[i], "QN");
         Double_t m = f[i]->GetParameter(0);
         Double_t b = f[i]->GetParameter(1);
         printf("Bin %i: m=%.3f b=%.3f \n", i, m, b);

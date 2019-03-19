@@ -128,8 +128,8 @@ void draw_cmp(){
 
     bool do_RC = false;
     make_m_cost_pt_xf_hist(t_data, data_m, data_cost, data_pt, data_xf, true, type, do_RC, m_low, m_high);
-    make_m_cost_pt_xf_hist(t_mc, mc_m, mc_cost, mc_pt, mc_xf, false, type,  do_RC, m_low, m_high);
-    make_m_cost_pt_xf_hist(t_mc_nosig, mc_nosig_m, mc_nosig_cost, mc_nosig_pt, mc_nosig_xf, false, type, do_RC, m_low, m_high);
+    make_m_cost_pt_xf_hist(t_elel_mc, mc_m, mc_cost, mc_pt, mc_xf, false, type,  do_RC, m_low, m_high);
+    make_m_cost_pt_xf_hist(t_elel_nosig, mc_nosig_m, mc_nosig_cost, mc_nosig_pt, mc_nosig_xf, false, type, do_RC, m_low, m_high);
     make_m_cost_pt_xf_hist(t_ttbar, ttbar_m, ttbar_cost, ttbar_pt, ttbar_xf, false, type, do_RC, m_low, m_high);
     make_m_cost_pt_xf_hist(t_wt, wt_m, wt_cost, wt_pt, wt_xf, false, type, do_RC, m_low, m_high);
     make_m_cost_pt_xf_hist(t_diboson, diboson_m, diboson_cost, diboson_pt, diboson_xf, false, type,  do_RC, m_low, m_high);

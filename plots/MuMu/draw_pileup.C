@@ -35,6 +35,7 @@ void make_pileup_hist(TTree *t1, TH1F *h_before, TH1F *h_after, bool is_data=fal
     Double_t bcdef_HLT_SF, bcdef_iso_SF, bcdef_id_SF;
     Double_t gh_HLT_SF, gh_iso_SF, gh_id_SF, el_id_SF, el_reco_SF;
     Double_t jet1_pt, jet2_pt, jet1_b_weight, jet2_b_weight, pu_SF;
+    jet1_b_weight = jet2_b_weight = 1.0;
     TLorentzVector *mu_p = 0;
     TLorentzVector *mu_m = 0;
     TLorentzVector *el_p = 0;
@@ -118,7 +119,7 @@ void draw_pileup(){
     data_pu->Scale(1./data_pu->Integral());
     data_pu->SetDirectory(0);
 
-    init();
+    mumu_init();
     TH1F *mc_pu_before = new TH1F("mc_pu_before", "MC signal", 100, 0, 100);
     TH1F *mc_nosig_pu_before = new TH1F("mc_nosig_pu_before", "MC signal", 100, 0, 100);
     TH1F *ttbar_pu_before = new TH1F("ttbar_pu_before", "MC signal", 100, 0, 100);

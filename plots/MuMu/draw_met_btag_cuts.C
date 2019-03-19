@@ -25,6 +25,7 @@
 #include "../../analyze/HistMaker.C"
 #include "../tdrstyle.C"
 #include "../CMS_lumi.C"
+#include "../../analyze/AFB_fit/root_files.h"
 
 const int type = FLAG_MUONS;
 
@@ -170,10 +171,10 @@ void make_ratio_plot(char title[80], TH1F* h1, char h1_label[80], TH1F* h2, char
 
 
 void draw_met_btag_cuts(){
-    TFile *f_mc_binned = TFile::Open("../analyze/output_files/MuMu_TTbar_july10.root");
-    TTree *t_mc_binned = (TTree *)f_mc_binned->Get("T_data");
     setTDRStyle();
+    init();
 
+    t_mumu_mc->Print();
 
     
 
@@ -192,7 +193,7 @@ void draw_met_btag_cuts(){
     h_btagonly->SetLineWidth(3);
 
     
-    make_cut_hists(t_mc_binned, h_both, h_metonly, h_btagonly);
+    make_cut_hists(t_mumu_mc, h_both, h_metonly, h_btagonly);
 
 
 

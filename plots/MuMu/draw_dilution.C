@@ -38,14 +38,14 @@ void draw_dilution(){
 
 
     //read event data
-    init();
+    mumu_init();
 
     Long64_t size  =  t_mc->GetEntries();
 
     Double_t m, xF, cost, mu1_pt, mu2_pt, jet1_cmva, jet2_cmva, gen_weight, cost_st;
     Double_t bcdef_HLT_SF, bcdef_iso_SF, bcdef_id_SF;
     Double_t gh_HLT_SF, gh_iso_SF, gh_id_SF;
-    Double_t jet1_pt, jet2_pt, jet1_b_weight, jet2_b_weight;
+    Double_t jet1_pt, jet2_pt, jet1_b_weight=1., jet2_b_weight=1.;
     Float_t met_pt;
     Int_t nJets;
     nJets = 2;
