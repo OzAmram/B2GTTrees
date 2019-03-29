@@ -34,6 +34,7 @@ using namespace std;
 #include "TVector3.h"
 #include "TFitter.h"
 #include "TSystem.h"
+#include "../analyze/AFB_fit/root_files.h"
 
 // Global definitions 
 
@@ -74,16 +75,15 @@ void analyze_LHE9_get_dilu()
 
     // Construct file name to analyze
 
-    //strcpy(infile, "/uscms_data/d3/oamram/CMSSW_8_0_24_patch1/src/Analysis/B2GTTrees/generator_stuff/mass_binned/cmsgrid_final_10k.lhe");
     //strcpy(infile, "/uscms_data/d3/oamram/CMSSW_8_0_24_patch1/src/Analysis/B2GTTrees/generator_stuff/mass_binned/cmsgrid_final.lhe");
     //strcpy(infile, "/uscms_data/d3/oamram/CMSSW_8_0_24_patch1/src/Analysis/B2GTTrees/generator_stuff/m200/cmsgrid_final.lhe");
     strcpy(infile, "/uscms_data/d3/oamram/CMSSW_8_0_24_patch1/src/Analysis/B2GTTrees/generator_stuff/m500/cmsgrid_final.lhe");
-    TString fout_name("dilus/M700_dilus.root");
+    TString fout_name("dilus/M500_dilus.root");
     //strcpy(infile, "../Z/DY_m150/pwgevents.lhe");
     //strcpy(infile, "../Z/DY_2/pwgevents.lhe");
     bool write_out = true;
-    const double m_low = 700.;
-    const double m_high =100000.;
+    const double m_low = 500.;
+    const double m_high =700.;
     char out_file[200];
     char hist_name[200];
     sprintf (hist_name, "Dilepton Angular Distribution. M in [%.0f, %.0f].;  cos(#theta^{*})", 
@@ -99,8 +99,6 @@ void analyze_LHE9_get_dilu()
     }
 
     //  Book Histograms
-    int n_xf_bins = 5;
-    Float_t xf_bins[] = {0., 0.02, 0.04, 0.07, 0.10, 1.0};
     TH1F * utype_Ni= new TH1F("utype_Ni", "", n_xf_bins, xf_bins);
     TH1F * dtype_Ni= new TH1F("utype_Nc", "", n_xf_bins, xf_bins);
     TH1F * utype_Nc= new TH1F("dtype_Ni", "", n_xf_bins, xf_bins);

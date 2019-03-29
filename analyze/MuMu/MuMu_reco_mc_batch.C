@@ -21,7 +21,7 @@ double Ebeam = 6500.;
 double Pbeam = sqrt(Ebeam*Ebeam - 0.938*0.938);
 
 char *filename("DY_files_oct22.txt");
-const TString fout_name("output_files/MuMu_DY_ss_oct22.root");
+const TString fout_name("output_files/MuMu_DY_test.root");
 const bool PRINT=false;
 const bool do_samesign = false;
 
@@ -476,7 +476,7 @@ void MuMu_reco_mc_batch(int nJobs =1, int iJob = 0)
                             }
                             //record 2 scattered muons
                             if(abs(gen_id[k]) == MUON && 
-                                    (gen_Mom0ID[k] == Z || gen_Mom0ID[k] == PHOTON || abs(gen_Mom0ID[k]) == TAU 
+                                    (gen_Mom0ID[k] == Z || gen_Mom0ID[k] == PHOTON || (abs(gen_Mom0ID[k]) == TAU && gen_Pt[k] > 10.)
                                       || abs(gen_Mom0ID[k]) == ELECTRON || (gen_status[k] == OUTGOING && gen_Mom0ID[k] != PROTON))) {
                                 if(gen_id[k] == MUON){
                                     if(gen_mu_m == -1) gen_mu_m = k;

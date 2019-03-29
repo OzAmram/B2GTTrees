@@ -18,9 +18,11 @@ double Ebeam = 6500.;
 double Pbeam = sqrt(Ebeam*Ebeam - 0.938*0.938);
 
 char *filename("DY_files_oct22.txt");
-const TString fout_name("output_files/ElEl_DY_oct22.root");
+const TString fout_name("output_files/ElEl_DY_test.root");
 const double alpha = 0.05;
 const bool PRINT=false;
+
+bool do_samesign = false;
 
 
 
@@ -367,9 +369,11 @@ void ElEl_reco_mc_batch(int nJobs = 1, int iJob = 0)
                 t1->GetEntry(i);
                 if(el_size > EL_SIZE || gen_size >GEN_SIZE) printf("WARNING: EL_SIZE OR GEN_SIZE TOO LARGE \n");
                 if(met_size != 1) printf("WARNING: Met size not equal to 1\n");
+                bool opp_sign = ((abs(el_Charge[0] - el_Charge[1])) > 0.01);
+                bool good_sign = opp_sign ^ do_samesign;
                 bool good_trigger = HLT_El;
                 if(good_trigger &&
-                        el_size >= 2 && ((abs(el_Charge[0] - el_Charge[1])) > 0.01) &&
+                        el_size >= 2 && good_sign &&
                         el_IDMedium[0] && el_IDMedium[1] &&
                         el_ScaleCorr[0] * el_Pt[0] > 29. &&  el_ScaleCorr[1] * el_Pt[1] > 15. &&
                         goodElEta(el_SCEta[0]) && goodElEta(el_SCEta[1])){ 
@@ -451,7 +455,7 @@ void ElEl_reco_mc_batch(int nJobs = 1, int iJob = 0)
 
                             //record 2 scattered electrons
                             if(abs(gen_id[k]) == ELECTRON && 
-                                    (gen_Mom0ID[k] == Z || gen_Mom0ID[k] == PHOTON || abs(gen_Mom0ID[k]) == TAU 
+                                    (gen_Mom0ID[k] == Z || gen_Mom0ID[k] == PHOTON || (abs(gen_Mom0ID[k]) == TAU && gen_Pt[k] > 10.)
                                      || abs(gen_Mom0ID[k]) == MUON || (gen_status[k] == OUTGOING && gen_Mom0ID[k] != PROTON))) {
                                 if(gen_id[k] == ELECTRON){
                                     if(gen_el_m == -1) gen_el_m = k;
@@ -642,16 +646,19 @@ void ElEl_reco_mc_batch(int nJobs = 1, int iJob = 0)
                             else if((abs(inc_id1) <= 6) && (abs(inc_id2) <= 6) && (inc_id1 * inc_id2 >0)){ //2 quarks
                                 if(PRINT) sprintf(out_buff + strlen(out_buff),"QQ Event \n");
                                 signal_event = false;
+                                //print_out = true;
                                 nQQ++;
                             }
                             else if((inc_id1 == 21) && (inc_id2 == 21)){ //gluglu
                                 signal_event = false;
+                                //print_out = true;
                                 nGluGlu++;
                                 if(PRINT) sprintf(out_buff + strlen(out_buff), "Glu Glu event \n");
                             }
                             else {
                                 printf("WARNING: not qqbar, qq, qg, or gg event");
                                 printf("First particle was %i second particle was %i \n \n ", inc_id1, inc_id2);
+                                print_out = true;
                                 nFailedID ++;
                             }
                         }

@@ -244,7 +244,6 @@ void gen_templates(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_contam,
     printf("Performing fakes cleanup (removing neg. bins) \n");
     cleanup_template(h);
     set_fakerate_errors(h_err, FR.h, h);
-    h->Scale(0.5);
     printf("Total Fakerate weight Weight is %.2f \n", h->Integral());
     if(h->Integral() < 0.){
         h->Scale(0.);
@@ -261,10 +260,10 @@ void make_ilya_templates(){
     auto f_mumu_WJets = TFile::Open("../analyze/output_files/MuMu_WJets_est_mlow_feb21.root");
     auto t_mumu_WJets = (TTree *)f_mumu_WJets->Get("T_data");
 
-    auto f_mumu_WJets_contam = TFile::Open("../analyze/output_files/MuMu_WJets_mlow_comb_feb26.root");
+    auto f_mumu_WJets_contam = TFile::Open("../analyze/output_files/MuMu_WJets_mc_mlow_comb_mar6.root");
     auto t_mumu_WJets_contam = (TTree *)f_mumu_WJets_contam->Get("T_data");
 
-    auto f_mumu_QCD_contam = TFile::Open("../analyze/output_files/MuMu_QCD_mlow_comb_feb26.root");
+    auto f_mumu_QCD_contam = TFile::Open("../analyze/output_files/MuMu_QCD_mc_mlow_comb_mar6.root");
     auto t_mumu_QCD_contam = (TTree *)f_mumu_QCD_contam->Get("T_data");
 
 
@@ -275,10 +274,10 @@ void make_ilya_templates(){
     auto f_elel_WJets = TFile::Open("../analyze/output_files/ElEl_WJets_est_mlow_feb21.root");
     auto t_elel_WJets = (TTree *)f_elel_WJets->Get("T_data");
 
-    auto f_elel_WJets_contam = TFile::Open("../analyze/output_files/ElEl_WJets_mlow_comb_feb26.root");
+    auto f_elel_WJets_contam = TFile::Open("../analyze/output_files/ElEl_WJets_mc_mlow_comb_mar6.root");
     auto t_elel_WJets_contam = (TTree *)f_elel_WJets_contam->Get("T_data");
 
-    auto f_elel_QCD_contam = TFile::Open("../analyze/output_files/ElEl_QCD_mlow_comb_feb26.root");
+    auto f_elel_QCD_contam = TFile::Open("../analyze/output_files/ElEl_QCD_mc_mlow_comb_mar6.root");
     auto t_elel_QCD_contam = (TTree *)f_elel_QCD_contam->Get("T_data");
 
     float eta_bins[5] = {0., 1.0, 1.25, 1.5, 2.4};
@@ -293,6 +292,10 @@ void make_ilya_templates(){
 
     gen_templates(t_mumu_WJets, t_mumu_QCD, t_mumu_WJets_contam, t_mumu_QCD_contam, h_mumu, FLAG_MUONS);
     gen_templates(t_elel_WJets, t_elel_QCD, t_elel_WJets_contam, t_elel_QCD_contam, h_elel, FLAG_ELECTRONS);
+
+    h_elel->Scale(0.5);
+    float mu_scaling = 1./(1. + R_mu_ss_os);
+    h_mumu->Scale(mu_scaling);
 
     TFile *fout = new TFile("lepton_pair_fakes_est.root", "RECREATE");
     fout->cd();
