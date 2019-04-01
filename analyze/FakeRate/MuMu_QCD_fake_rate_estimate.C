@@ -72,6 +72,7 @@ void MuMu_QCD_fake_rate_estimate(int nJobs=1, int iJob=0)
     Double_t cm_m, xF, cost_r, mu1_pt, mu2_pt, mu1_eta, mu2_eta, jet1_pt, jet2_pt,
              jet1_cmva, jet1_eta, jet2_cmva, jet2_eta, evt_fakerate;
     Double_t mu1_fakerate, mu2_fakerate;
+    Float_t mu1_charge, mu2_charge;
     Int_t nJets;
     Bool_t double_muon_trig;
     Float_t met_pt;
@@ -83,6 +84,8 @@ void MuMu_QCD_fake_rate_estimate(int nJobs=1, int iJob=0)
     tout->Branch("mu2_pt", &mu2_pt, "mu2_pt/D");
     tout->Branch("mu1_eta", &mu1_eta, "mu1_eta/D");
     tout->Branch("mu2_eta", &mu2_eta, "mu2_eta/D");
+    tout->Branch("mu1_charge", &mu1_charge, "mu1_charge/F");
+    tout->Branch("mu2_charge", &mu2_charge, "mu2_charge/F");
     tout->Branch("mu1_fakerate", &mu1_fakerate);
     tout->Branch("mu2_fakerate", &mu2_fakerate);
     tout->Branch("mu_m", "TLorentzVector", &mu_m);
@@ -196,6 +199,8 @@ void MuMu_QCD_fake_rate_estimate(int nJobs=1, int iJob=0)
                     mu_m.SetPtEtaPhiM(mu_Pt[0], mu_Eta[0], mu_Phi[0], mu_mass);
                     mu_p.SetPtEtaPhiM(mu_Pt[1], mu_Eta[1], mu_Phi[1], mu_mass);
                 }
+                mu1_charge = mu_Charge[0];
+                mu2_charge = mu_Charge[1];
 
                 cm = mu_p + mu_m;
                 cm_m = cm.M();

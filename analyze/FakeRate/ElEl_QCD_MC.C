@@ -108,6 +108,7 @@ void ElEl_QCD_MC(int nJobs = 1, int iJob = 0)
     Double_t cm_m, xF, cost_r, el1_pt, el2_pt, el1_eta, el2_eta, jet1_pt, jet2_pt, deltaC, jet1_eta, jet2_eta, gen_weight,
              jet1_cmva, jet1_csv, jet2_cmva, jet2_csv;
     Double_t el_id_SF, el_reco_SF, jet1_b_weight, jet2_b_weight, pu_SF;
+    Float_t el1_charge, el2_charge;
     Int_t nJets, jet1_flavour, jet2_flavour;
     Float_t met_pt;
     TLorentzVector el_p, el_m, cm, q1, q2;
@@ -118,6 +119,8 @@ void ElEl_QCD_MC(int nJobs = 1, int iJob = 0)
     tout->Branch("el2_pt", &el2_pt, "el2_pt/D");
     tout->Branch("el1_eta", &el1_eta, "el1_eta/D");
     tout->Branch("el2_eta", &el2_eta, "el2_eta/D");
+    tout->Branch("el1_charge", &el1_charge, "el1_charge/F");
+    tout->Branch("el2_charge", &el2_charge, "el2_charge/F");
     tout->Branch("el_m", "TLorentzVector", &el_m);
     tout->Branch("el_p", "TLorentzVector", &el_p);
     tout->Branch("jet1_pt", &jet1_pt, "jet1_pt/D");
@@ -257,6 +260,8 @@ void ElEl_QCD_MC(int nJobs = 1, int iJob = 0)
                     el_m.SetPtEtaPhiE(el_ScaleCorr[0] * el_Pt[0], el_Eta[0], el_Phi[0], el_ScaleCorr[0] * el_E[0]);
                     el_p.SetPtEtaPhiE(el_ScaleCorr[1] * el_Pt[1], el_Eta[1], el_Phi[1], el_ScaleCorr[1] * el_E[1]);
                 }
+                el1_charge = el_Charge[0];
+                el2_charge = el_Charge[1];
                 cm = el_p + el_m;
                 cm_m = cm.M();
 

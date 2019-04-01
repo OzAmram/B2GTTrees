@@ -751,6 +751,7 @@ void Fakerate_est_el(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_MC, TTree *t_Q
         jet1_b_weight = jet2_b_weight =1.;
         Double_t el_id_SF, el_reco_SF;
         Double_t evt_fakerate, el1_fakerate, el2_fakerate, el1_eta, el1_pt, el2_eta, el2_pt;
+        Float_t el1_charge, el2_charge;
         TLorentzVector *el_p = 0;
         TLorentzVector *el_m = 0;
         Int_t iso_el;
@@ -772,6 +773,8 @@ void Fakerate_est_el(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_MC, TTree *t_Q
         t->SetBranchAddress("el2_pt", &el2_pt);
         t->SetBranchAddress("el1_eta", &el1_eta);
         t->SetBranchAddress("el2_eta", &el2_eta);
+        t->SetBranchAddress("el1_charge", &el1_charge);
+        t->SetBranchAddress("el2_charge", &el2_charge);
         t->SetBranchAddress("nJets", &nJets);
         t->SetBranchAddress("el_p", &el_p);
         t->SetBranchAddress("el_m", &el_m);
@@ -821,7 +824,11 @@ void Fakerate_est_el(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_MC, TTree *t_Q
 
 
 
-            if(m >= m_low && m <= m_high && met_pt < 50.  && no_bjets && not_cosmic){
+            bool pass = m >= m_low && m <= m_high && met_pt < 50.  && no_bjets && not_cosmic;
+            bool opp_sign = ((abs(el1_charge - el2_charge)) > 0.01);
+            if(!ss) pass = pass && opp_sign;
+
+            if(pass){
                 //if(l==3) printf("Evt fr %.2e \n", evt_fakerate);
                 //if(l==3) printf("cost, fr %.2f %.2e \n", cost, evt_fakerate);
                 TLorentzVector cm = *el_p + *el_m;

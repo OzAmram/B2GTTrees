@@ -13,7 +13,7 @@
 
 const double root2 = sqrt(2);
 const char* filename("SingleElectron_files_nov12.txt");
-const TString fout_name("output_files/ElEl_WJets_est_nov26.root");
+const TString fout_name("output_files/ElEl_WJets_test.root");
 
 
 bool is_empty_line(const char *s) {
@@ -72,6 +72,7 @@ void ElEl_WJets_fake_rate_estimate(int nJobs=1, int iJob=0)
     tout->SetDirectory(0);
     Double_t cm_m, xF, cost_r, el1_pt, el2_pt, el1_eta, el2_eta, jet1_pt, jet2_pt,
              jet1_cmva, jet1_eta, jet2_cmva, jet2_eta, evt_fakerate;
+    Float_t el1_charge, el2_charge;
     Double_t el_fakerate;
     Int_t nJets, iso_el;
     Float_t met_pt;
@@ -83,6 +84,8 @@ void ElEl_WJets_fake_rate_estimate(int nJobs=1, int iJob=0)
     tout->Branch("el2_pt", &el2_pt, "el2_pt/D");
     tout->Branch("el1_eta", &el1_eta, "el1_eta/D");
     tout->Branch("el2_eta", &el2_eta, "el2_eta/D");
+    tout->Branch("el1_charge", &el1_charge, "el1_charge/F");
+    tout->Branch("el2_charge", &el2_charge, "el2_charge/F");
     tout->Branch("el_fakerate", &el_fakerate);
     tout->Branch("iso_el", &iso_el);
     tout->Branch("el_m", "TLorentzVector", &el_m);
@@ -210,6 +213,8 @@ void ElEl_WJets_fake_rate_estimate(int nJobs=1, int iJob=0)
                     }
 
                 }
+                el1_charge = el_Charge[0];
+                el2_charge = el_Charge[1];
                 bool no_bjets = has_no_bjets(nJets, jet1_pt, jet2_pt, jet1_cmva, jet2_cmva);
                 bool one_iso = el_IDMedium[0] ^ el_IDMedium[1];
                 

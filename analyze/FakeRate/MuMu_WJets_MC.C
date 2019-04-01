@@ -104,6 +104,7 @@ void MuMu_WJets_MC(int nJobs = 1, int iJob = 0)
              jet1_cmva, jet1_csv, jet2_cmva, jet2_csv;
     Double_t bcdef_HLT_SF, bcdef_iso_SF, bcdef_id_SF, gh_HLT_SF, gh_iso_SF, gh_id_SF,
              jet1_b_weight, jet2_b_weight, pu_SF;
+    Float_t mu1_charge, mu2_charge;
     Int_t nJets, jet1_flavour, jet2_flavour, iso_muon;
     Float_t met_pt;
     Bool_t double_muon_trig;
@@ -115,6 +116,8 @@ void MuMu_WJets_MC(int nJobs = 1, int iJob = 0)
     tout->Branch("mu2_pt", &mu2_pt, "mu2_pt/D");
     tout->Branch("mu1_eta", &mu1_eta, "mu1_eta/D");
     tout->Branch("mu2_eta", &mu2_eta, "mu2_eta/D");
+    tout->Branch("mu1_charge", &mu1_charge, "mu1_charge/F");
+    tout->Branch("mu2_charge", &mu2_charge, "mu2_charge/F");
     tout->Branch("mu_m", "TLorentzVector", &mu_m);
     tout->Branch("mu_p", "TLorentzVector", &mu_p);
     tout->Branch("jet1_pt", &jet1_pt, "jet1_pt/D");
@@ -270,6 +273,8 @@ void MuMu_WJets_MC(int nJobs = 1, int iJob = 0)
                         mu_m.SetPtEtaPhiM(mu_Pt[0], mu_Eta[0], mu_Phi[0], mu_mass);
                         mu_p.SetPtEtaPhiM(mu_Pt[1], mu_Eta[1], mu_Phi[1], mu_mass);
                     }
+                    mu1_charge = mu_Charge[0];
+                    mu2_charge = mu_Charge[1];
 
                     cm = mu_p + mu_m;
                     cm_m = cm.M();
