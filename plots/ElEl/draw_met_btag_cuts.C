@@ -25,7 +25,7 @@
 #include "../../analyze/HistMaker.C"
 #include "../tdrstyle.C"
 #include "../CMS_lumi.C"
-#include "root_files.h"
+#include "../../analyze/AFB_fit/root_files.h"
 
 const int type = FLAG_ELECTRONS;
 
@@ -77,7 +77,7 @@ void make_cut_hists(TTree *t1, TH1F *h_both, TH1F* h_metonly, TH1F *h_btagonly )
             nEvent++;
             cost = get_cost_v2(*el_p, *el_m);
 
-            Double_t evt_weight = 1000. * tot_lumi* gen_weight *pu_SF * el_id_SF * el_reco_SF * el_HLT_SF;
+            Double_t evt_weight = 1000. * el_lumi* gen_weight *pu_SF * el_id_SF * el_reco_SF * el_HLT_SF;
             if (nJets >= 1){
                 evt_weight *= jet1_b_weight;
             }
@@ -192,7 +192,7 @@ void draw_met_btag_cuts(){
     h_btagonly->SetLineWidth(3);
 
     
-    make_cut_hists(t_mc, h_both, h_metonly, h_btagonly);
+    make_cut_hists(t_elel_mc, h_both, h_metonly, h_btagonly);
 
 
 

@@ -37,14 +37,18 @@ void draw_emu_new(){
 
                                 
     //TFile *f_ttbar = TFile::Open("../analyze/output_files/EMu_TTbar_Mu_june29.root");
-    TFile *f_ttbar = TFile::Open("../analyze/output_files/EMu_background_ttbar_Mu_mar29.root");
+    TFile *f_ttbar = TFile::Open("../analyze/output_files/EMu_ttbar_mar7.root");
     TTree *t_ttbar = (TTree *)f_ttbar->Get("T_data");
 
-    TFile *f_diboson = TFile::Open("../analyze/output_files/EMu_diboson_Mu_july05.root");
+    TFile *f_diboson = TFile::Open("../analyze/output_files/EMu_diboson_mar19.root");
     TTree *t_diboson = (TTree *)f_diboson->Get("T_data");
 
-    TFile *f_wt = TFile::Open("../analyze/output_files/EMu_WT_Mu_june29.root");
+    TFile *f_wt = TFile::Open("../analyze/output_files/EMu_wt_back_mar18.root");
     TTree *t_wt = (TTree *)f_wt->Get("T_data");
+
+    t_ttbar->Print(); 
+    t_diboson->Print();
+    t_wt->Print();
 
     TH1F *data_m = new TH1F("data_m", "MC Signal (qqbar, qglu, qbarglu)", 30, 150, 1000);
     TH1F *ttbar_m = new TH1F("ttbar_m", "MC Signal (qqbar, qglu, qbarglu)", 30, 150, 1000);

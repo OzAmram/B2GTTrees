@@ -23,7 +23,7 @@
 #include "../../analyze/HistMaker.C"
 #include "../tdrstyle.C"
 #include "../CMS_lumi.C"
-#include "root_files.h"
+#include "../../analyze/AFB_fit/root_files.h"
 
 void make_pt_cmp(TTree *t1, TH1F *h_def_ratio, TH1F *h_alt_ratio, bool is_data=false){
     //read event data
@@ -237,15 +237,7 @@ void make_ratio_plot(char title[80], TH1F* h1, char h1_label[80], TH1F* h2, char
 
 void draw_roch_cmp(){
 
-    //TFile *f_data2 = TFile::Open("../analyze/output_files/SingleMuon_data_jan22.root");
-    TFile *f_data1 = TFile::Open("../analyze/output_files/SingleMuon_data_slim_july10.root");
-    //TFile * f_mc2 = TFile::Open("../analyze/output_files/MuMu_DY_mar19.root");
-    //TFile *f_mc1 = TFile::Open("../analyze/output_files/MuMu_DY_slim_july10.root");
-    //f_mc = TFile::Open("../analyze/output_files/MuMu_DY_april9_unbinned.root");
-    //t_mc_nosig = (TTree *)f_mc->Get("T_back");
-    //TTree *t1 = (TTree *)f_mc1->Get("T_data");
-    TTree *t1 = (TTree *)f_data1->Get("T_data");
-    bool is_data = true;
+    init();
     setTDRStyle();
 
 
@@ -254,16 +246,20 @@ void draw_roch_cmp(){
     TH1F *h1_cost = new TH1F("data_cost", "Data", 40, -1.,1.);
     TH1F *h1_m = new TH1F("data_m", "Data Dimuon Mass Distribution", 60, 140, 2000);
     TH1F *h1_pt = new TH1F("mc_pt", "MC signal", 40, 0, 1000);
+    TH1F *h1_xf = new TH1F("msdjf_pt", "MC signal", 40, 0, 1000);
 
     TH1F *h2_cost = new TH1F("h2_cost", "Data", 40, -1.,1.);
     TH1F *h2_m = new TH1F("h2_m", "Data Dimuon Mass Distribution", 60, 140, 2000);
     TH1F *h2_pt = new TH1F("h2_pt", "MC signal", 40, 0, 1000);
+    TH1F *h2_xf = new TH1F("hx_pt", "MC signal", 40, 0, 1000);
 
     TH1F *h_def_ratio = new TH1F("d", "Roch default ratio", 40, 0.5, 1.5);
     TH1F *h_alt_ratio = new TH1F("a", "Roch alt ratio", 40, 0.5, 1.5);
 
-    make_m_cost_pt_hist(t1, h1_m, h1_cost, h1_pt, is_data, FLAG_MUONS, true);
-    make_m_cost_pt_hist(t1, h2_m, h2_cost, h2_pt, is_data, FLAG_MUONS, false);
+    bool is_data = false;
+    int type = FLAG_MUONS;
+    make_m_cost_pt_xf_hist(t_mumu_mc, h1_m, h1_cost, h1_pt, h1_xf, is_data, type, true);
+    make_m_cost_pt_xf_hist(t_mumu_mc, h2_m, h2_cost, h2_pt, h2_xf, is_data, type, false);
 
     //make_pt_cmp(t1, h1_cost, h2_cost);
     //TCanvas *c1 = new TCanvas("c1", "", 200, 10, 900, 700);
@@ -274,7 +270,7 @@ void draw_roch_cmp(){
 
     printf("ON integral is %.2f. OFF integral is %.2f \n", h1_m->Integral(), h2_m->Integral());
 
-    make_ratio_plot("MuMu_data_roch_cost_cmp.pdf", h2_cost, "RC OFF ",h1_cost, "RC ON", "OFF/On", "Cos(#theta)", false);
-    make_ratio_plot("MuMu_data_roch_m_cmp.pdf", h2_m, "RC OFF ",h1_m, "RC ON", "OFF/On", "M (GeV)", true);
+    make_ratio_plot("MuMu_mc_roch_cost_cmp.pdf", h2_cost, "RC OFF ",h1_cost, "RC ON", "OFF/On", "Cos(#theta)", false);
+    make_ratio_plot("MuMu_mc_roch_m_cmp.pdf", h2_m, "RC OFF ",h1_m, "RC ON", "OFF/On", "M (GeV)", true);
 }
 

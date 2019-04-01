@@ -37,6 +37,7 @@ void make_m_cost_xf_hist(TTree *t1, TH1F *h_cost_st, TH1F *h_cost, TH1F *h_xF, b
     Double_t bcdef_HLT_SF, bcdef_iso_SF, bcdef_id_SF;
     Double_t gh_HLT_SF, gh_iso_SF, gh_id_SF;
     Double_t jet1_pt, jet2_pt, jet1_b_weight, jet2_b_weight;
+    jet1_b_weight = jet2_b_weight = 1.;
     Float_t met_pt;
     Bool_t is_tau_event;
     Int_t nJets;
@@ -119,7 +120,7 @@ void make_m_cost_xf_hist(TTree *t1, TH1F *h_cost_st, TH1F *h_cost, TH1F *h_xF, b
 }
 
 void draw_tau_cost_xf(){
-    init();
+    mumu_init();
     setTDRStyle();
     int n_m_bins = 6; 
     Double_t m_bins[] = {150,200,250,350,500,700,1000}; 

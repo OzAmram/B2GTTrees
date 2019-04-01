@@ -134,23 +134,22 @@ void construct_fakerate_template(TH2D *h_rate, TH2D *h_total, TTree *t, int flag
 
 
 void draw_fakerate(){
-    /*
+    ///*
 
     TFile *f = TFile::Open("../analyze/FakeRate/root_files/SingleElectron_data_fakerate_nov27.root");
     TFile *f_mc = TFile::Open("../analyze/FakeRate/root_files/SingleElectron_mc_fakerate_contam_nov27.root");
-    TFile *f_new = TFile::Open("../analyze/FakeRate/root_files/SingleElectron_data_fakerate_corrected_nov27.root", "RECREATE");
     int FLAG = FLAG_ELECTRONS;
     Float_t pt_bins[] = {10,20,32,45,60,100, 1000};
     int n_pt_bins = 6;
-    */
+    //*/
 
-    ///*
+    /*
     TFile *f = TFile::Open("../analyze/FakeRate/root_files/SingleMuon_data_fakerate_nov27.root");
     TFile *f_mc = TFile::Open("../analyze/FakeRate/root_files/SingleMuon_mc_fakerate_contam_nov27.root");
     int FLAG = FLAG_MUONS;
     Float_t pt_bins[] = {10,20,26,35,1000};
     int n_pt_bins = 4;
-    //*/
+    */
 
     //
     Float_t eta_bins[] = {0,1.479,2.4};
@@ -191,7 +190,8 @@ void draw_fakerate(){
 
     SetErrors(h_rate_new, h_total_new);
     if(write_out){
-        TFile *f_new = TFile::Open("../analyze/FakeRate/root_files/SingleMuon_data_fakerate_corrected_nov27.root", "RECREATE");
+        //TFile *f_new = TFile::Open("../analyze/FakeRate/root_files/SingleMuon_data_fakerate_corrected_nov27.root", "RECREATE");
+        TFile *f_new = TFile::Open("../analyze/FakeRate/root_files/SingleElectron_data_fakerate_corrected_nov27.root", "RECREATE");
         f_new->cd();
         h_rate_new->Write();
         h_total_new->Write();
@@ -214,8 +214,8 @@ void draw_fakerate(){
 
     TCanvas *c1 = new TCanvas("c1", "Histograms", 200, 10, 900, 700);
     c1->SetLogx();
-    rate_barrel->SetTitle("Muons fakerate");
-    //rate_barrel->SetTitle("Electrons fakerate");
+    //rate_barrel->SetTitle("Muons fakerate");
+    rate_barrel->SetTitle("Electrons fakerate");
     rate_barrel->SetStats(0);
     rate_barrel->SetLineWidth(3);
     rate_barrel ->Draw("E1");
