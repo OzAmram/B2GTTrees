@@ -607,6 +607,8 @@ void Fakerate_est_mu(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_contam, TTree 
     setup_new_mu_fakerate(&FR);
     TH2D *h_err = (TH2D *) FR.h->Clone("h_err");
     h_err->Reset();
+    float tot_weight_os = 0.;
+    float tot_weight_ss = 0.;
     //FR.h->Print();
     for (int l=0; l<=3; l++){
         printf("l=%i\n", l);
@@ -619,6 +621,7 @@ void Fakerate_est_mu(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_contam, TTree 
         Double_t bcdef_HLT_SF, bcdef_iso_SF, bcdef_id_SF;
         Double_t gh_HLT_SF, gh_iso_SF, gh_id_SF;
         Double_t jet1_pt, jet2_pt, jet1_b_weight, jet2_b_weight, pu_SF;
+        Float_t mu1_charge, mu2_charge;
         jet1_b_weight = jet2_b_weight =1.;
         Double_t evt_fakerate, mu1_fakerate, mu2_fakerate, mu1_eta, mu1_pt, mu2_eta, mu2_pt;
         TLorentzVector *mu_p = 0;
@@ -637,12 +640,12 @@ void Fakerate_est_mu(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_contam, TTree 
         t->SetBranchAddress("jet1_CMVA", &jet1_cmva);
         t->SetBranchAddress("jet1_pt", &jet1_pt);
         t->SetBranchAddress("jet2_pt", &jet2_pt);
-        //t1->SetBranchAddress("evt_fakerate", &evt_fakerate);
-        //t1->SetBranchAddress("mu_fakerate", &mu1_fakerate);
         t->SetBranchAddress("mu1_pt", &mu1_pt);
         t->SetBranchAddress("mu2_pt", &mu2_pt);
         t->SetBranchAddress("mu1_eta", &mu1_eta);
         t->SetBranchAddress("mu2_eta", &mu2_eta);
+        t->SetBranchAddress("mu1_charge", &mu1_charge);
+        t->SetBranchAddress("mu2_charge", &mu2_charge);
         t->SetBranchAddress("nJets", &nJets);
         t->SetBranchAddress("mu_p", &mu_p);
         t->SetBranchAddress("mu_m", &mu_m);
@@ -695,8 +698,11 @@ void Fakerate_est_mu(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_contam, TTree 
             }
 
 
+            bool pass = m >= m_low && m <= m_high && met_pt < 50.  && no_bjets && not_cosmic;
+            bool opp_sign = ((abs(mu1_charge - mu2_charge)) > 0.01);
+            if(!ss) pass = pass && opp_sign;
 
-            if(m>= m_low && m<= m_high && met_pt < 50.  && no_bjets && not_cosmic){
+            if(pass){
                 //if(l==3) printf("Evt rate %.2e \n", evt_fakerate);
                 TLorentzVector cm = *mu_p + *mu_m;
 
@@ -710,6 +716,8 @@ void Fakerate_est_mu(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_contam, TTree 
                 else h_cost->Fill(cost, evt_fakerate);
                 h_pt->Fill(cm.Pt(), evt_fakerate);
                 h_xf->Fill(compute_xF(cm), evt_fakerate);
+                if(opp_sign) tot_weight_os += evt_fakerate;
+                else tot_weight_ss += evt_fakerate;
             }
         }
         printf("After iter %i current fakerate est is %.0f \n", l, h_cost->Integral());
@@ -720,19 +728,21 @@ void Fakerate_est_mu(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_contam, TTree 
     cleanup_hist(h_cost);
     set_fakerate_errors(h_err, FR.h, h_cost);
     if(ss){
-        float scaling;
-        if(in_os_region) scaling = 1./(1. + R_mu_ss_os);
-        else scaling = (1. - 1./(1. + R_mu_ss_os));
+        float scaling = 1.0;
+        if(in_os_region) scaling = tot_weight_os / (tot_weight_ss + tot_weight_os);
+        else scaling = tot_weight_ss / (tot_weight_ss + tot_weight_os);
+        printf("Scaling is %.2f \n", scaling);
         h_m->Scale(scaling);
         h_pt->Scale(scaling);
         h_xf->Scale(scaling);
         h_cost->Scale(scaling);
     }
-    printf("Total fakerate est is %.0f \n", h_cost->Integral());
+    Double_t err;
+    printf("Total fakerate est is %.0f +/- %.0f \n", h_cost->IntegralAndError(1, h_cost->GetNbinsX(), err), err);
 }
 
 void Fakerate_est_el(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_MC, TTree *t_QCD_MC, TH1F *h_m, TH1F *h_cost, TH1F *h_pt, TH1F *h_xf,
-        float m_low = 150., float m_high = 99999., bool ss = false){
+        float m_low = 150., float m_high = 99999., bool ss = false, bool in_os_region = true){
     FakeRate FR;
     //TH2D *FR;
     setup_new_el_fakerate(&FR);
@@ -740,6 +750,8 @@ void Fakerate_est_el(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_MC, TTree *t_Q
     h_err->Reset();
     TH1F *h_rw;
     //FR.h->Print();
+    float tot_weight_os = 0.;
+    float tot_weight_ss = 0.;
     for (int l=0; l<=3; l++){
         TTree *t;
         if (l==0) t = t_WJets;
@@ -845,6 +857,8 @@ void Fakerate_est_el(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_MC, TTree *t_Q
                 else h_cost->Fill(cost, evt_fakerate);
                 h_pt->Fill(cm.Pt(), evt_fakerate);
                 h_xf->Fill(compute_xF(cm), evt_fakerate);
+                if(opp_sign) tot_weight_os += evt_fakerate;
+                else tot_weight_ss += evt_fakerate;
             }
         }
 
@@ -856,12 +870,17 @@ void Fakerate_est_el(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_MC, TTree *t_Q
     cleanup_hist(h_cost);
     set_fakerate_errors(h_err, FR.h, h_cost);
     if(ss){
-        h_m->Scale(0.5);
-        h_pt->Scale(0.5);
-        h_xf->Scale(0.5);
-        h_cost->Scale(0.5);
+        float scaling = 1.0;
+        if(in_os_region) scaling = tot_weight_os / (tot_weight_ss + tot_weight_os);
+        else scaling = tot_weight_ss / (tot_weight_ss + tot_weight_os);
+        printf("Scaling is %.2f \n", scaling);
+        h_m->Scale(scaling);
+        h_pt->Scale(scaling);
+        h_xf->Scale(scaling);
+        h_cost->Scale(scaling);
     }
-    printf("Total fakerate est is %.0f \n", h_m->Integral());
+    Double_t err;
+    printf("Total fakerate est is %.0f +/- %.0f \n", h_cost->IntegralAndError(1, h_cost->GetNbinsX(), err), err);
 }
 
 

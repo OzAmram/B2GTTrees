@@ -98,6 +98,7 @@ void draw_samesign_cmp(){
     float m_low = 150.;
     float m_high = 10000.;
     bool ss = true;
+    bool in_os_region = false;
 
     make_m_cost_pt_xf_hist(t_elel_ss_data, data_m, data_cost, data_pt, data_xf, true, type,  do_RC, m_low, m_high, ss);
     make_m_cost_pt_xf_hist(t_elel_ss_back, back_m, back_cost, back_pt, back_xf, false, type,  do_RC, m_low, m_high, ss);
@@ -108,7 +109,7 @@ void draw_samesign_cmp(){
     
 
     else
-        Fakerate_est_el(t_elel_WJets, t_elel_QCD, t_elel_WJets_contam, t_elel_QCD_contam, QCD_m, QCD_cost, QCD_pt, QCD_xf, m_low, m_high, ss);
+        Fakerate_est_el(t_elel_WJets, t_elel_QCD, t_elel_WJets_contam, t_elel_QCD_contam, QCD_m, QCD_cost, QCD_pt, QCD_xf, m_low, m_high, ss, in_os_region);
    
 
     printf("Integrals of data, QCD, back, DY are %.2f %.2f %.2f %.2f \n", data_m->Integral(), QCD_m->Integral(), back_m->Integral(), DY_m->Integral());
