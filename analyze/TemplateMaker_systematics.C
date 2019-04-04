@@ -523,7 +523,7 @@ int gen_mc_template(TTree *t1, Double_t alpha, TH2F* h_sym, TH2F *h_asym,
 
 
 
-void gen_fakes_template(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_contam, 
+float gen_fakes_template(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_contam, 
         TTree* t_QCD_contam, TH2F *h, Double_t var_low, Double_t var_high, 
         int flag1 = FLAG_MUONS, int flag2 = FLAG_M_BINS, bool ss = false){
     h->Sumw2();
@@ -532,6 +532,8 @@ void gen_fakes_template(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_contam,
     TLorentzVector *lep_m=0;
     Double_t pt;
     FakeRate FR;
+    float tot_weight_os = 0.;
+    float tot_weight_ss = 0.;
     if(flag1 == FLAG_MUONS){
         //TH2D *FR;
         setup_new_mu_fakerate(&FR);
@@ -548,6 +550,7 @@ void gen_fakes_template(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_contam,
             Double_t gh_HLT_SF, gh_iso_SF, gh_id_SF;
             Double_t jet1_pt, jet2_pt, jet1_b_weight, jet2_b_weight, pu_SF;
             Double_t evt_fakerate, mu1_fakerate, mu2_fakerate, mu1_eta, mu1_pt, mu2_eta, mu2_pt;
+            Float_t mu1_charge, mu2_charge;
             Int_t iso_mu;
             Bool_t double_muon_trig;
             Float_t met_pt;
@@ -568,6 +571,8 @@ void gen_fakes_template(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_contam,
             t->SetBranchAddress("mu2_pt", &mu2_pt);
             t->SetBranchAddress("mu1_eta", &mu1_eta);
             t->SetBranchAddress("mu2_eta", &mu2_eta);
+            t->SetBranchAddress("mu1_charge", &mu1_charge);
+            t->SetBranchAddress("mu2_charge", &mu2_charge);
             t->SetBranchAddress("nJets", &nJets);
             t->SetBranchAddress("mu_p", &lep_p);
             t->SetBranchAddress("mu_m", &lep_m);
@@ -626,6 +631,8 @@ void gen_fakes_template(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_contam,
                         (flag2 == FLAG_PT_BINS && m >= 150. && pt >= var_low && pt <= var_high))
                     && met_pt < 50.  && no_bjets && not_cosmic;
 
+                bool opp_sign = ((abs(mu1_charge - mu2_charge)) > 0.01);
+                if(!ss) pass = pass && opp_sign;
                 if(pass){
                     if(l==0 && iso_mu ==1) h_err->Fill(min(abs(mu1_eta), 2.3), min(mu1_pt, 150.));
                     if(l==0 && iso_mu ==0) h_err->Fill(min(abs(mu2_eta), 2.3), min(mu2_pt, 150.));
@@ -637,6 +644,8 @@ void gen_fakes_template(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_contam,
                         h->Fill(xF, cost, 0.5*evt_fakerate);
                         h->Fill(xF, -cost, 0.5*evt_fakerate);
                     }
+                    if(opp_sign) tot_weight_os += evt_fakerate;
+                    else tot_weight_ss += evt_fakerate;
                 }
 
 
@@ -660,6 +669,7 @@ void gen_fakes_template(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_contam,
             Double_t jet1_pt, jet2_pt, jet1_b_weight, jet2_b_weight, pu_SF;
             Double_t el_id_SF, el_reco_SF;
             Double_t evt_fakerate, el1_fakerate, el2_fakerate, el1_eta, el1_pt, el2_eta, el2_pt;
+            Float_t el1_charge, el2_charge;
             Int_t iso_el;
             Float_t met_pt;
             Int_t nJets;
@@ -679,6 +689,8 @@ void gen_fakes_template(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_contam,
             t->SetBranchAddress("el2_pt", &el2_pt);
             t->SetBranchAddress("el1_eta", &el1_eta);
             t->SetBranchAddress("el2_eta", &el2_eta);
+            t->SetBranchAddress("el1_charge", &el1_charge);
+            t->SetBranchAddress("el2_charge", &el2_charge);
             t->SetBranchAddress("nJets", &nJets);
             t->SetBranchAddress("el_p", &lep_p);
             t->SetBranchAddress("el_m", &lep_m);
@@ -732,6 +744,8 @@ void gen_fakes_template(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_contam,
                 bool pass = ((flag2 == FLAG_M_BINS && m >= var_low && m <= var_high) ||
                         (flag2 == FLAG_PT_BINS && m >= 150. && pt >= var_low && pt <= var_high))
                     && met_pt < 50.  && no_bjets && not_cosmic;
+                bool opp_sign = ((abs(el1_charge - el2_charge)) > 0.01);
+                if(!ss) pass = pass && opp_sign;
                 if(pass){
                     if(l==0 && iso_el ==1) h_err->Fill(min(abs(el1_eta), 2.3), min(el1_pt, 150.));
                     if(l==0 && iso_el ==0) h_err->Fill(min(abs(el2_eta), 2.3), min(el2_pt, 150.));
@@ -742,6 +756,8 @@ void gen_fakes_template(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_contam,
                         h->Fill(xF, cost, 0.5*evt_fakerate);
                         h->Fill(xF, -cost, 0.5*evt_fakerate);
                     }
+                    if(opp_sign) tot_weight_os += evt_fakerate;
+                    else tot_weight_ss += evt_fakerate;
                 }
             }
 
@@ -759,7 +775,8 @@ void gen_fakes_template(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_contam,
         h->Scale(0.);
         printf("zeroing Fakes template \n");
     }
-    return;
+    float scaling = tot_weight_os / (tot_weight_ss + tot_weight_os);
+    return scaling;
 }
 
 void gen_emu_fakes_template(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_MC, TH2F *h, 

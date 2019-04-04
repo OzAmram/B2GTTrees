@@ -22,7 +22,7 @@
 #include "TemplateUtils.h"
 
 
-const TString fout_name("combine/templates/mar18_combined_template_sys.root");
+const TString fout_name("combine/templates/april1_combined_sys.root");
 TFile * fout;
 
 
@@ -43,21 +43,26 @@ vector<double> v_mumu_cost;
 unsigned int nElEl_DataEvents;
 unsigned int nMuMu_DataEvents;
 
-void convert_qcd_to_param_hist(TH1F *h, FILE *f_log, int flag){
+void convert_qcd_to_param_hist(TH1F *h, FILE *f_log, float sign_scaling, int flag){
     //convert a hist to a parametric hist 
     RooArgList *bin_list_ss = new RooArgList();
     RooArgList *bin_list = new RooArgList();
 
     char h_name[40];
     char h_ss_name[40];
+    char R_sign_param[40];
     sprintf(h_name, "%s_param", h->GetName());
+    RooRealVar *R_qcd_sign_fraction;
     if(flag == FLAG_MUONS){
         sprintf(h_ss_name, "%s", "mumu_ss_qcd_param");
+        sprintf(R_sign_param, "%s", "R_mumu_os_fakes");
     }
     else{
         sprintf(h_ss_name, "%s", "ee_ss_qcd_param");
+        sprintf(R_sign_param, "%s", "R_ee_os_fakes");
+        R_qcd_sign_fraction = new RooRealVar(R_sign_param, "Fraction of os fakes events", sign_scaling , 0., 1.);
+        fprintf(f_log, "%s param %.4f 0.05 \n", R_sign_param, sign_scaling);
     }
-    //RooRealVar *R_mumu_qcd_sign_ratio = new RooRealVar("R_mumu_qcd_sign", "Ratio of ss/os dimuon qcd events",R_mu_ss_os , 0., 10.);
     for(int j=1; j <= h->GetNbinsX(); j++){
 
         double content = h->GetBinContent(j);
@@ -81,13 +86,12 @@ void convert_qcd_to_param_hist(TH1F *h, FILE *f_log, int flag){
         }
         RooRealVar *bin = new RooRealVar(bin_name, bin_name, content, 0., 10000.);
         fprintf(f_log, "%s param %.4f %.4f \n", bin_name, content, error);
-        //bin->Print();
-        bin_list->add(*bin);
-        bin_list_ss->add(*bin);
-       
-        
-        //RooFormulaVar *form = new RooFormulaVar(form_name, form_name, "@0*@1", RooArgList(*bin, *Rqcd_ss));
-        //bin_list_ss->add(*form);
+
+        RooFormulaVar *form = new RooFormulaVar(form_name_os, form_name_os, "@0*@1", RooArgList(*bin, *R_qcd_sign_fraction));
+        RooFormulaVar *form_ss = new RooFormulaVar(form_name_ss, form_name_ss, "@0*(1.0 - @1)", RooArgList(*bin, *R_qcd_sign_fraction));
+        bin_list->add(*form);
+        bin_list_ss->add(*form_ss);
+    
     }
     //bin_list_ss->Print();
     char norm_ss_name[40], norm_name[40];
@@ -136,20 +140,20 @@ void make_qcd_templates(FILE* f_log){
             n_xf_bins, xf_bins, n_cost_bins, cost_bins);
     h_mumu_qcd->SetDirectory(0);
     bool ss = true;
-    gen_fakes_template(t_elel_WJets, t_elel_QCD, t_elel_WJets_contam, t_elel_QCD_contam, h_elel_qcd, m_low, m_high, FLAG_ELECTRONS, FLAG_M_BINS, ss);
-    gen_fakes_template(t_mumu_WJets, t_mumu_QCD, t_mumu_WJets_contam, t_mumu_QCD_contam, h_mumu_qcd, m_low, m_high, FLAG_MUONS, FLAG_M_BINS,ss);
+    float elel_sign_scaling = gen_fakes_template(t_elel_WJets, t_elel_QCD, t_elel_WJets_contam, t_elel_QCD_contam, h_elel_qcd, m_low, m_high, FLAG_ELECTRONS, FLAG_M_BINS, ss);
+    float mumu_sign_scaling = gen_fakes_template(t_mumu_WJets, t_mumu_QCD, t_mumu_WJets_contam, t_mumu_QCD_contam, h_mumu_qcd, m_low, m_high, FLAG_MUONS, FLAG_M_BINS,ss);
 
     //combined os and ss regions to estimate qcd, scale it to estimate amount
     //in os region 
-    float scaling = 1./(1. + R_mu_ss_os);
-    h_mumu_qcd->Scale(scaling);
+    //float scaling = 1./(1. + R_mu_ss_os);
+    //h_mumu_qcd->Scale(scaling);
 
     h1_elel_qcd = convert2d(h_elel_qcd);
     h1_mumu_qcd = convert2d(h_mumu_qcd);
     printf("Integral of QCD templates are %.2f %.2f \n", h1_elel_qcd->Integral(), h1_mumu_qcd->Integral());
 
-    convert_qcd_to_param_hist(h1_elel_qcd, f_log, FLAG_ELECTRONS);
-    convert_qcd_to_param_hist(h1_mumu_qcd, f_log, FLAG_MUONS);
+    convert_qcd_to_param_hist(h1_elel_qcd, f_log, elel_sign_scaling, FLAG_ELECTRONS);
+    convert_qcd_to_param_hist(h1_mumu_qcd, f_log, mumu_sign_scaling, FLAG_MUONS);
 
     printf("Made qcd templates \n");
 }
