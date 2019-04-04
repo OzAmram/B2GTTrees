@@ -28,18 +28,18 @@ void draw_AFB_mbins(){
     Double_t x[6] = {175., 225., 300., 425., 600., 850.};
     Double_t x_err[6] = {25., 25., 50., 75., 100., 150.};
 
-    Double_t y_sm[6] =      {0.620, 0.615, 0.603, 0.590, 0.586, 0.585};
-    Double_t y_sm_errs[6] = {0.002, 0.003, 0.003, 0.006, 0.003, 0.003};
+    Double_t y_sm[6] =      {0.617, 0.619, 0.611, 0.609, 0.603, 0.608};
+    Double_t y_sm_errs[6] = {0.004, 0.004, 0.003, 0.003, 0.003, 0.002};
 
-    Double_t y_comb[6] =      {0.609, 0.578, 0.600, 0.574, 0.579, 0.532};
-    Double_t y_comb_errs[6] = {0.014, 0.020, 0.020, 0.027, 0.044, 0.059};
+    Double_t y_comb[6] =      {0.610, 0.579, 0.602, 0.574, 0.578, 0.522};
+    Double_t y_comb_errs[6] = {0.014, 0.020, 0.020, 0.028, 0.044, 0.058};
 
-    Double_t y_mumu[6] =      {0.592, 0.547, 0.626, 0.600, 0.605, 0.535};
-    Double_t y_mumu_errs[6] = {0.017, 0.026, 0.026, 0.036, 0.057, 0.085};
+    Double_t y_mumu[6] =      {0.592, 0.547, 0.627, 0.600, 0.605, 0.533};
+    Double_t y_mumu_errs[6] = {0.017, 0.026, 0.026, 0.036, 0.057, 0.084};
 
 
-    Double_t y_elel[6] =      {0.625, 0.611, 0.562, 0.537, 0.550, 0.528};
-    Double_t y_elel_errs[6] = {0.021, 0.030, 0.030, 0.043, 0.064, 0.081};
+    Double_t y_elel[6] =      {0.629, 0.615, 0.566, 0.537, 0.549, 0.510};
+    Double_t y_elel_errs[6] = {0.021, 0.031, 0.030, 0.043, 0.064, 0.078};
 
 
     Double_t ratio[6], ratio_errs[6];
@@ -54,7 +54,7 @@ void draw_AFB_mbins(){
         chi2_sep += pow((y_sm[i] - y_elel[i])/y_elel_errs[i],2);
     }
     printf("Combined chisq is %.2f, p-value is %.3f \n", chi2_comb, ROOT::Math::chisquared_cdf_c(chi2_comb, 6));
-    printf("Combined sep is %.2f, p-value is %.3f \n", chi2_sep, ROOT::Math::chisquared_cdf_c(chi2_comb, 12));
+    printf("sep chisq is %.2f, p-value is %.3f \n", chi2_sep, ROOT::Math::chisquared_cdf_c(chi2_comb, 12));
 
 
 
