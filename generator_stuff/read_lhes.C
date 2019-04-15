@@ -12,10 +12,10 @@
 void read_lhes(){
     TTree *t1 = new TTree("T_lhe", "Lhe event info for mass binned DY");
     t1->SetDirectory(0);
-    string f1("/home/ozamram/Documents/Research/Generators/POWHEG-BOX-V2/Z_ew-BMNNPV/DY_M400_jun18/pwgevents.lhe");
+    string f1("/home/ozamram/Documents/Research/Generators/POWHEG-BOX-V2/Z_ew-BMNNPV/DY_m200_april4/pwgevents.lhe");
     fill_tree(f1, t1, true);
 
-    TFile *fout1 = TFile::Open("powheg_m400_evts.root", "RECREATE");
+    TFile *fout1 = TFile::Open("powheg_m200_evts.root", "RECREATE");
     fout1->cd();
     t1->Write();
     fout1->Close();

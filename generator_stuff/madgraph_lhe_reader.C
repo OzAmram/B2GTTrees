@@ -55,7 +55,7 @@ void fill_tree(string f_name, TTree *t1, bool print = false)
     int i, j, k, iqk=0, iqb=0, itq=0, itb=0, ig1=0, ig2=0, ijt, njet=0, npflavor=0, nevent, nfit;
     int iqk_extra = 0, iqb_extra=0;
     int nqqb=0, ngg=0, itbq, itbb, itqk, itqb, itlp, itnu;
-    TLorentzVector lep_pls, lep_mns; // positive and negative lepton
+    TLorentzVector lep_pls, lep_mns, q1, q2; // positive and negative lepton
     int nup, idrup, q1_id, q2_id;
     int lep1_id, lep2_id;
     float xwgtup, scalup, aqedup, aqcdup;
@@ -69,6 +69,8 @@ void fill_tree(string f_name, TTree *t1, bool print = false)
 
     t1->Branch("lep_pls", "TLorentzVector", &lep_pls);
     t1->Branch("lep_mns", "TLorentzVector", &lep_mns);
+    t1->Branch("q1", "TLorentzVector", &q1);
+    t1->Branch("q2", "TLorentzVector", &q2);
     t1->Branch("q1_id", &q1_id);
     t1->Branch("q2_id", &q2_id);
     t1->Branch("lep1_id", &lep1_id);
@@ -218,6 +220,9 @@ void fill_tree(string f_name, TTree *t1, bool print = false)
             //BACKWARDS PLS AND MNS DEFINITIONS
             lep_pls.SetPxPyPzE(up[itq].p[0], up[itq].p[1], up[itq].p[2], up[itq].p[3]);
             lep_mns.SetPxPyPzE(up[itb].p[0], up[itb].p[1], up[itb].p[2], up[itb].p[3]);
+
+            q1.SetPxPyPzE(up[parton1].p[0], up[parton1].p[1], up[parton1].p[2], up[parton1].p[3]);
+            q2.SetPxPyPzE(up[parton2].p[0], up[parton2].p[1], up[parton2].p[2], up[parton2].p[3]);
             nevent++;
             t1->Fill();
 

@@ -23,7 +23,7 @@
 
 
 
-void make_hists_from_tree(TTree *t1, TH1F *h_m, TH1F *h_cost){
+void make_gen_cost(TTree *t1, TH1F *h_m, TH1F *h_cost, float m_low = 150., float m_high = 100000.){
     //read event data
     h_m->Sumw2();
     h_cost->Sumw2();
@@ -43,7 +43,7 @@ void make_hists_from_tree(TTree *t1, TH1F *h_m, TH1F *h_cost){
         t1->GetEntry(i);
         cm = *lep_pls + *lep_mns;
         //printf("M= %.2f \n", cm.M());
-        if(cm.M() >= 150. && (lep1_id < 14) && (lep2_id < 14)){
+        if(cm.M() >= m_low && cm.M() < m_high && (lep1_id < 14) && (lep2_id < 14)){
             nSelected++;
             h_m->Fill(cm.M());
 
@@ -155,8 +155,8 @@ void draw_generator_cmp(){
     TH1F *h_pwg_cost = new TH1F("h_pwg_cost", title, 20, -1., 1.);
     TH1F *h_mad_cost = new TH1F("h_mad_cost", title, 20, -1., 1.);
 
-    make_hists_from_tree(t_mad, h_mad_m, h_mad_cost);
-    make_hists_from_tree(t_pwg, h_pwg_m, h_pwg_cost);
+    make_gen_cost(t_mad, h_mad_m, h_mad_cost);
+    make_gen_cost(t_pwg, h_pwg_m, h_pwg_cost);
 
     h_mad_m->SetLineColor(kRed);
     h_mad_cost->SetLineColor(kRed);
