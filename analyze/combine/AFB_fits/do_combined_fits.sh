@@ -5,7 +5,7 @@ for idx in 0 1 2 3 4 5
 do
     card=cards/combined_fit_mbin${idx}.txt
     workspace=workspaces/combined_fit${idx}.root
-    plotdir=plots/combined_mbin${idx}
+    plotdir=postfit_plots/combined_mbin${idx}
     cp combined_fit_template.txt $card
     cat cards/mbin${idx}_bins.txt >> $card
     text2workspace.py $card --keyword-value M_BIN=${idx} -P Analysis.B2GTTrees.my_model:dy_AFB -o $workspace

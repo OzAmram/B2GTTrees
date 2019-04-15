@@ -125,12 +125,12 @@ void MuMu_reco_mc_batch(int nJobs =1, int iJob = 0)
     Double_t bcdef_HLT_SF, bcdef_iso_SF, bcdef_id_SF, gh_HLT_SF, gh_iso_SF, gh_id_SF,
              bcdef_trk_SF, gh_trk_SF,
              jet1_b_weight, jet2_b_weight, pu_SF;
-    Double_t mu_R_up, mu_R_down, mu_F_up, mu_F_down, mu_RF_up, mu_RF_down, pdf_up, pdf_down;
+    Double_t mu_R_up, mu_R_down, mu_F_up, mu_F_down, mu_RF_up, mu_RF_down, alpha_up, alpha_down;
     Int_t nJets, jet1_flavour, jet2_flavour, pu_NtrueInt;
     Bool_t is_tau_event;
     Float_t met_pt;
     TLorentzVector mu_p, mu_m, cm, gen_mu_p_vec, gen_mu_m_vec;
-    Float_t scale_Weights[10], pdf_weights[100];
+    Float_t scale_Weights[10], pdf_weights[60];
 
     t_signal->Branch("m", &cm_m, "m/D");
     t_signal->Branch("gen_m", &gen_m, "m/D");
@@ -177,9 +177,9 @@ void MuMu_reco_mc_batch(int nJobs =1, int iJob = 0)
     t_signal->Branch("mu_F_down", &mu_F_down);
     t_signal->Branch("mu_RF_up", &mu_RF_up);
     t_signal->Branch("mu_RF_down", &mu_RF_down);
-    t_signal->Branch("pdf_up", &pdf_up);
-    t_signal->Branch("pdf_down", &pdf_down);
-    t_signal->Branch("pdf_weights", &pdf_weights, "pdf_weights[100]/F");
+    t_signal->Branch("alpha_down", &alpha_down);
+    t_signal->Branch("alpha_up", &alpha_up);
+    t_signal->Branch("pdf_weights", &pdf_weights, "pdf_weights[60]/F");
     t_signal->Branch("nJets", &nJets, "nJets/I");
     t_signal->Branch("jet1_flavour", &jet1_flavour, "jet1_flavour/I");
     t_signal->Branch("jet2_flavour", &jet2_flavour, "jet2_flavour/I");
@@ -239,8 +239,9 @@ void MuMu_reco_mc_batch(int nJobs =1, int iJob = 0)
     t_back->Branch("mu_F_down", &mu_F_down);
     t_back->Branch("mu_RF_up", &mu_RF_up);
     t_back->Branch("mu_RF_down", &mu_RF_down);
-    t_back->Branch("pdf_up", &pdf_up);
-    t_back->Branch("pdf_down", &pdf_down);
+    t_back->Branch("alpha_down", &alpha_down);
+    t_back->Branch("alpha_up", &alpha_up);
+    t_back->Branch("pdf_weights", &pdf_weights, "pdf_weights[60]/F");
 
 
 
@@ -364,6 +365,7 @@ void MuMu_reco_mc_batch(int nJobs =1, int iJob = 0)
 
             t1->SetBranchAddress("scale_Weights", &scale_Weights);
             t1->SetBranchAddress("pdf_Weights", &pdf_weights);
+            t1->SetBranchAddress("alphas_Weights", &alpha_weights);
 
 
             t1->SetBranchAddress("gen_Mom0ID", &gen_Mom0ID);
@@ -809,12 +811,9 @@ void MuMu_reco_mc_batch(int nJobs =1, int iJob = 0)
                         mu_RF_up = scale_Weights[3];
                         mu_RF_down = scale_Weights[5];
 
-                        Float_t pdf_avg, pdf_std_dev;
+                        alpha_up = alpha_weights[0];
+                        alpha_down = alpha_weights[1];
 
-                        get_pdf_avg_std_dev(pdf_weights, &pdf_avg, &pdf_std_dev);
-
-                        pdf_up = pdf_avg + pdf_std_dev;
-                        pdf_down = pdf_avg - pdf_std_dev;
 
                         if(signal_event){
                             //cost_st = cos(theta)_* correct angle obtained from 'cheating' and

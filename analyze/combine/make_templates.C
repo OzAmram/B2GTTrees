@@ -22,7 +22,7 @@
 #include "TemplateUtils.h"
 
 
-const TString fout_name("combine/templates/april1_combined_sys.root");
+const TString fout_name("combine/templates/april9_combined_no_sys.root");
 TFile * fout;
 
 
@@ -43,10 +43,13 @@ vector<double> v_mumu_cost;
 unsigned int nElEl_DataEvents;
 unsigned int nMuMu_DataEvents;
 
-void convert_qcd_to_param_hist(TH1F *h, FILE *f_log, float sign_scaling, int flag){
+void convert_qcd_to_param_hist(TH2F *h, FILE *f_log, float sign_scaling, int flag){
     //convert a hist to a parametric hist 
-    RooArgList *bin_list_ss = new RooArgList();
     RooArgList *bin_list = new RooArgList();
+    RooArgList *bin_list_os = new RooArgList();
+    RooArgList *bin_list_ss = new RooArgList();
+
+    TH1F *h1 = convert2d(h);
 
     char h_name[40];
     char h_ss_name[40];
@@ -63,46 +66,76 @@ void convert_qcd_to_param_hist(TH1F *h, FILE *f_log, float sign_scaling, int fla
         R_qcd_sign_fraction = new RooRealVar(R_sign_param, "Fraction of os fakes events", sign_scaling , 0., 1.);
         fprintf(f_log, "%s param %.4f 0.05 \n", R_sign_param, sign_scaling);
     }
-    for(int j=1; j <= h->GetNbinsX(); j++){
+    for(int i=1; i <= n_xf_bins; i++){
+        for(int j=1; j <= n_cost_bins; j++){
 
-        double content = h->GetBinContent(j);
-        if(content<0) printf("Bin %i Content is %.0f \n", j, content);
-        double error = h->GetBinError(j);
 
-        //printf("Bin %.1f error %.1f \n", content,error);
-        char bin_name[40];
-        char form_name_ss[40], form_name_os[40];
-        sprintf(bin_name, "%s_bin%i",h_name, j); 
-        sprintf(form_name_ss, "%s_form_%i",h_ss_name, j); 
-        sprintf(form_name_os, "%s_form_%i",h_name, j); 
-        //prevent underflowing by fixing super small bins
-        content = max(content, 0.001);
-        if (content < error){
-            content = error/2.;
-            error = 0.1*content;
+
+            int g_idx = TwoDToOneDIdx(n_cost_bins, i, j);
+            int sym1_idx, sym2_idx;
+            TwoDToSymIdxs(n_cost_bins, i,j, sym1_idx, sym2_idx);
+            printf("i,j: %i %i ", i,j);
+            printf("g_idx, sym1, sym2: %i %i %i  \n", g_idx, sym1_idx, sym2_idx);
+
+            double content = h1->GetBinContent(g_idx);
+            double error = h1->GetBinError(g_idx);
+            if(content<0) printf("Bin %i Content is %.0f \n", j, content);
+
+            //printf("Bin %.1f error %.1f \n", content,error);
+            char bin_name[40];
+            char form_name_ss[40], form_name1_os[40], form_name2_os[40];
+            sprintf(bin_name, "%s_bin%i",h_name, g_idx); 
+            sprintf(form_name_ss, "%s_form_%i",h_ss_name, g_idx); 
+            sprintf(form_name1_os, "%s_form_%i",h_name, sym1_idx); 
+            sprintf(form_name2_os, "%s_form_%i",h_name, sym2_idx); 
+            //prevent underflowing by fixing super small bins
+            content = max(content, 0.001);
+            if (content < error){
+                content = error/2.;
+                error = 0.1*content;
+            }
+            else if(content < 2.5 * error){
+                error = 0.3*content;
+            }
+            if(j<=(n_cost_bins/2)){
+                //printf("first fill \n");
+                RooRealVar *bin = new RooRealVar(bin_name, bin_name, content, 0., 10000.);
+                fprintf(f_log, "%s param %.4f %.4f \n", bin_name, content, error);
+                RooFormulaVar *form1 = new RooFormulaVar(form_name1_os, form_name1_os, "0.5*@0*@1", RooArgList(*bin, *R_qcd_sign_fraction));
+                RooFormulaVar *form_ss = new RooFormulaVar(form_name_ss, form_name_ss, "@0*(1.0 - @1)", RooArgList(*bin, *R_qcd_sign_fraction));
+                //form1->Print();
+                //form_ss->Print();
+                bin_list->add(*bin);
+                bin_list_ss->add(*form_ss);
+                bin_list_os->add(*form1);
+            }
+
+            else{
+                //printf("2nd fill \n");
+                int old_j = sym2_idx % n_cost_bins;
+                int old_g_idx = TwoDToOneDIdx(n_cost_bins, i, old_j);
+                sprintf(bin_name, "%s_bin%i",h_name, old_g_idx); 
+                printf("Looking for bin %s \n", bin_name);
+                RooRealVar *bin = (RooRealVar *) bin_list->find(bin_name);
+                if(bin==nullptr) printf("NULL lookup of %s from bin list \n", bin_name);
+                RooFormulaVar *form1 = new RooFormulaVar(form_name1_os, form_name1_os, "0.5*@0*@1", RooArgList(*bin, *R_qcd_sign_fraction));
+                //form1->Print();
+                bin_list_os->add(*form1);
+            }
         }
-        else if(content < 2.5 * error){
-            error = 0.3*content;
-        }
-        RooRealVar *bin = new RooRealVar(bin_name, bin_name, content, 0., 10000.);
-        fprintf(f_log, "%s param %.4f %.4f \n", bin_name, content, error);
-
-        RooFormulaVar *form = new RooFormulaVar(form_name_os, form_name_os, "@0*@1", RooArgList(*bin, *R_qcd_sign_fraction));
-        RooFormulaVar *form_ss = new RooFormulaVar(form_name_ss, form_name_ss, "@0*(1.0 - @1)", RooArgList(*bin, *R_qcd_sign_fraction));
-        bin_list->add(*form);
-        bin_list_ss->add(*form_ss);
     
     }
-    //bin_list_ss->Print();
+    bin_list_ss->Print();
+    bin_list_os->Print();
     char norm_ss_name[40], norm_name[40];
     sprintf(norm_ss_name, "%s_norm", h_ss_name);
     sprintf(norm_name, "%s_norm", h_name);
     RooAddition *norm_ss = new RooAddition(norm_ss_name, norm_ss_name, *bin_list_ss);
 
-    RooAddition *norm = new RooAddition(norm_name, norm_name, *bin_list);
+    RooAddition *norm = new RooAddition(norm_name, norm_name, *bin_list_os);
 
-    RooParametricHist *p= new RooParametricHist (h_name, h_name, *var, *bin_list, *h);
-    RooParametricHist *p_ss= new RooParametricHist (h_ss_name, h_ss_name, *var, *bin_list_ss, *h);
+    RooParametricHist *p= new RooParametricHist (h_name, h_name, *var, *bin_list_os, *h_dummy);
+    RooParametricHist *p_ss= new RooParametricHist (h_ss_name, h_ss_name, *var_ss, *bin_list_ss, *h1);
 
     
     w->import(*p_ss);
@@ -127,17 +160,17 @@ void make_data_templates(){
     
 
     printf("Integral of data templates are %.2f %.2f \n", h1_elel_data->Integral(), h1_mumu_data->Integral()); 
-    write_roo_hist(h1_elel_data);
-    write_roo_hist(h1_mumu_data);
+    write_roo_hist(h1_elel_data, var);
+    write_roo_hist(h1_mumu_data, var);
     printf("Made data templates \n");
 }
 
 void make_qcd_templates(FILE* f_log){
     h_elel_qcd = new TH2F((string("ee_qcd") ).c_str(), "Combined background template",
-            n_xf_bins, xf_bins, n_cost_bins, cost_bins);
+            n_xf_bins, xf_bins, n_cost_ss_bins, cost_ss_bins);
     h_elel_qcd->SetDirectory(0);
     h_mumu_qcd = new TH2F((string("mumu_qcd") ).c_str(), "Combined background template",
-            n_xf_bins, xf_bins, n_cost_bins, cost_bins);
+            n_xf_bins, xf_bins, n_cost_ss_bins, cost_ss_bins);
     h_mumu_qcd->SetDirectory(0);
     bool ss = true;
     float elel_sign_scaling = gen_fakes_template(t_elel_WJets, t_elel_QCD, t_elel_WJets_contam, t_elel_QCD_contam, h_elel_qcd, m_low, m_high, FLAG_ELECTRONS, FLAG_M_BINS, ss);
@@ -148,12 +181,10 @@ void make_qcd_templates(FILE* f_log){
     //float scaling = 1./(1. + R_mu_ss_os);
     //h_mumu_qcd->Scale(scaling);
 
-    h1_elel_qcd = convert2d(h_elel_qcd);
-    h1_mumu_qcd = convert2d(h_mumu_qcd);
-    printf("Integral of QCD templates are %.2f %.2f \n", h1_elel_qcd->Integral(), h1_mumu_qcd->Integral());
+    printf("Integral of QCD templates are %.2f %.2f \n", h_elel_qcd->Integral(), h_mumu_qcd->Integral());
 
-    convert_qcd_to_param_hist(h1_elel_qcd, f_log, elel_sign_scaling, FLAG_ELECTRONS);
-    convert_qcd_to_param_hist(h1_mumu_qcd, f_log, mumu_sign_scaling, FLAG_MUONS);
+    convert_qcd_to_param_hist(h_elel_qcd, f_log, elel_sign_scaling, FLAG_ELECTRONS);
+    convert_qcd_to_param_hist(h_mumu_qcd, f_log, mumu_sign_scaling, FLAG_MUONS);
 
     printf("Made qcd templates \n");
 }
@@ -249,10 +280,10 @@ void convert_mc_templates(const string &sys_label){
         h1_mumu_pl->SetName((string("mumu_fpl") + sys_label).c_str());
         h1_mumu_mn->SetName((string("mumu_fmn") + sys_label).c_str());
 
-        write_roo_hist(h1_mumu_back);
-        write_roo_hist(h1_mumu_dy_gg);
-        write_roo_hist(h1_mumu_pl);
-        write_roo_hist(h1_mumu_mn);
+        write_roo_hist(h1_mumu_back, var);
+        write_roo_hist(h1_mumu_dy_gg, var);
+        write_roo_hist(h1_mumu_pl, var);
+        write_roo_hist(h1_mumu_mn, var);
     }
 
     if(do_el){
@@ -268,10 +299,10 @@ void convert_mc_templates(const string &sys_label){
         h1_elel_mn->SetName((string("ee_fmn") + sys_label).c_str());
 
 
-        write_roo_hist(h1_elel_back);
-        write_roo_hist(h1_elel_dy_gg);
-        write_roo_hist(h1_elel_pl);
-        write_roo_hist(h1_elel_mn);
+        write_roo_hist(h1_elel_back, var);
+        write_roo_hist(h1_elel_dy_gg, var);
+        write_roo_hist(h1_elel_pl, var);
+        write_roo_hist(h1_elel_mn, var);
     }
 }
 
@@ -287,15 +318,17 @@ void make_templates(int nJobs = 6, int iJob =-1){
     setup_all_SFs();
     printf("   done \n");
 
-    //vector<string> sys_labels {""};
+    vector<string> sys_labels {""};
     //vector<string> sys_labels {"_FACUp", "_pdfDown", "_RENORMDown"};
     
     
-    vector<string> sys_labels {"", "_elScaleUp", "_elScaleDown", "_elSmearUp", "_elSmearDown", 
+    /*
+    vector<string> sys_labels {"_elScaleUp", "_elScaleDown", "_elSmearUp", "_elSmearDown", 
         "_muRCUp", "_muRCDown", "_muHLTUp", "_muHLTDown", "_muIDUp", "_muIDDown", "_muISOUp", "_muISODown", "_muTRKUp", "_muTRKDown",  
         "_elHLTUp", "_elHLTDown", "_elIDUp", "_elIDDown", "_elRECOUp", "_elRECODown", 
         "_RENORMUp", "_RENORMDown", "_FACUp", "_FACDown","_pdfUp", "_pdfDown",
         "_PuUp", "_PuDown", "_BTAGUp", "_BTAGDown", "_alphaUp", "_alphaDown" };
+        */
         
         
 

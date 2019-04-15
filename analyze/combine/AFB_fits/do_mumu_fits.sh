@@ -5,7 +5,7 @@ for idx in 0 1 2 3 4 5
 do
     card=cards/mumu_fit_mbin${idx}.txt
     workspace=workspaces/mumu_fit${idx}.root
-    plotdir=plots/mumu_mbin${idx}
+    plotdir=postfit_plots/mumu_mbin${idx}
     cp mumu_fit_template.txt $card
     cat cards/mbin${idx}_bins.txt >> $card
     text2workspace.py $card --keyword-value M_BIN=${idx} -P Analysis.B2GTTrees.my_model:dy_AFB -o $workspace

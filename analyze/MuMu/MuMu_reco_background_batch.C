@@ -126,8 +126,8 @@ void MuMu_reco_background_batch(int nJobs =1, int iJob=0)
     Double_t bcdef_HLT_SF, bcdef_iso_SF, bcdef_id_SF, gh_HLT_SF, gh_iso_SF, gh_id_SF, bcdef_trk_SF, gh_trk_SF,
              jet1_b_weight, jet2_b_weight, pu_SF;
     Double_t mu_p_SF, mu_m_SF, mu_p_SF_alt, mu_m_SF_alt, mu_p_SF_up, mu_p_SF_down, mu_m_SF_up, mu_m_SF_down;
-    Double_t mu_R_up, mu_R_down, mu_F_up, mu_F_down, mu_RF_up, mu_RF_down, pdf_up, pdf_down;
-    Float_t scale_Weights[10], pdf_weights[100];
+    Double_t mu_R_up, mu_R_down, mu_F_up, mu_F_down, mu_RF_up, mu_RF_down, alpha_up, alpha_down;
+    Float_t scale_Weights[10], pdf_weights[60];
     Int_t nJets, jet1_flavour, jet2_flavour, pu_NtrueInt;
     Float_t met_pt;
     TLorentzVector mu_p, mu_m, cm, q1, q2;
@@ -176,8 +176,9 @@ void MuMu_reco_background_batch(int nJobs =1, int iJob=0)
     tout->Branch("mu_F_down", &mu_F_down);
     tout->Branch("mu_RF_up", &mu_RF_up);
     tout->Branch("mu_RF_down", &mu_RF_down);
-    tout->Branch("pdf_up", &pdf_up);
-    tout->Branch("pdf_down", &pdf_down);
+    tout->Branch("alpha_down", &alpha_down);
+    tout->Branch("alpha_up", &alpha_up);
+    tout->Branch("pdf_weights", &pdf_weights, "pdf_weights[60]/F");
 
 
 
@@ -267,6 +268,7 @@ void MuMu_reco_background_batch(int nJobs =1, int iJob=0)
 
             t1->SetBranchAddress("scale_Weights", &scale_Weights);
             t1->SetBranchAddress("pdf_Weights", &pdf_weights);
+            t1->SetBranchAddress("alphas_Weights", &alpha_weights);
 
             t1->SetBranchAddress("HLT_IsoMu24", &HLT_IsoMu);
             t1->SetBranchAddress("HLT_IsoTkMu24", &HLT_IsoTkMu);
@@ -453,13 +455,9 @@ void MuMu_reco_background_batch(int nJobs =1, int iJob=0)
                         mu_RF_up = scale_Weights[3];
                         mu_RF_down = scale_Weights[5];
 
-                        Float_t pdf_avg, pdf_std_dev;
 
-                        get_pdf_avg_std_dev(pdf_weights, &pdf_avg, &pdf_std_dev);
-
-                        pdf_up = pdf_avg + pdf_std_dev;
-                        pdf_down = pdf_avg - pdf_std_dev;
-                        //printf("%.2f \n", pdf_up);
+                        alpha_up = alpha_weights[0];
+                        alpha_down = alpha_weights[1];
 
                         tout->Fill();
                         nEvents++;

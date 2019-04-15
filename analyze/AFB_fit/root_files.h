@@ -20,30 +20,18 @@ TTree *t_mumu_ss_dy, *t_mumu_ss_back, *t_mumu_ss_data, *t_mumu_ss_QCD, *t_mumu_s
 TFile *f_emu_ss_data, *f_emu_ss_ttbar, *f_emu_ss_dy, *f_emu_ss_diboson;
 TTree *t_emu_ss_data, *t_emu_ss_ttbar, *t_emu_ss_dy, *t_emu_ss_diboson;
 
-//int n_xf_bins = 5;
-//Float_t xf_bins[] = {0., 0.02, 0.04, 0.07, 0.10, 1.0};
 int n_xf_bins = 4;
 Float_t xf_bins[] = {0., 0.04, 0.07, 0.10, 1.0};
-//int n_cost_bins = 6;
-//Float_t cost_bins[] = {-1.0, -.667, -.333, 0., 0.33, 0.667,  1.0};
-//int n_cost_bins = 8;
-//Float_t cost_bins[] = {-1.0, -.75, -.5, -.25, 0., 0.25, 0.5,  0.75, 1.0};
 int n_cost_bins = 10;
 Float_t cost_bins[] = {-1.0, -.8, -.6, -.4, -.2, 0., 0.2, 0.4, 0.6, 0.8, 1.0};
-//int n_cost_bins = 12;
-//Float_t cost_bins[] = {-1.0, -0.8333, -0.6667, -0.5, -0.3333, -0.1667, 0., 0.1667, 0.3333, 0.5, 0.6667, 0.8333, 1.0};
-//int n_cost_bins = 14;
-//Float_t cost_bins[] = {-1.0, -.857, -.714, -.571, -.429, -0.286, -.143,  0., 0.143, .286, 0.429, 0.571, 0.714, 0.857, 1.0};
+int n_cost_ss_bins = n_cost_bins/2;
+Float_t cost_ss_bins[] = {-1.0, -0.8, -0.6, -0.4, -0.2, 0.0};
 int n_m_bins = 6;
-int n_pt_bins = 6;
 Double_t m_bins[] = {150,200,   250,    350,    500,    700, 100000};
 Double_t alphas[6] = {0.109, 0.078, 0.0762, 0.112, 0.065, 0.06};
 Double_t alpha_unc[6] = {0.015, 0.015, 0.02, 0.03,   0.02, 0.02};
 Double_t m_alphas[6] = {0.109, 0.078, 0.0762, 0.112, 0.065, 0.06};
 Double_t m_alpha_unc[6] = {0.015, 0.015, 0.02, 0.03,   0.02, 0.02};
-Double_t pt_bins[] =        {0.,25.,  50., 80.,   120.,   200., 10000.};
-Double_t pt_alphas[6] =    {0.007, 0.136, 0.337, 0.546, 0.776, 0.945};
-Double_t pt_alpha_unc[6] = {0.006, 0.015, 0.035, 0.05, 0.08, .15};
 Double_t alpha;
 
 void init(){

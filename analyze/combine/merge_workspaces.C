@@ -3,9 +3,9 @@
 
 void merge_workspaces(){
 
-    const TString f1_s("combine/templates/mar18_combined_template_sys.root");
-    const TString f2_s("combine/templates/mar18_dilu_templates.root");
-    const TString fout_s("combine/templates/mar18_merge.root");
+    const TString f1_s("combine/templates/april9_combined_no_sys.root");
+    const TString f2_s("combine/templates/april4_combined_sys_only.root");
+    const TString fout_s("combine/templates/april9_merge.root");
     TFile *f1 = TFile::Open(f1_s, "READ");
     TFile *f2 = TFile::Open(f2_s, "READ");
     TFile *fout = TFile::Open(fout_s, "RECREATE");

@@ -17,7 +17,7 @@ const double root2 = sqrt(2);
 double Ebeam = 6500.;
 double Pbeam = sqrt(Ebeam*Ebeam - 0.938*0.938);
 
-char *filename("DY_files_oct22.txt");
+char *filename("test_file.txt");
 const TString fout_name("output_files/ElEl_DY_test.root");
 const double alpha = 0.05;
 const bool PRINT=false;
@@ -116,7 +116,7 @@ void ElEl_reco_mc_batch(int nJobs = 1, int iJob = 0)
     Double_t cm_m, xF, cost_r, cost_st, el1_pt, el2_pt, el1_eta, el2_eta, jet1_pt, jet2_pt, jet1_eta, jet2_eta, deltaC, 
              gen_weight, jet1_csv, jet1_cmva, jet2_csv, jet2_cmva, gen_m;
     Double_t el_id_SF, el_reco_SF, jet1_b_weight, jet2_b_weight, pu_SF, el_HLT_SF;
-    Double_t mu_R_up, mu_R_down, mu_F_up, mu_F_down, mu_RF_up, mu_RF_down, pdf_up, pdf_down;
+    Double_t mu_R_up, mu_R_down, mu_F_up, mu_F_down, mu_RF_up, mu_RF_down, alpha_up, alpha_down;
     Int_t nJets, jet1_flavour, jet2_flavour, pu_NtrueInt;
     Bool_t is_tau_event;
     Float_t met_pt;
@@ -124,7 +124,7 @@ void ElEl_reco_mc_batch(int nJobs = 1, int iJob = 0)
     Float_t elp_scale_up, elp_scale_down, elm_scale_up, elm_scale_down,
              elp_smear_up, elp_smear_down, elm_smear_up, elm_smear_down;
 
-    Float_t scale_Weights[10], pdf_weights[100];
+    Float_t scale_Weights[10], pdf_weights[60], alpha_weights[2];
 
     t_signal->Branch("m", &cm_m, "m/D");
     t_signal->Branch("gen_m", &gen_m, "m/D");
@@ -163,9 +163,9 @@ void ElEl_reco_mc_batch(int nJobs = 1, int iJob = 0)
     t_signal->Branch("mu_F_down", &mu_F_down);
     t_signal->Branch("mu_RF_up", &mu_RF_up);
     t_signal->Branch("mu_RF_down", &mu_RF_down);
-    t_signal->Branch("pdf_up", &pdf_up);
-    t_signal->Branch("pdf_down", &pdf_down);
-    t_signal->Branch("pdf_weights", &pdf_weights, "pdf_weights[100]/F");
+    t_signal->Branch("alpha_down", &alpha_down);
+    t_signal->Branch("alpha_up", &alpha_up);
+    t_signal->Branch("pdf_weights", &pdf_weights, "pdf_weights[60]/F");
     t_signal->Branch("el_id_SF", &el_id_SF);
     t_signal->Branch("el_reco_SF", &el_reco_SF);
     t_signal->Branch("el_HLT_SF", &el_HLT_SF);
@@ -221,8 +221,9 @@ void ElEl_reco_mc_batch(int nJobs = 1, int iJob = 0)
     t_back->Branch("mu_F_down", &mu_F_down);
     t_back->Branch("mu_RF_up", &mu_RF_up);
     t_back->Branch("mu_RF_down", &mu_RF_down);
-    t_back->Branch("pdf_up", &pdf_up);
-    t_back->Branch("pdf_down", &pdf_down);
+    t_back->Branch("alpha_down", &alpha_down);
+    t_back->Branch("alpha_up", &alpha_up);
+    t_back->Branch("pdf_weights", &pdf_weights, "pdf_weights[60]/F");
 
 
 
@@ -345,6 +346,7 @@ void ElEl_reco_mc_batch(int nJobs = 1, int iJob = 0)
 
             t1->SetBranchAddress("scale_Weights", &scale_Weights);
             t1->SetBranchAddress("pdf_Weights", &pdf_weights);
+            t1->SetBranchAddress("alphas_Weights", &alpha_weights);
 
 
             t1->SetBranchAddress("gen_Mom0ID", &gen_Mom0ID);
@@ -768,12 +770,10 @@ void ElEl_reco_mc_batch(int nJobs = 1, int iJob = 0)
                         mu_RF_up = scale_Weights[3];
                         mu_RF_down = scale_Weights[5];
 
-                        Float_t pdf_avg, pdf_std_dev;
+                        alpha_up = alpha_weights[0];
+                        alpha_down = alpha_weights[1];
 
-                        get_pdf_avg_std_dev(pdf_weights, &pdf_avg, &pdf_std_dev);
 
-                        pdf_up = pdf_avg + pdf_std_dev;
-                        pdf_down = pdf_avg - pdf_std_dev;
 
 
                         if(signal_event && !pileup_event){

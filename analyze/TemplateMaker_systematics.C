@@ -66,10 +66,8 @@ void cleanup_template(TH2F *h){
 
 void print_hist(TH2 *h){
     printf("\n");
-    int n_xf_bins = 5;
-    int n_cost_bins = 10;
-    for(int i=1; i<= n_xf_bins; i++){
-        for(int j=1; j<= n_cost_bins; j++){
+    for(int i=1; i<= h->GetNbinsX(); i++){
+        for(int j=1; j<= h->GetNbinsY(); j++){
             printf("%.2e ",   (float) h->GetBinContent(i,j));
         }
         printf("\n");
@@ -151,8 +149,7 @@ int gen_data_template(TTree *t1, TH2F* h,  Double_t var_low, Double_t var_high,
                 n++;
                 if(!ss) h->Fill(xF, cost, 1); 
                 else{
-                    h->Fill(xF, cost, 0.5);
-                    h->Fill(xF, -cost, 0.5);
+                    h->Fill(xF, -abs(cost), 1);
                 }
 
                 //printf("size %i \n", (int) v_cost->size());
@@ -166,8 +163,7 @@ int gen_data_template(TTree *t1, TH2F* h,  Double_t var_low, Double_t var_high,
                 n++;
                 if(!ss) h->Fill(xF, cost, 1); 
                 else{
-                    h->Fill(xF, cost, 0.5);
-                    h->Fill(xF, -cost, 0.5);
+                    h->Fill(xF, -abs(cost), 1);
                 }
                 nEvents++;
             }
@@ -641,8 +637,7 @@ float gen_fakes_template(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_contam,
                     //if(l==3) printf("cost, fr %.2f %.2e \n", cost, evt_fakerate);
                     if(!ss) h->Fill(xF, cost, evt_fakerate);
                     else{
-                        h->Fill(xF, cost, 0.5*evt_fakerate);
-                        h->Fill(xF, -cost, 0.5*evt_fakerate);
+                        h->Fill(xF, -abs(cost), evt_fakerate);
                     }
                     if(opp_sign) tot_weight_os += evt_fakerate;
                     else tot_weight_ss += evt_fakerate;
@@ -753,8 +748,7 @@ float gen_fakes_template(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_contam,
                     //if(l==3) printf("cost, fr %.2f %.2e \n", cost, evt_fakerate);
                     if(!ss) h->Fill(xF, cost, evt_fakerate);
                     else{
-                        h->Fill(xF, cost, 0.5*evt_fakerate);
-                        h->Fill(xF, -cost, 0.5*evt_fakerate);
+                        h->Fill(xF, -abs(cost), evt_fakerate);
                     }
                     if(opp_sign) tot_weight_os += evt_fakerate;
                     else tot_weight_ss += evt_fakerate;
@@ -769,7 +763,6 @@ float gen_fakes_template(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_contam,
     
     set_fakerate_errors(h_err, FR.h, h);
     //scale ss electrons by 0.5, muons get a more complicated norm
-    if(ss && flag1==FLAG_ELECTRONS) h->Scale(0.5);
     printf("Total Fakerate weight Weight is %.2f \n", h->Integral());
     if(h->Integral() < 0.){
         h->Scale(0.);
@@ -1103,8 +1096,7 @@ int gen_combined_background_template(int nTrees, TTree **ts, TH2F* h,
                     Double_t evt_weight = 1000*(bcdef_lumi * bcdef_weight + gh_lumi *gh_weight);
                     if(!ss) h->Fill(xF, cost, evt_weight);
                     else{
-                        h->Fill(xF, cost, 0.5*evt_weight);
-                        h->Fill(xF, -cost, 0.5*evt_weight);
+                        h->Fill(xF, -abs(cost), evt_weight);
                     }
                 }
             }
@@ -1185,8 +1177,7 @@ int gen_combined_background_template(int nTrees, TTree **ts, TH2F* h,
                     }
                     if(!ss) h->Fill(xF, cost, evt_weight);
                     else{
-                        h->Fill(xF, cost, 0.5*evt_weight);
-                        h->Fill(xF, -cost, 0.5*evt_weight);
+                        h->Fill(xF, -abs(cost), evt_weight);
                     }
                 }
             }

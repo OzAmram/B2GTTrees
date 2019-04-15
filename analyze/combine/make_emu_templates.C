@@ -85,7 +85,7 @@ void make_emu_data_templates(){
 
     printf("Integral of data templates were %.2f  \n", h_emu_data->Integral() ); 
     //h_emu_data->Write();
-    write_roo_hist(h1_emu_data);
+    write_roo_hist(h1_emu_data, var);
     printf("Made emu data templates \n");
 }
 
@@ -125,10 +125,10 @@ void make_emu_mc_templates(){
 
     printf("Integral of dy templates are %.2f \n", h_emu_dy->Integral()); 
     printf("Integral of bkg templates are %.2f \n", h_emu_bk->Integral()); 
-    write_roo_hist(h1_emu_dy);
+    write_roo_hist(h1_emu_dy, var);
     printf("Made emu dy templates \n");
 
-    write_roo_hist(h1_emu_bk);
+    write_roo_hist(h1_emu_bk, var);
     printf("Made emu bk templates \n");
 
 

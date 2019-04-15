@@ -70,15 +70,15 @@ void convert_ss_qcd_to_param_hist(TH1F *h, FILE *f_log, int flag){
 
 void make_ss_data_templates(){
     auto h_elel_data = new TH2F("ee_ss_data_obs", "Data template of (x_f, cost_r)",
-            n_xf_bins, xf_bins, n_cost_bins, cost_bins);
+            n_xf_bins, xf_bins, n_cost_ss_bins, cost_ss_bins);
     h_elel_data->SetDirectory(0);
     auto h_mumu_data = new TH2F("mumu_ss_data_obs", "Data template of (x_f, cost_r)",
-            n_xf_bins, xf_bins, n_cost_bins, cost_bins);
+            n_xf_bins, xf_bins, n_cost_ss_bins, cost_ss_bins);
     h_mumu_data->SetDirectory(0);
     bool ss = true;
 
-    nElEl_DataEvents = gen_data_template(t_elel_ss_data, h_elel_data,  m_low, m_high, FLAG_ELECTRONS, FLAG_M_BINS, do_RC, ss);
-    nMuMu_DataEvents = gen_data_template(t_mumu_ss_data, h_mumu_data,  m_low, m_high, FLAG_MUONS, FLAG_M_BINS, do_RC, ss);
+    gen_data_template(t_elel_ss_data, h_elel_data,  m_low, m_high, FLAG_ELECTRONS, FLAG_M_BINS, do_RC, ss);
+    gen_data_template(t_mumu_ss_data, h_mumu_data,  m_low, m_high, FLAG_MUONS, FLAG_M_BINS, do_RC, ss);
     auto h1_elel_data = convert2d(h_elel_data);
     auto h1_mumu_data = convert2d(h_mumu_data);
 
@@ -86,17 +86,17 @@ void make_ss_data_templates(){
     printf("Integral of data templates were %.2f %.2f \n", h_elel_data->Integral(), h_mumu_data->Integral()); 
     //h_elel_data->Write();
     //h_mumu_data->Write();
-    write_roo_hist(h1_elel_data);
-    write_roo_hist(h1_mumu_data);
+    write_roo_hist(h1_elel_data, var_ss);
+    write_roo_hist(h1_mumu_data, var_ss);
     printf("Made ss data templates \n");
 }
 
 void make_ss_qcd_templates(FILE *f_log){
     auto h_elel_qcd = new TH2F((string("ee_ss_qcd") ).c_str(), "Combined background template",
-            n_xf_bins, xf_bins, n_cost_bins, cost_bins);
+            n_xf_bins, xf_bins, n_cost_ss_bins, cost_ss_bins);
     h_elel_qcd->SetDirectory(0);
     auto h_mumu_qcd = new TH2F((string("mumu_ss_qcd") ).c_str(), "Combined background template",
-            n_xf_bins, xf_bins, n_cost_bins, cost_bins);
+            n_xf_bins, xf_bins, n_cost_ss_bins, cost_ss_bins);
     h_mumu_qcd->SetDirectory(0);
 
 
@@ -114,15 +114,15 @@ void make_ss_qcd_templates(FILE *f_log){
 
 void make_ss_mc_templates(){
     auto h_elel_dy = new TH2F((string("ee_ss_dy") ).c_str(), "ss DY",
-            n_xf_bins, xf_bins, n_cost_bins, cost_bins);
+            n_xf_bins, xf_bins, n_cost_ss_bins, cost_ss_bins);
     h_elel_dy->SetDirectory(0);
     auto h_mumu_dy = new TH2F((string("mumu_ss_dy") ).c_str(), "ss DY",
-            n_xf_bins, xf_bins, n_cost_bins, cost_bins);
+            n_xf_bins, xf_bins, n_cost_ss_bins, cost_ss_bins);
     auto h_elel_bk = new TH2F((string("ee_ss_bk") ).c_str(), "Combined background template",
-            n_xf_bins, xf_bins, n_cost_bins, cost_bins);
+            n_xf_bins, xf_bins, n_cost_ss_bins, cost_ss_bins);
     h_elel_bk->SetDirectory(0);
     auto h_mumu_bk = new TH2F((string("mumu_ss_bk") ).c_str(), "Combined background template",
-            n_xf_bins, xf_bins, n_cost_bins, cost_bins);
+            n_xf_bins, xf_bins, n_cost_ss_bins, cost_ss_bins);
 
     bool ss = true;
 
@@ -148,12 +148,12 @@ void make_ss_mc_templates(){
 
     printf("Integral of dy templates are %.2f %.2f \n", h_elel_dy->Integral(), h_mumu_dy->Integral()); 
     printf("Integral of bkg templates are %.2f %.2f \n", h_elel_bk->Integral(), h_mumu_bk->Integral()); 
-    write_roo_hist(h1_elel_dy);
-    write_roo_hist(h1_mumu_dy);
+    write_roo_hist(h1_elel_dy, var_ss);
+    write_roo_hist(h1_mumu_dy, var_ss);
     printf("Made ss dy templates \n");
 
-    write_roo_hist(h1_elel_bk);
-    write_roo_hist(h1_mumu_bk);
+    write_roo_hist(h1_elel_bk, var_ss);
+    write_roo_hist(h1_mumu_bk, var_ss);
     printf("Made ss bk templates \n");
 
 
