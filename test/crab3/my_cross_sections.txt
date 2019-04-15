@@ -27,12 +27,12 @@ DYJetsToLL_M-2000to3000_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8 0.0005156 1.00
 
 TT_TuneCUETP8M2T4_13TeV-powheg-pythia8 730.6 1.00
 
-ST_tW_top_5f_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M2T4  35.85 1.00
+ST_tW_top_5f_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M2T4  38.09 1.00
 
-ST_tW_antitop_5f_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M2T4 35.85 1.00
+ST_tW_antitop_5f_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M2T4 38.09 1.00
 
-WW_TuneCUETP8M1_13TeV-pythia8  63.21 1.00
+WW_TuneCUETP8M1_13TeV-pythia8  64.3 1.00
 
-WZ_TuneCUETP8M1_13TeV-pythia8 47.13 1.00
+WZ_TuneCUETP8M1_13TeV-pythia8 23.43 1.00
 
-ZZ_TuneCUETP8M1_13TeV-pythia8 16.523 1.00
+ZZ_TuneCUETP8M1_13TeV-pythia8 10.16 1.00

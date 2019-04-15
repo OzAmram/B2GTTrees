@@ -9,6 +9,7 @@
 #include "DataFormats/Math/interface/LorentzVector.h"
 #include "FWCore/Framework/interface/DependentRecordImplementation.h"
 #include "SimDataFormats/GeneratorProducts/interface/LHEEventProduct.h"
+#include "PhysicsTools/HepMCCandAlgos/interface/PDFWeightsHelper.h"
 
 // JEC/JER
 #include "JetMETCorrections/Modules/interface/JetResolution.h"
@@ -27,6 +28,7 @@ public:
   void beginRun(edm::Run const&, edm::EventSetup const&);
   void beginLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&);
   void produce(edm::Event&, edm::EventSetup const&);
+
   
 private:
   void calculate_variables(edm::Event const&, edm::EventSetup const&);
@@ -35,6 +37,9 @@ private:
   bool isData_;
   bool isFastSim_;
   double cross_section_;
+
+  edm::FileInPath mc2hessianCSV = edm::FileInPath("PhysicsTools/HepMCCandAlgos/data/NNPDF30_lo_as_0130_hessian_60.csv");
+  PDFWeightsHelper pdfweightshelper_;
   
   std::string lhe_label_;
   std::string filter_label_;
@@ -60,6 +65,7 @@ private:
   std::string AK4JetKeys_label_;
   std::string AK8JetKeys_label_;
   std::string AK8SubjetKeys_label_;
+
     
   // Handles
   std::map<std::string, edm::Handle<int> > h_int_;
@@ -131,6 +137,7 @@ B2GEdmExtraVarProducer::B2GEdmExtraVarProducer(edm::ParameterSet const& iConfig)
   vectorI_(iConfig.getUntrackedParameter<std::vector<std::string> >("vectorI")),
   vectorF_(iConfig.getUntrackedParameter<std::vector<std::string> >("vectorF"))
 {
+
   for ( auto nameI : singleI_ ) {
     if (nameI.find("Flag_")==0) filter_names_.push_back(nameI);
     if (nameI.find("HLT_")==0) trigger_names_.push_back(nameI);
@@ -153,6 +160,7 @@ B2GEdmExtraVarProducer::B2GEdmExtraVarProducer(edm::ParameterSet const& iConfig)
     produces<std::vector<float> >(nameVF);
   }
   
+  pdfweightshelper_.Init(100,60,mc2hessianCSV);
   nfilt_=ntrig_=0;
   lha_pdf_id_ = -9999;
   

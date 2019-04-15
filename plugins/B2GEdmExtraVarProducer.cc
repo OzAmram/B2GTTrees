@@ -473,8 +473,27 @@ void B2GEdmExtraVarProducer::calculate_variables(edm::Event const& iEvent, edm::
       if (lha_pdf_id_ == 263400) first = 111;
       // FastSim indices are larger by 1
       if (isFastSim_) ++first;
-      if (lheEvtInfo->weights().size()>=first+100) for (size_t i=first; i<first+100; ++i)
-        vector_float_["pdf_Weights"].push_back(lheEvtInfo->weights()[i].wgt/lheOrigWeight);
+
+      //fill vector of set replica weights
+      const int nRepWeights = 100;
+      const int nEigWeights = 60;
+
+      std::vector<double> inpdfweights(nRepWeights);
+      if (lheEvtInfo->weights().size()>=first+100) for (size_t i=0; i<100; ++i){
+        int idx = i+first;
+        inpdfweights[i] = lheEvtInfo->weights()[idx].wgt;
+      }
+
+      std::vector<double> outpdfweights(nEigWeights);
+      // do the actual conversion, where the nominal lhe weight is
+      //needed as the reference point for the linearization
+      pdfweightshelper_.DoMC2Hessian(lheOrigWeight,inpdfweights.data(),outpdfweights.data());
+      for (unsigned int iwgt=0; iwgt<nEigWeights; ++iwgt) {
+          double wgtval = outpdfweights[iwgt];
+          
+          //the is the weight to be used for evaluating uncertainties with hessian weights
+          vector_float_["pdf_Weights"].push_back(wgtval/lheOrigWeight);
+        }    
       
       // Alpha_s weights (only for NLO!)
       // A set of two weights for 
