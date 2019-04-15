@@ -131,9 +131,10 @@ if ( `echo $cmd | grep "create" | wc -l` ) then
 	set primary=`echo $DATASET | sed "s;/; ;g" | awk '{ print $1 }'`
 	set PROCESSED_DS_NAME=`echo $DATASET | sed "s;/; ;g" | awk '{ print $2 }'`
 	set isData=`echo $DATASET | grep 'MINIAOD$' | wc -l`
+    #echo $DATASET
 
 
-	if ( `echo $PROCESSED_DS_NAME | grep "SingleMuon" | wc -l`) then
+	if ( `echo $DATASET | grep "SingleMuon" | wc -l`) then
         set JSON="Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON_MuonPhys.txt"
     else
         set JSON="Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt"
