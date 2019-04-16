@@ -32,7 +32,7 @@ void MuMu_reco_data_batch(int nJobs=1, int iJob = 0)
 {
 
     printf("Getting RC \n");
-    RoccoR  rc("rcdata.2016.v3"); //directory path as input for now; initialize only once, contains all variations
+    RoccoR  rc = RoccoR("rcdata.2016.v3"); //directory path as input for now; initialize only once, contains all variations
     TRandom *rand = new TRandom3();
 
 
@@ -218,17 +218,6 @@ void MuMu_reco_data_batch(int nJobs=1, int iJob = 0)
                                 nJets = 1;
                             }
                         }
-                    }
-                    mu_p_SF = rc.kScaleDT(1, mu_p.Pt(), mu_p.Eta(), mu_p.Phi(), 0, 0);
-                    mu_m_SF = rc.kScaleDT(-1, mu_m.Pt(), mu_m.Eta(), mu_m.Phi(), 0, 0);
-                    mu_p_SF_alt = rc.kScaleDT(1, mu_p.Pt(), mu_p.Eta(), mu_p.Phi(), 2, 0);
-                    mu_m_SF_alt = rc.kScaleDT(-1, mu_m.Pt(), mu_m.Eta(), mu_m.Phi(), 2, 0);
-
-
-                    Double_t mu_p_SF_vars[100], mu_m_SF_vars[100];
-                    for(int k=0; k<100; k++){
-                        mu_p_SF_vars[k] = rc.kScaleDT(1, mu_p.Pt(), mu_p.Eta(), mu_p.Phi(), 1, k);
-                        mu_m_SF_vars[k] = rc.kScaleDT(-1, mu_m.Pt(), mu_m.Eta(), mu_m.Phi(), 1, k);
                     }
                     double mu_p_SF_std = sqrt(get_var(mu_p_SF_vars));
                     double mu_m_SF_std = sqrt(get_var(mu_m_SF_vars));

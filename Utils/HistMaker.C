@@ -102,7 +102,7 @@ void set_fakerate_errors(TH2D *h_errs, TH2D *h_fr, TH2F *h){
 
 
 
-double get_cost(TLorentzVector lep_p, TLorentzVector lep_m){
+double get_cost(TLorentzVector lep_p, TLorentzVector lep_m, bool do_reco_flip = true){
 
     TLorentzVector cm = lep_p + lep_m;
     double root2 = sqrt(2);
@@ -116,7 +116,7 @@ double get_cost(TLorentzVector lep_p, TLorentzVector lep_m){
     //may be 'wrong' if lepton pair direction is not the same as inital
     //quark direction)
     double cost = 2*(lep_m_pls*lep_p_min - lep_m_min*lep_p_pls)/sqrt(cm_m2*(cm_m2 + qt2));
-    if(cm.Pz() <0.) cost = -cost;
+    if(cm.Pz() <0. && do_reco_flip) cost = -cost;
     return cost;
 }
 

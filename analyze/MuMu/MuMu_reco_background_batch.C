@@ -424,22 +424,6 @@ void MuMu_reco_background_batch(int nJobs =1, int iJob=0)
                             mu_m_n_TL = (int) mu_NumberTrackerLayers[1];
                             mu_p_n_TL = (int) mu_NumberTrackerLayers[0];
                         }
-                        double rand1a = rand->Rndm(); 
-                        double rand1b = rand->Rndm(); 
-                        double rand2a = rand->Rndm(); 
-                        double rand2b = rand->Rndm(); 
-
-
-                        mu_p_SF = rc.kScaleAndSmearMC(1, mu_p.Pt(), mu_p.Eta(), mu_p.Phi(), mu_p_n_TL, rand1a, rand1b, 0, 0);
-                        mu_m_SF = rc.kScaleAndSmearMC(-1, mu_m.Pt(), mu_m.Eta(), mu_m.Phi(), mu_m_n_TL, rand2a, rand2b, 0, 0);
-                        mu_p_SF_alt = rc.kScaleAndSmearMC(1, mu_p.Pt(), mu_p.Eta(), mu_p.Phi(), mu_p_n_TL, rand1a, rand1b, 2, 0);
-                        mu_m_SF_alt = rc.kScaleAndSmearMC(-1, mu_m.Pt(), mu_m.Eta(), mu_m.Phi(), mu_m_n_TL, rand2a, rand2b, 2, 0);
-
-                        Double_t mu_p_SF_vars[100], mu_m_SF_vars[100];
-                        for(int k=0; k<100; k++){
-                            mu_p_SF_vars[k] = rc.kScaleAndSmearMC(1, mu_p.Pt(), mu_p.Eta(), mu_p.Phi(), mu_p_n_TL, rand1a, rand1b, 1, k);
-                            mu_m_SF_vars[k] = rc.kScaleAndSmearMC(-1, mu_m.Pt(), mu_m.Eta(), mu_m.Phi(), mu_m_n_TL, rand2a, rand2b, 1, k);
-                        }
                         double mu_p_SF_std = sqrt(get_var(mu_p_SF_vars));
                         double mu_m_SF_std = sqrt(get_var(mu_m_SF_vars));
                         mu_p_SF_up = mu_p_SF + mu_p_SF_std;
