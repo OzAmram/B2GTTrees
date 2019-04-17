@@ -87,15 +87,18 @@ bool NTupleReader::getNextFile(){
         else if(lines[0] == '!'){//sample header
             int sample_idx;
             float xsec;
-            int nparams = sscanf(lines, "! idx = %i xsec = %f \n", &sample_idx, &xsec);
-            if(nparams < 2 || sample_idx >= MAX_SAMPLES){
-                printf("ERROR: Unable to parse sample header. Exiting");
-                exit(EXIT_FAILURE);
+            if(!is_data){
+                int nparams = sscanf(lines, "! idx = %i xsec = %f \n", &sample_idx, &xsec);
+                if(nparams < 2 || sample_idx >= MAX_SAMPLES){
+                    printf("ERROR: Unable to parse sample header. Exiting");
+                    exit(EXIT_FAILURE);
+                }
+                normalization = norms[sample_idx];
+                printf("Moving on to sample %i which has normalization %e \n", sample_idx, normalization);
             }
-            normalization = norms[sample_idx];
-            printf("Moving on to sample %i which has normalization %e \n", sample_idx, normalization);
         }
-        else if(normalization > 0) {//root file
+        else {//root file
+            if(normalization <= 0. && !is_data) printf("WARNING NORM IS ZERO FOR THIS SAMPLE!! This is bad! \n");
             fileCount++;
             if(fileCount % nJobs != iJob) continue;
 
@@ -111,11 +114,13 @@ bool NTupleReader::getNextFile(){
             printf("Opening file: %s \n", lines);
             fin=  TFile::Open(lines);
 
-            fin->cd("EventCounter");
-            TDirectory *subdir = gDirectory;
-            TH1D *mc_pileup = (TH1D *)subdir->Get("pileup");
-            mc_pileup->Scale(1./mc_pileup->Integral());
-            pu_SFs.pileup_ratio->Divide(pu_SFs.data_pileup, mc_pileup);
+            if(!is_data){
+                fin->cd("EventCounter");
+                TDirectory *subdir = gDirectory;
+                TH1D *mc_pileup = (TH1D *)subdir->Get("pileup");
+                mc_pileup->Scale(1./mc_pileup->Integral());
+                pu_SFs.pileup_ratio->Divide(pu_SFs.data_pileup, mc_pileup);
+            }
 
             fin->cd("B2GTTreeMaker");
             tin = (TTree *)gDirectory->Get("B2GTree");
@@ -151,6 +156,24 @@ bool NTupleReader::getNextFile(){
                 //tin->SetBranchAddress("mu_SumPUPt", &mu_SumPUPt);
                 //tin->SetBranchAddress("mu_SumPhotonPt", &mu_SumPhotonPt);
             }
+            if(do_electrons){
+
+                tin->SetBranchAddress("el_size", &el_size); //number of els in the event
+                tin->SetBranchAddress("el_Pt", &el_Pt);
+                tin->SetBranchAddress("el_Eta", &el_Eta);
+                tin->SetBranchAddress("el_Phi", &el_Phi);
+                tin->SetBranchAddress("el_E", &el_E);
+                tin->SetBranchAddress("el_Charge", &el_Charge);
+                tin->SetBranchAddress("el_IDMedium", &el_IDMedium);
+                tin->SetBranchAddress("el_IDMedium_NoIso", &el_IDMedium_NoIso);
+                tin->SetBranchAddress("el_SCEta", &el_SCEta);
+                tin->SetBranchAddress("el_ScaleCorr", &el_ScaleCorr);
+                tin->SetBranchAddress("el_ScaleCorrUp", &el_ScaleCorrUp);
+                tin->SetBranchAddress("el_ScaleCorrDown", &el_ScaleCorrDown);
+                tin->SetBranchAddress("el_ScaleSmearUp", &el_ScaleSmearUp);
+                tin->SetBranchAddress("el_ScaleSmearDown", &el_ScaleSmearDown);
+                tin->SetBranchAddress("HLT_Ele27_WPTight_Gsf", &HLT_El);
+            }
 
 
             if(!is_data){
@@ -167,6 +190,10 @@ bool NTupleReader::getNextFile(){
                 tin->SetBranchAddress("scale_Weights", &scale_Weights);
                 tin->SetBranchAddress("pdf_Weights", &pdf_weights);
                 tin->SetBranchAddress("alphas_Weights", &alpha_weights);
+
+                tin->SetBranchAddress("alphas_size", &alphas_size);
+                tin->SetBranchAddress("scale_size", &scale_size);
+                tin->SetBranchAddress("pdf_size", &pdf_size);
 
                 tin->SetBranchAddress("gen_Mom0ID", &gen_Mom0ID);
                 tin->SetBranchAddress("gen_Mom1ID", &gen_Mom1ID);
@@ -189,6 +216,7 @@ bool NTupleReader::getNextFile(){
 }
 
 void NTupleReader::setupOutputTree(char treeName[100]){
+    fout->cd();
     int idx = nOutTrees;
     nOutTrees++;
     outTrees[idx] = new TTree(treeName, "");
@@ -213,7 +241,18 @@ void NTupleReader::setupOutputTree(char treeName[100]){
         outTrees[idx]->Branch("mu_p", "TLorentzVector", &mu_p);
         outTrees[idx]->Branch("mu1_pt", &mu1_pt, "mu1_pt/D");
         outTrees[idx]->Branch("mu2_pt", &mu2_pt, "mu2_pt/D");
+        outTrees[idx]->Branch("mu1_charge", &mu1_charge, "mu1_charge/F");
+        outTrees[idx]->Branch("mu2_charge", &mu2_charge, "mu2_charge/F");
     }
+    if(do_electrons){
+        outTrees[idx]->Branch("el1_pt", &el1_pt, "el1_pt/D");
+        outTrees[idx]->Branch("el2_pt", &el2_pt, "el2_pt/D");
+        outTrees[idx]->Branch("el1_eta", &el1_eta, "el1_eta/D");
+        outTrees[idx]->Branch("el2_eta", &el2_eta, "el2_eta/D");
+        outTrees[idx]->Branch("el_m", "TLorentzVector", &el_m);
+        outTrees[idx]->Branch("el_p", "TLorentzVector", &el_p);
+    }
+
 
 
 
@@ -221,7 +260,7 @@ void NTupleReader::setupOutputTree(char treeName[100]){
 
         outTrees[idx]->Branch("pu_SF", &pu_SF);
         outTrees[idx]->Branch("gen_weight", &gen_weight, "gen_weight/D");
-        outTrees[idx]->Branch("gen_m", &gen_m, "m/D");
+        outTrees[idx]->Branch("gen_m", &gen_m, "gen_m/D");
         outTrees[idx]->Branch("mu_R_up", &mu_R_up);
         outTrees[idx]->Branch("mu_R_down", &mu_R_down);
         outTrees[idx]->Branch("mu_F_up", &mu_F_up);
@@ -256,6 +295,23 @@ void NTupleReader::setupOutputTree(char treeName[100]){
             outTrees[idx]->Branch("gh_id_SF", &gh_id_SF);
             outTrees[idx]->Branch("gh_trk_SF", &gh_trk_SF);
         }
+
+        if(do_electrons){
+
+            outTrees[idx]->Branch("elp_scale_up", &elp_scale_up);
+            outTrees[idx]->Branch("elp_scale_down", &elp_scale_down);
+            outTrees[idx]->Branch("elm_scale_up", &elm_scale_up);
+            outTrees[idx]->Branch("elm_scale_down", &elm_scale_down);
+            outTrees[idx]->Branch("elp_smear_up", &elp_smear_up);
+            outTrees[idx]->Branch("elp_smear_down", &elp_smear_down);
+            outTrees[idx]->Branch("elm_smear_up", &elm_smear_up);
+            outTrees[idx]->Branch("elm_smear_down", &elm_smear_down);
+            outTrees[idx]->Branch("gen_el_m", "TLorentzVector", &gen_el_m_vec);
+            outTrees[idx]->Branch("gen_el_p", "TLorentzVector", &gen_el_p_vec);
+            outTrees[idx]->Branch("el_id_SF", &el_id_SF);
+            outTrees[idx]->Branch("el_reco_SF", &el_reco_SF);
+            outTrees[idx]->Branch("el_HLT_SF", &el_HLT_SF);
+        }
     }
 }
 
@@ -271,7 +327,7 @@ void NTupleReader::setupRC(){
 void NTupleReader::getEvent(int i){
     tin->GetEntry(i);
     event_idx = i;
-    if(mu_size > MU_SIZE || gen_size >GEN_SIZE) printf("WARNING: MU_SIZE OR GEN_SIZE TOO LARGE \n");
+    if(mu_size > MU_SIZE || el_size > EL_SIZE ||  gen_size >GEN_SIZE) printf("WARNING: MU_SIZE EL_SIZE OR GEN_SIZE TOO LARGE \n");
     if(met_size != 1) printf("WARNING: Met size not equal to 1\n");
     if(do_muons){
         opp_sign = good_trigger = dimuon_id = mu_iso0 = mu_iso1 = false;
@@ -303,13 +359,48 @@ void NTupleReader::getEvent(int i){
             cm_m = cm.M();
         }
     }
+
+    if(do_electrons){
+        opp_sign = good_trigger = dielec_id = el_iso0 = el_iso1 = false;
+        if(el_size >= 2){
+
+            opp_sign = ((abs(el_Charge[0] - el_Charge[1])) > 0.01);
+            good_sign = opp_sign ^ do_samesign;
+            good_trigger = HLT_El;
+
+            dielec_id = el_IDMedium_NoIso[0] && el_IDMedium_NoIso[1] &&
+                el_ScaleCorr[0] * el_Pt[0] > 29. &&  el_ScaleCorr[1] * el_Pt[1] > 15. &&
+                goodElEta(el_SCEta[0]) && goodElEta(el_SCEta[1]);
+
+            el_iso0 = el_IDMedium[0];
+            el_iso1 = el_IDMedium[1];
+
+
+            if(el_Charge[0] >0){
+                el_p.SetPtEtaPhiE(el_ScaleCorr[0] * el_Pt[0], el_Eta[0], el_Phi[0], el_ScaleCorr[0] * el_E[0]);
+                el_m.SetPtEtaPhiE(el_ScaleCorr[1] * el_Pt[1], el_Eta[1], el_Phi[1], el_ScaleCorr[1] * el_E[1]);
+                elp_index = 0;
+                elm_index = 1;
+            }
+            else{
+                el_m.SetPtEtaPhiE(el_ScaleCorr[0] * el_Pt[0], el_Eta[0], el_Phi[0], el_ScaleCorr[0] * el_E[0]);
+                el_p.SetPtEtaPhiE(el_ScaleCorr[1] * el_Pt[1], el_Eta[1], el_Phi[1], el_ScaleCorr[1] * el_E[1]);
+                elm_index = 0;
+                elp_index = 1;
+            }
+
+            cm = el_p + el_m;
+            cm_m = cm.M();
+        }
+    }
+
 }
 void NTupleReader::fillEvent(){
     nEvents++;
     xF = abs(2.*cm.Pz()/13000.); 
     //pick out 2 highest pt jets with eta < 2.4
     nJets =0;
-    for(int j=0; j < jet_size; j++){
+    for(unsigned int j=0; j < jet_size; j++){
         if(jet_Pt[j] > 20. && std::abs(jet_Eta[j]) < 2.4){
             if(nJets == 1){
                 jet2_pt = jet_Pt[j];
@@ -333,7 +424,24 @@ void NTupleReader::fillEvent(){
         mu2_pt = mu_Pt[1];
         mu1_eta = mu_Eta[0];
         mu2_eta = mu_Eta[1];
+        mu1_charge = mu_Charge[0];
+        mu2_charge = mu_Charge[1];
+
+
         cost = get_cost(mu_p, mu_m, false);
+        if(cm.Pz() < 0.) cost_r = -cost;
+        else cost_r = cost;
+    }
+    if(do_electrons){
+        el1_pt = el_Pt[0];
+        el2_pt = el_Pt[1];
+        el1_eta = el_Eta[0];
+        el2_eta = el_Eta[1];
+        el1_charge = el_Charge[0];
+        el2_charge = el_Charge[1];
+
+
+        cost = get_cost(el_p, el_m, false);
         if(cm.Pz() < 0.) cost_r = -cost;
         else cost_r = cost;
     }
@@ -347,15 +455,30 @@ void NTupleReader::fillEvent(){
 void NTupleReader::fillEventSFs(){
     pu_SF = get_pileup_SF(pu_NtrueInt, pu_SFs.pileup_ratio);
 
-    mu_R_up = scale_Weights[2];
-    mu_R_down = scale_Weights[4];
-    mu_F_up = scale_Weights[0];
-    mu_F_down = scale_Weights[1];
-    mu_RF_up = scale_Weights[3];
-    mu_RF_down = scale_Weights[5];
+    if(pdf_size <60){
+        for(int i=0;i<60; i++){
+            pdf_weights[i] = 1.;
+        }
+    }
+    if(scale_size > 0){
+        mu_R_up = scale_Weights[2];
+        mu_R_down = scale_Weights[4];
+        mu_F_up = scale_Weights[0];
+        mu_F_down = scale_Weights[1];
+        mu_RF_up = scale_Weights[3];
+        mu_RF_down = scale_Weights[5];
+    }
+    else{
+        mu_R_up = mu_R_down = mu_F_up = mu_F_down = mu_RF_up = mu_RF_down = 1.0;
+    }
 
-    alpha_up = alpha_weights[0];
-    alpha_down = alpha_weights[1];
+    if(alphas_size >= 2){
+        alpha_up = alpha_weights[0];
+        alpha_down = alpha_weights[1];
+    }
+    else{
+        alpha_up = alpha_down = 1.;
+    }
 
     if(do_muons){
 
@@ -370,6 +493,25 @@ void NTupleReader::fillEventSFs(){
 
         bcdef_trk_SF = get_Mu_trk_SF(abs(mu1_eta), runs_bcdef.TRK_SF) * get_Mu_trk_SF(abs(mu2_eta), runs_bcdef.TRK_SF);
         gh_trk_SF = get_Mu_trk_SF(abs(mu1_eta), runs_gh.TRK_SF) * get_Mu_trk_SF(abs(mu2_eta), runs_gh.TRK_SF);
+    }
+    if(do_electrons){
+
+        elp_scale_up = el_ScaleCorrUp[elp_index] / el_ScaleCorr[elp_index];
+        elp_scale_down = el_ScaleCorrDown[elp_index]/ el_ScaleCorr[elp_index];
+        elp_smear_up = el_ScaleSmearUp[elp_index]/ el_ScaleCorr[elp_index];
+        elp_smear_down = el_ScaleSmearDown[elp_index]/ el_ScaleCorr[elp_index];
+
+        elm_scale_up = el_ScaleCorrUp[elm_index]/ el_ScaleCorr[elm_index];
+        elm_scale_down = el_ScaleCorrDown[elm_index]/ el_ScaleCorr[elm_index];
+        elm_smear_up = el_ScaleSmearUp[elm_index]/ el_ScaleCorr[elm_index];
+        elm_smear_down = el_ScaleSmearDown[elm_index]/ el_ScaleCorr[elm_index];
+
+
+        //get el cut SFs
+
+        el_id_SF = get_el_SF(el1_pt, el1_eta, el_SF.ID_SF) * get_el_SF(el2_pt, el2_eta, el_SF.ID_SF);
+        el_reco_SF = get_el_SF(el1_pt, el1_eta, el_SF.RECO_SF) * get_el_SF(el2_pt, el2_eta, el_SF.RECO_SF);
+        el_HLT_SF = get_el_HLT_SF(el1_pt, el1_eta, el2_pt, el2_eta, el_SF.HLT_SF, el_SF.HLT_MC_EFF);
     }
 }
 
@@ -487,6 +629,7 @@ void NTupleReader::parseGenParts(bool PRINT = false){
 
 
     signal_event = false;//whether it is an event with an asym or not
+    failed_match = false;
 
     is_tau_event = false;
 
@@ -508,20 +651,20 @@ void NTupleReader::parseGenParts(bool PRINT = false){
         //record 2 scattered muons
         if(abs(gen_id[k]) == MY_LEP && 
                 (gen_Mom0ID[k] == Z || gen_Mom0ID[k] == PHOTON || (abs(gen_Mom0ID[k]) == TAU && gen_Pt[k] > 10.)
-                 || abs(gen_Mom0ID[k]) == ELECTRON || (gen_status[k] == OUTGOING && gen_Mom0ID[k] != PROTON))) {
+                 || (gen_status[k] == OUTGOING && gen_Mom0ID[k] != PROTON))) {
             if(gen_id[k] == MY_LEP){
                 if(gen_lep_m == -1) gen_lep_m = k;
                 else{
-                    if(abs(gen_Mom0ID[k]) != TAU) printf("WARNING: More than one mu_m\n\n");
-                    if(PRINT) sprintf(out_buff + strlen(out_buff), "Extra mu_m detected\n");
+                    if(abs(gen_Mom0ID[k]) != TAU) printf("WARNING: More than one lep_m\n\n");
+                    if(PRINT) sprintf(out_buff + strlen(out_buff), "Extra lep_m detected\n");
                     print_out = true;
                 }
             }
             if(gen_id[k] == -MY_LEP){
                 if(gen_lep_p == -1) gen_lep_p = k;
                 else{
-                    if(abs(gen_Mom0ID[k]) != TAU) printf("WARNING: More than one mu_p\n\n");
-                    if(PRINT) sprintf(out_buff + strlen(out_buff), "Extra mu_p detected\n");
+                    if(abs(gen_Mom0ID[k]) != TAU) printf("WARNING: More than one lep_p\n\n");
+                    if(PRINT) sprintf(out_buff + strlen(out_buff), "Extra lep_p detected\n");
                     print_out = true;
                 }
             }
@@ -534,7 +677,7 @@ void NTupleReader::parseGenParts(bool PRINT = false){
                 if(gen_tau_m == -1) gen_tau_m = k;
                 else{
                     printf("WARNING: More than one tau_m\n\n");
-                    if(PRINT) sprintf(out_buff + strlen(out_buff), "Extra mu_m detected\n");
+                    if(PRINT) sprintf(out_buff + strlen(out_buff), "Extra tau_m detected\n");
                     //print_out = true;
                 }
             }
@@ -542,7 +685,7 @@ void NTupleReader::parseGenParts(bool PRINT = false){
                 if(gen_tau_p == -1) gen_tau_p = k;
                 else{
                     printf("WARNING: More than one tau_p\n\n");
-                    if(PRINT) sprintf(out_buff + strlen(out_buff), "Extra mu_p detected\n");
+                    if(PRINT) sprintf(out_buff + strlen(out_buff), "Extra tau_p detected\n");
                     //print_out = true;
                 }
             }
@@ -611,7 +754,7 @@ void NTupleReader::parseGenParts(bool PRINT = false){
 
     }
     else {
-        printf("WARNING: Unable to identify MuMu pair in event %i, skipping \n", event_idx);
+        printf("WARNING: Unable to identify lepton pair in event %i, skipping \n", event_idx);
         nFailedID ++;
         print_out = true;
         if(PRINT && print_out){
@@ -619,6 +762,7 @@ void NTupleReader::parseGenParts(bool PRINT = false){
             fputs(out_buff, stdout);
             print_out = false;
         }
+        failed_match = true;
         return;
     }
     if((inc_1 == -1) || (inc_2 == -1)){
@@ -630,6 +774,7 @@ void NTupleReader::parseGenParts(bool PRINT = false){
             fputs(out_buff, stdout);
             print_out = false;
         }
+        failed_match = true;
         return;
     }
 
@@ -641,6 +786,7 @@ void NTupleReader::parseGenParts(bool PRINT = false){
             if(gen_tau_p == -1 || gen_tau_m == -1){
                 printf("Didn't record tau's :( \n");
                 nFailedID ++;
+                failed_match = true;
                 return;
             }
             nTauTau++;
@@ -711,6 +857,12 @@ void NTupleReader::parseGenParts(bool PRINT = false){
 
     gen_m = gen_cm.M();
 
+    if(PRINT && print_out){
+        sprintf(out_buff + strlen(out_buff), "\n\n");
+        fputs(out_buff, stdout);
+        print_out = false;
+    }
+
     if(PRINT) memset(out_buff, 0, 10000);
 }
 
@@ -718,6 +870,7 @@ void NTupleReader::finish(){
 
     fout->cd();
 
+    printf("Finished. There were %i events from %i files \n\n", nEvents, fileCount);
     printf("Writing output to file at %s \n", fout->GetName());
     for(int i=0; i<nOutTrees; i++){
         outTrees[i]->Write();

@@ -102,10 +102,17 @@ class NTupleReader{
         Double_t bcdef_HLT_SF, bcdef_iso_SF, bcdef_id_SF, gh_HLT_SF, gh_iso_SF, gh_id_SF,
                  bcdef_trk_SF, gh_trk_SF,
                  jet1_b_weight, jet2_b_weight, pu_SF;
+
+        Double_t el1_pt, el2_pt, el1_eta, el2_eta;
+        Double_t el_id_SF, el_reco_SF, el_HLT_SF;
+        Float_t elp_scale_up, elp_scale_down, elm_scale_up, elm_scale_down,
+             elp_smear_up, elp_smear_down, elm_smear_up, elm_smear_down;
+
+
         Double_t mu_R_up, mu_R_down, mu_F_up, mu_F_down, mu_RF_up, mu_RF_down, alpha_up, alpha_down;
         Int_t nJets, jet1_flavour, jet2_flavour, pu_NtrueInt;
         Bool_t is_tau_event;
-        Float_t met_pt;
+        Float_t met_pt, mu1_charge, mu2_charge, el1_charge, el2_charge;
         TLorentzVector cm, gen_cm;
         TLorentzVector mu_p, mu_m, gen_mu_p_vec, gen_mu_m_vec;
         TLorentzVector el_p, el_m, gen_el_p_vec, gen_el_m_vec;
@@ -114,7 +121,7 @@ class NTupleReader{
 
 
 
-        UInt_t mu_size, gen_size, jet_size, met_size;
+        UInt_t el_size, mu_size, gen_size, jet_size, met_size, alphas_size, scale_size, pdf_size;
         Int_t gen_id[GEN_SIZE], gen_status[GEN_SIZE];
         Int_t  gen_Mom0ID[GEN_SIZE], gen_Mom0Status[GEN_SIZE], gen_Mom1ID[GEN_SIZE], gen_Mom1Status[GEN_SIZE];
         Int_t  gen_Dau0ID[GEN_SIZE], gen_Dau0Status[GEN_SIZE], gen_Dau1ID[GEN_SIZE], gen_Dau1Status[GEN_SIZE];
@@ -129,13 +136,27 @@ class NTupleReader{
         Float_t jet_Pt[JET_SIZE], jet_Eta[JET_SIZE], jet_Phi[JET_SIZE], jet_E[JET_SIZE],
                 jet_CSV[JET_SIZE], jet_CMVA[JET_SIZE], jet_partonflavour[JET_SIZE];
 
+        Float_t el_Pt[EL_SIZE], el_Eta[EL_SIZE], el_Phi[EL_SIZE], el_E[EL_SIZE], 
+                el_Charge[EL_SIZE], el_SCEta[EL_SIZE];
+
+        Int_t el_IDMedium[EL_SIZE], el_IDMedium_NoIso[EL_SIZE];
+
+        Float_t el_ScaleCorr[EL_SIZE], el_ScaleCorrUp[EL_SIZE], el_ScaleCorrDown[EL_SIZE],
+            el_ScaleSmearDown[EL_SIZE], el_ScaleSmearUp[EL_SIZE];
+
+
+
+
+
+
         Float_t evt_Gen_Weight;
-        Int_t HLT_IsoMu, HLT_IsoTkMu;
+        Int_t HLT_IsoMu, HLT_IsoTkMu, HLT_El;
 
 
-        bool good_sign, opp_sign, good_trigger, dimuon_id, mu_iso0, mu_iso1;
+        int elp_index, elm_index;
+        bool good_sign, opp_sign, good_trigger, dimuon_id, mu_iso0, mu_iso1, dielec_id, el_iso0, el_iso1;
 
-        bool signal_event;
+        bool signal_event, failed_match;
 
         Double_t quark_dir_eta;
 };

@@ -7,7 +7,9 @@ void MuMu_reco_mc_batch(int nJobs =1, int iJob = 0)
 {
 
 
-    NTupleReader nt("EOS_files/test_file.txt","output_files/MuMu_test.root", false);
+    NTupleReader nt("EOS_files/DY_files_test.txt","output_files/MuMu_test.root", false);
+    nt.nJobs = nJobs;
+    nt.iJob = iJob;
     nt.do_muons = true;
     nt.do_SFs = true;
     nt.use_RC = true;
@@ -25,20 +27,20 @@ void MuMu_reco_mc_batch(int nJobs =1, int iJob = 0)
             nt.getEvent(i);
             if(nt.good_trigger && nt.good_sign && nt.dimuon_id &&
                     nt.mu_iso0 && nt.mu_iso1 && nt.cm_m > 50. ){
-                //printf("HI THERE %i \n", i);
                 nt.fillEvent();
                 nt.fillEventSFs();
                 nt.parseGenParts();
                 nt.fillEventRC();
 
-                if(nt.signal_event){
-                    nt.nSignal++;
-                    nt.outTrees[0]->Fill();
+                if(!nt.failed_match){
+                    if(nt.signal_event){
+                        nt.nSignal++;
+                        nt.outTrees[0]->Fill();
+                    }
+                    else{
+                        nt.outTrees[1]->Fill();
+                    }
                 }
-                else{
-                    nt.outTrees[1]->Fill();
-                }
-
 
             }
         } 

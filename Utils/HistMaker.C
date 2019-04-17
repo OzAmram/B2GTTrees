@@ -264,8 +264,7 @@ void make_emu_m_cost_pt_xf_hist(TTree *t1, TH1F *h_m, TH1F *h_cost,  TH1F *h_pt,
     Double_t bcdef_HLT_SF, bcdef_iso_SF, bcdef_id_SF;
     Double_t gh_HLT_SF, gh_iso_SF, gh_id_SF, el_id_SF, el_reco_SF, el_HLT_SF;
     Double_t bcdef_trk_SF, gh_trk_SF;
-    Double_t jet1_pt, jet2_pt, jet1_b_weight, jet2_b_weight, pu_SF;
-    jet1_b_weight = jet2_b_weight =1.;
+    Double_t jet1_pt, jet2_pt, pu_SF;
     Float_t met_pt;
     Int_t nJets;
     nJets = 2;
@@ -322,12 +321,6 @@ void make_emu_m_cost_pt_xf_hist(TTree *t1, TH1F *h_m, TH1F *h_cost,  TH1F *h_pt,
                 bcdef_weight *= bcdef_HLT_SF;
                 gh_weight *= gh_HLT_SF;
 
-                if (nJets >= 1){
-                    evt_weight *= jet1_b_weight;
-                }
-                if (nJets >= 2){
-                    evt_weight *= jet2_b_weight;
-                }
                 //printf(" %.2e %.2e %.2e \n", evt_weight, evt_weight *bcdef_weight, evt_weight *gh_weight);
                 double total_weight = 1000 * (evt_weight * gh_weight * gh_lumi + evt_weight * bcdef_weight * bcdef_lumi);
                 h_m->Fill(m, total_weight);
@@ -417,9 +410,8 @@ void make_m_cost_pt_xf_hist(TTree *t1, TH1F *h_m, TH1F *h_cost, TH1F *h_pt, TH1F
     Double_t bcdef_HLT_SF, bcdef_iso_SF, bcdef_id_SF;
     Double_t gh_HLT_SF, gh_iso_SF, gh_id_SF, el_id_SF, el_reco_SF, el_HLT_SF;
     Double_t bcdef_trk_SF, gh_trk_SF;
-    Double_t jet1_pt, jet2_pt, jet1_b_weight, jet2_b_weight, pu_SF;
+    Double_t jet1_pt, jet2_pt, pu_SF;
     Double_t mu_p_SF, mu_m_SF, mu_p_SF_alt, mu_m_SF_alt;
-    jet1_b_weight = jet2_b_weight =1.;
     TLorentzVector *mu_p = 0;
     TLorentzVector *mu_m = 0;
     TLorentzVector *el_p = 0;
@@ -440,8 +432,6 @@ void make_m_cost_pt_xf_hist(TTree *t1, TH1F *h_m, TH1F *h_cost, TH1F *h_pt, TH1F
     t1->SetBranchAddress("nJets", &nJets);
     if(!is_data){
         t1->SetBranchAddress("gen_weight", &gen_weight);
-        //t1->SetBranchAddress("jet1_b_weight", &jet1_b_weight);
-        //t1->SetBranchAddress("jet2_b_weight", &jet2_b_weight);
         t1->SetBranchAddress("pu_SF", &pu_SF);
     }
     if(flag1 == FLAG_MUONS){
@@ -504,14 +494,6 @@ void make_m_cost_pt_xf_hist(TTree *t1, TH1F *h_m, TH1F *h_cost, TH1F *h_pt, TH1F
                 else{
                     Double_t bcdef_weight = gen_weight *pu_SF * bcdef_HLT_SF * bcdef_iso_SF * bcdef_id_SF * bcdef_trk_SF;
                     Double_t gh_weight = gen_weight *pu_SF * gh_HLT_SF * gh_iso_SF * gh_id_SF * gh_trk_SF;
-                    if (nJets >= 1){
-                        bcdef_weight *= jet1_b_weight;
-                        gh_weight *= jet1_b_weight;
-                    }
-                    if (nJets >= 2){
-                        bcdef_weight *= jet2_b_weight;
-                        gh_weight *= jet2_b_weight;
-                    }
                     Double_t evt_weight = 1000*(bcdef_lumi * bcdef_weight + gh_lumi *gh_weight);
                     //Double_t weight = gen_weight;
                     h_m->Fill(m,evt_weight);
@@ -555,12 +537,6 @@ void make_m_cost_pt_xf_hist(TTree *t1, TH1F *h_m, TH1F *h_cost, TH1F *h_pt, TH1F
                 else{
 
                     Double_t evt_weight = gen_weight *pu_SF * el_id_SF * el_reco_SF * el_HLT_SF * 1000. * el_lumi;
-                    if (nJets >= 1){
-                        evt_weight *= jet1_b_weight;
-                    }
-                    if (nJets >= 2){
-                        evt_weight *= jet2_b_weight;
-                    }
                     h_m->Fill(m, evt_weight);
                     if(ss){
                         h_cost->Fill(-cost, 0.5* evt_weight);
@@ -600,9 +576,8 @@ void Fakerate_est_mu(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_contam, TTree 
         Double_t m, xF, cost, jet1_cmva, jet2_cmva, gen_weight;
         Double_t bcdef_HLT_SF, bcdef_iso_SF, bcdef_id_SF;
         Double_t gh_HLT_SF, gh_iso_SF, gh_id_SF;
-        Double_t jet1_pt, jet2_pt, jet1_b_weight, jet2_b_weight, pu_SF;
+        Double_t jet1_pt, jet2_pt,  pu_SF;
         Float_t mu1_charge, mu2_charge;
-        jet1_b_weight = jet2_b_weight =1.;
         Double_t evt_fakerate, mu1_fakerate, mu2_fakerate, mu1_eta, mu1_pt, mu2_eta, mu2_pt;
         TLorentzVector *mu_p = 0;
         TLorentzVector *mu_m = 0;
@@ -634,8 +609,6 @@ void Fakerate_est_mu(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_contam, TTree 
         }
         if(l==2 || l==3){
             t->SetBranchAddress("gen_weight", &gen_weight);
-            t->SetBranchAddress("jet1_b_weight", &jet1_b_weight);
-            t->SetBranchAddress("jet2_b_weight", &jet2_b_weight);
             t->SetBranchAddress("pu_SF", &pu_SF);
             t->SetBranchAddress("bcdef_HLT_SF", &bcdef_HLT_SF);
             t->SetBranchAddress("bcdef_iso_SF", &bcdef_iso_SF);
@@ -652,7 +625,7 @@ void Fakerate_est_mu(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_contam, TTree 
             bool not_cosmic = notCosmic(*mu_p, *mu_m);
             if(l==0){
                 if(iso_mu ==1) mu1_fakerate = get_new_fakerate_prob(mu1_pt, mu1_eta, FR.h);
-                if(iso_mu ==0) mu1_fakerate = get_new_fakerate_prob(mu2_pt, mu2_eta, FR.h);
+                else           mu1_fakerate = get_new_fakerate_prob(mu2_pt, mu2_eta, FR.h);
                 evt_fakerate = mu1_fakerate/(1-mu1_fakerate);
             }
             if(l==1){
@@ -665,7 +638,7 @@ void Fakerate_est_mu(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_contam, TTree 
                 Double_t gh_weight = gen_weight * gh_HLT_SF * gh_id_SF * gh_iso_SF;
                 Double_t mc_weight = (bcdef_weight *bcdef_lumi + gh_weight * gh_lumi) * 1000;
                 if(iso_mu ==1) mu1_fakerate = get_new_fakerate_prob(mu1_pt, mu1_eta, FR.h);
-                if(iso_mu ==0) mu1_fakerate = get_new_fakerate_prob(mu2_pt, mu2_eta, FR.h);
+                else           mu1_fakerate = get_new_fakerate_prob(mu2_pt, mu2_eta, FR.h);
                 evt_fakerate = -(mu1_fakerate * mc_weight)/(1-mu1_fakerate);
             }
             if(l==3){
@@ -739,8 +712,7 @@ void Fakerate_est_el(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_MC, TTree *t_Q
         if (l==2) t = t_WJets_MC;
         if (l==3) t = t_QCD_MC;
         Double_t m, xF, cost, jet1_cmva, jet2_cmva, gen_weight;
-        Double_t jet1_pt, jet2_pt, jet1_b_weight, jet2_b_weight, pu_SF;
-        jet1_b_weight = jet2_b_weight =1.;
+        Double_t jet1_pt, jet2_pt, pu_SF;
         Double_t el_id_SF, el_reco_SF;
         Double_t evt_fakerate, el1_fakerate, el2_fakerate, el1_eta, el1_pt, el2_eta, el2_pt;
         Float_t el1_charge, el2_charge;
@@ -778,8 +750,6 @@ void Fakerate_est_el(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_MC, TTree *t_Q
             t->SetBranchAddress("el_id_SF", &el_id_SF);
             t->SetBranchAddress("el_reco_SF", &el_reco_SF);
             t->SetBranchAddress("gen_weight", &gen_weight);
-            t->SetBranchAddress("jet1_b_weight", &jet1_b_weight);
-            t->SetBranchAddress("jet2_b_weight", &jet2_b_weight);
             t->SetBranchAddress("pu_SF", &pu_SF);
         }
 
@@ -791,7 +761,7 @@ void Fakerate_est_el(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_MC, TTree *t_Q
             if(l==0){
                 double err;
                 if(iso_el ==1) el1_fakerate = get_new_fakerate_prob(el1_pt, el1_eta, FR.h); 
-                if(iso_el ==0) el1_fakerate = get_new_fakerate_prob(el2_pt, el2_eta, FR.h); 
+                else           el1_fakerate = get_new_fakerate_prob(el2_pt, el2_eta, FR.h); 
                 evt_fakerate = el1_fakerate/(1-el1_fakerate);
             }
             if(l==1){
@@ -803,7 +773,7 @@ void Fakerate_est_el(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_MC, TTree *t_Q
 
                 Double_t mc_weight = gen_weight * el_id_SF * el_reco_SF  * 1000. * el_lumi;
                 if(iso_el ==1) el1_fakerate = get_new_fakerate_prob(el1_pt, el1_eta, FR.h);
-                if(iso_el ==0) el1_fakerate = get_new_fakerate_prob(el2_pt, el2_eta, FR.h);
+                else           el1_fakerate = get_new_fakerate_prob(el2_pt, el2_eta, FR.h);
                 evt_fakerate = -(el1_fakerate * mc_weight)/(1-el1_fakerate);
             }
             if(l==3){
@@ -877,9 +847,8 @@ void Fakerate_est_emu(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_MC, TH1F *h_m
         if (l==1) t = t_QCD;
         if (l==2) t = t_WJets_MC;
         Double_t m, xF, cost, jet1_cmva, jet2_cmva, gen_weight;
-        Double_t jet1_pt, jet2_pt, jet1_b_weight, jet2_b_weight, pu_SF;
+        Double_t jet1_pt, jet2_pt, pu_SF;
 
-        jet1_b_weight = jet2_b_weight =1.;
         Double_t el_id_SF, el_reco_SF;
         Double_t bcdef_iso_SF, bcdef_id_SF, bcdef_trk_SF;
         Double_t gh_iso_SF, gh_id_SF, gh_trk_SF;
@@ -927,7 +896,7 @@ void Fakerate_est_emu(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_MC, TH1F *h_m
             if(l==0){
                 //iso_lep: 0 = muons, 1 electrons
                 if(iso_lep ==1) lep1_fakerate = get_new_fakerate_prob(mu1_pt, mu1_eta, mu_FR.h);
-                if(iso_lep ==0) lep1_fakerate = get_new_fakerate_prob(el1_pt, el1_eta, el_FR.h);
+                else  lep1_fakerate = get_new_fakerate_prob(el1_pt, el1_eta, el_FR.h);
                 evt_fakerate = lep1_fakerate/(1-lep1_fakerate);
             }
             if(l==1){
@@ -944,7 +913,7 @@ void Fakerate_est_emu(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_MC, TH1F *h_m
                 Double_t mc_weight = gen_weight * el_id_SF * el_reco_SF *pu_SF *
                     mu_SF  * 1000. * mu_lumi;
                 if(iso_lep ==1) lep1_fakerate = get_new_fakerate_prob(mu1_pt, mu1_eta, mu_FR.h);
-                if(iso_lep ==0) lep1_fakerate = get_new_fakerate_prob(el1_pt, el1_eta, el_FR.h);
+                else            lep1_fakerate = get_new_fakerate_prob(el1_pt, el1_eta, el_FR.h);
                 evt_fakerate = -(lep1_fakerate * mc_weight)/(1-lep1_fakerate);
             }
 
