@@ -73,7 +73,7 @@ void NTupleReader::setupSFs(){
 
 
 
-    if(do_electrons){
+    if(do_electrons || do_emu){
         setup_el_SF(&el_SF);
     }
     printf("Retrieved Scale Factors \n\n");
@@ -137,7 +137,7 @@ bool NTupleReader::getNextFile(){
             tin->SetBranchAddress("met_MuCleanOnly_size", &met_size);
             tin->SetBranchAddress("met_MuCleanOnly_Pt", &met_pt);
 
-            if(do_muons){
+            if(do_muons || do_emu){
                 tin->SetBranchAddress("HLT_IsoMu24", &HLT_IsoMu);
                 tin->SetBranchAddress("HLT_IsoTkMu24", &HLT_IsoTkMu);
 
@@ -156,7 +156,7 @@ bool NTupleReader::getNextFile(){
                 //tin->SetBranchAddress("mu_SumPUPt", &mu_SumPUPt);
                 //tin->SetBranchAddress("mu_SumPhotonPt", &mu_SumPhotonPt);
             }
-            if(do_electrons){
+            if(do_electrons || do_emu){
 
                 tin->SetBranchAddress("el_size", &el_size); //number of els in the event
                 tin->SetBranchAddress("el_Pt", &el_Pt);
@@ -232,9 +232,9 @@ void NTupleReader::setupOutputTree(char treeName[100]){
     outTrees[idx]->Branch("jet2_eta", &jet2_eta, "jet2_eta/D");
     outTrees[idx]->Branch("jet2_CMVA", &jet2_cmva, "jet2_CMVA/D");
     outTrees[idx]->Branch("nJets", &nJets, "nJets/I");
+    outTrees[idx]->Branch("met_pt", &met_pt, "met_Pt/F");
 
     if(do_muons){
-        outTrees[idx]->Branch("met_pt", &met_pt, "met_Pt/F");
         outTrees[idx]->Branch("mu1_eta", &mu1_eta, "mu1_eta/D");
         outTrees[idx]->Branch("mu2_eta", &mu2_eta, "mu2_eta/D");
         outTrees[idx]->Branch("mu_m", "TLorentzVector", &mu_m);
@@ -251,7 +251,20 @@ void NTupleReader::setupOutputTree(char treeName[100]){
         outTrees[idx]->Branch("el2_eta", &el2_eta, "el2_eta/D");
         outTrees[idx]->Branch("el_m", "TLorentzVector", &el_m);
         outTrees[idx]->Branch("el_p", "TLorentzVector", &el_p);
+        outTrees[idx]->Branch("el1_charge", &el1_charge, "el1_charge/F");
+        outTrees[idx]->Branch("el2_charge", &el2_charge, "el2_charge/F");
     }
+    if(do_emu){
+        outTrees[idx]->Branch("el", "TLorentzVector", &el);
+        outTrees[idx]->Branch("mu", "TLorentzVector", &mu);
+        outTrees[idx]->Branch("mu1_eta", &mu1_eta, "mu1_eta/D");
+        outTrees[idx]->Branch("mu1_pt", &mu1_pt, "mu1_pt/D");
+        outTrees[idx]->Branch("mu1_charge", &mu1_charge, "mu1_charge/F");
+        outTrees[idx]->Branch("el1_pt", &el1_pt, "el1_pt/D");
+        outTrees[idx]->Branch("el1_eta", &el1_eta, "el1_eta/D");
+        outTrees[idx]->Branch("el1_charge", &el1_charge, "el1_charge/F");
+    }
+
 
 
 
@@ -275,15 +288,7 @@ void NTupleReader::setupOutputTree(char treeName[100]){
         outTrees[idx]->Branch("is_tau_event", &is_tau_event);
         outTrees[idx]->Branch("pu_NtrueInt", &pu_NtrueInt);
 
-        if(do_muons){
-            outTrees[idx]->Branch("mu_p_SF", &mu_p_SF, "mu_p_SF/D");
-            outTrees[idx]->Branch("mu_m_SF", &mu_m_SF, "mu_m_SF/D");
-            outTrees[idx]->Branch("mu_p_SF_up", &mu_p_SF_up, "mu_p_SF_up/D");
-            outTrees[idx]->Branch("mu_m_SF_up", &mu_m_SF, "mu_m_SF_up/D");
-            outTrees[idx]->Branch("mu_p_SF_down", &mu_p_SF_down, "mu_p_SF_down/D");
-            outTrees[idx]->Branch("mu_m_SF_down", &mu_m_SF, "mu_m_SF_down/D");
-            outTrees[idx]->Branch("mu_p_SF_alt", &mu_p_SF_alt, "mu_p_SF_alt/D");
-            outTrees[idx]->Branch("mu_m_SF_alt", &mu_m_SF_alt, "mu_m_SF_alt/D");
+        if(do_muons || do_emu){
             outTrees[idx]->Branch("gen_mu_m", "TLorentzVector", &gen_mu_m_vec);
             outTrees[idx]->Branch("gen_mu_p", "TLorentzVector", &gen_mu_p_vec);
             outTrees[idx]->Branch("bcdef_HLT_SF", &bcdef_HLT_SF);
@@ -294,9 +299,20 @@ void NTupleReader::setupOutputTree(char treeName[100]){
             outTrees[idx]->Branch("gh_iso_SF", &gh_iso_SF);
             outTrees[idx]->Branch("gh_id_SF", &gh_id_SF);
             outTrees[idx]->Branch("gh_trk_SF", &gh_trk_SF);
+
+            if(do_RC){
+                outTrees[idx]->Branch("mu_p_SF", &mu_p_SF, "mu_p_SF/D");
+                outTrees[idx]->Branch("mu_m_SF", &mu_m_SF, "mu_m_SF/D");
+                outTrees[idx]->Branch("mu_p_SF_up", &mu_p_SF_up, "mu_p_SF_up/D");
+                outTrees[idx]->Branch("mu_m_SF_up", &mu_m_SF, "mu_m_SF_up/D");
+                outTrees[idx]->Branch("mu_p_SF_down", &mu_p_SF_down, "mu_p_SF_down/D");
+                outTrees[idx]->Branch("mu_m_SF_down", &mu_m_SF, "mu_m_SF_down/D");
+                outTrees[idx]->Branch("mu_p_SF_alt", &mu_p_SF_alt, "mu_p_SF_alt/D");
+                outTrees[idx]->Branch("mu_m_SF_alt", &mu_m_SF_alt, "mu_m_SF_alt/D");
+            }
         }
 
-        if(do_electrons){
+        if(do_electrons || do_emu){
 
             outTrees[idx]->Branch("elp_scale_up", &elp_scale_up);
             outTrees[idx]->Branch("elp_scale_down", &elp_scale_down);
@@ -316,7 +332,7 @@ void NTupleReader::setupOutputTree(char treeName[100]){
 }
 
 void NTupleReader::setupRC(){
-    use_RC = true;
+    do_RC = true;
     printf("Getting RC \n");
     //RoccoR  rc("rcdata.2016.v3"); //directory path as input for now; initialize only once, contains all variations
     rc =  RoccoR("/uscms_data/d3/oamram/CMSSW_8_0_24_patch1/src/Analysis/B2GTTrees/Utils/rcdata.2016.v3");
@@ -393,6 +409,28 @@ void NTupleReader::getEvent(int i){
             cm_m = cm.M();
         }
     }
+    if(do_emu){
+        opp_sign = good_trigger = emu_ids = el_iso0 = mu_iso0 = false;
+        if(el_size >=1 && mu_size >= 1){
+            opp_sign = ((abs(el_Charge[0] - mu_Charge[0])) > 0.01);
+            good_sign = opp_sign ^ do_samesign;
+            good_trigger = HLT_IsoMu || HLT_IsoTkMu;
+
+
+            emu_ids = el_IDMedium_NoIso[0] && mu_IsHighPtMuon[0] &&
+                mu_Pt[0] > 26. &&  el_ScaleCorr[1] * el_Pt[1] > 15. &&
+                abs(mu_Eta[0])  && goodElEta(el_SCEta[1]);
+
+            el_iso0 = el_IDMedium[0];
+            mu_iso0 = mu_TrackerIso[0] < mu_iso;
+
+            mu.SetPtEtaPhiE(mu_Pt[0], mu_Eta[0], mu_Phi[0], mu_E[0]);
+            el.SetPtEtaPhiE(el_ScaleCorr[0] * el_Pt[0], el_Eta[0], el_Phi[0], el_ScaleCorr[0] * el_E[0]);
+
+            cm = el + mu;
+            cm_m = cm.M();
+        }
+    }
 
 }
 void NTupleReader::fillEvent(){
@@ -428,9 +466,9 @@ void NTupleReader::fillEvent(){
         mu2_charge = mu_Charge[1];
 
 
-        cost = get_cost(mu_p, mu_m, false);
-        if(cm.Pz() < 0.) cost_r = -cost;
-        else cost_r = cost;
+            cost = get_cost(mu_p, mu_m, false);
+            if(cm.Pz() < 0.) cost_r = -cost;
+            else cost_r = cost;
     }
     if(do_electrons){
         el1_pt = el_Pt[0];
@@ -441,9 +479,23 @@ void NTupleReader::fillEvent(){
         el2_charge = el_Charge[1];
 
 
-        cost = get_cost(el_p, el_m, false);
-        if(cm.Pz() < 0.) cost_r = -cost;
-        else cost_r = cost;
+            cost = get_cost(el_p, el_m, false);
+            if(cm.Pz() < 0.) cost_r = -cost;
+            else cost_r = cost;
+    }
+    if(do_emu){
+            mu1_pt = mu_Pt[0];
+            mu1_eta = mu_Eta[0];
+            mu1_charge = mu_Charge[0];
+
+            el1_pt = el_Pt[0];
+            el1_eta = el_Eta[0];
+            el1_charge = el_Charge[0];
+
+            if(el1_charge > 0) cost = get_cost(el, mu, false);
+            else cost = get_cost(mu,el, false);
+            if(cm.Pz() < 0.) cost_r = -cost;
+            else cost_r = cost;
     }
 
     if(!is_data){
@@ -506,12 +558,26 @@ void NTupleReader::fillEventSFs(){
         elm_smear_up = el_ScaleSmearUp[elm_index]/ el_ScaleCorr[elm_index];
         elm_smear_down = el_ScaleSmearDown[elm_index]/ el_ScaleCorr[elm_index];
 
-
-        //get el cut SFs
-
         el_id_SF = get_el_SF(el1_pt, el1_eta, el_SF.ID_SF) * get_el_SF(el2_pt, el2_eta, el_SF.ID_SF);
         el_reco_SF = get_el_SF(el1_pt, el1_eta, el_SF.RECO_SF) * get_el_SF(el2_pt, el2_eta, el_SF.RECO_SF);
         el_HLT_SF = get_el_HLT_SF(el1_pt, el1_eta, el2_pt, el2_eta, el_SF.HLT_SF, el_SF.HLT_MC_EFF);
+    }
+    if(do_emu){
+
+        bcdef_HLT_SF = get_HLT_SF_1mu(mu1_pt, mu1_eta, runs_bcdef.HLT_SF);
+        gh_HLT_SF = get_HLT_SF_1mu(mu1_pt, mu1_eta, runs_gh.HLT_SF);
+
+        bcdef_iso_SF = get_SF(mu1_pt, mu1_eta, runs_bcdef.ISO_SF);
+        bcdef_id_SF = get_SF(mu1_pt, mu1_eta, runs_bcdef.ID_SF);
+
+        gh_iso_SF = get_SF(mu1_pt, mu1_eta, runs_gh.ISO_SF);
+        gh_id_SF = get_SF(mu1_pt, mu1_eta, runs_gh.ID_SF);
+
+        bcdef_trk_SF = get_Mu_trk_SF(abs(mu1_eta), runs_bcdef.TRK_SF);
+        gh_trk_SF = get_Mu_trk_SF(abs(mu1_eta), runs_gh.TRK_SF);
+
+        el_id_SF = get_el_SF(el1_pt, el1_eta, el_SF.ID_SF);
+        el_reco_SF = get_el_SF(el1_pt, el1_eta, el_SF.RECO_SF);
     }
 }
 

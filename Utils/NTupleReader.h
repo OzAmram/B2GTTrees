@@ -75,9 +75,10 @@ class NTupleReader{
         bool do_samesign = false;
         bool do_muons = false;
         bool do_electrons = false;
+        bool do_emu = false;
         bool is_data = false;
         bool do_SFs = false;
-        bool use_RC = false;
+        bool do_RC = false;
         bool RC_from_gen = false;
 
         unsigned int nEvents=0;
@@ -116,6 +117,7 @@ class NTupleReader{
         TLorentzVector cm, gen_cm;
         TLorentzVector mu_p, mu_m, gen_mu_p_vec, gen_mu_m_vec;
         TLorentzVector el_p, el_m, gen_el_p_vec, gen_el_m_vec;
+        TLorentzVector el, mu;
         Float_t scale_Weights[10], pdf_weights[60], alpha_weights[2];
 
 
@@ -154,7 +156,8 @@ class NTupleReader{
 
 
         int elp_index, elm_index;
-        bool good_sign, opp_sign, good_trigger, dimuon_id, mu_iso0, mu_iso1, dielec_id, el_iso0, el_iso1;
+        bool good_sign, opp_sign, good_trigger, dimuon_id, emu_ids,
+             mu_iso0, mu_iso1, dielec_id, el_iso0, el_iso1;
 
         bool signal_event, failed_match;
 

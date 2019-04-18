@@ -37,9 +37,6 @@ Double_t bcdef_lumi = 6.04 + 2.68 + 4.37 + 4.06 + 3.17;
 Double_t gh_lumi =  7.69 + 0.216 + 8.67;
 Double_t mu_lumi = bcdef_lumi + gh_lumi;
 Double_t el_lumi = 36.5;
-Double_t emu_scaling_nom = 1.0;
-Double_t emu_unc = 0.04;
-Double_t emu_scaling = emu_scaling_nom;
 Double_t R_mu_ss_os = 0.57;
 
 void cleanup_hist(TH1 *h){
