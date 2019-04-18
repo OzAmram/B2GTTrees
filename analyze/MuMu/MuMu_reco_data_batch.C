@@ -12,7 +12,7 @@ void MuMu_reco_data_batch(int nJobs =1, int iJob = 0)
     nt.iJob = iJob;
     nt.do_muons = true;
     nt.do_SFs = false;
-    nt.use_RC = true;
+    nt.do_RC = true;
     nt.setupRC();
     nt.setupOutputTree("T_data");
 

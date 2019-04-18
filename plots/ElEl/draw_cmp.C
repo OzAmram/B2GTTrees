@@ -21,10 +21,10 @@
 #include "TFitter.h"
 #include "TSystem.h"
 #include "Math/Functor.h"
-#include "../../analyze/HistMaker.C"
 #include "../tdrstyle.C"
 #include "../CMS_lumi.C"
-#include "../../analyze/AFB_fit/root_files.h"
+#include "../../Utils/HistMaker.C"
+#include "../../Utils/root_files.h"
 #include "root_files.h"
 
 const int type = FLAG_ELECTRONS;

@@ -111,7 +111,7 @@ bool NTupleReader::getNextFile(){
             // Write new null terminator
             *(end+1) = 0;
 
-            printf("Opening file: %s \n", lines);
+            printf("Opening file: %s   ", lines);
             fin=  TFile::Open(lines);
 
             if(!is_data){
@@ -209,6 +209,7 @@ bool NTupleReader::getNextFile(){
 
 
             tin_nEntries =  tin->GetEntries();
+            printf("done \n");
             return true;
         }
     }
@@ -333,9 +334,14 @@ void NTupleReader::setupOutputTree(char treeName[100]){
 
 void NTupleReader::setupRC(){
     do_RC = true;
-    printf("Getting RC \n");
-    //RoccoR  rc("rcdata.2016.v3"); //directory path as input for now; initialize only once, contains all variations
-    rc =  RoccoR("/uscms_data/d3/oamram/CMSSW_8_0_24_patch1/src/Analysis/B2GTTrees/Utils/rcdata.2016.v3");
+
+    printf("Getting RC  \n");
+    char path[400], env_var[400];
+
+    sprintf(path, "%s/src/Analysis/B2GTTrees/Utils/rcdata.2016.v3", getenv("CMSSW_BASE"));
+    printf("path %s \n", path);
+    //rc =  RoccoR("/uscms_data/d3/oamram/CMSSW_8_0_24_patch1/src/Analysis/B2GTTrees/Utils/rcdata.2016.v3");
+    rc =  RoccoR(path);
     rand = new TRandom3();
 }
 

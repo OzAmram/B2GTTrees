@@ -22,7 +22,7 @@
 #include "TemplateUtils.h"
 
 
-const TString fout_name("combine/templates/april9_combined_no_sys.root");
+const TString fout_name("combine/templates/april18_test.root");
 TFile * fout;
 
 

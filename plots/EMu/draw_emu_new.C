@@ -24,8 +24,8 @@
 #include "Math/Functor.h"
 #include "../tdrstyle.C"
 #include "../CMS_lumi.C"
-#include "../../analyze/HistMaker.C"
-#include "../../analyze/AFB_fit/root_files.h"
+#include "../../Utils/HistMaker.C"
+#include "../../Utils/root_files.h"
 
 
 

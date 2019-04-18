@@ -2,8 +2,8 @@
 #define TemplateUtils
 #include "RooWorkspace.h"
 #include "HiggsAnalysis/CombinedLimit/interface/RooParametricHist.h"
-#include "../TemplateMaker_systematics.C"
-#include "../AFB_fit/FitUtils.C"
+#include "../../Utils/TemplateMaker_systematics.C"
+#include "../../Utils/root_files.h"
 
 Double_t m_low;
 Double_t m_high;

@@ -20,10 +20,10 @@
 #include "TFitter.h"
 #include "TSystem.h"
 #include "Math/Functor.h"
-#include "../../analyze/HistMaker.C"
 #include "../tdrstyle.C"
 #include "../CMS_lumi.C"
-#include "../../analyze/AFB_fit/root_files.h"
+#include "../../Utils/HistMaker.C"
+#include "../../Utils/root_files.h"
 
 void make_pt_cmp(TTree *t1, TH1F *h_def_ratio, TH1F *h_alt_ratio, bool is_data=false){
     //read event data

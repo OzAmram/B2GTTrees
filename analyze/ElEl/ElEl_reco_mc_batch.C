@@ -7,7 +7,7 @@ void ElEl_reco_mc_batch(int nJobs =1, int iJob = 0)
 {
 
 
-    NTupleReader nt("EOS_files/DY_files_test.txt","output_files/ElEl_test.root", false);
+    NTupleReader nt("EOS_files/DY_files_april15.txt","output_files/ElEl_dy.root", false);
     nt.nJobs = nJobs;
     nt.iJob = iJob;
     nt.do_electrons = true;
