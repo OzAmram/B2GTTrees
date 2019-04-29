@@ -20,6 +20,9 @@ TTree *t_mumu_ss_dy, *t_mumu_ss_back, *t_mumu_ss_data, *t_mumu_ss_QCD, *t_mumu_s
 TFile *f_emu_ss_data, *f_emu_ss_ttbar, *f_emu_ss_dy, *f_emu_ss_diboson;
 TTree *t_emu_ss_data, *t_emu_ss_ttbar, *t_emu_ss_dy, *t_emu_ss_diboson;
 
+TFile *f_mumu_gamgam, *f_elel_gamgam;
+TTree *t_mumu_gamgam, *t_elel_gamgam;
+
 int n_xf_bins = 4;
 Float_t xf_bins[] = {0., 0.04, 0.07, 0.10, 1.0};
 int n_cost_bins = 10;
@@ -40,10 +43,10 @@ void init(){
     f_elel_data = TFile::Open("../analyze/output_files/SingleElectron_data_slim_nov26.root");
     t_elel_data = (TTree *)f_elel_data->Get("T_data"); 
 
-    f_elel_mc = (TFile*) TFile::Open("../analyze/output_files/ElEl_dy_slim_mar18.root");
+    f_elel_mc = (TFile*) TFile::Open("../analyze/output_files/ElEl_dy_slim_april18.root");
     t_elel_mc = (TTree *) f_elel_mc ->Get("T_data");
     t_elel_nosig = (TTree *) f_elel_mc ->Get("T_back");
-    f_elel_back = (TFile*) TFile::Open("../analyze/output_files/ElEl_combined_back_mar7.root");
+    f_elel_back = (TFile*) TFile::Open("../analyze/output_files/ElEl_comb_back_april18.root");
     t_elel_back = (TTree *) f_elel_back ->Get("T_data");
 
 
@@ -63,10 +66,10 @@ void init(){
     f_mumu_data = TFile::Open("../analyze/output_files/SingleMuon_data_slim_nov26.root");
     t_mumu_data = (TTree *)f_mumu_data->Get("T_data"); 
 
-    f_mumu_mc = (TFile*) TFile::Open("../analyze/output_files/MuMu_dy_slim_mar18.root");
+    f_mumu_mc = (TFile*) TFile::Open("../analyze/output_files/MuMu_dy_slim_april18.root");
     t_mumu_mc = (TTree *) f_mumu_mc ->Get("T_data");
     t_mumu_nosig = (TTree *) f_mumu_mc ->Get("T_back");
-    f_mumu_back = (TFile*) TFile::Open("../analyze/output_files/MuMu_combined_back_mar7.root");
+    f_mumu_back = (TFile*) TFile::Open("../analyze/output_files/MuMu_comb_back_april18.root");
     t_mumu_back = (TTree *) f_mumu_back ->Get("T_data");
 
 
@@ -167,5 +170,10 @@ void init_ss(){
 
     f_mumu_ss_back = TFile::Open("../analyze/output_files/MuMu_ss_backgrounds_mar6.root");
     t_mumu_ss_back = (TTree *)f_mumu_ss_back->Get("T_data");
+}
+
+void init_gamgam(){
+    f_mumu_gamgam = TFile::Open("../analyze/output_files/MuMu_gamgam_back_april29.root");
+    t_mumu_gamgam = (TTree *)t_mumu_gamgam->Get("T_data");
 }
 

@@ -197,9 +197,9 @@ int gen_mc_template(TTree *t1, Double_t alpha, TH2F* h_sym, TH2F *h_asym,
     Double_t el1_pt, el1_eta, el2_pt, el2_eta;
     Double_t mu_R_up, mu_R_down, mu_F_up, mu_F_down, 
              mu_RF_up, mu_RF_down, pdf_up, pdf_down;
-    Double_t mu_p_SF, mu_m_SF, mu_p_SF_up, mu_m_SF_up, mu_p_SF_down, mu_m_SF_down;
+    Double_t mu_p_SF, mu_m_SF, mu_p_SF_up, mu_m_SF_up, mu_p_SF_down, mu_m_SF_down, alphaS_up, alphaS_down;
     Float_t cost_pt, met_pt;
-    Float_t pdf_weights[100];
+    Float_t pdf_weights[60];
     TLorentzVector *lep_p=0;
     TLorentzVector *lep_m=0;
     Double_t pt;
@@ -222,13 +222,14 @@ int gen_mc_template(TTree *t1, Double_t alpha, TH2F* h_sym, TH2F *h_asym,
     t1->SetBranchAddress("mu_F_down", &mu_F_down);
     t1->SetBranchAddress("mu_RF_up", &mu_RF_up);
     t1->SetBranchAddress("mu_RF_down", &mu_RF_down);
-    t1->SetBranchAddress("pdf_up", &pdf_up);
-    t1->SetBranchAddress("pdf_down", &pdf_down);
     t1->SetBranchAddress("pu_NtrueInt", &pu_NtrueInt);
     t1->SetBranchAddress("jet1_eta", &jet1_eta);
     t1->SetBranchAddress("jet2_eta", &jet2_eta);
     t1->SetBranchAddress("jet1_flavour", &jet1_flavour);
     t1->SetBranchAddress("jet2_flavour", &jet2_flavour);
+    t1->SetBranchAddress("pdf_weights", &pdf_weights);
+    t1->SetBranchAddress("alpha_up", &alphaS_up);
+    t1->SetBranchAddress("alpha_down", &alphaS_down);
     int n = 0;
 
     //SYSTEMATICS 
@@ -249,6 +250,7 @@ int gen_mc_template(TTree *t1, Double_t alpha, TH2F* h_sym, TH2F *h_asym,
         }
     }
     // do_sys: 0 = nominal, 1= var up, -1 = var down
+    int do_pdf_sys = 0;
     int do_btag_sys = 0;
     int do_pileup_sys = 0;
 
@@ -287,10 +289,16 @@ int gen_mc_template(TTree *t1, Double_t alpha, TH2F* h_sym, TH2F *h_asym,
         else if(sys_label.find("RENORM") != string::npos && shift < 0) systematic = &mu_R_down;
         else if(sys_label.find("FAC") != string::npos && shift > 0) systematic = &mu_F_up;
         else if(sys_label.find("FAC") != string::npos && shift < 0) systematic = &mu_F_down;
-
-        else if(sys_label.find("pdf") != string::npos && shift < 0) systematic = &pdf_down;
-        else if(sys_label.find("pdf") != string::npos && shift > 0) systematic = &pdf_up;
+        else if(sys_label.find("alphaS") != string::npos && shift < 0) systematic = &alphaS_down;
+        else if(sys_label.find("alphaS") != string::npos && shift > 0) systematic = &alphaS_up;
         else if(sys_label.find("alpha") != string::npos && shift < 0) systematic = &one;
+
+        else if(sys_label.find("pdf") != string::npos){
+            if(shift > 0) sscanf(sys_label.c_str(), "_pdf%iUp", &do_pdf_sys);
+            else sscanf(sys_label.c_str(), "_pdf%iDown", &do_pdf_sys);
+            printf("Doing pdf sys %i \n", do_pdf_sys);
+        }
+        
         else printf("COULDN'T PARSE SYSTEMATIC %s !!! \n \n", sys_label.c_str());
     }
 
@@ -371,7 +379,10 @@ int gen_mc_template(TTree *t1, Double_t alpha, TH2F* h_sym, TH2F *h_asym,
                 Double_t pu_SF_sys = 1.;
                 if(do_pileup_sys == -1) pu_SF_sys = get_pileup_SF(pu_NtrueInt, pu_sys.pileup_down);
                 if(do_pileup_sys == 1) pu_SF_sys = get_pileup_SF(pu_NtrueInt, pu_sys.pileup_up);
-                //printf("systematic is %.2f \n", *systematic * pu_SF_sys);
+                if(do_pdf_sys != 0){
+                    if(shift > 0) *systematic = pdf_weights[do_pdf_sys-1];
+                    if(shift < 0) *systematic = 2. - pdf_weights[do_pdf_sys-1];
+                }
                 gen_weight *= *systematic * pu_SF * pu_SF_sys;
 
 
@@ -476,7 +487,11 @@ int gen_mc_template(TTree *t1, Double_t alpha, TH2F* h_sym, TH2F *h_asym,
                 Double_t pu_SF_sys = 1.;
                 if(do_pileup_sys == -1) pu_SF_sys = get_pileup_SF(pu_NtrueInt, pu_sys.pileup_down);
                 if(do_pileup_sys == 1) pu_SF_sys = get_pileup_SF(pu_NtrueInt, pu_sys.pileup_up);
-                //printf("systematic is %.2f \n", *systematic * pu_SF_sys);
+
+                if(do_pdf_sys != 0){
+                    if(shift > 0) *systematic = pdf_weights[do_pdf_sys-1];
+                    if(shift < 0) *systematic = 2. - pdf_weights[do_pdf_sys-1];
+                }
                 gen_weight *= *systematic * pu_SF_sys * pu_SF;
 
 
@@ -507,7 +522,6 @@ int gen_mc_template(TTree *t1, Double_t alpha, TH2F* h_sym, TH2F *h_asym,
 
     }
 
-    printf("N sym is %i \n", n);
     //float norm = h_sym -> Integral();
     //h_sym->Scale(1./norm);
     //h_asym->Scale(1./norm);
@@ -895,9 +909,9 @@ int gen_combined_background_template(int nTrees, TTree **ts, TH2F* h,
         Double_t el1_pt, el1_eta, el2_pt, el2_eta;
         Double_t mu_R_up, mu_R_down, mu_F_up, mu_F_down, 
                  mu_RF_up, mu_RF_down, pdf_up, pdf_down;
-        Double_t mu_p_SF, mu_m_SF, mu_p_SF_up, mu_m_SF_up, mu_p_SF_down, mu_m_SF_down;
+        Double_t mu_p_SF, mu_m_SF, mu_p_SF_up, mu_m_SF_up, mu_p_SF_down, mu_m_SF_down, alphaS_up, alphaS_down;
         Float_t cost_pt, met_pt;
-        Float_t pdf_weights[100];
+        Float_t pdf_weights[60];
         TLorentzVector *lep_p=0;
         TLorentzVector *lep_m=0;
         Double_t pt;
@@ -919,13 +933,14 @@ int gen_combined_background_template(int nTrees, TTree **ts, TH2F* h,
         t1->SetBranchAddress("mu_F_down", &mu_F_down);
         t1->SetBranchAddress("mu_RF_up", &mu_RF_up);
         t1->SetBranchAddress("mu_RF_down", &mu_RF_down);
-        t1->SetBranchAddress("pdf_up", &pdf_up);
-        t1->SetBranchAddress("pdf_down", &pdf_down);
         t1->SetBranchAddress("pu_NtrueInt", &pu_NtrueInt);
         t1->SetBranchAddress("jet1_eta", &jet1_eta);
         t1->SetBranchAddress("jet2_eta", &jet2_eta);
         t1->SetBranchAddress("jet1_flavour", &jet1_flavour);
         t1->SetBranchAddress("jet2_flavour", &jet2_flavour);
+        t1->SetBranchAddress("pdf_weights", &pdf_weights);
+        t1->SetBranchAddress("alpha_up", &alphaS_up);
+        t1->SetBranchAddress("alpha_down", &alphaS_down);
         int n = 0;
 
         //SYSTEMATICS 
@@ -946,6 +961,7 @@ int gen_combined_background_template(int nTrees, TTree **ts, TH2F* h,
             }
         }
         // do_sys: 0 = nominal, 1= var up, -1 = var down
+        int do_pdf_sys = 0;
         int do_btag_sys = 0;
         int do_pileup_sys = 0;
 
@@ -980,11 +996,16 @@ int gen_combined_background_template(int nTrees, TTree **ts, TH2F* h,
 
             else if(sys_label.find("RENORM") != string::npos && shift > 0) systematic = &mu_R_up;
             else if(sys_label.find("RENORM") != string::npos && shift < 0) systematic = &mu_R_down;
-            else if(sys_label.find("pdf") != string::npos && shift < 0) systematic = &pdf_down;
-            else if(sys_label.find("pdf") != string::npos && shift > 0) systematic = &pdf_up;
             else if(sys_label.find("FAC") != string::npos && shift > 0) systematic = &mu_F_up;
             else if(sys_label.find("FAC") != string::npos && shift < 0) systematic = &mu_F_down;
+            else if(sys_label.find("alphaS") != string::npos && shift < 0) systematic = &alphaS_down;
+            else if(sys_label.find("alphaS") != string::npos && shift > 0) systematic = &alphaS_up;
             else if(sys_label.find("alpha") != string::npos) systematic = &one;
+            else if(sys_label.find("pdf") != string::npos){
+                if(shift > 0) sscanf(sys_label.c_str(), "_pdf%iUp", &do_pdf_sys);
+                else sscanf(sys_label.c_str(), "_pdf%iDown", &do_pdf_sys);
+                printf("Doing pdf sys %i \n", do_pdf_sys);
+            }
 
             else printf("COULDN'T PARSE SYSTEMATIC %s !!! \n \n", sys_label.c_str());
 
@@ -1064,6 +1085,11 @@ int gen_combined_background_template(int nTrees, TTree **ts, TH2F* h,
                     Double_t pu_SF_sys = 1.;
                     if(do_pileup_sys == -1) pu_SF_sys = get_pileup_SF(pu_NtrueInt, pu_sys.pileup_down);
                     if(do_pileup_sys == 1) pu_SF_sys = get_pileup_SF(pu_NtrueInt, pu_sys.pileup_up);
+                    if(do_pdf_sys != 0){
+                        if(shift > 0) *systematic = pdf_weights[do_pdf_sys-1];
+                        if(shift < 0) *systematic = 2. - pdf_weights[do_pdf_sys-1];
+                        //printf("mumu sys is  %.6f pdf weight is %.4f \n", *systematic, pdf_weights[do_pdf_sys-1]);
+                    }
                     gen_weight *= (*systematic) * pu_SF * pu_SF_sys;
 
                     if(do_muHLT_sys) bcdef_HLT_SF = get_HLT_SF(mu1_pt, mu1_eta, mu2_pt, mu2_eta, runs_bcdef.HLT_SF, runs_bcdef.HLT_MC_EFF, do_muHLT_sys);
@@ -1160,6 +1186,11 @@ int gen_combined_background_template(int nTrees, TTree **ts, TH2F* h,
                     Double_t pu_SF_sys = 1.;
                     if(do_pileup_sys == -1) pu_SF_sys = get_pileup_SF(pu_NtrueInt, pu_sys.pileup_down);
                     if(do_pileup_sys == 1) pu_SF_sys = get_pileup_SF(pu_NtrueInt, pu_sys.pileup_up);
+                    if(do_pdf_sys != 0){
+                        if(shift > 0) *systematic = pdf_weights[do_pdf_sys-1];
+                        if(shift < 0) *systematic = 2. - pdf_weights[do_pdf_sys-1];
+                        //printf("elel sys is  %.6f pdf weight is %.4f \n", *systematic, pdf_weights[do_pdf_sys-1]);
+                    }
                     gen_weight *= (*systematic) * pu_SF * pu_SF_sys;
 
                     if(do_elID_sys) el_id_SF = get_el_SF(el1_pt, el1_eta, el_SF.ID_SF, do_elID_sys) * get_el_SF(el2_pt, el2_eta, el_SF.ID_SF, do_elID_sys);

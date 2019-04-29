@@ -7,7 +7,7 @@ void MuMu_reco_background_batch(int nJobs =1, int iJob = 0)
 {
 
 
-    NTupleReader nt("EOS_files/DY_files_test.txt","output_files/MuMu_comb_back.root", false);
+    NTupleReader nt("EOS_files/GammaGammaToMuMu_files_april25.txt","output_files/MuMu_gamgam_back_april29.root", false);
     nt.nJobs = nJobs;
     nt.iJob = iJob;
     nt.do_muons = true;

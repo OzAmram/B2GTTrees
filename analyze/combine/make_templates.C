@@ -22,9 +22,6 @@
 #include "TemplateUtils.h"
 
 
-const TString fout_name("combine/templates/april18_test.root");
-TFile * fout;
-
 
 
 TH2F *h_elel_asym, *h_elel_sym, *h_elel_back,  *h_elel_dy_gg, *h_elel_data, *h_elel_mc, *h_elel_qcd;
@@ -56,6 +53,7 @@ void convert_qcd_to_param_hist(TH2F *h, FILE *f_log, float sign_scaling, int fla
     char R_sign_param[40];
     sprintf(h_name, "%s_param", h->GetName());
     RooRealVar *R_qcd_sign_fraction;
+    fprintf(f_log, "\n");
     if(flag == FLAG_MUONS){
         sprintf(h_ss_name, "%s", "mumu_ss_qcd_param");
         sprintf(R_sign_param, "%s", "R_mumu_os_fakes");
@@ -305,11 +303,36 @@ void convert_mc_templates(const string &sys_label){
         write_roo_hist(h1_elel_mn, var);
     }
 }
+void write_groups(FILE *f_log){
+
+    char label[4][40], intro[4][40];
+    int sizes[4] = {40,20,20,60};
+    sprintf(intro[0], "emu_fake_shape group = ");
+    sprintf(intro[1], "ee_fake_shape group = ");
+    sprintf(intro[2], "mumu_fake_shape group = ");
+    sprintf(intro[3], "pdfs group = ");
+
+    sprintf(label[0], "emu_qcd_param_bin");
+    sprintf(label[1], "ee_qcd_param_bin");
+    sprintf(label[2], "mumu_qcd_param_bin");
+    sprintf(label[3], "pdf");
+
+    for(int i=0; i<4; i++){
+        fprintf(f_log, "\n %s", intro[i]);
+        for(int j=1; j<=sizes[i]; j++){
+
+            fprintf(f_log, " %s%i", label[i], j);
+        }
+    }
+        fprintf(f_log, "\n");
+}
 
 
 
 
 void make_templates(int nJobs = 6, int iJob =-1){
+    const TString fout_name("combine/templates/april22_no_sys.root");
+    TFile * fout;
 
     init();
     init_ss();
@@ -326,8 +349,8 @@ void make_templates(int nJobs = 6, int iJob =-1){
     vector<string> sys_labels {"_elScaleUp", "_elScaleDown", "_elSmearUp", "_elSmearDown", 
         "_muRCUp", "_muRCDown", "_muHLTUp", "_muHLTDown", "_muIDUp", "_muIDDown", "_muISOUp", "_muISODown", "_muTRKUp", "_muTRKDown",  
         "_elHLTUp", "_elHLTDown", "_elIDUp", "_elIDDown", "_elRECOUp", "_elRECODown", 
-        "_RENORMUp", "_RENORMDown", "_FACUp", "_FACDown","_pdfUp", "_pdfDown",
-        "_PuUp", "_PuDown", "_BTAGUp", "_BTAGDown", "_alphaUp", "_alphaDown" };
+        "_RENORMUp", "_RENORMDown", "_FACUp", "_FACDown",
+        "_PuUp", "_PuDown", "_BTAGUp", "_BTAGDown", "_alphaUp", "_alphaDown", "_alphaSUp", "_alphaSDown" };
         */
         
         
@@ -379,6 +402,7 @@ void make_templates(int nJobs = 6, int iJob =-1){
         fout->cd();
         gDirectory->cd(dirname);
         w->Write();
+        write_groups(f_log);
         fclose(f_log);
     }
 

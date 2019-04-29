@@ -7,7 +7,7 @@ void ElEl_reco_background_batch(int nJobs =1, int iJob = 0)
 {
 
 
-    NTupleReader nt("EOS_files/combined_back_files_april15.txt","output_files/ElEl_comb_back.root", false);
+    NTupleReader nt("EOS_files/DY_files_test.txt","output_files/ElEl_comb_back_test.root", false);
     nt.nJobs = nJobs;
     nt.iJob = iJob;
     nt.do_electrons = true;
