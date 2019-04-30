@@ -12,10 +12,10 @@
 void read_lhes(){
     TTree *t1 = new TTree("T_lhe", "Lhe event info for mass binned DY");
     t1->SetDirectory(0);
-    string f1("/uscms_data/d3/oamram/CMSSW_8_0_24_patch1/src/Analysis/B2GTTrees/generator_stuff/MG5/MG5_aMC_v2_6_5/DY_SM_M700/Events/run_01/events.lhe");
+    string f1("/uscms_data/d3/oamram/CMSSW_8_0_24_patch1/src/Analysis/B2GTTrees/generator_stuff/m500/cmsgrid_final.lhe");
     fill_tree(f1, t1, true);
 
-    TFile *fout1 = TFile::Open("madgraph_m700_v2_evts.root", "RECREATE");
+    TFile *fout1 = TFile::Open("madgraph_m500_evts.root", "RECREATE");
     fout1->cd();
     t1->Write();
     fout1->Close();

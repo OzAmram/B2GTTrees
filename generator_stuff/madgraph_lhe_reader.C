@@ -75,6 +75,7 @@ void fill_tree(string f_name, TTree *t1, bool print = false)
     t1->Branch("q2_id", &q2_id);
     t1->Branch("lep1_id", &lep1_id);
     t1->Branch("lep2_id", &lep2_id);
+    t1->Branch("gen_weight", &xwgtup);
 
     // Construct file name to analyze
 
