@@ -46,7 +46,7 @@ void init(){
     f_elel_mc = (TFile*) TFile::Open("../analyze/output_files/ElEl_dy_slim_april18.root");
     t_elel_mc = (TTree *) f_elel_mc ->Get("T_data");
     t_elel_nosig = (TTree *) f_elel_mc ->Get("T_back");
-    f_elel_back = (TFile*) TFile::Open("../analyze/output_files/ElEl_comb_back_april18.root");
+    f_elel_back = (TFile*) TFile::Open("../analyze/output_files/ElEl_comb_back_slim_april18.root");
     t_elel_back = (TTree *) f_elel_back ->Get("T_data");
 
 
@@ -69,7 +69,7 @@ void init(){
     f_mumu_mc = (TFile*) TFile::Open("../analyze/output_files/MuMu_dy_slim_april18.root");
     t_mumu_mc = (TTree *) f_mumu_mc ->Get("T_data");
     t_mumu_nosig = (TTree *) f_mumu_mc ->Get("T_back");
-    f_mumu_back = (TFile*) TFile::Open("../analyze/output_files/MuMu_comb_back_april18.root");
+    f_mumu_back = (TFile*) TFile::Open("../analyze/output_files/MuMu_comb_back_slim_april18.root");
     t_mumu_back = (TTree *) f_mumu_back ->Get("T_data");
 
 
@@ -174,6 +174,6 @@ void init_ss(){
 
 void init_gamgam(){
     f_mumu_gamgam = TFile::Open("../analyze/output_files/MuMu_gamgam_back_april29.root");
-    t_mumu_gamgam = (TTree *)t_mumu_gamgam->Get("T_data");
+    t_mumu_gamgam = (TTree *)f_mumu_gamgam->Get("T_data");
 }
 
