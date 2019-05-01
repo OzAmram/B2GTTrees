@@ -154,9 +154,11 @@ if ( `echo $cmd | grep "create" | wc -l` ) then
 	    set DATAPROC="MC"
 	    set JEC_ERA="Summer16_23Sep2016V4_MC"
 	else
-	    echo "ERROR - Dataset not defined (probably because not using latest): "$DATASET
-	    rm -r $TASKDIR Usage.txt
-	    exit
+        #echo "ERROR - Dataset not defined (probably because not using latest): "$DATASET
+        #rm -r $TASKDIR Usage.txt
+        #exit
+	    set DATAPROC="MC"
+	    set JEC_ERA="Summer16_23Sep2016V4_MC"
 	endif
 	# Create xsec txt file for each dataset
 	if ( `echo $primary | grep SMS | wc -l` || $isData ) then

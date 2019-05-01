@@ -157,6 +157,7 @@ else:
         'ScaleCorrDown',
         'ScaleSmearUp',
         'ScaleSmearDown',
+        'GoodCharge',
         'dEtaIn',
         'dEtaInSeed',
         'dPhiIn',
