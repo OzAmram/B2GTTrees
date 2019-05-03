@@ -173,7 +173,7 @@ void init_ss(){
 }
 
 void init_gamgam(){
-    f_mumu_gamgam = TFile::Open("../analyze/output_files/MuMu_gamgam_back_april29.root");
+    f_mumu_gamgam = TFile::Open("../analyze/output_files/MuMu_gamgam_back_may1.root");
     t_mumu_gamgam = (TTree *)t_mumu_gamgam->Get("T_data");
 }
 
