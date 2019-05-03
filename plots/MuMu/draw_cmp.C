@@ -35,6 +35,7 @@ void draw_cmp(){
     setTDRStyle();
     init();
     mumu_init();
+    init_gamgam();
 
     TH1F *data_m = new TH1F("data_m", "Data Dimuon Mass Distribution", 30, 150, 2000);
 
@@ -45,6 +46,7 @@ void draw_cmp(){
     TH1F *diboson_pt = new TH1F("diboson_pt", "MC signal", 40, 0, 1000);
     TH1F *wt_pt = new TH1F("wt_pt", "MC signal", 40, 0, 1000);
     TH1F *QCD_pt = new TH1F("QCD_pt", "MC signal", 40, 0, 1000);
+    TH1F *gg_pt = new TH1F("gg_pt", "MC signal", 40, 0, 1000);
     mc_pt->SetFillColor(kRed+1);
     mc_pt->SetMarkerColor(kRed+1);
     mc_nosig_pt->SetFillColor(kMagenta);
@@ -63,6 +65,7 @@ void draw_cmp(){
     TH1F *diboson_xf = new TH1F("diboson_xf", "MC signal", xf_nbins, 0, 0.5);
     TH1F *wt_xf = new TH1F("wt_xf", "MC signal", xf_nbins, 0, 0.5);
     TH1F *QCD_xf = new TH1F("QCD_xf", "MC signal", xf_nbins, 0, 0.5);
+    TH1F *gg_xf = new TH1F("gg_xf", "MC signal", xf_nbins, 0, 0.5);
     mc_xf->SetFillColor(kRed+1);
     mc_xf->SetMarkerColor(kRed+1);
     mc_nosig_xf->SetFillColor(kMagenta);
@@ -111,6 +114,9 @@ void draw_cmp(){
     TH1F *QCD_m = new TH1F("QCD_m", "QCD", 30, 150, 2000);
     TH1F *QCD_cost = new TH1F("QCD_cost", "QCD", num_cost_bins, -1,1);
 
+    TH1F *gg_m = new TH1F("gg_m", "QCD", 30, 150, 2000);
+    TH1F *gg_cost = new TH1F("gg_cost", "QCD", num_cost_bins, -1,1);
+
     TH1F *WJets_m = new TH1F("WJets_m", "WJets", 30, 150, 2000);
     TH1F *WJets_cost = new TH1F("WJets_cost", "WJets", num_cost_bins, -1,1);
 
@@ -125,15 +131,21 @@ void draw_cmp(){
     QCD_m->SetFillColor(kRed -7);
     QCD_cost->SetFillColor(kRed -7);
 
+    gg_cost->SetFillColor(kOrange);
+    gg_m->SetFillColor(kOrange);
+    gg_pt->SetFillColor(kOrange);
+    gg_xf->SetFillColor(kOrange);
+
     bool do_RC = true;
     float m_low = 150.;
     float m_high = 10000.;
 
-    make_m_cost_pt_xf_hist(t_data, data_m, data_cost, data_pt, data_xf, true, type, do_RC, m_low, m_high);
+    make_m_cost_pt_xf_hist(t_mumu_data, data_m, data_cost, data_pt, data_xf, true, type, do_RC, m_low, m_high);
     make_m_cost_pt_xf_hist(t_mumu_mc, mc_m, mc_cost, mc_pt, mc_xf, false, type,  do_RC, m_low, m_high);
     make_m_cost_pt_xf_hist(t_mumu_nosig, mc_nosig_m, mc_nosig_cost, mc_nosig_pt, mc_nosig_xf, false, type, do_RC, m_low, m_high);
     make_m_cost_pt_xf_hist(t_ttbar, ttbar_m, ttbar_cost, ttbar_pt, ttbar_xf, false, type, do_RC, m_low, m_high);
     make_m_cost_pt_xf_hist(t_wt, wt_m, wt_cost, wt_pt, wt_xf, false, type, do_RC, m_low, m_high);
+    make_m_cost_pt_xf_hist(t_mumu_gamgam, gg_m, gg_cost, gg_pt, gg_xf, false, type, do_RC, m_low, m_high);
     make_m_cost_pt_xf_hist(t_diboson, diboson_m, diboson_cost, diboson_pt, diboson_xf, false, type,  do_RC, m_low, m_high);
 
     bool ss_qcd = true;
@@ -177,6 +189,7 @@ void draw_cmp(){
     m_stack->Add(QCD_m);
     m_stack->Add(wt_m);
     m_stack->Add(ttbar_m);
+    m_stack->Add(gg_m);
     m_stack->Add(mc_nosig_m);
     m_stack->Add(mc_m);
 
@@ -186,6 +199,7 @@ void draw_cmp(){
     cost_stack->Add(QCD_cost);
     cost_stack->Add(wt_cost);
     cost_stack->Add(ttbar_cost);
+    cost_stack->Add(gg_cost);
     cost_stack->Add(mc_nosig_cost);
     cost_stack->Add(mc_cost);
 
@@ -194,6 +208,7 @@ void draw_cmp(){
     pt_stack->Add(QCD_pt);
     pt_stack->Add(wt_pt);
     pt_stack->Add(ttbar_pt);
+    pt_stack->Add(gg_pt);
     pt_stack->Add(mc_nosig_pt);
     pt_stack->Add(mc_pt);
 
@@ -202,6 +217,7 @@ void draw_cmp(){
     xf_stack->Add(QCD_xf);
     xf_stack->Add(wt_xf);
     xf_stack->Add(diboson_xf);
+    xf_stack->Add(gg_xf);
     xf_stack->Add(mc_nosig_xf);
     xf_stack->Add(mc_xf);
 
@@ -224,6 +240,7 @@ void draw_cmp(){
     leg1->AddEntry(data_m, "data", "p");
     leg1->AddEntry(mc_m, "DY (q#bar{q}, qg #bar{q}g)", "f");
     leg1->AddEntry(mc_nosig_m, "DY no asymmety(gg, qq, #bar{q}#bar{q})", "f");
+    leg1->AddEntry(gg_m, "#gamma#gamma to #mu#mu", "f");
     leg1->AddEntry(ttbar_m, "t#bar{t}", "f");
     leg1->AddEntry(wt_m, "tW + #bar{t}W", "f");
     leg1->AddEntry(QCD_m, "QCD + WJets", "f");

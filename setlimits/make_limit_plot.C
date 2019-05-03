@@ -74,8 +74,8 @@ void make_limit_plot(){
     int n_trials = 200;
     int m_start = 1000;
     //int m_max = 1500;
-    int m_max = 3200;
-    int m_step = 20;
+    int m_max = 3500;
+    int m_step = 40;
     int m;
     int i=0;
     Double_t kl_start = 2.2;
@@ -93,13 +93,15 @@ void make_limit_plot(){
         printf("trying m=%i \n", m);
         if(m > 2490 || m<1990) m_step = 50;
         if(m > 2990) m_step = 100;
-        else m_step = 20;
+        else m_step = 40;
         Double_t meas_lim = get_kl_limit(f1, m, kl_start, AFB_measured);
         Double_t exp_lim  = get_kl_limit(f1, m, kl_start, AFB_SM);
         if(meas_lim <= 0.09 || exp_lim <= 0.09 || meas_lim >=2.2 || exp_lim >= 2.2){
             printf("bad lim for m=%i exp = %.2f meas = %.2f \n", m, exp_lim, meas_lim); 
             continue;
         }
+        if(i>0) meas_lim = max(meas_lim, kl_limit[i-1]);
+        if(i>0) exp_lim = max(exp_lim, kl_expected_lim[i-1]);
         masses[i] = m;
         kl_limit[i] = meas_lim;
         kl_expected_lim[i] = exp_lim;
