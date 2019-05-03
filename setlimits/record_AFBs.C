@@ -25,9 +25,9 @@ void record_AFBs(){
     int m_max = 2400;
     int m_step = 20;
 
-    FILE *fout = fopen("corrected_AFBs.txt", "a");
+    FILE *fout = fopen("test_AFBs.txt", "a");
     int m;
-    Double_t kl_start = 0.1;
+    Double_t kl_start = 1.0;
     Double_t kl_min = 0.05;
     Double_t kl_max = 2.3;
     Double_t kl_step = 0.05;
@@ -37,14 +37,16 @@ void record_AFBs(){
     vector<Double_t> limits;
     vector<int> ms;
 
-    for(m = m_start; m <=m_max; m+=m_step){
-        for(kl = kl_start; kl <= kl_max; kl+=kl_step){
+    //for(m = m_start; m <=m_max; m+=m_step){
+        //for(kl = kl_start; kl <= kl_max; kl+=kl_step){
             //if(m%100 == 0) continue;
-            if(m > 2490) m_step = 50;
+            //if(m > 2490) m_step = 50;
             //printf("%.2f kl \n", kl);
+            m = 2500;
+            kl = 1.0;
             record_AFB(fout, m, kl);
-        }
-    }
+        //}
+    //}
     fclose(fout);
 
     return;

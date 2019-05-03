@@ -24,11 +24,11 @@
 
 
 
-TH2F *h_elel_asym, *h_elel_sym, *h_elel_back,  *h_elel_dy_gg, *h_elel_data, *h_elel_mc, *h_elel_qcd;
-TH1F *h1_elel_mn, *h1_elel_pl, *h1_elel_back,  *h1_elel_dy_gg, *h1_elel_data, *h1_elel_mc, *h1_elel_qcd;
+TH2F *h_elel_asym, *h_elel_sym, *h_elel_back,  *h_elel_dy_gg, *h_elel_data, *h_elel_mc, *h_elel_qcd, *h_elel_gam;
+TH1F *h1_elel_mn, *h1_elel_pl, *h1_elel_back,  *h1_elel_dy_gg, *h1_elel_data, *h1_elel_mc, *h1_elel_qcd, *h1_elel_gam;
 TH2F *h_elel_mc_count, *h_elel_sym_count;
-TH2F *h_mumu_asym, *h_mumu_sym, *h_mumu_back,  *h_mumu_dy_gg, *h_mumu_data, *h_mumu_mc, *h_mumu_qcd;
-TH1F *h1_mumu_mn, *h1_mumu_pl, *h1_mumu_back,  *h1_mumu_dy_gg, *h1_mumu_data, *h1_mumu_mc, *h1_mumu_qcd;
+TH2F *h_mumu_asym, *h_mumu_sym, *h_mumu_back,  *h_mumu_dy_gg, *h_mumu_data, *h_mumu_mc, *h_mumu_qcd, *h_mumu_gam;
+TH1F *h1_mumu_mn, *h1_mumu_pl, *h1_mumu_back,  *h1_mumu_dy_gg, *h1_mumu_data, *h1_mumu_mc, *h1_mumu_qcd, *h1_mumu_gam;
 
 
 
@@ -219,12 +219,18 @@ void make_mc_templates(const string &sys_label){
         h_mumu_dy_gg = new TH2F((string("mumu_dy_gg") + sys_label).c_str(), "Combined background template",
                 n_xf_bins, xf_bins, n_cost_bins, cost_bins);
         h_mumu_dy_gg->SetDirectory(0);
+        h_mumu_gam = new TH2F((string("mumu_gam") + sys_label).c_str(), "Combined background template",
+                n_xf_bins, xf_bins, n_cost_bins, cost_bins);
+        h_mumu_gam->SetDirectory(0);
 
         gen_mc_template(t_mumu_mc, alpha, h_mumu_sym, h_mumu_asym, m_low, m_high, FLAG_MUONS, FLAG_M_BINS, do_RC, sys_label );
         TTree *mumu_ts[1] = {t_mumu_back};
         gen_combined_background_template(1, mumu_ts, h_mumu_back, m_low, m_high, FLAG_MUONS, FLAG_M_BINS, do_RC, ss, sys_label);
         mumu_ts[0] = t_mumu_nosig;
         gen_combined_background_template(1, mumu_ts, h_mumu_dy_gg, m_low, m_high, FLAG_MUONS, FLAG_M_BINS, do_RC, ss, sys_label);
+
+        mumu_ts[0] = t_mumu_gamgam;
+        gen_combined_background_template(1, mumu_ts, h_mumu_gam, m_low, m_high, FLAG_MUONS, FLAG_M_BINS, do_RC, ss, sys_label);
     }
     if(do_el){
         printf("making electron mc templates \n");
@@ -240,12 +246,18 @@ void make_mc_templates(const string &sys_label){
         h_elel_dy_gg = new TH2F((string("ee_dy_gg") + sys_label).c_str(), "Combined background template",
                 n_xf_bins, xf_bins, n_cost_bins, cost_bins);
         h_elel_dy_gg->SetDirectory(0);
+        h_elel_gam = new TH2F((string("ee_gam") + sys_label).c_str(), "Combined background template",
+                n_xf_bins, xf_bins, n_cost_bins, cost_bins);
+        h_elel_gam->SetDirectory(0);
 
         gen_mc_template(t_elel_mc, alpha, h_elel_sym, h_elel_asym,  m_low, m_high, FLAG_ELECTRONS, FLAG_M_BINS, do_RC, sys_label);
         TTree *elel_ts[1] = {t_elel_back};
         gen_combined_background_template(1, elel_ts, h_elel_back, m_low, m_high, FLAG_ELECTRONS, FLAG_M_BINS,do_RC,ss, sys_label);
         elel_ts[0] = t_elel_nosig;
         gen_combined_background_template(1, elel_ts, h_elel_dy_gg, m_low, m_high, FLAG_ELECTRONS, FLAG_M_BINS,do_RC,ss, sys_label);
+
+        //elel_ts[0] = t_elel_gamgam;
+        //gen_combined_background_template(1, elel_ts, h_elel_gam, m_low, m_high, FLAG_ELECTRONS, FLAG_M_BINS,do_RC,ss, sys_label);
     }
 
 }
@@ -269,6 +281,8 @@ void convert_mc_templates(const string &sys_label){
     if(do_mu){
         h1_mumu_back = convert2d(h_mumu_back);
         h1_mumu_dy_gg = convert2d(h_mumu_dy_gg);
+        h1_mumu_gam = convert2d(h_mumu_gam);
+
         auto h_mumu_pl = *h_mumu_sym + *h_mumu_asym;
         auto h_mumu_mn = *h_mumu_sym - *h_mumu_asym;
         h_mumu_pl.Scale(0.5);
@@ -280,6 +294,7 @@ void convert_mc_templates(const string &sys_label){
 
         write_roo_hist(h1_mumu_back, var);
         write_roo_hist(h1_mumu_dy_gg, var);
+        write_roo_hist(h1_mumu_gam, var);
         write_roo_hist(h1_mumu_pl, var);
         write_roo_hist(h1_mumu_mn, var);
     }
@@ -287,6 +302,8 @@ void convert_mc_templates(const string &sys_label){
     if(do_el){
         h1_elel_back = convert2d(h_elel_back);
         h1_elel_dy_gg = convert2d(h_elel_dy_gg);
+        //h1_elel_gam = convert2d(h_elel_gam);
+
         auto h_elel_pl = *h_elel_sym + *h_elel_asym;
         auto h_elel_mn = *h_elel_sym - *h_elel_asym;
         h_elel_pl.Scale(0.5);
@@ -299,6 +316,7 @@ void convert_mc_templates(const string &sys_label){
 
         write_roo_hist(h1_elel_back, var);
         write_roo_hist(h1_elel_dy_gg, var);
+        //write_roo_hist(h1_elel_gam, var);
         write_roo_hist(h1_elel_pl, var);
         write_roo_hist(h1_elel_mn, var);
     }
@@ -331,12 +349,13 @@ void write_groups(FILE *f_log){
 
 
 void make_templates(int nJobs = 6, int iJob =-1){
-    const TString fout_name("combine/templates/april22_no_sys.root");
+    const TString fout_name("combine/templates/april1_no_sys.root");
     TFile * fout;
 
     init();
     init_ss();
     init_emu();
+    init_gamgam();
     printf("Setting up SFs... ");
     setup_all_SFs();
     printf("   done \n");

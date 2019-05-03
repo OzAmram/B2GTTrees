@@ -20,66 +20,27 @@
 #include "TVector3.h"
 #include "TFitter.h"
 #include "TSystem.h"
+#include "fit_gen_cost.C"
 
 
-
-void make_gen_cost(TTree *t1, TH1F *h_m, TH1F *h_cost, float m_low = 150., float m_high = 100000.){
-    //read event data
-    h_m->Sumw2();
-    h_cost->Sumw2();
-    Long64_t size  =  t1->GetEntries();
-    int nSelected=0;
-    double root2 = sqrt(2);
-    
-    Int_t lep1_id, lep2_id;
-    TLorentzVector *lep_pls = 0;
-    TLorentzVector *lep_mns = 0;
-    TLorentzVector cm;
-    t1->SetBranchAddress("lep_pls", &lep_pls);
-    t1->SetBranchAddress("lep_mns", &lep_mns);
-    t1->SetBranchAddress("lep1_id", &lep1_id);
-    t1->SetBranchAddress("lep2_id", &lep2_id);
-    for (int i=0; i<size; i++) {
-        t1->GetEntry(i);
-        cm = *lep_pls + *lep_mns;
-        //printf("M= %.2f \n", cm.M());
-        if(cm.M() >= m_low && cm.M() < m_high && (lep1_id < 14) && (lep2_id < 14)){
-            nSelected++;
-            h_m->Fill(cm.M());
-
-            double mu_p_pls = (lep_pls->E()+lep_pls->Pz())/root2;
-            double mu_p_min = (lep_pls->E()-lep_pls->Pz())/root2;
-            double mu_m_pls = (lep_mns->E()+lep_mns->Pz())/root2;
-            double mu_m_min = (lep_mns->E()-lep_mns->Pz())/root2;
-            double qt2 = cm.Px()*cm.Px()+cm.Py()*cm.Py();
-            double cm_m2 = cm.M2();
-            double gen_cost = 2*(mu_m_pls*mu_p_min - mu_m_min*mu_p_pls)/sqrt(cm_m2*(cm_m2 + qt2));
-            //pls and mns leptons are backwards in ttree, so flip sign
-            gen_cost = -gen_cost;
-
-            //flip sign for reconstruction
-            if(cm.Pz() < 0.) gen_cost = -gen_cost;
-            h_cost->Fill(gen_cost);
-        }
-        
-
-
-
+void unzero_bins(TH1 *h){
+    int nBins = h->GetNbinsX();
+    for(int i=1; i<= nBins; i++){
+        float val = max(h->GetBinContent(i), 1e-8);
+        h->SetBinContent(i,val);
     }
-    printf("Selected %i events \n", nSelected);
-    h_cost->Scale(1./h_cost->Integral());
-    h_m->Scale(1./h_m->Integral());
-
-
-    t1->ResetBranchAddresses();
-    return;
 }
 
-void make_ratio_plot(char title[80], TH1F* h1, char h1_label[80], TH1F* h2, char h2_label[80], char ratio_label[80], 
-        char axis_label[80], bool logy=false){
 
-    TCanvas *c = new TCanvas("c_m", "Histograms", 200, 10, 900, 700);
-    TPad *pad1 = new TPad("pad1", "pad1", 0.,0.3,0.98,1.);
+void make_ratio_plot(string title, TH1F* h1, char h1_label[80], TH1F* h2, char h2_label[80], char ratio_label[80], 
+        char axis_label[80], bool logy=false, bool write_out = true){
+
+    unzero_bins(h1);
+    unzero_bins(h2);
+
+
+    TCanvas *c = new TCanvas(title.c_str(), "Histograms", 200, 10, 900, 700);
+    TPad *pad1 = new TPad((title+"p1").c_str(), "pad1", 0.,0.3,0.98,1.);
     pad1->SetBottomMargin(0);
     pad1->Draw();
     pad1->cd();
@@ -98,7 +59,7 @@ void make_ratio_plot(char title[80], TH1F* h1, char h1_label[80], TH1F* h2, char
 
     //gPad->BuildLegend();
     c->cd();
-    TPad *pad2 = new TPad("pad2", "pad2", 0.,0,.98,0.3);
+    TPad *pad2 = new TPad((title+"p2").c_str(), "pad2", 0.,0,.98,0.3);
     //pad2->SetTopMargin(0);
     pad2->SetBottomMargin(0.2);
     pad2->SetGridy();
@@ -136,40 +97,65 @@ void make_ratio_plot(char title[80], TH1F* h1, char h1_label[80], TH1F* h2, char
     //lumi_sqrtS = "";       // used with iPeriod = 0, e.g. for simulation-only plots (default is an empty string)
     //int iPeriod = 4; 
     //CMS_lumi(pad1, iPeriod, 33 );
-    c->Print(title);
+    if(write_out) c->Print(title.c_str());
     return;
 }
 
 void draw_generator_cmp(){
     gStyle->SetOptStat(0);
-    //TFile *f_mad = TFile::Open("../generator_stuff/mass_binned_200k.root");
-    TFile *f_mad = TFile::Open("../generator_stuff/madgraph_m500_evts.root");
+    TFile *f_mad= TFile::Open("../generator_stuff/root_files/madgraph_m200_evts.root");
     TTree *t_mad = (TTree *)f_mad->Get("T_lhe");
 
-    TFile *f_pwg = TFile::Open("../generator_stuff/powheg_m150_evts.root");
+    TFile *f_pwg = TFile::Open("../generator_stuff/root_files/powheg_m200_april30.root");
     TTree *t_pwg = (TTree *)f_pwg->Get("T_lhe");
 
-    char title[80] = "POWHEG vs. aMC@NLO DY Samples (150 < M < 200)";
-    TH1F *h_pwg_m = new TH1F("h_pwg_m", title, 10, 150, 1000);
-    TH1F *h_mad_m = new TH1F("h_mad_m", title, 10, 150, 1000);
-    TH1F *h_pwg_cost = new TH1F("h_pwg_cost", title, 20, -1., 1.);
-    TH1F *h_mad_cost = new TH1F("h_mad_cost", title, 20, -1., 1.);
+    char title[80] = "POWHEG vs. aMC@NLO (200 < M < 400)";
+    TH1F *h_pwg_cost_st = new TH1F("h_pwg_cost_st", title, 20, -1., 1.);
+    TH1F *h_pwg_cost_r = new TH1F("h_pwg_cost_r", title, 20, -1., 1.);
+    TH1F *h_pwg_pt = new TH1F("h_pwg_pt", title, 20, 0., 300.);
+    TH1F *h_pwg_xf = new TH1F("h_pwg_xf", title, 20, 0., 1.);
 
-    make_gen_cost(t_mad, h_mad_m, h_mad_cost);
-    make_gen_cost(t_pwg, h_pwg_m, h_pwg_cost);
+    TH1F *h_mad_cost_st = new TH1F("h_mad_cost_st", title, 20, -1., 1.);
+    TH1F *h_mad_cost_r = new TH1F("h_mad_cost_r", title, 20, -1., 1.);
+    TH1F *h_mad_pt = new TH1F("h_mad_pt", title, 20, 0., 300.);
+    TH1F *h_mad_xf = new TH1F("h_mad_xf", title, 20, 0., 1.);
 
-    h_mad_m->SetLineColor(kRed);
-    h_mad_cost->SetLineColor(kRed);
-    h_pwg_m->SetLineColor(kBlue);
-    h_pwg_cost->SetLineColor(kBlue);
+    float m_low = 200;
+    float m_high = 400.;
+    bool phot_ind = false;
 
-    h_mad_m->SetLineWidth(3);
-    h_mad_cost->SetLineWidth(3);
-    h_pwg_m->SetLineWidth(3);
-    h_pwg_cost->SetLineWidth(3);
+    make_gen_cost(t_mad,  h_mad_cost_st, h_mad_cost_r, h_mad_pt, h_mad_xf, m_low, m_high, phot_ind);
+    make_gen_cost(t_pwg,  h_pwg_cost_st, h_pwg_cost_r, h_pwg_pt, h_pwg_xf, m_low, m_high, phot_ind);
 
-    make_ratio_plot("pwg_vs_mad_m150_m_cmp.pdf", h_mad_m, "amc@NLO",h_pwg_m, "POWHEG", "aMC/POWHEG", "M (GeV)", true);
-    //make_ratio_plot("pwg_vs_mad_m150_cost_cmp.pdf", h_mad_cost, "amc@NLO",h_pwg_cost, "POWHEG", "aMC/POWHEG", "cos(#theta_{*})", false);
+    h_mad_cost_st->Scale(1./h_mad_cost_st->Integral());
+    h_pwg_cost_st->Scale(1./h_pwg_cost_st->Integral());
+
+    h_mad_cost_st->SetLineColor(kRed);
+    h_pwg_cost_st->SetLineColor(kBlue);
+
+    h_mad_cost_st->SetLineWidth(3);
+    h_pwg_cost_st->SetLineWidth(3);
+
+    h_mad_pt->Scale(1./h_mad_pt->Integral());
+    h_pwg_pt->Scale(1./h_pwg_pt->Integral());
+
+    h_mad_pt->SetLineColor(kRed);
+    h_pwg_pt->SetLineColor(kBlue);
+
+    h_mad_pt->SetLineWidth(3);
+    h_pwg_pt->SetLineWidth(3);
+
+    h_mad_cost_r->Scale(1./h_mad_cost_r->Integral());
+    h_pwg_cost_r->Scale(1./h_pwg_cost_r->Integral());
+
+    h_mad_cost_r->SetLineColor(kRed);
+    h_pwg_cost_r->SetLineColor(kBlue);
+
+    h_mad_cost_r->SetLineWidth(3);
+    h_pwg_cost_r->SetLineWidth(3);
+
+    make_ratio_plot("pwg_vs_mad_m200_cost_st_cmp.pdf", h_mad_cost_st, "amc@NLO",h_pwg_cost_st, "POWHEG", "aMC/POWHEG", "cos(#theta_{st})", false);
+    make_ratio_plot("pwg_vs_mad_m200_pt_cmp.pdf", h_mad_pt, "amc@NLO",h_pwg_pt, "POWHEG", "aMC/POWHEG", "dilepton p_{T} (GeV)", false);
 
     return;
 }

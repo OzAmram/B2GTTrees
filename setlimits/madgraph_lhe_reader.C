@@ -50,7 +50,7 @@ Double_t get_AFB(int Zp_mass, Double_t cpl, int m_bin, bool correct_AFB = false,
     const double m_low = m_bins[m_bin];
     const double m_high =m_bins[m_bin + 1];
     int run_num =m_bin +1;
-    string base_dir("/uscms_data/d3/oamram/condor_jobs/condor_output");
+    string base_dir("/uscms_data/d3/oamram/condor_jobs/Zp_jobs/condor_output");
     if(cpl< 0.99){
         //need to remove leading 0 in float
         unsigned int_cpl = (unsigned) 100 * (cpl + 0.005);
@@ -59,7 +59,7 @@ Double_t get_AFB(int Zp_mass, Double_t cpl, int m_bin, bool correct_AFB = false,
     //else if (cpl == 1.0){
         //sprintf(infile, (base_dir+"/Zp_M%i/Zp_events_M%i_kL%.1f_bin%i.lhe").c_str(), Zp_mass, Zp_mass, cpl, run_num);
     //}
-    else sprintf(infile, (base_dir+"/Zp_M%i/Zp_events_M%i_kL%.2f_bin%i.lhe").c_str(), Zp_mass, Zp_mass, cpl, run_num);
+    else sprintf(infile, (base_dir+"/Zp_M%i/Zp_M%i_kL%.2f_bin%i.lhe").c_str(), Zp_mass, Zp_mass, cpl, run_num);
     //sprintf(infile, "lhe_files/MG5_condor_files/Zp_events_M%i_bin%i.lhe", Zp_mass, run_num);
     //printf("Opening file %s \n", infile);
     //printf("M bins from %.0f to %.0f \n", m_low, m_high);
