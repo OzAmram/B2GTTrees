@@ -174,6 +174,9 @@ void init_ss(){
 
 void init_gamgam(){
     f_mumu_gamgam = TFile::Open("../analyze/output_files/MuMu_gamgam_back_may1.root");
-    t_mumu_gamgam = (TTree *)t_mumu_gamgam->Get("T_data");
+    t_mumu_gamgam = (TTree *)f_mumu_gamgam->Get("T_data");
+
+    f_elel_gamgam = TFile::Open("../analyze/output_files/ElEl_gamgam_back_may6.root");
+    t_elel_gamgam = (TTree *)f_elel_gamgam->Get("T_data");
 }
 

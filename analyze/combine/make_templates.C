@@ -72,8 +72,8 @@ void convert_qcd_to_param_hist(TH2F *h, FILE *f_log, float sign_scaling, int fla
             int g_idx = TwoDToOneDIdx(n_cost_bins, i, j);
             int sym1_idx, sym2_idx;
             TwoDToSymIdxs(n_cost_bins, i,j, sym1_idx, sym2_idx);
-            printf("i,j: %i %i ", i,j);
-            printf("g_idx, sym1, sym2: %i %i %i  \n", g_idx, sym1_idx, sym2_idx);
+            //printf("i,j: %i %i ", i,j);
+            //printf("g_idx, sym1, sym2: %i %i %i  \n", g_idx, sym1_idx, sym2_idx);
 
             double content = h1->GetBinContent(g_idx);
             double error = h1->GetBinError(g_idx);
@@ -113,7 +113,7 @@ void convert_qcd_to_param_hist(TH2F *h, FILE *f_log, float sign_scaling, int fla
                 int old_j = sym2_idx % n_cost_bins;
                 int old_g_idx = TwoDToOneDIdx(n_cost_bins, i, old_j);
                 sprintf(bin_name, "%s_bin%i",h_name, old_g_idx); 
-                printf("Looking for bin %s \n", bin_name);
+                //printf("Looking for bin %s \n", bin_name);
                 RooRealVar *bin = (RooRealVar *) bin_list->find(bin_name);
                 if(bin==nullptr) printf("NULL lookup of %s from bin list \n", bin_name);
                 RooFormulaVar *form1 = new RooFormulaVar(form_name1_os, form_name1_os, "0.5*@0*@1", RooArgList(*bin, *R_qcd_sign_fraction));
@@ -256,8 +256,8 @@ void make_mc_templates(const string &sys_label){
         elel_ts[0] = t_elel_nosig;
         gen_combined_background_template(1, elel_ts, h_elel_dy_gg, m_low, m_high, FLAG_ELECTRONS, FLAG_M_BINS,do_RC,ss, sys_label);
 
-        //elel_ts[0] = t_elel_gamgam;
-        //gen_combined_background_template(1, elel_ts, h_elel_gam, m_low, m_high, FLAG_ELECTRONS, FLAG_M_BINS,do_RC,ss, sys_label);
+        elel_ts[0] = t_elel_gamgam;
+        gen_combined_background_template(1, elel_ts, h_elel_gam, m_low, m_high, FLAG_ELECTRONS, FLAG_M_BINS,do_RC,ss, sys_label);
     }
 
 }
@@ -302,7 +302,7 @@ void convert_mc_templates(const string &sys_label){
     if(do_el){
         h1_elel_back = convert2d(h_elel_back);
         h1_elel_dy_gg = convert2d(h_elel_dy_gg);
-        //h1_elel_gam = convert2d(h_elel_gam);
+        h1_elel_gam = convert2d(h_elel_gam);
 
         auto h_elel_pl = *h_elel_sym + *h_elel_asym;
         auto h_elel_mn = *h_elel_sym - *h_elel_asym;
@@ -316,7 +316,7 @@ void convert_mc_templates(const string &sys_label){
 
         write_roo_hist(h1_elel_back, var);
         write_roo_hist(h1_elel_dy_gg, var);
-        //write_roo_hist(h1_elel_gam, var);
+        write_roo_hist(h1_elel_gam, var);
         write_roo_hist(h1_elel_pl, var);
         write_roo_hist(h1_elel_mn, var);
     }
@@ -349,7 +349,7 @@ void write_groups(FILE *f_log){
 
 
 void make_templates(int nJobs = 6, int iJob =-1){
-    const TString fout_name("combine/templates/april1_no_sys.root");
+    const TString fout_name("combine/templates/may6_no_sys.root");
     TFile * fout;
 
     init();
