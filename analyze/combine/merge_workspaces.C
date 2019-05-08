@@ -11,11 +11,16 @@ void merge_workspaces(){
     char dirname[40];
 
     std::vector<string> fs{
-        "root://131.225.204.161:1094//store/user/oamram/Condor_outputs/templ_sys_may7/file_0.root",
-        "root://131.225.204.161:1094//store/user/oamram/Condor_outputs/templ_sys_may7/file_1.root",
-        "root://131.225.204.161:1094//store/user/oamram/Condor_outputs/templ_sys_may7/file_2.root",
-        "root://131.225.204.161:1094//store/user/oamram/Condor_outputs/templ_sys_may7/file_3.root",
-        "root://131.225.204.161:1094//store/user/oamram/Condor_outputs/templ_sys_may7/file_4.root",
+        "root://131.225.204.161:1094//store/user/oamram/Condor_outputs/templ_sys_may8/file_0.root",
+        "root://131.225.204.161:1094//store/user/oamram/Condor_outputs/templ_sys_may8/file_1.root",
+        "root://131.225.204.161:1094//store/user/oamram/Condor_outputs/templ_sys_may8/file_2.root",
+        "root://131.225.204.161:1094//store/user/oamram/Condor_outputs/templ_sys_may8/file_3.root",
+        "root://131.225.204.161:1094//store/user/oamram/Condor_outputs/templ_sys_may8/file_4.root",
+        "root://131.225.204.161:1094//store/user/oamram/Condor_outputs/templ_sys_may8/file_5.root",
+        "root://131.225.204.161:1094//store/user/oamram/Condor_outputs/templ_sys_may8/file_6.root",
+        "root://131.225.204.161:1094//store/user/oamram/Condor_outputs/templ_sys_may8/file_7.root",
+        "root://131.225.204.161:1094//store/user/oamram/Condor_outputs/templ_sys_may8/file_8.root",
+        "root://131.225.204.161:1094//store/user/oamram/Condor_outputs/templ_sys_may8/file_9.root",
         "root://131.225.204.161:1094//store/user/oamram/Condor_outputs/templ_pdf_sys_may7/file_0.root",
         "root://131.225.204.161:1094//store/user/oamram/Condor_outputs/templ_pdf_sys_may7/file_1.root",
         "root://131.225.204.161:1094//store/user/oamram/Condor_outputs/templ_pdf_sys_may7/file_2.root",

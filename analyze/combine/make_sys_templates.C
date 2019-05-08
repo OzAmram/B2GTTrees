@@ -38,6 +38,7 @@ void make_sys_templates(int nJobs = 1, int iJob =0){
 
 
     
+    /*
     vector<string> sys_labels;
     for(int i =1; i<= 60; i++){
         char name1[20], name2[20];
@@ -47,13 +48,12 @@ void make_sys_templates(int nJobs = 1, int iJob =0){
         sys_labels.push_back(string(name2));
 
     }
-    /*
+    */
        vector<string> sys_labels {"_elScaleUp", "_elScaleDown", "_elSmearUp", "_elSmearDown", 
        "_muRCUp", "_muRCDown", "_muHLTUp", "_muHLTDown", "_muIDUp", "_muIDDown", "_muISOUp", "_muISODown", "_muTRKUp", "_muTRKDown",  
        "_elHLTUp", "_elHLTDown", "_elIDUp", "_elIDDown", "_elRECOUp", "_elRECODown", 
        "_RENORMUp", "_RENORMDown", "_FACUp", "_FACDown",
        "_PuUp", "_PuDown", "_BTAGUp", "_BTAGDown", "_alphaUp", "_alphaDown", "_alphaSUp", "_alphaSDown" };
-       */
 
 
 

@@ -279,6 +279,7 @@ void convert_mc_templates(const string &sys_label){
         do_el = true;
     }
     if(do_mu){
+        symmetrize2d(h_mumu_gam);
         h1_mumu_back = convert2d(h_mumu_back);
         h1_mumu_dy_gg = convert2d(h_mumu_dy_gg);
         h1_mumu_gam = convert2d(h_mumu_gam);
@@ -300,6 +301,7 @@ void convert_mc_templates(const string &sys_label){
     }
 
     if(do_el){
+        symmetrize2d(h_elel_gam);
         h1_elel_back = convert2d(h_elel_back);
         h1_elel_dy_gg = convert2d(h_elel_dy_gg);
         h1_elel_gam = convert2d(h_elel_gam);

@@ -894,6 +894,7 @@ int gen_combined_background_template(int nTrees, TTree **ts, TH2F* h,
         bool turn_on_RC = true, bool ss =false, const string &sys_label = ""){
     h->Sumw2();
 
+    int nEvents = 0;
 
     for(int i=0; i<nTrees; i++){
         TTree *t1 = ts[i];
@@ -1119,6 +1120,7 @@ int gen_combined_background_template(int nTrees, TTree **ts, TH2F* h,
                     }
 
 
+                    nEvents++;
                     Double_t evt_weight = 1000*(bcdef_lumi * bcdef_weight + gh_lumi *gh_weight);
                     if(!ss) h->Fill(xF, cost, evt_weight);
                     else{
@@ -1206,6 +1208,7 @@ int gen_combined_background_template(int nTrees, TTree **ts, TH2F* h,
                     if (nJets >= 2){
                         evt_weight *= jet2_b_weight;
                     }
+                    nEvents++;
                     if(!ss) h->Fill(xF, cost, evt_weight);
                     else{
                         h->Fill(xF, -abs(cost), evt_weight);
@@ -1218,7 +1221,7 @@ int gen_combined_background_template(int nTrees, TTree **ts, TH2F* h,
     }
     printf("Performing templ. cleanup (removing neg. bins) \n");
     cleanup_template(h);
-    printf("Tot Weight is %.2f \n", h->Integral());
+    printf("Tot Weight is %.2f from %i events \n", h->Integral(), nEvents);
     return 0;
 }
 

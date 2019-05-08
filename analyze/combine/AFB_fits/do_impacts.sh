@@ -9,7 +9,7 @@ do
     pars="Pu,BTAG,alpha,elScale,elSmear,elHLT,elID,elRECO,muRC,muID,muHLT,muTRK,alphaS,RENORM,FAC,lumi,dy_xsec,bk_xsec,gam_xsec,ee_qcd,mu_qcd,emu_qcd,Rdy_ee_ss,R_ee_os_fakes"
 
     combineTool.py -M Impacts -d $workspace -m 125 --doInitialFit --robustFit 1
-    combineTool.py -M Impacts -d $workspace -m 125 --doFits --robustFit 1 --named $pars
+    combineTool.py -M Impacts -d $workspace -m 125 --doFits --robustFit 1 --named $pars --parallel 6
     combineTool.py -M Impacts -d $workspace -m 125 -o impacts/mbin${idx}.json --named $pars
     plotImpacts.py -i impacts/mbin${idx}.json -o impacts/impact_plot_mbin${idx} -t impacts/rename.json
     rm higgsCombine_initialFit*

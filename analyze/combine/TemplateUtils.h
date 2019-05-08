@@ -25,6 +25,31 @@ void write_roo_hist(TH1F *h, RooRealVar *my_var){
     RooDataHist r(h->GetName(), h->GetName(), *my_var, h);
     w->import(r);
 }
+void symmetrize2d(TH2F *h_2d){
+    int n_xf_bins = h_2d->GetNbinsX();
+    int n_cost_bins = h_2d->GetNbinsY();
+
+    for(int i=1; i<=n_xf_bins; i++){
+        for(int j=1; j<= n_cost_bins/2; j++){
+            float content = h_2d->GetBinContent(i,j);
+            float error = h_2d->GetBinError(i,j);
+
+            int opp_j = (n_cost_bins + 1) -j;
+            float content2 = h_2d->GetBinContent(i,opp_j);
+            float error2 = h_2d->GetBinError(i,opp_j);
+
+            float new_content = (content + content2)/2.0;
+            float new_error = pow((error*error + error2*error2), 0.5)/2.0;
+            h_2d->SetBinContent(i,j, new_content);
+            h_2d->SetBinContent(i,opp_j, new_content);
+
+            h_2d->SetBinError(i,j, new_error);
+            h_2d->SetBinError(i,opp_j, new_error);
+
+
+        }
+    }
+}
 
 TH1F* convert2d(TH2F *h_2d){
     int n_xf_bins = h_2d->GetNbinsX();
