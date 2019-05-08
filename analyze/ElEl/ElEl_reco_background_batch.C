@@ -7,14 +7,13 @@ void ElEl_reco_background_batch(int nJobs =1, int iJob = 0)
 {
 
 
-    NTupleReader nt("EOS_files/GammaGammaToEE_files_april25.txt","output_files/ElEl_gamgam_back_may6.root", false);
+    NTupleReader nt("EOS_files/GammaGammaToEE_files_april25.txt","output_files/ElEl_gamgam_back_may7.root", false);
     nt.nJobs = nJobs;
     nt.iJob = iJob;
     nt.do_electrons = true;
     nt.do_SFs = true;
     nt.setupSFs();
     nt.setupOutputTree("T_data");
-    nt.setupOutputTree("T_back");
 
 
     while(nt.getNextFile()){

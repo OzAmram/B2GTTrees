@@ -349,7 +349,7 @@ void write_groups(FILE *f_log){
 
 
 void make_templates(int nJobs = 6, int iJob =-1){
-    const TString fout_name("combine/templates/may6_no_sys.root");
+    const TString fout_name("combine/templates/may8_no_sys.root");
     TFile * fout;
 
     init();
