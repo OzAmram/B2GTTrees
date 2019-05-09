@@ -291,7 +291,7 @@ int gen_mc_template(TTree *t1, Double_t alpha, TH2F* h_sym, TH2F *h_asym,
         else if(sys_label.find("FAC") != string::npos && shift < 0) systematic = &mu_F_down;
         else if(sys_label.find("alphaS") != string::npos && shift < 0) systematic = &alphaS_down;
         else if(sys_label.find("alphaS") != string::npos && shift > 0) systematic = &alphaS_up;
-        else if(sys_label.find("alpha") != string::npos && shift < 0) systematic = &one;
+        else if(sys_label.find("alpha") != string::npos) systematic = &one;
 
         else if(sys_label.find("pdf") != string::npos){
             if(shift > 0) sscanf(sys_label.c_str(), "_pdf%iUp", &do_pdf_sys);

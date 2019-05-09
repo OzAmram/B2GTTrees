@@ -2,7 +2,7 @@
 
 
 
-void make_sys_templates(int nJobs = 1, int iJob =0){
+void make_sys_templates(int nJobs = 1, int iJob =0, int type=0){
 
     //const TString pdf_fout_name("combine/templates/april18_pdf_test.root");
     const TString pdf_fout_name("output_files/april22_sys_test.root");
@@ -38,23 +38,25 @@ void make_sys_templates(int nJobs = 1, int iJob =0){
 
 
     
-    /*
     vector<string> sys_labels;
-    for(int i =1; i<= 60; i++){
-        char name1[20], name2[20];
-        sprintf(name1, "_pdf%iUp", i);
-        sprintf(name2, "_pdf%iDown", i);
-        sys_labels.push_back(string(name1));
-        sys_labels.push_back(string(name2));
+    if (type ==0){
+        for(int i =1; i<= 60; i++){
+            char name1[20], name2[20];
+            sprintf(name1, "_pdf%iUp", i);
+            sprintf(name2, "_pdf%iDown", i);
+            sys_labels.push_back(string(name1));
+            sys_labels.push_back(string(name2));
 
+        }
     }
-    */
-       vector<string> sys_labels {"_elScaleUp", "_elScaleDown", "_elSmearUp", "_elSmearDown", 
+    else{
+      sys_labels =  {"_elScaleUp", "_elScaleDown", "_elSmearUp", "_elSmearDown", 
        "_muRCUp", "_muRCDown", "_muHLTUp", "_muHLTDown", "_muIDUp", "_muIDDown", "_muISOUp", "_muISODown", "_muTRKUp", "_muTRKDown",  
        "_elHLTUp", "_elHLTDown", "_elIDUp", "_elIDDown", "_elRECOUp", "_elRECODown", 
        "_RENORMUp", "_RENORMDown", "_FACUp", "_FACDown",
        "_PuUp", "_PuDown", "_BTAGUp", "_BTAGDown", "_alphaUp", "_alphaDown", "_alphaSUp", "_alphaSDown" };
 
+    }
 
 
 
