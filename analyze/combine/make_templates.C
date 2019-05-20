@@ -187,7 +187,7 @@ void make_qcd_templates(FILE* f_log){
     printf("Made qcd templates \n");
 }
 
-void make_mc_templates(const string &sys_label){
+void make_mc_templates(Double_t alpha_num, Double_t alpha_denom, const string &sys_label){
     bool do_mu, do_el;
     if(sys_label.find("mu") != string::npos){
         printf("Doing mu only \n");
@@ -223,7 +223,7 @@ void make_mc_templates(const string &sys_label){
                 n_xf_bins, xf_bins, n_cost_bins, cost_bins);
         h_mumu_gam->SetDirectory(0);
 
-        gen_mc_template(t_mumu_mc, alpha, h_mumu_sym, h_mumu_asym, m_low, m_high, FLAG_MUONS, FLAG_M_BINS, do_RC, sys_label );
+        gen_mc_template(t_mumu_mc, alpha_num, alpha_denom, h_mumu_sym, h_mumu_asym, m_low, m_high, FLAG_MUONS, FLAG_M_BINS, do_RC, sys_label );
         TTree *mumu_ts[1] = {t_mumu_back};
         gen_combined_background_template(1, mumu_ts, h_mumu_back, m_low, m_high, FLAG_MUONS, FLAG_M_BINS, do_RC, ss, sys_label);
         mumu_ts[0] = t_mumu_nosig;
@@ -250,7 +250,7 @@ void make_mc_templates(const string &sys_label){
                 n_xf_bins, xf_bins, n_cost_bins, cost_bins);
         h_elel_gam->SetDirectory(0);
 
-        gen_mc_template(t_elel_mc, alpha, h_elel_sym, h_elel_asym,  m_low, m_high, FLAG_ELECTRONS, FLAG_M_BINS, do_RC, sys_label);
+        gen_mc_template(t_elel_mc, alpha_num, alpha_denom, h_elel_sym, h_elel_asym,  m_low, m_high, FLAG_ELECTRONS, FLAG_M_BINS, do_RC, sys_label);
         TTree *elel_ts[1] = {t_elel_back};
         gen_combined_background_template(1, elel_ts, h_elel_back, m_low, m_high, FLAG_ELECTRONS, FLAG_M_BINS,do_RC,ss, sys_label);
         elel_ts[0] = t_elel_nosig;
@@ -351,7 +351,7 @@ void write_groups(FILE *f_log){
 
 
 void make_templates(int nJobs = 6, int iJob =-1){
-    const TString fout_name("combine/templates/may8_no_sys.root");
+    const TString fout_name("combine/templates/may20_no_sys.root");
     TFile * fout;
 
     init();
@@ -413,11 +413,15 @@ void make_templates(int nJobs = 6, int iJob =-1){
         make_qcd_templates(f_log);
         for(auto iter = sys_labels.begin(); iter !=sys_labels.end(); iter++){
             printf("Making MC templates for sys %s \n", (*iter).c_str());
-            alpha = alphas[i];
-            if(iter->find("alphaUp") != string::npos) alpha = alphas[i] + alpha_unc[i];
-            if(iter->find("alphaDown") != string::npos) alpha = alphas[i] - alpha_unc[i];
+            Double_t alpha_num = alphas_num[i];
+            Double_t alpha_denom = alphas_denom[i];
+            if(iter->find("alphaUp") != string::npos) alpha_num = alphas_num[i] + alpha_num_unc[i];
+            if(iter->find("alphaDown") != string::npos) alpha_num = alphas_num[i] - alpha_num_unc[i];
 
-            make_mc_templates(*iter);
+            if(iter->find("alphaDenUp") != string::npos) alpha_denom = alphas_denom[i] + alpha_denom_unc[i];
+            if(iter->find("alphaDenDown") != string::npos) alpha_denom = alphas_denom[i] - alpha_denom_unc[i];
+
+            make_mc_templates(alpha_num, alpha_denom, *iter);
             convert_mc_templates(*iter);
         }
         fout->cd();

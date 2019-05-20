@@ -31,11 +31,10 @@ int n_cost_ss_bins = n_cost_bins/2;
 Float_t cost_ss_bins[] = {-1.0, -0.8, -0.6, -0.4, -0.2, 0.0};
 int n_m_bins = 6;
 Double_t m_bins[] = {150,200,   250,    350,    500,    700, 100000};
-Double_t alphas[6] = {0.160, 0.12, 0.08, 0.065, 0.055, 0.05};
-Double_t alpha_unc[6] = {0.07, 0.04, 0.04, 0.04,   0.03, 0.03};
-Double_t m_alphas[6] = {0.109, 0.078, 0.0762, 0.112, 0.065, 0.06};
-Double_t m_alpha_unc[6] = {0.015, 0.015, 0.02, 0.03,   0.02, 0.02};
-Double_t alpha;
+Double_t alphas_num[6] = {0.160, 0.12, 0.08, 0.065, 0.055, 0.05};
+Double_t alpha_num_unc[6] = {0.07, 0.04, 0.04, 0.04,   0.03, 0.03};
+Double_t alphas_denom[6] = {0.22, 0.135, 0.105, 0.085, 0.072, 0.05};
+Double_t alpha_denom_unc[6] = {0.07, 0.04, 0.04, 0.04,   0.03, 0.03};
 
 void init(){
     //MC templates

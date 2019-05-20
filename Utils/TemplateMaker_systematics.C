@@ -177,7 +177,7 @@ int gen_data_template(TTree *t1, TH2F* h,  Double_t var_low, Double_t var_high,
 
 
 
-int gen_mc_template(TTree *t1, Double_t alpha, TH2F* h_sym, TH2F *h_asym, 
+int gen_mc_template(TTree *t1, Double_t alpha_num, Double_t alpha_denom, TH2F* h_sym, TH2F *h_asym, 
         Double_t var_low, Double_t var_high, int flag1 = FLAG_MUONS, int flag2 = FLAG_M_BINS, bool turn_on_RC = true,
         const string &sys_label = "" ){
     Long64_t nEntries  =  t1->GetEntries();
@@ -187,7 +187,7 @@ int gen_mc_template(TTree *t1, Double_t alpha, TH2F* h_sym, TH2F *h_asym,
 
     //TH2F* h_reweights = (TH2F *) h_sym->Clone("h_rw");
 
-    Double_t m, xF, cost, gen_weight, reweight, jet1_cmva, jet2_cmva, cost_st;
+    Double_t m, xF, cost, gen_weight, reweight_a, reweight_s, jet1_cmva, jet2_cmva, cost_st;
     Double_t bcdef_HLT_SF, bcdef_iso_SF, bcdef_id_SF;
     Double_t gh_HLT_SF, gh_iso_SF, gh_id_SF;
     Double_t gh_trk_SF, bcdef_trk_SF;
@@ -373,8 +373,10 @@ int gen_mc_template(TTree *t1, Double_t alpha, TH2F* h_sym, TH2F *h_asym,
                     (flag2 == FLAG_PT_BINS && m >= 150. && pt >= var_low && pt <= var_high))
                 && met_pt < 50.  && no_bjets && not_cosmic;
             if(pass){
-                reweight = (4./3.)*cost_st*(2. + alpha)/
-                    (1. + cost_st*cost_st + alpha*(1.- cost_st*cost_st));
+                reweight_a = (4./3.)*cost_st*(2. + alpha_num)/
+                    (1. + cost_st*cost_st + alpha_denom*(1.- cost_st*cost_st));
+                reweight_s = (1. + cost_st*cost_st + alpha_num*(1.- cost_st*cost_st)) /
+                    (1. + cost_st*cost_st + alpha_denom*(1.- cost_st*cost_st));
                 n++;
                 Double_t pu_SF_sys = 1.;
                 if(do_pileup_sys == -1) pu_SF_sys = get_pileup_SF(pu_NtrueInt, pu_sys.pileup_down);
@@ -415,11 +417,11 @@ int gen_mc_template(TTree *t1, Double_t alpha, TH2F* h_sym, TH2F *h_asym,
 
 
                 Double_t final_weight = 1000*(bcdef_weight*bcdef_lumi + gh_weight*gh_lumi);
-                h_sym->Fill(xF, cost, final_weight); 
-                h_sym->Fill(xF, -cost, final_weight); 
+                h_sym->Fill(xF, cost, reweight_s * final_weight); 
+                h_sym->Fill(xF, -cost, reweight_s * final_weight); 
 
-                h_asym->Fill(xF, cost, reweight * final_weight);
-                h_asym->Fill(xF, -cost, -reweight * final_weight);
+                h_asym->Fill(xF, cost, reweight_a * final_weight);
+                h_asym->Fill(xF, -cost, -reweight_a * final_weight);
                 //h_reweights->Fill(xF, fabs(cost), fabs(reweight));
 
             }
@@ -481,8 +483,10 @@ int gen_mc_template(TTree *t1, Double_t alpha, TH2F* h_sym, TH2F *h_asym,
                 cost = get_cost(*lep_p, *lep_m);
                 if(cost_st>0.) cost_st = fabs(cost);
                 else cost_st = -fabs(cost);
-                reweight = (4./3.)*cost_st*(2. + alpha)/
-                    (1. + cost_st*cost_st + alpha*(1.- cost_st*cost_st));
+                reweight_a = (4./3.)*cost_st*(2. + alpha_num)/
+                    (1. + cost_st*cost_st + alpha_denom*(1.- cost_st*cost_st));
+                reweight_s = (1. + cost_st*cost_st + alpha_num*(1.- cost_st*cost_st)) /
+                    (1. + cost_st*cost_st + alpha_denom*(1.- cost_st*cost_st));
                 n++;
                 Double_t pu_SF_sys = 1.;
                 if(do_pileup_sys == -1) pu_SF_sys = get_pileup_SF(pu_NtrueInt, pu_sys.pileup_down);
@@ -511,11 +515,11 @@ int gen_mc_template(TTree *t1, Double_t alpha, TH2F* h_sym, TH2F *h_asym,
                 }
 
 
-                h_sym->Fill(xF, cost, evt_weight); 
-                h_sym->Fill(xF, -cost, evt_weight); 
+                h_sym->Fill(xF, cost, reweight_s * evt_weight); 
+                h_sym->Fill(xF, -cost, reweight_s * evt_weight); 
 
-                h_asym->Fill(xF, cost, reweight * evt_weight);
-                h_asym->Fill(xF, -cost, -reweight * evt_weight);
+                h_asym->Fill(xF, cost, reweight_a * evt_weight);
+                h_asym->Fill(xF, -cost, -reweight_a * evt_weight);
 
             }
         }
@@ -900,7 +904,7 @@ int gen_combined_background_template(int nTrees, TTree **ts, TH2F* h,
         TTree *t1 = ts[i];
         Long64_t nEntries  =  t1->GetEntries();
 
-        Double_t m, xF, cost, gen_weight, reweight, jet1_cmva, jet2_cmva, cost_st;
+        Double_t m, xF, cost, gen_weight, jet1_cmva, jet2_cmva, cost_st;
         Double_t bcdef_HLT_SF, bcdef_iso_SF, bcdef_id_SF;
         Double_t gh_HLT_SF, gh_iso_SF, gh_id_SF;
         Double_t gh_trk_SF, bcdef_trk_SF;
