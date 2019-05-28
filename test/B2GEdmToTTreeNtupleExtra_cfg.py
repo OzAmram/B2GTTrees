@@ -186,7 +186,7 @@ if usePrivateSQLite and not useMINIAOD:
     process.es_prefer_jec = cms.ESPrefer("PoolDBESSource",'jec')
 
 # Revert back to CHS - 22 December 2016
-usePuppiJets = True # Also make sure B2GTTreeMaker_cff.py is consistent
+usePuppiJets = False # Also make sure B2GTTreeMaker_cff.py is consistent
 usePuppiMet  = False # Used for Razor calculation
 
 if usePuppiJets:
@@ -557,31 +557,18 @@ process.extraVar = cms.EDProducer("B2GEdmExtraVarProducer",
 )
 
 ### Filter - Selects events with at least one muon with pt>25, |eta|<3.0
-process.MuonSingleFilter = cms.EDFilter("PatMuonCountFilter", 
-    filter = cms.bool(True),
-    src = cms.InputTag("slimmedMuons"),
-    cut = cms.string("pt>25. && abs(eta)<2.5"),
-    minNumber = cms.uint32(1)
-)
 process.MuonCountFilter = cms.EDFilter("PatMuonCountFilter", 
     filter = cms.bool(True),
     src = cms.InputTag("slimmedMuons"),
-    cut = cms.string("pt>15. && abs(eta)<2.5"),
-    minNumber = cms.uint32(2)
-)
-### Filter - Selects events with at least one electron with pt>25, |eta|<3.0
-process.ElectronSingleFilter = cms.EDFilter("PatElectronCountFilter", 
-    filter = cms.bool(True),
-    src = cms.InputTag("slimmedElectrons"),
-    cut = cms.string("pt>25. && abs(eta)<2.5"),
+    cut = cms.string("pt>24. && abs(eta)<2.4"),
     minNumber = cms.uint32(1)
 )
 ### Filter - Selects events with at least one electron with pt>25, |eta|<3.0
 process.ElectronCountFilter = cms.EDFilter("PatElectronCountFilter", 
     filter = cms.bool(True),
     src = cms.InputTag("slimmedElectrons"),
-    cut = cms.string("pt>15. && abs(eta)<2.5"),
-    minNumber = cms.uint32(2)
+    cut = cms.string("pt>27. && abs(eta)<2.5"),
+    minNumber = cms.uint32(1)
 )
 
 ### B2GTTreeMaker
@@ -618,7 +605,6 @@ process.muonAnalysisPath = cms.Path(
     process.egammaPostRecoSeq *
     process.extraVar *
     process.EventCounter *
-    process.MuonSingleFilter *
     process.MuonCountFilter *
     process.B2GTTreeMaker
     )
@@ -628,7 +614,6 @@ process.electronAnalysisPath = cms.Path(
     process.egammaPostRecoSeq *
     process.extraVar *
     process.EventCounter *
-    process.ElectronSingleFilter *
     process.ElectronCountFilter *
     process.B2GTTreeMaker
     )

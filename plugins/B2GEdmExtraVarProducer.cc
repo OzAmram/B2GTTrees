@@ -108,7 +108,6 @@ void B2GEdmExtraVarProducer::init_tokens_() {
     edm::EDGetTokenT<std::vector<float> >(consumes<std::vector<float> >(edm::InputTag(electrons_label_, electrons_prefix_+"Dz")));
     edm::EDGetTokenT<std::vector<float> >(consumes<std::vector<float> >(edm::InputTag(electrons_label_, electrons_prefix_+"missHits")));
     edm::EDGetTokenT<std::vector<float> >(consumes<std::vector<float> >(edm::InputTag(electrons_label_, electrons_prefix_+"hasMatchedConVeto")));
-    edm::EDGetTokenT<std::vector<float> >(consumes<std::vector<float> >(edm::InputTag(electrons_label_, electrons_prefix_+"vidLoosenoiso")));
 
     edm::EDGetTokenT<std::vector<float> >(consumes<std::vector<float> >(edm::InputTag(muons_label_, muons_prefix_+"Pt")));
     edm::EDGetTokenT<std::vector<float> >(consumes<std::vector<float> >(edm::InputTag(muons_label_, muons_prefix_+"Eta")));
@@ -342,7 +341,6 @@ void B2GEdmExtraVarProducer::calculate_variables(edm::Event const& iEvent, edm::
     iEvent.getByLabel(edm::InputTag(electrons_label_, electrons_prefix_+"Dz"),                h_floats_["ele_Dz"]);
     iEvent.getByLabel(edm::InputTag(electrons_label_, electrons_prefix_+"missHits"),          h_floats_["ele_missHits"]);
     iEvent.getByLabel(edm::InputTag(electrons_label_, electrons_prefix_+"hasMatchedConVeto"), h_floats_["ele_hasMatchedConVeto"]);
-    iEvent.getByLabel(edm::InputTag(electrons_label_, electrons_prefix_+"vidLoosenoiso"),     h_floats_["ele_vidLoosenoiso"]);
 
     iEvent.getByLabel(edm::InputTag(muons_label_, muons_prefix_+"Pt"),          h_floats_["mu_Pt"]);
     iEvent.getByLabel(edm::InputTag(muons_label_, muons_prefix_+"Eta"),         h_floats_["mu_Eta"]);
