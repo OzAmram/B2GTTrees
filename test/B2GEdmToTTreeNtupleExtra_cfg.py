@@ -17,7 +17,6 @@ useMINIAOD = True # True: Use on top of B2GAnaFW to produce TTrees, False: Use a
 
 if useMINIAOD:
     from Analysis.B2GTTrees.b2gedmntuples_cfg import *
-    process.skimmedPatElectrons.cut = "pt >= 10 && abs(eta) < 2.5"
     #process.myTask = cms.Task()
     #process.myTask.add(*[getattr(process,prod) for prod in process.producers_()])
     #process.myTask.add(*[getattr(process,filt) for filt in process.filters_()])
@@ -187,7 +186,7 @@ if usePrivateSQLite and not useMINIAOD:
     process.es_prefer_jec = cms.ESPrefer("PoolDBESSource",'jec')
 
 # Revert back to CHS - 22 December 2016
-usePuppiJets = False # Also make sure B2GTTreeMaker_cff.py is consistent
+usePuppiJets = True # Also make sure B2GTTreeMaker_cff.py is consistent
 usePuppiMet  = False # Used for Razor calculation
 
 if usePuppiJets:
@@ -247,30 +246,30 @@ process.extraVar = cms.EDProducer("B2GEdmExtraVarProducer",
     AK8SubjetKeys_label = cms.untracked.string(AK8sub_key),
     singleI = cms.untracked.vstring(
         # Event filters (these are automatically picked up)
-        "Flag_HBHENoiseFilter",
-        "Flag_HBHENoiseIsoFilter",
-        "Flag_CSCTightHaloFilter",
-        "Flag_CSCTightHaloTrkMuUnvetoFilter",
-        "Flag_CSCTightHalo2015Filter",
-        "Flag_globalTightHalo2016Filter",
-        "Flag_globalSuperTightHalo2016Filter",
-        "Flag_HcalStripHaloFilter",
-        "Flag_hcalLaserEventFilter",
-        "Flag_EcalDeadCellTriggerPrimitiveFilter",
-        "Flag_EcalDeadCellBoundaryEnergyFilter",
-        "Flag_goodVertices",
-        "Flag_eeBadScFilter",
-        "Flag_ecalLaserCorrFilter",
-        "Flag_trkPOGFilters",
-        "Flag_chargedHadronTrackResolutionFilter",
-        "Flag_muonBadTrackFilter",
-        "Flag_trkPOG_manystripclus53X",
-        "Flag_trkPOG_toomanystripclus53X",
-        "Flag_trkPOG_logErrorTooManyClusters",
-        "Flag_METFilters",
-        "Flag_badMuons",
-        "Flag_duplicateMuons",
-        "Flag_noBadMuons",
+        #"Flag_HBHENoiseFilter",
+        #"Flag_HBHENoiseIsoFilter",
+        #"Flag_CSCTightHaloFilter",
+        #"Flag_CSCTightHaloTrkMuUnvetoFilter",
+        #"Flag_CSCTightHalo2015Filter",
+        #"Flag_globalTightHalo2016Filter",
+        #"Flag_globalSuperTightHalo2016Filter",
+        #"Flag_HcalStripHaloFilter",
+        #"Flag_hcalLaserEventFilter",
+        #"Flag_EcalDeadCellTriggerPrimitiveFilter",
+        #"Flag_EcalDeadCellBoundaryEnergyFilter",
+        #"Flag_goodVertices",
+        #"Flag_eeBadScFilter",
+        #"Flag_ecalLaserCorrFilter",
+        #"Flag_trkPOGFilters",
+        #"Flag_chargedHadronTrackResolutionFilter",
+        #"Flag_muonBadTrackFilter",
+        #"Flag_trkPOG_manystripclus53X",
+        #"Flag_trkPOG_toomanystripclus53X",
+        #"Flag_trkPOG_logErrorTooManyClusters",
+        #"Flag_METFilters",
+        #"Flag_badMuons",
+        #"Flag_duplicateMuons",
+        #"Flag_noBadMuons",
         # Add trigger names below (these are automatically picked up)
         # Single Jet
         #"HLT_PFJet40",
@@ -411,30 +410,30 @@ process.extraVar = cms.EDProducer("B2GEdmExtraVarProducer",
         "evt_NIsoTrk",
     ),
     singleF = cms.untracked.vstring(
-        "evt_MR",
-        "evt_MTR",
-        "evt_R",
-        "evt_R2",
-        "evt_MR_Smear",
-        "evt_MTR_Smear",
-        "evt_XSec",
+        #"evt_MR",
+        #"evt_MTR",
+        #"evt_R",
+        #"evt_R2",
+        #"evt_MR_Smear",
+        #"evt_MTR_Smear",
+        #"evt_XSec",
         "evt_Gen_Weight",
         "evt_Gen_Ht",
-        "SUSY_Stop_Mass",
-        "SUSY_Gluino_Mass",
-        "SUSY_LSP_Mass",
+        #"SUSY_Stop_Mass",
+        #"SUSY_Gluino_Mass",
+        #"SUSY_LSP_Mass",
     ),
     vectorI = cms.untracked.vstring(
         "gen_ID",
         "gen_Status",
         "gen_Mom0ID",
-        "gen_Mom0Status",
+        #"gen_Mom0Status",
         "gen_Mom1ID",
-        "gen_Mom1Status",
+        #"gen_Mom1Status",
         "gen_Dau0ID",
-        "gen_Dau0Status",
+        #"gen_Dau0Status",
         "gen_Dau1ID",
-        "gen_Dau1Status",
+        #"gen_Dau1Status",
         #AK8_prefix+"_HasNearGenTop",
         #AK8_prefix+"_NearGenTopIsHadronic",
         #AK8_prefix+"_NearGenWIsHadronic",
@@ -457,18 +456,18 @@ process.extraVar = cms.EDProducer("B2GEdmExtraVarProducer",
         #"mu_IsPartOfNearAK8Jet",
         #"mu_IsPartOfNearSubjet",
         #"el_mvaIDvalueHZZ",
-        "el_IDVeto_NoIso",
-        "el_IDLoose_NoIso",
-        "el_IDMedium_NoIso",
-        "el_IDTight_NoIso",
-        "el_IsoVeto",
-        "el_IsoLoose",
-        "el_IsoMedium",
-        "el_IsoTight",
-        "el_IDVeto",
-        "el_IDLoose",
-        "el_IDMedium",
-        "el_IDTight",
+        #"el_IDVeto_NoIso",
+        #"el_IDLoose_NoIso",
+        #"el_IDMedium_NoIso",
+        #"el_IDTight_NoIso",
+        #"el_IsoVeto",
+        #"el_IsoLoose",
+        #"el_IsoMedium",
+        #"el_IsoTight",
+        #"el_IDVeto",
+        #"el_IDLoose",
+        #"el_IDMedium",
+        #"el_IDTight",
     ),
     vectorF = cms.untracked.vstring(
         "scale_Weights",
@@ -558,9 +557,22 @@ process.extraVar = cms.EDProducer("B2GEdmExtraVarProducer",
 )
 
 ### Filter - Selects events with at least one muon with pt>25, |eta|<3.0
+process.MuonSingleFilter = cms.EDFilter("PatMuonCountFilter", 
+    filter = cms.bool(True),
+    src = cms.InputTag("slimmedMuons"),
+    cut = cms.string("pt>25. && abs(eta)<2.5"),
+    minNumber = cms.uint32(1)
+)
 process.MuonCountFilter = cms.EDFilter("PatMuonCountFilter", 
     filter = cms.bool(True),
     src = cms.InputTag("slimmedMuons"),
+    cut = cms.string("pt>15. && abs(eta)<2.5"),
+    minNumber = cms.uint32(2)
+)
+### Filter - Selects events with at least one electron with pt>25, |eta|<3.0
+process.ElectronSingleFilter = cms.EDFilter("PatElectronCountFilter", 
+    filter = cms.bool(True),
+    src = cms.InputTag("slimmedElectrons"),
     cut = cms.string("pt>25. && abs(eta)<2.5"),
     minNumber = cms.uint32(1)
 )
@@ -568,8 +580,8 @@ process.MuonCountFilter = cms.EDFilter("PatMuonCountFilter",
 process.ElectronCountFilter = cms.EDFilter("PatElectronCountFilter", 
     filter = cms.bool(True),
     src = cms.InputTag("slimmedElectrons"),
-    cut = cms.string("pt>25. && abs(eta)<2.5"),
-    minNumber = cms.uint32(1)
+    cut = cms.string("pt>15. && abs(eta)<2.5"),
+    minNumber = cms.uint32(2)
 )
 
 ### B2GTTreeMaker
@@ -595,17 +607,18 @@ process.B2GTTreeMaker.isData = isData
 process.EventCounter = cms.EDAnalyzer("EventCounter",
     isData = cms.untracked.bool(isData)
 )
-from RecoEgamma.EgammaTools.EgammaPostRecoTools import setupEgammaPostRecoSeq
-setupEgammaPostRecoSeq(process,
-                       runVID=False,
-                       era='2016-Legacy')  #era is new to select between 2016 / 2017,  it defaults to 2017
-#a sequence egammaPostRecoSeq has now been created and should be added to your path, eg process.p=cms.Path(process.egammaPostRecoSeq)
+#from RecoEgamma.EgammaTools.EgammaPostRecoTools import setupEgammaPostRecoSeq
+#setupEgammaPostRecoSeq(process,
+#                       runVID=False,
+#                       era='2016-Legacy')  #era is new to select between 2016 / 2017,  it defaults to 2017
+##a sequence egammaPostRecoSeq has now been created and should be added to your path, eg process.p=cms.Path(process.egammaPostRecoSeq)
 
 # Paths
 process.muonAnalysisPath = cms.Path(
     process.egammaPostRecoSeq *
     process.extraVar *
     process.EventCounter *
+    process.MuonSingleFilter *
     process.MuonCountFilter *
     process.B2GTTreeMaker
     )
@@ -615,6 +628,7 @@ process.electronAnalysisPath = cms.Path(
     process.egammaPostRecoSeq *
     process.extraVar *
     process.EventCounter *
+    process.ElectronSingleFilter *
     process.ElectronCountFilter *
     process.B2GTTreeMaker
     )
