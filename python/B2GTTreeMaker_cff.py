@@ -126,13 +126,13 @@ else:
         "ID",
         "Status",
         "Mom0ID",
-        "Mom0Status",
+        #"Mom0Status",
         "Mom1ID",
-        "Mom1Status",
+        #"Mom1Status",
         "Dau0ID",
-        "Dau0Status",
+        #"Dau0Status",
         "Dau1ID",
-        "Dau1Status",
+        #"Dau1Status",
     )
     
     electronVars = cms.untracked.vstring(

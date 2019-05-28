@@ -643,7 +643,6 @@ void B2GEdmExtraVarProducer::calculate_variables(edm::Event const& iEvent, edm::
     }
     
     size_t ngen =  h_floats_["gen_Pt"]->size();
-    double stop_mass = -9999, gluino_mass = -9999, lsp_mass = -9999;
     for (size_t i=0; i<ngen; ++i) {
       // Only saving b,t,W,l,nu
         /*
@@ -677,18 +676,6 @@ void B2GEdmExtraVarProducer::calculate_variables(edm::Event const& iEvent, edm::
         TLorentzVector genp; genp.SetPtEtaPhiE(h_floats_["gen_Pt"]->at(i), h_floats_["gen_Eta"]->at(i),
 					       h_floats_["gen_Phi"]->at(i), h_floats_["gen_E"]->at(i));
 	vector_float_["gen_Mass"].push_back(genp.M());				                    /* gen_Mass */
-	if (abs(h_floats_["gen_ID"]->at(i))==1000006||abs(h_floats_["gen_ID"]->at(i))==2000006) {
-	  // Stop Mass
-	  stop_mass = std::round(genp.M());
-	} else if (abs(h_floats_["gen_ID"]->at(i))==1000021) {
-	  // Gluino Mass is needef for cross-section
-	  // round because there's a small precision loss
-	  // and also for xsec you need to round anyway
-	  gluino_mass = std::round(genp.M()/5)*5;
-	} else if (abs(h_floats_["gen_ID"]->at(i))==1000022) {
-	  // LSP Mass
-	  lsp_mass = std::round(genp.M()/5)*5;
-	}
       }
       if (!useGenParticles&&h_floats_["gen_Pt"]->at(i)>0) {
         TLorentzVector genp; genp.SetPtEtaPhiE(h_floats_["gen_Pt"]->at(i), h_floats_["gen_Eta"]->at(i),
@@ -797,18 +784,6 @@ void B2GEdmExtraVarProducer::calculate_variables(edm::Event const& iEvent, edm::
       }
     }
     
-    // Save SUSY Signal related quantities
-    if (lsp_mass != -9999) {
-      single_float_["SUSY_Stop_Mass"] = stop_mass;                                                  /* SUSY_Stop_Mass */
-      single_float_["SUSY_Gluino_Mass"] = gluino_mass;                                              /* SUSY_Gluino_Mass */
-      single_float_["SUSY_LSP_Mass"] = lsp_mass;                                                    /* SUSY_LSP_Mass */
-      if (stop_mass != single_float_["prev_stop_mass"])
-        single_float_["evt_XSec"] = GetStopXSec(stop_mass).first;                                   /* evt_XSec */
-      single_float_["prev_stop_mass"] = stop_mass;
-      if (gluino_mass != single_float_["prev_gluino_mass"])
-        single_float_["evt_XSec"] = GetGluinoXSec(gluino_mass).first;                               /* evt_XSec */
-      single_float_["prev_gluino_mass"] = gluino_mass;
-    }
     
     // Find bs and Ws
     // Method: bs and Ws with top parent are combined
