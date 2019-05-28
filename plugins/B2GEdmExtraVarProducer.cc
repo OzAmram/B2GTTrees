@@ -641,7 +641,6 @@ void B2GEdmExtraVarProducer::calculate_variables(edm::Event const& iEvent, edm::
         }
 
         size_t ngen =  h_floats_["gen_Pt"]->size();
-        double stop_mass = -9999, gluino_mass = -9999, lsp_mass = -9999;
         for (size_t i=0; i<ngen; ++i) {
             /*
                if (abs(h_floats_["gen_ID"]->at(i))==5||abs(h_floats_["gen_ID"]->at(i))==6||

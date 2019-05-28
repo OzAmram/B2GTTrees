@@ -24,9 +24,6 @@ public:
 
     edm::EDGetTokenT<int>(mayConsume<int>(edm::InputTag("eventUserData", "puNtrueInt")));
     edm::EDGetTokenT<float>(mayConsume<float>(edm::InputTag("extraVar", "evtGenWeight")));
-    edm::EDGetTokenT<float>(mayConsume<float>(edm::InputTag("extraVar", "SUSYStopMass")));
-    edm::EDGetTokenT<float>(mayConsume<float>(edm::InputTag("extraVar", "SUSYGluinoMass")));
-    edm::EDGetTokenT<float>(mayConsume<float>(edm::InputTag("extraVar", "SUSYLSPMass")));
   }
 
 private:
@@ -52,15 +49,6 @@ private:
       h_totweight_->Fill(double(0), *evt_Gen_Weight);
 
       
-      // Count total weight for SUSY signal events
-      edm::Handle<float> SUSY_Stop_Mass;
-      edm::Handle<float> SUSY_Gluino_Mass;
-      edm::Handle<float> SUSY_LSP_Mass;
-      iEvent.getByLabel(edm::InputTag("extraVar", "SUSYStopMass"),   SUSY_Stop_Mass);
-      iEvent.getByLabel(edm::InputTag("extraVar", "SUSYGluinoMass"), SUSY_Gluino_Mass);
-      iEvent.getByLabel(edm::InputTag("extraVar", "SUSYLSPMass"),    SUSY_LSP_Mass);
-      if (*SUSY_Gluino_Mass>0) h_totweight_T1tttt_->Fill(*SUSY_Gluino_Mass, *SUSY_LSP_Mass, *evt_Gen_Weight);
-      if (*SUSY_Stop_Mass>0)   h_totweight_T2tt_  ->Fill(*SUSY_Stop_Mass,   *SUSY_LSP_Mass, *evt_Gen_Weight);
     }
   }
 };
