@@ -80,7 +80,9 @@ Double_t get_Mu_trk_SF(Double_t eta, TGraphAsymmErrors *h, int systematic = 0){
     if(systematic !=0){
         TAxis* x_ax =  h->GetXaxis();
         int xbin = x_ax->FindBin(eta);
-        Double_t err =0.01;
+        Double_t err;
+        if(systematic >0) err = h->GetErrorYhigh();
+        else if(systematic <0) err = h->GetErrorYlow();
         result += err*systematic;
     }
 
@@ -199,7 +201,7 @@ Double_t get_HLT_SF(Double_t mu1_pt, Double_t mu1_eta, Double_t mu2_pt, Double_t
         Double_t SF1_err = h_SF->GetBinError(xbin1_SF, ybin1_SF);
         Double_t SF2_err = h_SF->GetBinError(xbin2_SF, ybin2_SF);
         SF1_err = sqrt(SF1_err*SF1_err + 0.005*0.005);
-        SF2_err = sqrt(SF1_err*SF1_err + 0.005*0.005);
+        SF2_err = sqrt(SF2_err*SF2_err + 0.005*0.005);
         //printf("SF is %.3f +/- %.3f \n", SF1, SF1_err);
         //printf("SF is %.3f +/- %.3f \n", SF2, SF2_err);
         SF1 += SF1_err * systematic;

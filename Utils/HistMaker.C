@@ -46,6 +46,41 @@ void cleanup_hist(TH1 *h){
         if(val<0.) h->SetBinContent(i,0.);
     }
 }
+
+void setHistError(TH1 *h, float e){
+    int nBins = h->GetNbinsX();
+    for(int i=1; i<= nBins; i++){
+        float val = h->GetBinContent(i);
+        h->SetBinError(i, val*e);
+    }
+}
+
+
+void symmetrize1d(TH1F *h){
+    int n_cost_bins = h->GetNbinsX();
+
+        for(int j=1; j<= n_cost_bins/2; j++){
+            float content = h->GetBinContent(j);
+            float error = h->GetBinError(j);
+
+            int opp_j = (n_cost_bins + 1) -j;
+            float content2 = h->GetBinContent(opp_j);
+            float error2 = h->GetBinError(opp_j);
+
+            float new_content = (content + content2)/2.0;
+            float new_error = pow((error*error + error2*error2), 0.5)/2.0;
+            h->SetBinContent(j, new_content);
+            h->SetBinContent(opp_j, new_content);
+
+            h->SetBinError(j, new_error);
+            h->SetBinError(opp_j, new_error);
+
+
+        }
+    
+}
+
+
 void set_fakerate_errors(TH2D *h_errs, TH2D *h_fr, TH1F *h){
     float err_sum = 0.;
     for(int i=1; i<= h_errs->GetNbinsX(); i++){
@@ -156,10 +191,10 @@ double get_cost_v2(TLorentzVector lep_p, TLorentzVector lep_m){
     p1u.SetMag(1.0);
     TVector3 p2u = p2.Vect();
     p2u.SetMag(1.0);
-    TVector3 pzu = p1u - p2u;
-    pzu.SetMag(1.0);
-    lep_m.RotateUz(pzu); 
-    double cost = lep_m.CosTheta();
+    TVector3 bisec = p1u - p2u;
+    bisec.SetMag(1.0);
+    TVector3 plep = lep_m.Vect();
+    double cost = TMath::Cos(plep.Angle(bisec));
     return cost;
 }
 
@@ -489,6 +524,8 @@ void make_m_cost_pt_xf_hist(TTree *t1, TH1F *h_m, TH1F *h_cost, TH1F *h_pt, TH1F
                     h_xf->Fill(xF);
                 }
                 else{
+                    //bcdef_trk_SF = gh_trk_SF = 1.0;
+
                     Double_t bcdef_weight = gen_weight *pu_SF * bcdef_HLT_SF * bcdef_iso_SF * bcdef_id_SF * bcdef_trk_SF;
                     Double_t gh_weight = gen_weight *pu_SF * gh_HLT_SF * gh_iso_SF * gh_id_SF * gh_trk_SF;
                     Double_t evt_weight = 1000*(bcdef_lumi * bcdef_weight + gh_lumi *gh_weight);

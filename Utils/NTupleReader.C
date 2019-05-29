@@ -197,13 +197,9 @@ bool NTupleReader::getNextFile(){
 
                 tin->SetBranchAddress("gen_Mom0ID", &gen_Mom0ID);
                 tin->SetBranchAddress("gen_Mom1ID", &gen_Mom1ID);
-                tin->SetBranchAddress("gen_Mom0Status", &gen_Mom0Status);
-                tin->SetBranchAddress("gen_Mom1Status", &gen_Mom1Status);
 
                 tin->SetBranchAddress("gen_Dau0ID", &gen_Dau0ID);
                 tin->SetBranchAddress("gen_Dau1ID", &gen_Dau1ID);
-                tin->SetBranchAddress("gen_Dau0Status", &gen_Dau0Status);
-                tin->SetBranchAddress("gen_Dau1Status", &gen_Dau1Status);
             }
 
 
@@ -765,43 +761,42 @@ void NTupleReader::parseGenParts(bool PRINT = false){
         if(PRINT){
             if( (abs(gen_id[k]) <=6 || gen_id[k] == GLUON)){
                 if(PRINT) sprintf(out_buff + strlen(out_buff),"Parton (ID = %i stat = %i): \n"
-                        "    Mom1 ID: %i Mom1 Stat: %i Mom2 ID: %i Mom2 Stat %i \n"
-                        "    Dau1 ID: %i Dau1 Stat: %i Dau2 ID: %i Dau2 Stat %i \n",
+                        "    Mom1 ID: %i Mom1 Stat:  Mom2 ID: %i Mom2 Stat  \n"
+                        "    Dau1 ID: %i Dau1 Stat: Dau2 ID: %i Dau2 Stat  \n",
                         gen_id[k], gen_status[k], 
-                        gen_Mom0ID[k], gen_Mom0Status[k], gen_Mom1ID[k], gen_Mom1Status[k],
-                        gen_Dau0ID[k], gen_Dau0Status[k], gen_Dau1ID[k], gen_Dau1Status[k]);
+                        gen_Mom0ID[k],  gen_Mom1ID[k], 
+                        gen_Dau0ID[k],  gen_Dau1ID[k] );
             }
 
 
             if(gen_id[k] == -MY_LEP){
                 if(PRINT) sprintf(out_buff + strlen(out_buff),"mu_p(stat = %i): \n"
-                        "   Mom1 ID: %i Mom1 Stat: %i Mom2 ID: %i Mom2 Stat %i \n"
-                        "   Dau1 ID: %i Dau1 Stat: %i Dau2 ID: %i Dau2 Stat %i \n",
-                        gen_status[k], 
-                        gen_Mom0ID[k], gen_Mom0Status[k], gen_Mom1ID[k], gen_Mom1Status[k],
-                        gen_Dau0ID[k], gen_Dau0Status[k], gen_Dau1ID[k], gen_Dau1Status[k]);
+                        "   Mom1 ID: %i Mom1 Stat:  Mom2 ID: %i Mom2 Stat  \n"
+                        "   Dau1 ID: %i Dau1 Stat:  Dau2 ID: %i Dau2 Stat  \n",
+                        gen_status[k], gen_Mom0ID[k],  gen_Mom1ID[k], 
+                        gen_Dau0ID[k],  gen_Dau1ID[k] );
                 if(PRINT) sprintf(out_buff + strlen(out_buff),"(pt, eta, phi,E) = %4.2f %4.2f %4.2f %4.2f \n", 
                         gen_Pt[k], gen_Eta[k], gen_Phi[k], gen_E[k]);
             }
             if(gen_id[k] == MY_LEP){
 
                 if(PRINT) sprintf(out_buff + strlen(out_buff),"mu_m (stat = %i): \n"
-                        "   Mom1 ID: %i Mom1 Stat: %i Mom2 ID: %i Mom2 Stat %i \n"
-                        "   Dau1 ID: %i Dau1 Stat: %i Dau2 ID: %i Dau2 Stat %i \n",
+                        "   Mom1 ID: %i Mom1 Stat:  Mom2 ID: %i Mom2 Stat  \n"
+                        "   Dau1 ID: %i Dau1 Stat:  Dau2 ID: %i Dau2 Stat  \n",
                         gen_status[k], 
-                        gen_Mom0ID[k], gen_Mom0Status[k], gen_Mom1ID[k], gen_Mom1Status[k],
-                        gen_Dau0ID[k], gen_Dau0Status[k], gen_Dau1ID[k], gen_Dau1Status[k]);
+                        gen_Mom0ID[k],  gen_Mom1ID[k], 
+                        gen_Dau0ID[k],  gen_Dau1ID[k] );
                 if(PRINT) sprintf(out_buff + strlen(out_buff),"(pt, eta, phi,E) = %4.2f %4.2f %4.2f %4.2f \n", 
                         gen_Pt[k], gen_Eta[k], gen_Phi[k], gen_E[k]);
 
             }
             if(gen_id[k] == Z){
                 if(PRINT) sprintf(out_buff + strlen(out_buff),"Z (ID = %i, status = %i): \n"
-                        "   Mom1 ID: %i Mom1 Stat: %i Mom2 ID: %i Mom2 Stat %i \n"
-                        "   Dau1 ID: %i Dau1 Stat: %i Dau2 ID: %i Dau2 Stat %i \n",
+                        "   Mom1 ID: %i Mom1 Stat:  Mom2 ID: %i Mom2 Stat  \n"
+                        "   Dau1 ID: %i Dau1 Stat:  Dau2 ID: %i Dau2 Stat  \n",
                         gen_id[k], gen_status[k],
-                        gen_Mom0ID[k], gen_Mom0Status[k], gen_Mom1ID[k], gen_Mom1Status[k],
-                        gen_Dau0ID[k], gen_Dau0Status[k], gen_Dau1ID[k], gen_Dau1Status[k]);
+                        gen_Mom0ID[k],  gen_Mom1ID[k], 
+                        gen_Dau0ID[k],  gen_Dau1ID[k] );
             }
         }
     }
@@ -809,20 +804,17 @@ void NTupleReader::parseGenParts(bool PRINT = false){
 
     if(gen_lep_p != -1 && gen_lep_m != -1) {
         if(PRINT) sprintf(out_buff + strlen(out_buff),"mu_p: \n"
-                "   Mom1 ID: %i Mom1 Stat: %i Mom2 ID: %i Mom2 Stat %i \n"
-                "   Dau1 ID: %i Dau1 Stat: %i Dau2 ID: %i Dau2 Stat %i \n",
-                gen_Mom0ID[gen_lep_p], gen_Mom0Status[gen_lep_p], gen_Mom1ID[gen_lep_p], 
-                gen_Mom1Status[gen_lep_p],
-                gen_Dau0ID[gen_lep_p], gen_Dau0Status[gen_lep_p], gen_Dau1ID[gen_lep_p], 
-                gen_Dau1Status[gen_lep_p]);
+                "   Mom1 ID: %i Mom1 Stat: Mom2 ID: %i Mom2 Stat \n"
+                "   Dau1 ID: %i Dau1 Stat:  Dau2 ID: %i Dau2 Stat \n",
+                gen_Mom0ID[gen_lep_p],  gen_Mom1ID[gen_lep_p], 
+                gen_Dau0ID[gen_lep_p], gen_Dau1ID[gen_lep_p]);
 
         if(PRINT) sprintf(out_buff + strlen(out_buff),"mu_m: \n"
-                "   Mom1 ID: %i Mom1 Stat: %i Mom2 ID: %i Mom2 Stat %i \n"
-                "   Dau1 ID: %i Dau1 Stat: %i Dau2 ID: %i Dau2 Stat %i \n",
-                gen_Mom0ID[gen_lep_m], gen_Mom0Status[gen_lep_m], gen_Mom1ID[gen_lep_m], 
-                gen_Mom1Status[gen_lep_m],
-                gen_Dau0ID[gen_lep_m], gen_Dau0Status[gen_lep_m], gen_Dau1ID[gen_lep_m], 
-                gen_Dau1Status[gen_lep_m]);
+                "   Mom1 ID: %i Mom1 Stat:  Mom2 ID: %i Mom2 Stat  \n"
+                "   Dau1 ID: %i Dau1 Stat:  Dau2 ID: %i Dau2 Stat \n",
+                gen_Mom0ID[gen_lep_m],  gen_Mom1ID[gen_lep_m], 
+                gen_Dau0ID[gen_lep_m],  gen_Dau1ID[gen_lep_m]
+                );
 
     }
     else {
