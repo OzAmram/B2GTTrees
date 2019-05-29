@@ -21,7 +21,8 @@
 #include "TFitter.h"
 #include "TSystem.h"
 #include "Math/Functor.h"
-#include "../../analyze/HistMaker.C"
+#include "../../Utils/HistMaker.C"
+#include "../../Utils/root_files.h"
 #include "../tdrstyle.C"
 #include "../CMS_lumi.C"
 #include "root_files.h"
@@ -119,6 +120,7 @@ void draw_pileup(){
     data_pu->Scale(1./data_pu->Integral());
     data_pu->SetDirectory(0);
 
+    init();
     mumu_init();
     TH1F *mc_pu_before = new TH1F("mc_pu_before", "MC signal", 100, 0, 100);
     TH1F *mc_nosig_pu_before = new TH1F("mc_nosig_pu_before", "MC signal", 100, 0, 100);
@@ -156,8 +158,8 @@ void draw_pileup(){
 
 
 
-    make_pileup_hist(t_mc, mc_pu_before, mc_pu_after, false, type);
-    make_pileup_hist(t_mc_nosig, mc_nosig_pu_before, mc_nosig_pu_after, false, type);
+    make_pileup_hist(t_mumu_mc, mc_pu_before, mc_pu_after, false, type);
+    make_pileup_hist(t_mumu_nosig, mc_nosig_pu_before, mc_nosig_pu_after, false, type);
     make_pileup_hist(t_ttbar, ttbar_pu_before, ttbar_pu_after, false, type);
     make_pileup_hist(t_wt, wt_pu_before, wt_pu_after, false);
     make_pileup_hist(t_diboson, diboson_pu_before, diboson_pu_after, false, type);
@@ -166,7 +168,6 @@ void draw_pileup(){
 
 
 
-    Double_t EMu_ratio= 1.05;
 
 
 

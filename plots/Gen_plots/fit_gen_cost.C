@@ -24,6 +24,9 @@ int make_gen_cost(TTree *t1, TH1F *h_cost_st, TH1F *h_cost_r, TH1F* h_pt,  TH1F 
     //read event data
     h_cost_st->Sumw2();
     Long64_t size  =  t1->GetEntries();
+    double norm = 1.0;
+
+
     int nSelected=0;
     double root2 = sqrt(2);
     
@@ -77,10 +80,10 @@ int make_gen_cost(TTree *t1, TH1F *h_cost_st, TH1F *h_cost_r, TH1F* h_pt,  TH1F 
 
             //if(gen_weight >0) gen_weight = 1.0;
             //else gen_weight = -1.0;
-            h_cost_st->Fill(cost_st, gen_weight);
-            h_cost_r->Fill(cost_r, gen_weight);
-            h_pt->Fill(cm.Pt(), gen_weight);
-            h_xf->Fill(xf, gen_weight);
+            h_cost_st->Fill(cost_st, gen_weight *norm);
+            h_cost_r->Fill(cost_r, gen_weight*norm);
+            h_pt->Fill(cm.Pt(), gen_weight*norm);
+            h_xf->Fill(xf, gen_weight*norm);
         }
         
 
@@ -95,27 +98,34 @@ int make_gen_cost(TTree *t1, TH1F *h_cost_st, TH1F *h_cost_r, TH1F* h_pt,  TH1F 
 }
 void fit_gen_cost(){
     gStyle->SetOptStat(0);
-    //TFile *f= TFile::Open("../generator_stuff/root_files/madgraph_m500_evts.root");
-    TFile *f= TFile::Open("../generator_stuff/root_files/powheg_m200_april30.root");
-    TTree *t_gen = (TTree *)f->Get("T_lhe");
+    TFile *f1= TFile::Open("../generator_stuff/root_files/madgraph_m700_may23.root");
+    //TFile *f= TFile::Open("../generator_stuff/root_files/powheg_m150_may6.root");
+    TTree *t_gen1 = (TTree *)f1->Get("T_lhe");
+
 
     TH1F *h_cost = new TH1F("h_mad_cost", "", 20, -1., 1.);
     TH1F *h_cost_r = new TH1F("h_mad_cost_r", "", 20, -1., 1.);
     TH1F *h_pt = new TH1F("h_pt", "", 20, 0., 300.);
     TH1F *h_xf = new TH1F("h_xf", "", 20, 0., 1.);
-    float m_low = 250;
-    float m_high = 350.;
-    int nEvents = make_gen_cost(t_gen,  h_cost, h_cost_r, h_pt, h_xf, m_low, m_high);
+    float m_low = 700.;
+    float m_high = 800.;
 
-    TF1 *func = new TF1("func", "[2] *(1 + x*x + [1]*(1-x*x) + (4./3.)*(2. + [1])*[0]*x)", -1., 1.);
-    func->SetParameters(0.6, 0.07, 1.0);
+    int nEvents = make_gen_cost(t_gen1,  h_cost, h_cost_r, h_pt, h_xf, m_low, m_high);
+
+
+    TF1 *func = new TF1("func", "(1 + x*x + [1]*(1-x*x) + (4./3.)*(2. + [1])*[0]*x) /(8./3. + 4.*[1]/3.)", -1., 1.);
+    func->SetParameter(0,0.6);
+    func->SetParameter(1,0.1);
     func->SetParLimits(1, 0., 1.0);
 
-    //func->FixParameter(1, 0.038);
+    //func->FixParameter(1, 0.098);
     
-    h_cost->Fit(func);
     Double_t nB = h_cost->Integral(1,10);
     Double_t nF = h_cost->Integral(11,20);
+    
+    //bin size is 0.1, so 1/bin_size = 10.
+    h_cost->Scale(10./h_cost->Integral());
+    h_cost->Fit(func);
 
     Double_t AFB = ((nF - nB))/((nF+nB));
     Double_t dAFB = (1.-AFB*AFB)/sqrt((nEvents));

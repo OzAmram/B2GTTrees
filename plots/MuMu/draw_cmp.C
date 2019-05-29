@@ -138,7 +138,7 @@ void draw_cmp(){
 
     bool do_RC = true;
     float m_low = 150.;
-    float m_high = 10000.;
+    float m_high = 200.;
 
     make_m_cost_pt_xf_hist(t_mumu_data, data_m, data_cost, data_pt, data_xf, true, type, do_RC, m_low, m_high);
     make_m_cost_pt_xf_hist(t_mumu_mc, mc_m, mc_cost, mc_pt, mc_xf, false, type,  do_RC, m_low, m_high);
@@ -148,9 +148,14 @@ void draw_cmp(){
     make_m_cost_pt_xf_hist(t_mumu_gamgam, gg_m, gg_cost, gg_pt, gg_xf, false, type, do_RC, m_low, m_high);
     make_m_cost_pt_xf_hist(t_diboson, diboson_m, diboson_cost, diboson_pt, diboson_xf, false, type,  do_RC, m_low, m_high);
 
+    symmetrize1d(gg_cost);
+
+    //gg_cost->Scale(0.);
+
     bool ss_qcd = true;
     bool in_os_region = true;
     Fakerate_est_mu(t_mumu_WJets, t_mumu_QCD, t_mumu_WJets_contam, t_mumu_QCD_contam, QCD_m, QCD_cost, QCD_pt, QCD_xf, m_low, m_high, ss_qcd, in_os_region);
+    QCD_cost->Scale(0.);
 
 
 
@@ -161,22 +166,17 @@ void draw_cmp(){
     bool scale_qcd_error=true;
     float qcd_err = 0.4;
     if(scale_qcd_error){
-        int nBins_x = QCD_m->GetXaxis()->GetNbins();
-        int nBins_y = QCD_cost->GetYaxis()->GetNbins();
-        //printf("Get size %i \n", nBins);
-        for (int i=1; i <= nBins_x; i++){
-            for (int j=1; j <= nBins_y; j++){
-
-                Double_t m_val = QCD_m->GetBinContent(i,j);
-                Double_t cost_val = QCD_cost->GetBinContent(i,j);
-                Double_t xf_val = QCD_xf->GetBinContent(i,j);
-
-                QCD_m->SetBinError(i,j, qcd_err*m_val);
-                QCD_cost->SetBinError(i,j, qcd_err*cost_val);
-                QCD_xf->SetBinError(i,j, qcd_err*cost_val);
-            }
-        }
+        setHistError(QCD_m, qcd_err);
+        setHistError(QCD_cost, qcd_err);
+        setHistError(QCD_pt, qcd_err);
+        setHistError(QCD_xf, qcd_err);
     }
+
+    float gam_err = 0.4;
+    setHistError(gg_m, gam_err);
+    setHistError(gg_cost, gam_err);
+    setHistError(gg_pt, gam_err);
+    setHistError(gg_xf, gam_err);
 
 
 
@@ -313,7 +313,8 @@ void draw_cmp(){
     cost_stack->SetMinimum(1);
     data_cost->Draw("P E same");
     cost_pad1->Update();
-    leg1->Draw();
+    TLegend *leg2 = (TLegend *) leg1->Clone("leg2");
+    leg2->Draw();
 
     c_cost->Update();
 
@@ -381,7 +382,8 @@ void draw_cmp(){
     data_pt->Draw("P E same");
     pt_pad1->SetLogy();
     c_pt->Update();
-    leg1->Draw();
+    TLegend *leg3 = (TLegend *) leg1->Clone("leg3");
+    leg3->Draw();
 
     c_pt->cd();
     TPad *pt_pad2 = new TPad("pt_pad2", "pad2", 0.,0,.98,0.3);
@@ -444,7 +446,8 @@ void draw_cmp(){
     data_xf->Draw("P E same");
     xf_pad1->SetLogy();
     c_xf->Update();
-    leg1->Draw();
+    TLegend *leg4 = (TLegend *) leg1->Clone("leg4");
+    leg4->Draw();
 
     c_xf->cd();
     TPad *xf_pad2 = new TPad("xf_pad2", "pad2", 0.,0,.98,0.3);
