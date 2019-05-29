@@ -185,7 +185,6 @@ int gen_mc_template(TTree *t1, Double_t alpha_num, Double_t alpha_denom, TH2F* h
     h_sym->Sumw2();
     h_asym->Sumw2();
 
-    //TH2F* h_reweights = (TH2F *) h_sym->Clone("h_rw");
 
     Double_t m, xF, cost, gen_weight, reweight_a, reweight_s, jet1_cmva, jet2_cmva, cost_st;
     Double_t bcdef_HLT_SF, bcdef_iso_SF, bcdef_id_SF;
@@ -375,8 +374,12 @@ int gen_mc_template(TTree *t1, Double_t alpha_num, Double_t alpha_denom, TH2F* h
             if(pass){
                 reweight_a = (4./3.)*cost_st*(2. + alpha_num)/
                     (1. + cost_st*cost_st + alpha_denom*(1.- cost_st*cost_st));
-                reweight_s = (1. + cost_st*cost_st + alpha_num*(1.- cost_st*cost_st)) /
+
+                double alpha_ratio_s = (1. + cost_st*cost_st + alpha_num*(1.- cost_st*cost_st)) /
                     (1. + cost_st*cost_st + alpha_denom*(1.- cost_st*cost_st));
+                //keep normalization same due to changing alpha
+                double norm_ratio_s = (8./3. + 4./3.*alpha_denom)/(8./3. + 4./3.*alpha_num);
+                reweight_s = alpha_ratio_s*norm_ratio_s;
                 n++;
                 Double_t pu_SF_sys = 1.;
                 if(do_pileup_sys == -1) pu_SF_sys = get_pileup_SF(pu_NtrueInt, pu_sys.pileup_down);
@@ -485,8 +488,14 @@ int gen_mc_template(TTree *t1, Double_t alpha_num, Double_t alpha_denom, TH2F* h
                 else cost_st = -fabs(cost);
                 reweight_a = (4./3.)*cost_st*(2. + alpha_num)/
                     (1. + cost_st*cost_st + alpha_denom*(1.- cost_st*cost_st));
-                reweight_s = (1. + cost_st*cost_st + alpha_num*(1.- cost_st*cost_st)) /
+
+                //keep normalization same due to changing alpha
+                double alpha_ratio_s = (1. + cost_st*cost_st + alpha_num*(1.- cost_st*cost_st)) /
                     (1. + cost_st*cost_st + alpha_denom*(1.- cost_st*cost_st));
+                double norm_ratio_s = (8./3. + 4./3.*alpha_denom)/(8./3. + 4./3.*alpha_num);
+                reweight_s = alpha_ratio_s*norm_ratio_s;
+
+
                 n++;
                 Double_t pu_SF_sys = 1.;
                 if(do_pileup_sys == -1) pu_SF_sys = get_pileup_SF(pu_NtrueInt, pu_sys.pileup_down);

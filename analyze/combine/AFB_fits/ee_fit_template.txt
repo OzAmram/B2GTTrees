@@ -21,6 +21,7 @@ rate             -1      -1      -1     -1    1      -1        -1       1      -
 Pu      shape    1.0     1.0     1.0    1.0   -       -        -       -       -        -        -       -  
 BTAG    shape    1.0     1.0     1.0    1.0   -       -        -       -       -        -        -       -  
 alpha   shape    1.0     1.0      -      -    -       -        -       -       -        -        -       -  
+alphaDen shape   1.0     1.0      -      -    -       -        -       -       -        -        -       -  
                                             
 elScale shape    1.0     1.0     1.0    1.0   -      1.0       -       -       -        -        -       -  
 elSmear shape    1.0     1.0     1.0    1.0   -      1.0       -       -       -        -        -       -  

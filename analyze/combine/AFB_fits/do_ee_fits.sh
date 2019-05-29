@@ -9,7 +9,7 @@ do
     cp ee_fit_template.txt $card
     cat cards/mbin${idx}_bins.txt >> $card
     text2workspace.py $card --keyword-value M_BIN=${idx} -P Analysis.B2GTTrees.my_model:dy_AFB -o $workspace
-    combine -M FitDiagnostics $workspace --saveShapes --saveWorkspace --skipBOnlyFit --plot
+    combine -M FitDiagnostics $workspace --saveShapes --saveWorkspace --skipBOnlyFit --plot --robustFit 1
     PostFitShapesFromWorkspace -w higgsCombineTest.FitDiagnostics.mH120.root -f fitDiagnostics.root:fit_s --postfit -o shapes/ee_fit_shapes_mbin${idx}.root
     rm -r $plotdir
     mkdir $plotdir

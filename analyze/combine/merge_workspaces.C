@@ -4,38 +4,39 @@
 void merge_workspaces(){
 
 
-    const TString f1_s("combine/templates/may9_no_sys.root");
-    const TString fout_s("combine/templates/may9_merge.root");
+    const TString f1_s("combine/templates/may22_no_sys.root");
+    const TString fout_s("combine/templates/may22_merge.root");
     TFile *f1 = TFile::Open(f1_s, "READ");
     TFile *fout = TFile::Open(fout_s, "RECREATE");
     char dirname[40];
 
     std::vector<string> fs{
-        "root://131.225.204.161:1094//store/user/oamram/Condor_outputs/templ_sys_may9/file_0.root",
-        "root://131.225.204.161:1094//store/user/oamram/Condor_outputs/templ_sys_may9/file_1.root",
-        "root://131.225.204.161:1094//store/user/oamram/Condor_outputs/templ_sys_may9/file_2.root",
-        "root://131.225.204.161:1094//store/user/oamram/Condor_outputs/templ_sys_may9/file_3.root",
-        "root://131.225.204.161:1094//store/user/oamram/Condor_outputs/templ_sys_may9/file_4.root",
-        "root://131.225.204.161:1094//store/user/oamram/Condor_outputs/templ_sys_may9/file_5.root",
-        "root://131.225.204.161:1094//store/user/oamram/Condor_outputs/templ_sys_may9/file_6.root",
-        "root://131.225.204.161:1094//store/user/oamram/Condor_outputs/templ_sys_may9/file_7.root",
-        "root://131.225.204.161:1094//store/user/oamram/Condor_outputs/templ_sys_may9/file_8.root",
-        "root://131.225.204.161:1094//store/user/oamram/Condor_outputs/templ_sys_may9/file_9.root",
-        "root://131.225.204.161:1094//store/user/oamram/Condor_outputs/templ_pdf_sys_may9/file_0.root",
-        "root://131.225.204.161:1094//store/user/oamram/Condor_outputs/templ_pdf_sys_may9/file_1.root",
-        "root://131.225.204.161:1094//store/user/oamram/Condor_outputs/templ_pdf_sys_may9/file_2.root",
-        "root://131.225.204.161:1094//store/user/oamram/Condor_outputs/templ_pdf_sys_may9/file_3.root",
-        "root://131.225.204.161:1094//store/user/oamram/Condor_outputs/templ_pdf_sys_may9/file_4.root",
-        "root://131.225.204.161:1094//store/user/oamram/Condor_outputs/templ_pdf_sys_may9/file_5.root",
-        "root://131.225.204.161:1094//store/user/oamram/Condor_outputs/templ_pdf_sys_may9/file_6.root",
-        "root://131.225.204.161:1094//store/user/oamram/Condor_outputs/templ_pdf_sys_may9/file_7.root",
-        "root://131.225.204.161:1094//store/user/oamram/Condor_outputs/templ_pdf_sys_may9/file_8.root",
-        "root://131.225.204.161:1094//store/user/oamram/Condor_outputs/templ_pdf_sys_may9/file_9.root",
-        "root://131.225.204.161:1094//store/user/oamram/Condor_outputs/templ_pdf_sys_may9/file_10.root",
-        "root://131.225.204.161:1094//store/user/oamram/Condor_outputs/templ_pdf_sys_may9/file_11.root",
-        "root://131.225.204.161:1094//store/user/oamram/Condor_outputs/templ_pdf_sys_may9/file_12.root",
-        "root://131.225.204.161:1094//store/user/oamram/Condor_outputs/templ_pdf_sys_may9/file_13.root",
-        "root://131.225.204.161:1094//store/user/oamram/Condor_outputs/templ_pdf_sys_may9/file_14.root"
+        "root://131.225.204.161:1094//store/user/oamram/Condor_outputs/templ_sys_may22/file_0.root",
+        "root://131.225.204.161:1094//store/user/oamram/Condor_outputs/templ_sys_may22/file_1.root",
+        "root://131.225.204.161:1094//store/user/oamram/Condor_outputs/templ_sys_may22/file_2.root",
+        "root://131.225.204.161:1094//store/user/oamram/Condor_outputs/templ_sys_may22/file_3.root",
+        "root://131.225.204.161:1094//store/user/oamram/Condor_outputs/templ_sys_may22/file_4.root",
+        "root://131.225.204.161:1094//store/user/oamram/Condor_outputs/templ_sys_may22/file_5.root",
+        "root://131.225.204.161:1094//store/user/oamram/Condor_outputs/templ_sys_may22/file_6.root",
+        "root://131.225.204.161:1094//store/user/oamram/Condor_outputs/templ_sys_may22/file_7.root",
+        "root://131.225.204.161:1094//store/user/oamram/Condor_outputs/templ_sys_may22/file_8.root",
+        "root://131.225.204.161:1094//store/user/oamram/Condor_outputs/templ_sys_may22/file_9.root",
+        "root://131.225.204.161:1094//store/user/oamram/Condor_outputs/templ_pdf_sys_may22/file_0.root",
+        "root://131.225.204.161:1094//store/user/oamram/Condor_outputs/templ_pdf_sys_may22/file_1.root",
+        "root://131.225.204.161:1094//store/user/oamram/Condor_outputs/templ_pdf_sys_may22/file_2.root",
+        "root://131.225.204.161:1094//store/user/oamram/Condor_outputs/templ_pdf_sys_may22/file_3.root",
+        "root://131.225.204.161:1094//store/user/oamram/Condor_outputs/templ_pdf_sys_may22/file_4.root",
+        "root://131.225.204.161:1094//store/user/oamram/Condor_outputs/templ_pdf_sys_may22/file_5.root",
+        "root://131.225.204.161:1094//store/user/oamram/Condor_outputs/templ_pdf_sys_may22/file_6.root",
+        "root://131.225.204.161:1094//store/user/oamram/Condor_outputs/templ_pdf_sys_may22/file_7.root",
+        "root://131.225.204.161:1094//store/user/oamram/Condor_outputs/templ_pdf_sys_may22/file_8.root",
+        "root://131.225.204.161:1094//store/user/oamram/Condor_outputs/templ_pdf_sys_may22/file_9.root",
+        "root://131.225.204.161:1094//store/user/oamram/Condor_outputs/templ_pdf_sys_may22/file_10.root",
+        "root://131.225.204.161:1094//store/user/oamram/Condor_outputs/templ_pdf_sys_may22/file_11.root",
+        "root://131.225.204.161:1094//store/user/oamram/Condor_outputs/templ_pdf_sys_may22/file_12.root",
+        "root://131.225.204.161:1094//store/user/oamram/Condor_outputs/templ_pdf_sys_may22/file_13.root",
+        "root://131.225.204.161:1094//store/user/oamram/Condor_outputs/templ_pdf_sys_may22/file_14.root"
+
 
     };
 

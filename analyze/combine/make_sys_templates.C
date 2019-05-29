@@ -5,7 +5,7 @@
 void make_sys_templates(int nJobs = 1, int iJob =0, int type=0){
 
     //const TString pdf_fout_name("combine/templates/april18_pdf_test.root");
-    const TString pdf_fout_name("output_files/april22_sys_test.root");
+    const TString pdf_fout_name("output_files/may21_sys.root");
     TFile *pdf_fout = TFile::Open(pdf_fout_name, "RECREATE");
 
     //init();
@@ -54,9 +54,12 @@ void make_sys_templates(int nJobs = 1, int iJob =0, int type=0){
        "_muRCUp", "_muRCDown", "_muHLTUp", "_muHLTDown", "_muIDUp", "_muIDDown", "_muISOUp", "_muISODown", "_muTRKUp", "_muTRKDown",  
        "_elHLTUp", "_elHLTDown", "_elIDUp", "_elIDDown", "_elRECOUp", "_elRECODown", 
        "_RENORMUp", "_RENORMDown", "_FACUp", "_FACDown",
-       "_PuUp", "_PuDown", "_BTAGUp", "_BTAGDown", "_alphaUp", "_alphaDown", "_alphaSUp", "_alphaSDown" };
+       "_PuUp", "_PuDown", "_BTAGUp", "_BTAGDown", 
+       "_alphaUp", "_alphaDown", "_alphaDenUp", "_alphaDenDown", "_alphaSUp", "_alphaSDown" };
+
 
     }
+    //sys_labels = {"_alphaDenUp", "_alphaDenDown"};
 
 
 
@@ -94,12 +97,19 @@ void make_sys_templates(int nJobs = 1, int iJob =0, int type=0){
         for(auto iter = sys_labels.begin(); iter !=sys_labels.end(); iter++){
             if(i_sys % nJobs == iJob){
                 printf("Making MC templates for sys %s \n", (*iter).c_str());
-                alpha = alphas[i];
 
-                if(iter->find("alphaUp") != string::npos) alpha = alphas[i] + alpha_unc[i];
-                if(iter->find("alphaDown") != string::npos) alpha = alphas[i] - alpha_unc[i];
+                Double_t alpha_num = alphas_num[i];
+                Double_t alpha_denom = alphas_denom[i];
 
-                make_mc_templates(*iter);
+                if(iter->find("alphaUp") != string::npos) alpha_num = alphas_num[i] + alpha_num_unc[i];
+                if(iter->find("alphaDown") != string::npos) alpha_num = alphas_num[i] - alpha_num_unc[i];
+
+                if(iter->find("alphaDenUp") != string::npos) alpha_denom = alphas_denom[i] + alpha_denom_unc[i];
+                if(iter->find("alphaDenDown") != string::npos) alpha_denom = alphas_denom[i] - alpha_denom_unc[i];
+
+                printf("alpha_num %.2f alpha_denom %.2f \n", alpha_num, alpha_denom);
+
+                make_mc_templates(alpha_num, alpha_denom, *iter);
                 convert_mc_templates(*iter);
             }
             i_sys++;
