@@ -441,7 +441,7 @@ void NTupleReader::getEvent(int i){
 }
 void NTupleReader::fillEvent(){
     nEvents++;
-    xF = abs(2.*cm.Pz()/13000.); 
+    xF = compute_xF(cm); 
     //pick out 2 highest pt jets with eta < 2.4
     nJets =0;
     for(unsigned int j=0; j < jet_size; j++){
