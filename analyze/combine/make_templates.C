@@ -223,13 +223,17 @@ void make_mc_templates(Double_t alpha_num, Double_t alpha_denom, const string &s
                 n_xf_bins, xf_bins, n_cost_bins, cost_bins);
         h_mumu_gam->SetDirectory(0);
 
+        printf("Making mumu mc \n");
         gen_mc_template(t_mumu_mc, alpha_num, alpha_denom, h_mumu_sym, h_mumu_asym, m_low, m_high, FLAG_MUONS, FLAG_M_BINS, do_RC, sys_label );
         TTree *mumu_ts[1] = {t_mumu_back};
+        printf("Making mumu back \n");
         gen_combined_background_template(1, mumu_ts, h_mumu_back, m_low, m_high, FLAG_MUONS, FLAG_M_BINS, do_RC, ss, sys_label);
         mumu_ts[0] = t_mumu_nosig;
+        printf("Making mumu nosig \n");
         gen_combined_background_template(1, mumu_ts, h_mumu_dy_gg, m_low, m_high, FLAG_MUONS, FLAG_M_BINS, do_RC, ss, sys_label);
 
         mumu_ts[0] = t_mumu_gamgam;
+        printf("Making mumu gamgam \n");
         gen_combined_background_template(1, mumu_ts, h_mumu_gam, m_low, m_high, FLAG_MUONS, FLAG_M_BINS, do_RC, ss, sys_label);
     }
     if(do_el){
@@ -257,6 +261,7 @@ void make_mc_templates(Double_t alpha_num, Double_t alpha_denom, const string &s
         gen_combined_background_template(1, elel_ts, h_elel_dy_gg, m_low, m_high, FLAG_ELECTRONS, FLAG_M_BINS,do_RC,ss, sys_label);
 
         elel_ts[0] = t_elel_gamgam;
+        printf("Making ee gamgam \n");
         gen_combined_background_template(1, elel_ts, h_elel_gam, m_low, m_high, FLAG_ELECTRONS, FLAG_M_BINS,do_RC,ss, sys_label);
     }
 
@@ -351,7 +356,7 @@ void write_groups(FILE *f_log){
 
 
 void make_templates(int nJobs = 6, int iJob =-1){
-    const TString fout_name("combine/templates/may20_no_sys.root");
+    const TString fout_name("combine/templates/may29_no_sys_test.root");
     TFile * fout;
 
     init();
@@ -363,17 +368,6 @@ void make_templates(int nJobs = 6, int iJob =-1){
     printf("   done \n");
 
     vector<string> sys_labels {""};
-    //vector<string> sys_labels {"_FACUp", "_pdfDown", "_RENORMDown"};
-    
-    
-    /*
-    vector<string> sys_labels {"_elScaleUp", "_elScaleDown", "_elSmearUp", "_elSmearDown", 
-        "_muRCUp", "_muRCDown", "_muHLTUp", "_muHLTDown", "_muIDUp", "_muIDDown", "_muISOUp", "_muISODown", "_muTRKUp", "_muTRKDown",  
-        "_elHLTUp", "_elHLTDown", "_elIDUp", "_elIDDown", "_elRECOUp", "_elRECODown", 
-        "_RENORMUp", "_RENORMDown", "_FACUp", "_FACDown",
-        "_PuUp", "_PuDown", "_BTAGUp", "_BTAGDown", "_alphaUp", "_alphaDown", "_alphaSUp", "_alphaSDown" };
-        */
-        
         
 
     fout = TFile::Open(fout_name, "RECREATE");
@@ -415,11 +409,6 @@ void make_templates(int nJobs = 6, int iJob =-1){
             printf("Making MC templates for sys %s \n", (*iter).c_str());
             Double_t alpha_num = alphas_num[i];
             Double_t alpha_denom = alphas_denom[i];
-            if(iter->find("alphaUp") != string::npos) alpha_num = alphas_num[i] + alpha_num_unc[i];
-            if(iter->find("alphaDown") != string::npos) alpha_num = alphas_num[i] - alpha_num_unc[i];
-
-            if(iter->find("alphaDenUp") != string::npos) alpha_denom = alphas_denom[i] + alpha_denom_unc[i];
-            if(iter->find("alphaDenDown") != string::npos) alpha_denom = alphas_denom[i] - alpha_denom_unc[i];
 
             make_mc_templates(alpha_num, alpha_denom, *iter);
             convert_mc_templates(*iter);

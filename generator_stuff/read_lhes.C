@@ -12,10 +12,14 @@
 void read_lhes(){
     TTree *t1 = new TTree("T_lhe", "Lhe event info for mass binned DY");
     t1->SetDirectory(0);
-    string f1("/home/ozamram/Documents/Research/Generators/POWHEG-BOX-V2/Z_ew-BMNNPV/DY_m700_april30/pwgevents.lhe");
+    string f1("/uscms_data/d3/oamram/CMSSW_8_0_24_patch1/src/Analysis/B2GTTrees/generator_stuff/MG5/m700/cmsgrid_final.lhe");
+    //string f2("/uscms_data/d3/oamram/CMSSW_8_0_24_patch1/src/Analysis/B2GTTrees/generator_stuff/MG5/m100/cmsgrid_final.lhe");
+    //string f3("/uscms_data/d3/oamram/CMSSW_8_0_24_patch1/src/Analysis/B2GTTrees/generator_stuff/mass_binned/cmsgrid_final.lhe");
     fill_tree(f1, t1, true);
+    //fill_tree(f2, t1, true);
+    //fill_tree(f3, t1, true);
 
-    TFile *fout1 = TFile::Open("root_files/powheg_m700_april30.root", "RECREATE");
+    TFile *fout1 = TFile::Open("root_files/madgraph_m700_may23.root", "RECREATE");
     fout1->cd();
     t1->Write();
     fout1->Close();
