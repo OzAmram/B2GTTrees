@@ -151,8 +151,8 @@ void make_data_templates(){
             n_xf_bins, xf_bins, n_cost_bins, cost_bins);
     h_mumu_data->SetDirectory(0);
 
-    nElEl_DataEvents = gen_data_template(t_elel_data, h_elel_data,  m_low, m_high, FLAG_ELECTRONS, FLAG_M_BINS, do_RC);
-    nMuMu_DataEvents = gen_data_template(t_mumu_data, h_mumu_data,  m_low, m_high, FLAG_MUONS, FLAG_M_BINS, do_RC);
+    nElEl_DataEvents = gen_data_template(t_elel_data, h_elel_data,  m_low, m_high, FLAG_ELECTRONS,  do_RC);
+    nMuMu_DataEvents = gen_data_template(t_mumu_data, h_mumu_data,  m_low, m_high, FLAG_MUONS, do_RC);
     h1_elel_data = convert2d(h_elel_data);
     h1_mumu_data = convert2d(h_mumu_data);
     
@@ -171,8 +171,8 @@ void make_qcd_templates(FILE* f_log){
             n_xf_bins, xf_bins, n_cost_ss_bins, cost_ss_bins);
     h_mumu_qcd->SetDirectory(0);
     bool ss = true;
-    float elel_sign_scaling = gen_fakes_template(t_elel_WJets, t_elel_QCD, t_elel_WJets_contam, t_elel_QCD_contam, h_elel_qcd, m_low, m_high, FLAG_ELECTRONS, FLAG_M_BINS, ss);
-    float mumu_sign_scaling = gen_fakes_template(t_mumu_WJets, t_mumu_QCD, t_mumu_WJets_contam, t_mumu_QCD_contam, h_mumu_qcd, m_low, m_high, FLAG_MUONS, FLAG_M_BINS,ss);
+    float elel_sign_scaling = gen_fakes_template(t_elel_WJets, t_elel_QCD, t_elel_WJets_contam, t_elel_QCD_contam, h_elel_qcd, m_low, m_high, FLAG_ELECTRONS, ss);
+    float mumu_sign_scaling = gen_fakes_template(t_mumu_WJets, t_mumu_QCD, t_mumu_WJets_contam, t_mumu_QCD_contam, h_mumu_qcd, m_low, m_high, FLAG_MUONS, ss);
 
     //combined os and ss regions to estimate qcd, scale it to estimate amount
     //in os region 
@@ -224,17 +224,17 @@ void make_mc_templates(Double_t alpha_num, Double_t alpha_denom, const string &s
         h_mumu_gam->SetDirectory(0);
 
         printf("Making mumu mc \n");
-        gen_mc_template(t_mumu_mc, alpha_num, alpha_denom, h_mumu_sym, h_mumu_asym, m_low, m_high, FLAG_MUONS, FLAG_M_BINS, do_RC, sys_label );
+        gen_mc_template(t_mumu_mc, alpha_num, alpha_denom, h_mumu_sym, h_mumu_asym, m_low, m_high, FLAG_MUONS, do_RC, sys_label );
         TTree *mumu_ts[1] = {t_mumu_back};
         printf("Making mumu back \n");
-        gen_combined_background_template(1, mumu_ts, h_mumu_back, m_low, m_high, FLAG_MUONS, FLAG_M_BINS, do_RC, ss, sys_label);
+        gen_combined_background_template(1, mumu_ts, h_mumu_back, m_low, m_high, FLAG_MUONS,  do_RC, ss, sys_label);
         mumu_ts[0] = t_mumu_nosig;
         printf("Making mumu nosig \n");
-        gen_combined_background_template(1, mumu_ts, h_mumu_dy_gg, m_low, m_high, FLAG_MUONS, FLAG_M_BINS, do_RC, ss, sys_label);
+        gen_combined_background_template(1, mumu_ts, h_mumu_dy_gg, m_low, m_high, FLAG_MUONS,  do_RC, ss, sys_label);
 
         mumu_ts[0] = t_mumu_gamgam;
         printf("Making mumu gamgam \n");
-        gen_combined_background_template(1, mumu_ts, h_mumu_gam, m_low, m_high, FLAG_MUONS, FLAG_M_BINS, do_RC, ss, sys_label);
+        gen_combined_background_template(1, mumu_ts, h_mumu_gam, m_low, m_high, FLAG_MUONS,  do_RC, ss, sys_label);
     }
     if(do_el){
         printf("making electron mc templates \n");
@@ -254,15 +254,15 @@ void make_mc_templates(Double_t alpha_num, Double_t alpha_denom, const string &s
                 n_xf_bins, xf_bins, n_cost_bins, cost_bins);
         h_elel_gam->SetDirectory(0);
 
-        gen_mc_template(t_elel_mc, alpha_num, alpha_denom, h_elel_sym, h_elel_asym,  m_low, m_high, FLAG_ELECTRONS, FLAG_M_BINS, do_RC, sys_label);
+        gen_mc_template(t_elel_mc, alpha_num, alpha_denom, h_elel_sym, h_elel_asym,  m_low, m_high, FLAG_ELECTRONS,  do_RC, sys_label);
         TTree *elel_ts[1] = {t_elel_back};
-        gen_combined_background_template(1, elel_ts, h_elel_back, m_low, m_high, FLAG_ELECTRONS, FLAG_M_BINS,do_RC,ss, sys_label);
+        gen_combined_background_template(1, elel_ts, h_elel_back, m_low, m_high, FLAG_ELECTRONS, do_RC,ss, sys_label);
         elel_ts[0] = t_elel_nosig;
-        gen_combined_background_template(1, elel_ts, h_elel_dy_gg, m_low, m_high, FLAG_ELECTRONS, FLAG_M_BINS,do_RC,ss, sys_label);
+        gen_combined_background_template(1, elel_ts, h_elel_dy_gg, m_low, m_high, FLAG_ELECTRONS, do_RC,ss, sys_label);
 
         elel_ts[0] = t_elel_gamgam;
         printf("Making ee gamgam \n");
-        gen_combined_background_template(1, elel_ts, h_elel_gam, m_low, m_high, FLAG_ELECTRONS, FLAG_M_BINS,do_RC,ss, sys_label);
+        gen_combined_background_template(1, elel_ts, h_elel_gam, m_low, m_high, FLAG_ELECTRONS, do_RC,ss, sys_label);
     }
 
 }

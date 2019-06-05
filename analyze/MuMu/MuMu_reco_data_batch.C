@@ -3,11 +3,11 @@
 
 
 
-void MuMu_reco_data_batch(int nJobs =1, int iJob = 0)
+void MuMu_reco_data_batch(int nJobs =1, int iJob = 0, string fin="")
 {
 
-
-    NTupleReader nt("EOS_files/SingleMuon_files_test.txt","output_files/MuMu_data_test.root", true);
+    if(fin == "") fin = string("EOS_files/SingleMuon_files_test.txt");
+    NTupleReader nt(fin.c_str(),"output_files/MuMu_data_test.root", true);
     nt.nJobs = nJobs;
     nt.iJob = iJob;
     nt.do_muons = true;

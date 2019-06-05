@@ -51,10 +51,14 @@ void compute_norms(FILE *root_files, Double_t *norms, unsigned int *nFiles){
 
 }
 
-NTupleReader::NTupleReader(char file_list[100], char fout_name[100], bool is_data_){
+NTupleReader::NTupleReader(const char *fin_name, const char *fout_name, bool is_data_){
 
     is_data = is_data_;
-    root_files = fopen(file_list, "r");
+    root_files = fopen(fin_name , "r");
+    if(root_files == NULL){
+        printf("Problem opening file: %s. \nExiting. \n", fin_name);
+        exit(1);
+    }
     if(!is_data){
         nFiles = 0;
         printf("Computing normalizations for each sample \n");
@@ -168,8 +172,12 @@ bool NTupleReader::getNextFile(){
                 tin->SetBranchAddress("el_IDMedium_NoIso", &el_IDMedium_NoIso);
                 tin->SetBranchAddress("el_SCEta", &el_SCEta);
                 tin->SetBranchAddress("el_ScaleCorr", &el_ScaleCorr);
-                tin->SetBranchAddress("el_ScaleCorrUp", &el_ScaleCorrUp);
-                tin->SetBranchAddress("el_ScaleCorrDown", &el_ScaleCorrDown);
+                tin->SetBranchAddress("el_ScaleCorrStatUp", &el_ScaleCorrStatUp);
+                tin->SetBranchAddress("el_ScaleCorrStatDown", &el_ScaleCorrStatDown);
+                tin->SetBranchAddress("el_ScaleCorrSystUp", &el_ScaleCorrSystUp);
+                tin->SetBranchAddress("el_ScaleCorrSystDown", &el_ScaleCorrSystDown);
+                tin->SetBranchAddress("el_ScaleCorrGainUp", &el_ScaleCorrGainUp);
+                tin->SetBranchAddress("el_ScaleCorrGainDown", &el_ScaleCorrGainDown);
                 tin->SetBranchAddress("el_ScaleSmearUp", &el_ScaleSmearUp);
                 tin->SetBranchAddress("el_ScaleSmearDown", &el_ScaleSmearDown);
                 tin->SetBranchAddress("HLT_Ele27_WPTight_Gsf", &HLT_El);
@@ -311,14 +319,24 @@ void NTupleReader::setupOutputTree(char treeName[100]){
 
         if(do_electrons || do_emu){
 
-            outTrees[idx]->Branch("elp_scale_up", &elp_scale_up);
-            outTrees[idx]->Branch("elp_scale_down", &elp_scale_down);
-            outTrees[idx]->Branch("elm_scale_up", &elm_scale_up);
-            outTrees[idx]->Branch("elm_scale_down", &elm_scale_down);
+            outTrees[idx]->Branch("elp_scale_stat_up", &elp_scale_stat_up);
+            outTrees[idx]->Branch("elp_scale_stat_down", &elp_scale_stat_down);
+            outTrees[idx]->Branch("elp_scale_gain_up", &elp_scale_gain_up);
+            outTrees[idx]->Branch("elp_scale_gain_down", &elp_scale_gain_down);
+            outTrees[idx]->Branch("elp_scale_syst_up", &elp_scale_syst_up);
+            outTrees[idx]->Branch("elp_scale_syst_down", &elp_scale_syst_down);
             outTrees[idx]->Branch("elp_smear_up", &elp_smear_up);
             outTrees[idx]->Branch("elp_smear_down", &elp_smear_down);
+
+            outTrees[idx]->Branch("elm_scale_stat_up", &elm_scale_stat_up);
+            outTrees[idx]->Branch("elm_scale_stat_down", &elm_scale_stat_down);
+            outTrees[idx]->Branch("elm_scale_gain_up", &elm_scale_gain_up);
+            outTrees[idx]->Branch("elm_scale_gain_down", &elm_scale_gain_down);
+            outTrees[idx]->Branch("elm_scale_syst_up", &elm_scale_syst_up);
+            outTrees[idx]->Branch("elm_scale_syst_down", &elm_scale_syst_down);
             outTrees[idx]->Branch("elm_smear_up", &elm_smear_up);
             outTrees[idx]->Branch("elm_smear_down", &elm_smear_down);
+
             outTrees[idx]->Branch("gen_el_m", "TLorentzVector", &gen_el_m_vec);
             outTrees[idx]->Branch("gen_el_p", "TLorentzVector", &gen_el_p_vec);
             outTrees[idx]->Branch("el_id_SF", &el_id_SF);
@@ -467,10 +485,9 @@ void NTupleReader::fillEvent(){
         mu1_charge = mu_Charge[0];
         mu2_charge = mu_Charge[1];
 
-
-            cost = get_cost(mu_p, mu_m, false);
-            if(cm.Pz() < 0.) cost_r = -cost;
-            else cost_r = cost;
+        cost = get_cost(mu_p, mu_m, false);
+        if(cm.Pz() < 0.) cost_r = -cost;
+        else cost_r = cost;
     }
     if(do_electrons){
         el1_pt = el_Pt[0];
@@ -480,10 +497,9 @@ void NTupleReader::fillEvent(){
         el1_charge = el_Charge[0];
         el2_charge = el_Charge[1];
 
-
-            cost = get_cost(el_p, el_m, false);
-            if(cm.Pz() < 0.) cost_r = -cost;
-            else cost_r = cost;
+        cost = get_cost(el_p, el_m, false);
+        if(cm.Pz() < 0.) cost_r = -cost;
+        else cost_r = cost;
     }
     if(do_emu){
             mu1_pt = mu_Pt[0];
@@ -550,13 +566,23 @@ void NTupleReader::fillEventSFs(){
     }
     if(do_electrons){
 
-        elp_scale_up = el_ScaleCorrUp[elp_index] / el_ScaleCorr[elp_index];
-        elp_scale_down = el_ScaleCorrDown[elp_index]/ el_ScaleCorr[elp_index];
+        elp_scale_stat_up = el_ScaleCorrStatUp[elp_index] / el_ScaleCorr[elp_index];
+        elp_scale_stat_down = el_ScaleCorrStatDown[elp_index]/ el_ScaleCorr[elp_index];
+        elp_scale_syst_up = el_ScaleCorrSystUp[elp_index] / el_ScaleCorr[elp_index];
+        elp_scale_syst_down = el_ScaleCorrSystDown[elp_index]/ el_ScaleCorr[elp_index];
+        elp_scale_gain_up = el_ScaleCorrGainUp[elp_index] / el_ScaleCorr[elp_index];
+        elp_scale_gain_down = el_ScaleCorrGainDown[elp_index]/ el_ScaleCorr[elp_index];
+
         elp_smear_up = el_ScaleSmearUp[elp_index]/ el_ScaleCorr[elp_index];
         elp_smear_down = el_ScaleSmearDown[elp_index]/ el_ScaleCorr[elp_index];
 
-        elm_scale_up = el_ScaleCorrUp[elm_index]/ el_ScaleCorr[elm_index];
-        elm_scale_down = el_ScaleCorrDown[elm_index]/ el_ScaleCorr[elm_index];
+        elm_scale_stat_up = el_ScaleCorrStatUp[elm_index] / el_ScaleCorr[elm_index];
+        elm_scale_stat_down = el_ScaleCorrStatDown[elm_index]/ el_ScaleCorr[elm_index];
+        elm_scale_syst_up = el_ScaleCorrSystUp[elm_index] / el_ScaleCorr[elm_index];
+        elm_scale_syst_down = el_ScaleCorrSystDown[elm_index]/ el_ScaleCorr[elm_index];
+        elm_scale_gain_up = el_ScaleCorrGainUp[elm_index] / el_ScaleCorr[elm_index];
+        elm_scale_gain_down = el_ScaleCorrGainDown[elm_index]/ el_ScaleCorr[elm_index];
+
         elm_smear_up = el_ScaleSmearUp[elm_index]/ el_ScaleCorr[elm_index];
         elm_smear_down = el_ScaleSmearDown[elm_index]/ el_ScaleCorr[elm_index];
 
@@ -653,11 +679,14 @@ void NTupleReader::fillEventRC(){
 
 }
 
-void NTupleReader::parseGenParts(bool PRINT = false){
+bool NTupleReader::parseGenParts(bool PRINT = false){
+    //returns false if unable to match all gen parts
 
-    char out_buff[10000];
+    char out_buff[50000];
     bool print_out = false;
 
+
+    if(PRINT) memset(out_buff, 0, 10000);
     if(PRINT) sprintf(out_buff + strlen(out_buff),"Event %i \n", event_idx);
 
     //GEN LEVEL
@@ -674,10 +703,10 @@ void NTupleReader::parseGenParts(bool PRINT = false){
     //Particle ID's
     int ELECTRON = 11; 
     int MUON = 13;
+    int TAU = 15;
     int PHOTON = 22;
     int Z=23;
     int GLUON = 21;
-    int TAU = 15;
     int PROTON = 2212;
 
 
@@ -716,7 +745,7 @@ void NTupleReader::parseGenParts(bool PRINT = false){
             }
 
         }
-        //record 2 scattered muons
+        //record 2 final leptons
         if(abs(gen_id[k]) == MY_LEP && 
                 (gen_Mom0ID[k] == Z || gen_Mom0ID[k] == PHOTON || (abs(gen_Mom0ID[k]) == TAU && gen_Pt[k] > 10.)
                  || (gen_status[k] == OUTGOING && gen_Mom0ID[k] != PROTON))) {
@@ -739,12 +768,12 @@ void NTupleReader::parseGenParts(bool PRINT = false){
         }
         //record tau's
         if(abs(gen_id[k]) == TAU && 
-                ( (gen_Mom0ID[k] == Z || gen_Mom0ID[k] == PHOTON || abs(gen_Mom0ID[k]) == ELECTRON ||
+                ( (gen_Mom0ID[k] == Z || gen_Mom0ID[k] == PHOTON || abs(gen_Mom0ID[k]) == TAU ||
                    gen_status[k] == OUTGOING)) ){
             if(gen_id[k] == TAU){
                 if(gen_tau_m == -1) gen_tau_m = k;
                 else{
-                    printf("WARNING: More than one tau_m\n\n");
+                    //printf("WARNING: More than one tau_m\n\n");
                     if(PRINT) sprintf(out_buff + strlen(out_buff), "Extra tau_m detected\n");
                     //print_out = true;
                 }
@@ -752,7 +781,7 @@ void NTupleReader::parseGenParts(bool PRINT = false){
             if(gen_id[k] == -TAU){
                 if(gen_tau_p == -1) gen_tau_p = k;
                 else{
-                    printf("WARNING: More than one tau_p\n\n");
+                    //printf("WARNING: More than one tau_p\n\n");
                     if(PRINT) sprintf(out_buff + strlen(out_buff), "Extra tau_p detected\n");
                     //print_out = true;
                 }
@@ -769,26 +798,16 @@ void NTupleReader::parseGenParts(bool PRINT = false){
             }
 
 
-            if(gen_id[k] == -MY_LEP){
-                if(PRINT) sprintf(out_buff + strlen(out_buff),"mu_p(stat = %i): \n"
+            if(abs(gen_id[k]) == MUON || abs(gen_id[k]) == ELECTRON || abs(gen_id[k]) == TAU){
+                if(PRINT) sprintf(out_buff + strlen(out_buff),"lep (id %i stat = %i): \n"
                         "   Mom1 ID: %i Mom1 Stat:  Mom2 ID: %i Mom2 Stat  \n"
                         "   Dau1 ID: %i Dau1 Stat:  Dau2 ID: %i Dau2 Stat  \n",
-                        gen_status[k], gen_Mom0ID[k],  gen_Mom1ID[k], 
-                        gen_Dau0ID[k],  gen_Dau1ID[k] );
-                if(PRINT) sprintf(out_buff + strlen(out_buff),"(pt, eta, phi,E) = %4.2f %4.2f %4.2f %4.2f \n", 
-                        gen_Pt[k], gen_Eta[k], gen_Phi[k], gen_E[k]);
-            }
-            if(gen_id[k] == MY_LEP){
-
-                if(PRINT) sprintf(out_buff + strlen(out_buff),"mu_m (stat = %i): \n"
-                        "   Mom1 ID: %i Mom1 Stat:  Mom2 ID: %i Mom2 Stat  \n"
-                        "   Dau1 ID: %i Dau1 Stat:  Dau2 ID: %i Dau2 Stat  \n",
-                        gen_status[k], 
+                        gen_id[k], gen_status[k], 
                         gen_Mom0ID[k],  gen_Mom1ID[k], 
                         gen_Dau0ID[k],  gen_Dau1ID[k] );
+
                 if(PRINT) sprintf(out_buff + strlen(out_buff),"(pt, eta, phi,E) = %4.2f %4.2f %4.2f %4.2f \n", 
                         gen_Pt[k], gen_Eta[k], gen_Phi[k], gen_E[k]);
-
             }
             if(gen_id[k] == Z){
                 if(PRINT) sprintf(out_buff + strlen(out_buff),"Z (ID = %i, status = %i): \n"
@@ -803,13 +822,13 @@ void NTupleReader::parseGenParts(bool PRINT = false){
 
 
     if(gen_lep_p != -1 && gen_lep_m != -1) {
-        if(PRINT) sprintf(out_buff + strlen(out_buff),"mu_p: \n"
+        if(PRINT) sprintf(out_buff + strlen(out_buff),"lep_p: \n"
                 "   Mom1 ID: %i Mom1 Stat: Mom2 ID: %i Mom2 Stat \n"
                 "   Dau1 ID: %i Dau1 Stat:  Dau2 ID: %i Dau2 Stat \n",
                 gen_Mom0ID[gen_lep_p],  gen_Mom1ID[gen_lep_p], 
                 gen_Dau0ID[gen_lep_p], gen_Dau1ID[gen_lep_p]);
 
-        if(PRINT) sprintf(out_buff + strlen(out_buff),"mu_m: \n"
+        if(PRINT) sprintf(out_buff + strlen(out_buff),"lep_m: \n"
                 "   Mom1 ID: %i Mom1 Stat:  Mom2 ID: %i Mom2 Stat  \n"
                 "   Dau1 ID: %i Dau1 Stat:  Dau2 ID: %i Dau2 Stat \n",
                 gen_Mom0ID[gen_lep_m],  gen_Mom1ID[gen_lep_m], 
@@ -827,7 +846,7 @@ void NTupleReader::parseGenParts(bool PRINT = false){
             print_out = false;
         }
         failed_match = true;
-        return;
+        return false;
     }
     if((inc_1 == -1) || (inc_2 == -1)){
         printf("WARNING: Unable to identify initial state particles in event %i, skipping \n", event_idx);
@@ -839,7 +858,7 @@ void NTupleReader::parseGenParts(bool PRINT = false){
             print_out = false;
         }
         failed_match = true;
-        return;
+        return false;
     }
 
     else{ 
@@ -851,7 +870,7 @@ void NTupleReader::parseGenParts(bool PRINT = false){
                 printf("Didn't record tau's :( \n");
                 nFailedID ++;
                 failed_match = true;
-                return;
+                return false;
             }
             nTauTau++;
             is_tau_event = true;
@@ -891,6 +910,7 @@ void NTupleReader::parseGenParts(bool PRINT = false){
         else {
             printf("WARNING: not qqbar, qq, qg, or gg event");
             printf("First particle was %i second particle was %i \n \n ", inc_id1, inc_id2);
+            failed_match = true;
             nFailedID ++;
         }
     }
@@ -928,6 +948,7 @@ void NTupleReader::parseGenParts(bool PRINT = false){
     }
 
     if(PRINT) memset(out_buff, 0, 10000);
+    return !failed_match;
 }
 
 void NTupleReader::finish(){

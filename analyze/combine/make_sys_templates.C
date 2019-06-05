@@ -50,8 +50,11 @@ void make_sys_templates(int nJobs = 1, int iJob =0, int type=0){
         }
     }
     else{
-      sys_labels =  {"_elScaleUp", "_elScaleDown", "_elSmearUp", "_elSmearDown", 
-       "_muRCUp", "_muRCDown", "_muHLTUp", "_muHLTDown", "_muIDUp", "_muIDDown", "_muISOUp", "_muISODown", "_muTRKUp", "_muTRKDown",  
+      sys_labels =  {"_elScaleStatUp", "_elScaleStatDown", 
+          "_elScaleSystUp", "_elScaleSystDown",
+          "_elScaleGainUp", "_elScaleGainDown",
+          "_elSmearUp", "_elSmearDown", 
+       "_muRCUp", "_muRCDown", "_muHLTUp", "_muHLTDown", "_muIDUp", "_muIDDown", "_muISOUp", "_muISODown",  
        "_elHLTUp", "_elHLTDown", "_elIDUp", "_elIDDown", "_elRECOUp", "_elRECODown", 
        "_RENORMUp", "_RENORMDown", "_FACUp", "_FACDown",
        "_PuUp", "_PuDown", "_BTAGUp", "_BTAGDown", 
