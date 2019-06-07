@@ -5,29 +5,29 @@
 void make_sys_templates(int nJobs = 1, int iJob =0, int type=0){
 
     //const TString pdf_fout_name("combine/templates/april18_pdf_test.root");
-    const TString pdf_fout_name("output_files/may21_sys.root");
+    const TString pdf_fout_name("output_files/june7_sys.root");
     TFile *pdf_fout = TFile::Open(pdf_fout_name, "RECREATE");
 
     //init();
 
 
-    f_elel_mc = (TFile*) TFile::Open("root://131.225.204.161:1094//store/user/oamram/Condor_inputs/ElEl_dy_slim_april18.root");
+    f_elel_mc = (TFile*) TFile::Open("root://131.225.204.161:1094//store/user/oamram/Condor_inputs/ElEl_dy_slim_june5.root");
     TTree *t_elel_mc_raw = (TTree *) f_elel_mc ->Get("T_data");
     TTree *t_elel_nosig_raw = (TTree *) f_elel_mc ->Get("T_back");
-    f_elel_back = (TFile*) TFile::Open("root://131.225.204.161:1094//store/user/oamram/Condor_inputs/ElEl_comb_back_slim_april18.root");
+    f_elel_back = (TFile*) TFile::Open("root://131.225.204.161:1094//store/user/oamram/Condor_inputs/ElEl_comb_back_slim_june5.root");
     TTree *t_elel_back_raw = (TTree *) f_elel_back ->Get("T_data");
 
-    f_mumu_mc = (TFile*) TFile::Open("root://131.225.204.161:1094//store/user/oamram/Condor_inputs/MuMu_dy_slim_april18.root");
+    f_mumu_mc = (TFile*) TFile::Open("root://131.225.204.161:1094//store/user/oamram/Condor_inputs/MuMu_dy_slim_june5.root");
     TTree *t_mumu_mc_raw = (TTree *) f_mumu_mc ->Get("T_data");
     TTree *t_mumu_nosig_raw = (TTree *) f_mumu_mc ->Get("T_back");
-    f_mumu_back = (TFile*) TFile::Open("root://131.225.204.161:1094//store/user/oamram/Condor_inputs/MuMu_comb_back_slim_may7.root");
+    f_mumu_back = (TFile*) TFile::Open("root://131.225.204.161:1094//store/user/oamram/Condor_inputs/MuMu_comb_back_slim_june5.root");
     TTree *t_mumu_back_raw = (TTree *) f_mumu_back ->Get("T_data");
 
 
-    f_mumu_gamgam = (TFile*) TFile::Open("root://131.225.204.161:1094//store/user/oamram/Condor_inputs/MuMu_gamgam_back_may7.root");
+    f_mumu_gamgam = (TFile*) TFile::Open("root://131.225.204.161:1094//store/user/oamram/Condor_inputs/MuMu_gamgam_back_june5.root");
     t_mumu_gamgam = (TTree *)f_mumu_gamgam->Get("T_data");
 
-    f_elel_gamgam = (TFile*) TFile::Open("root://131.225.204.161:1094//store/user/oamram/Condor_inputs/ElEl_gamgam_back_may7.root");
+    f_elel_gamgam = (TFile*) TFile::Open("root://131.225.204.161:1094//store/user/oamram/Condor_inputs/ElEl_gamgam_back_june5.root");
     t_elel_gamgam = (TTree *)f_elel_gamgam->Get("T_data");
 
 
