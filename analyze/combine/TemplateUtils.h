@@ -23,6 +23,7 @@ bool do_RC = true;
 
 void write_roo_hist(TH1F *h, RooRealVar *my_var){
     RooDataHist r(h->GetName(), h->GetName(), *my_var, h);
+    delete h;
     w->import(r);
 }
 void symmetrize2d(TH2F *h_2d){

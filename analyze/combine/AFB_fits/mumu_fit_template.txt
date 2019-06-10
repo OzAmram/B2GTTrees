@@ -13,91 +13,90 @@ bin              mumu     emu
 observation       -1      -1
 -------------------------------------------------------------------------------
 # Add the processes contributing to the data expectation
-bin               mumu    mumu    mumu   mumu   mumu  mumu     emu     emu     emu   
-process           fpl     fmn     bk     gam    qcd   dy_gg     dy      qcd     bk   
-process           0       -1      1      5      2       4        3       2       1   
-rate             -1       -1      -1     -1     1      -1       -1       1      -1   
------------------------------------------------------------------------------------------
-Pu      shape      1.0     1.0    1.0    1.0    -      -         -        -       -  
-BTAG    shape      1.0     1.0    1.0    1.0    -      -         -        -       -  
-alpha   shape      1.0     1.0     -      -     -      -         -        -       -  
-alphaDen shape     1.0     1.0     -      -     -      -         -        -       -  
-                                             
-muRC    shape     1.0     1.0    1.0    1.0     -     1.0        -        -       -  
-muID    shape     1.0     1.0    1.0    1.0     -     1.0        -        -       -  
-muHLT   shape     1.0     1.0    1.0    1.0     -     1.0        -        -       -  
-muTRK   shape     1.0     1.0    1.0    1.0     -     1.0        -        -       -  
-                                             
-alphaS  shape     1.0     1.0    1.0     -      -     1.0        -        -       -  
-RENORM  shape     1.0     1.0    1.0     -      -     1.0        -        -       -  
-FAC     shape     1.0     1.0    1.0     -      -     1.0        -        -       -  
-                                             
-lumi    lnN      1.025   1.025   1.025  1.025   -     1.025    1.025      -      1.025
-dy_xsec lnN      1.02    1.02     -      -      -     1.02     1.02       -       -   
-bk_xsec lnN        -       -     1.05    -      -      -         -        -      1.05 
-gam_xsec  lnN      -       -      -     1.4     -      -         -        -       -   
+bin                       mumu    mumu    mumu   mumu   mumu  mumu     emu     emu     emu   
+process                   fpl     fmn     bk     gam    qcd   dy_gg     dy      qcd     bk   
+process                   0       -1      1      5      2       4        3       2       1   
+rate                     -1       -1      -1     -1     1      -1       -1       1      -1   
+-------------------------------------------------------------------------------------------------
+Pu              shape     1.0     1.0    1.0    1.0    -      -         -        -       -  
+BTAG            shape     1.0     1.0    1.0    1.0    -      -         -        -       -  
+alpha           shape     1.0     1.0     -      -     -      -         -        -       -  
+alphaDen        shape     1.0     1.0     -      -     -      -         -        -       -  
+                                                     
+muRC            shape     1.0     1.0    1.0    1.0     -     1.0        -        -       -  
+muID            shape     1.0     1.0    1.0    1.0     -     1.0        -        -       -  
+muHLT           shape     1.0     1.0    1.0    1.0     -     1.0        -        -       -  
+                                                     
+alphaS          shape     1.0     1.0    1.0     -      -     1.0        -        -       -  
+RENORM          shape     1.0     1.0    1.0     -      -     1.0        -        -       -  
+FAC             shape     1.0     1.0    1.0     -      -     1.0        -        -       -  
+                                                     
+lumi            lnN      1.025   1.025   1.025  1.025   -     1.025    1.025      -      1.025
+dy_xsec         lnN      1.02    1.02     -      -      -     1.02     1.02       -       -   
+bk_xsec         lnN        -       -     1.05    -      -      -         -        -      1.05 
+gam_xsec        lnN        -       -      -     1.4     -      -         -        -       -   
                                              
 #pdf unc                                     
-pdf1     shape    1.0     1.0    1.0     -      -      1.0      -         -       -        
-pdf2     shape    1.0     1.0    1.0     -      -      1.0      -         -       -        
-pdf3     shape    1.0     1.0    1.0     -      -      1.0      -         -       -        
-pdf4     shape    1.0     1.0    1.0     -      -      1.0      -         -       -        
-pdf5     shape    1.0     1.0    1.0     -      -      1.0      -         -       -        
-pdf6     shape    1.0     1.0    1.0     -      -      1.0      -         -       -        
-pdf7     shape    1.0     1.0    1.0     -      -      1.0      -         -       -        
-pdf8     shape    1.0     1.0    1.0     -      -      1.0      -         -       -        
-pdf9     shape    1.0     1.0    1.0     -      -      1.0      -         -       -        
-pdf10    shape    1.0     1.0    1.0     -      -      1.0      -         -       -        
-pdf11    shape    1.0     1.0    1.0     -      -      1.0      -         -       -        
-pdf12    shape    1.0     1.0    1.0     -      -      1.0      -         -       -        
-pdf13    shape    1.0     1.0    1.0     -      -      1.0      -         -       -        
-pdf14    shape    1.0     1.0    1.0     -      -      1.0      -         -       -        
-pdf15    shape    1.0     1.0    1.0     -      -      1.0      -         -       -        
-pdf16    shape    1.0     1.0    1.0     -      -      1.0      -         -       -        
-pdf17    shape    1.0     1.0    1.0     -      -      1.0      -         -       -        
-pdf18    shape    1.0     1.0    1.0     -      -      1.0      -         -       -        
-pdf19    shape    1.0     1.0    1.0     -      -      1.0      -         -       -        
-pdf20    shape    1.0     1.0    1.0     -      -      1.0      -         -       -        
-pdf21    shape    1.0     1.0    1.0     -      -      1.0      -         -       -        
-pdf22    shape    1.0     1.0    1.0     -      -      1.0      -         -       -        
-pdf23    shape    1.0     1.0    1.0     -      -      1.0      -         -       -        
-pdf24    shape    1.0     1.0    1.0     -      -      1.0      -         -       -        
-pdf25    shape    1.0     1.0    1.0     -      -      1.0      -         -       -        
-pdf26    shape    1.0     1.0    1.0     -      -      1.0      -         -       -        
-pdf27    shape    1.0     1.0    1.0     -      -      1.0      -         -       -        
-pdf28    shape    1.0     1.0    1.0     -      -      1.0      -         -       -        
-pdf29    shape    1.0     1.0    1.0     -      -      1.0      -         -       -        
-pdf30    shape    1.0     1.0    1.0     -      -      1.0      -         -       -        
-pdf31    shape    1.0     1.0    1.0     -      -      1.0      -         -       -        
-pdf32    shape    1.0     1.0    1.0     -      -      1.0      -         -       -        
-pdf33    shape    1.0     1.0    1.0     -      -      1.0      -         -       -        
-pdf34    shape    1.0     1.0    1.0     -      -      1.0      -         -       -        
-pdf35    shape    1.0     1.0    1.0     -      -      1.0      -         -       -        
-pdf36    shape    1.0     1.0    1.0     -      -      1.0      -         -       -        
-pdf37    shape    1.0     1.0    1.0     -      -      1.0      -         -       -        
-pdf38    shape    1.0     1.0    1.0     -      -      1.0      -         -       -        
-pdf39    shape    1.0     1.0    1.0     -      -      1.0      -         -       -        
-pdf40    shape    1.0     1.0    1.0     -      -      1.0      -         -       -        
-pdf41    shape    1.0     1.0    1.0     -      -      1.0      -         -       -        
-pdf42    shape    1.0     1.0    1.0     -      -      1.0      -         -       -        
-pdf43    shape    1.0     1.0    1.0     -      -      1.0      -         -       -        
-pdf44    shape    1.0     1.0    1.0     -      -      1.0      -         -       -        
-pdf45    shape    1.0     1.0    1.0     -      -      1.0      -         -       -        
-pdf46    shape    1.0     1.0    1.0     -      -      1.0      -         -       -        
-pdf47    shape    1.0     1.0    1.0     -      -      1.0      -         -       -        
-pdf48    shape    1.0     1.0    1.0     -      -      1.0      -         -       -        
-pdf49    shape    1.0     1.0    1.0     -      -      1.0      -         -       -        
-pdf50    shape    1.0     1.0    1.0     -      -      1.0      -         -       -        
-pdf51    shape    1.0     1.0    1.0     -      -      1.0      -         -       -        
-pdf52    shape    1.0     1.0    1.0     -      -      1.0      -         -       -        
-pdf53    shape    1.0     1.0    1.0     -      -      1.0      -         -       -        
-pdf54    shape    1.0     1.0    1.0     -      -      1.0      -         -       -        
-pdf55    shape    1.0     1.0    1.0     -      -      1.0      -         -       -        
-pdf56    shape    1.0     1.0    1.0     -      -      1.0      -         -       -        
-pdf57    shape    1.0     1.0    1.0     -      -      1.0      -         -       -        
-pdf58    shape    1.0     1.0    1.0     -      -      1.0      -         -       -        
-pdf59    shape    1.0     1.0    1.0     -      -      1.0      -         -       -        
-pdf60    shape    1.0     1.0    1.0     -      -      1.0      -         -       -        
+pdf1             shape    1.0     1.0    1.0     -      -      1.0      -         -       -        
+pdf2             shape    1.0     1.0    1.0     -      -      1.0      -         -       -        
+pdf3             shape    1.0     1.0    1.0     -      -      1.0      -         -       -        
+pdf4             shape    1.0     1.0    1.0     -      -      1.0      -         -       -        
+pdf5             shape    1.0     1.0    1.0     -      -      1.0      -         -       -        
+pdf6             shape    1.0     1.0    1.0     -      -      1.0      -         -       -        
+pdf7             shape    1.0     1.0    1.0     -      -      1.0      -         -       -        
+pdf8             shape    1.0     1.0    1.0     -      -      1.0      -         -       -        
+pdf9             shape    1.0     1.0    1.0     -      -      1.0      -         -       -        
+pdf10            shape    1.0     1.0    1.0     -      -      1.0      -         -       -        
+pdf11            shape    1.0     1.0    1.0     -      -      1.0      -         -       -        
+pdf12            shape    1.0     1.0    1.0     -      -      1.0      -         -       -        
+pdf13            shape    1.0     1.0    1.0     -      -      1.0      -         -       -        
+pdf14            shape    1.0     1.0    1.0     -      -      1.0      -         -       -        
+pdf15            shape    1.0     1.0    1.0     -      -      1.0      -         -       -        
+pdf16            shape    1.0     1.0    1.0     -      -      1.0      -         -       -        
+pdf17            shape    1.0     1.0    1.0     -      -      1.0      -         -       -        
+pdf18            shape    1.0     1.0    1.0     -      -      1.0      -         -       -        
+pdf19            shape    1.0     1.0    1.0     -      -      1.0      -         -       -        
+pdf20            shape    1.0     1.0    1.0     -      -      1.0      -         -       -        
+pdf21            shape    1.0     1.0    1.0     -      -      1.0      -         -       -        
+pdf22            shape    1.0     1.0    1.0     -      -      1.0      -         -       -        
+pdf23            shape    1.0     1.0    1.0     -      -      1.0      -         -       -        
+pdf24            shape    1.0     1.0    1.0     -      -      1.0      -         -       -        
+pdf25            shape    1.0     1.0    1.0     -      -      1.0      -         -       -        
+pdf26            shape    1.0     1.0    1.0     -      -      1.0      -         -       -        
+pdf27            shape    1.0     1.0    1.0     -      -      1.0      -         -       -        
+pdf28            shape    1.0     1.0    1.0     -      -      1.0      -         -       -        
+pdf29            shape    1.0     1.0    1.0     -      -      1.0      -         -       -        
+pdf30            shape    1.0     1.0    1.0     -      -      1.0      -         -       -        
+pdf31            shape    1.0     1.0    1.0     -      -      1.0      -         -       -        
+pdf32            shape    1.0     1.0    1.0     -      -      1.0      -         -       -        
+pdf33            shape    1.0     1.0    1.0     -      -      1.0      -         -       -        
+pdf34            shape    1.0     1.0    1.0     -      -      1.0      -         -       -        
+pdf35            shape    1.0     1.0    1.0     -      -      1.0      -         -       -        
+pdf36            shape    1.0     1.0    1.0     -      -      1.0      -         -       -        
+pdf37            shape    1.0     1.0    1.0     -      -      1.0      -         -       -        
+pdf38            shape    1.0     1.0    1.0     -      -      1.0      -         -       -        
+pdf39            shape    1.0     1.0    1.0     -      -      1.0      -         -       -        
+pdf40            shape    1.0     1.0    1.0     -      -      1.0      -         -       -        
+pdf41            shape    1.0     1.0    1.0     -      -      1.0      -         -       -        
+pdf42            shape    1.0     1.0    1.0     -      -      1.0      -         -       -        
+pdf43            shape    1.0     1.0    1.0     -      -      1.0      -         -       -        
+pdf44            shape    1.0     1.0    1.0     -      -      1.0      -         -       -        
+pdf45            shape    1.0     1.0    1.0     -      -      1.0      -         -       -        
+pdf46            shape    1.0     1.0    1.0     -      -      1.0      -         -       -        
+pdf47            shape    1.0     1.0    1.0     -      -      1.0      -         -       -        
+pdf48            shape    1.0     1.0    1.0     -      -      1.0      -         -       -        
+pdf49            shape    1.0     1.0    1.0     -      -      1.0      -         -       -        
+pdf50            shape    1.0     1.0    1.0     -      -      1.0      -         -       -        
+pdf51            shape    1.0     1.0    1.0     -      -      1.0      -         -       -        
+pdf52            shape    1.0     1.0    1.0     -      -      1.0      -         -       -        
+pdf53            shape    1.0     1.0    1.0     -      -      1.0      -         -       -        
+pdf54            shape    1.0     1.0    1.0     -      -      1.0      -         -       -        
+pdf55            shape    1.0     1.0    1.0     -      -      1.0      -         -       -        
+pdf56            shape    1.0     1.0    1.0     -      -      1.0      -         -       -        
+pdf57            shape    1.0     1.0    1.0     -      -      1.0      -         -       -        
+pdf58            shape    1.0     1.0    1.0     -      -      1.0      -         -       -        
+pdf59            shape    1.0     1.0    1.0     -      -      1.0      -         -       -        
+pdf60            shape    1.0     1.0    1.0     -      -      1.0      -         -       -        
 
 
 # Add the systematics

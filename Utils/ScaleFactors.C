@@ -121,9 +121,9 @@ Double_t get_SF(Double_t pt, Double_t eta, TH2D *h, int systematic = 0){
     Double_t result = h->GetBinContent(xbin, ybin);
     if(systematic != 0){
         Double_t err = h->GetBinError(xbin, ybin);
-        //err = sqrt(err*err + 0.01*0.01);
+        err = sqrt(err*err + 0.01*0.01);
         //printf("SF is %.3f +/- %.3f \n", result, err);
-        result += (systematic * err);
+        result += (systematic * err );
     }
     if(result < 0.001){ 
         printf("0 muon SF for Pt %.1f, Eta %1.2f \n", pt, eta);
@@ -235,8 +235,8 @@ Double_t get_el_HLT_SF(Double_t el1_pt, Double_t el1_eta, Double_t el2_pt, Doubl
     //Get HLT SF for event with 2 elons
     //stay in range of histogram
     //restrict to < 200 pt
-    if (el1_pt >= 195.) el1_pt = 195.;
-    if (el2_pt >= 195.) el2_pt = 195.;
+    if (el1_pt >= 350.) el1_pt = 350.;
+    if (el2_pt >= 350.) el2_pt = 350.;
     TAxis *x_ax_SF =  h_SF->GetXaxis();
     TAxis *y_ax_SF =  h_SF->GetYaxis();
     int xbin1_SF = x_ax_SF->FindBin(el1_eta);
@@ -254,8 +254,8 @@ Double_t get_el_HLT_SF(Double_t el1_pt, Double_t el1_eta, Double_t el2_pt, Doubl
         //printf("%.3f %.3f \n", SF1_err, SF2_err);
         //SF1_err = min(SF1_err, 0.001);
         //SF2_err = min(SF2_err, 0.001);
-        SF1_err = std::max(SF1_err, 0.001);
-        SF2_err = std::max(SF2_err, 0.001);
+        SF1_err = std::max(SF1_err, 0.01);
+        SF2_err = std::max(SF2_err, 0.01);
         SF1 += SF1_err * systematic;
         SF2 += SF2_err * systematic;
     }

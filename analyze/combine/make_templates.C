@@ -25,20 +25,12 @@
 
 
 TH2F *h_elel_asym, *h_elel_sym, *h_elel_back,  *h_elel_dy_gg, *h_elel_data, *h_elel_mc, *h_elel_qcd, *h_elel_gam;
-TH1F *h1_elel_mn, *h1_elel_pl, *h1_elel_back,  *h1_elel_dy_gg, *h1_elel_data, *h1_elel_mc, *h1_elel_qcd, *h1_elel_gam;
 TH2F *h_elel_mc_count, *h_elel_sym_count;
 TH2F *h_mumu_asym, *h_mumu_sym, *h_mumu_back,  *h_mumu_dy_gg, *h_mumu_data, *h_mumu_mc, *h_mumu_qcd, *h_mumu_gam;
-TH1F *h1_mumu_mn, *h1_mumu_pl, *h1_mumu_back,  *h1_mumu_dy_gg, *h1_mumu_data, *h1_mumu_mc, *h1_mumu_qcd, *h1_mumu_gam;
 
 
 
 
-vector<double> v_elel_xF;
-vector<double> v_elel_cost;
-vector<double> v_mumu_xF;
-vector<double> v_mumu_cost;
-unsigned int nElEl_DataEvents;
-unsigned int nMuMu_DataEvents;
 
 void convert_qcd_to_param_hist(TH2F *h, FILE *f_log, float sign_scaling, int flag){
     //convert a hist to a parametric hist 
@@ -151,8 +143,8 @@ void make_data_templates(){
             n_xf_bins, xf_bins, n_cost_bins, cost_bins);
     h_mumu_data->SetDirectory(0);
 
-    nElEl_DataEvents = gen_data_template(t_elel_data, h_elel_data,  m_low, m_high, FLAG_ELECTRONS,  do_RC);
-    nMuMu_DataEvents = gen_data_template(t_mumu_data, h_mumu_data,  m_low, m_high, FLAG_MUONS, do_RC);
+    int nElEl_DataEvents = gen_data_template(t_elel_data, h_elel_data,  m_low, m_high, FLAG_ELECTRONS,  do_RC);
+    int nMuMu_DataEvents = gen_data_template(t_mumu_data, h_mumu_data,  m_low, m_high, FLAG_MUONS, do_RC);
     h1_elel_data = convert2d(h_elel_data);
     h1_mumu_data = convert2d(h_mumu_data);
     
@@ -185,6 +177,11 @@ void make_qcd_templates(FILE* f_log){
     convert_qcd_to_param_hist(h_mumu_qcd, f_log, mumu_sign_scaling, FLAG_MUONS);
 
     printf("Made qcd templates \n");
+}
+
+void cleanup_mc_templates(){
+    delete h_elel_back, h_elel_dy_gg, h_elel_gam, h_elel_sym, h_elel_asym;
+    delete h_mumu_back, h_mumu_dy_gg, h_mumu_gam, h_mumu_sym, h_mumu_asym;
 }
 
 void make_mc_templates(Double_t alpha_num, Double_t alpha_denom, const string &sys_label){
@@ -285,16 +282,16 @@ void convert_mc_templates(const string &sys_label){
     }
     if(do_mu){
         symmetrize2d(h_mumu_gam);
-        h1_mumu_back = convert2d(h_mumu_back);
-        h1_mumu_dy_gg = convert2d(h_mumu_dy_gg);
-        h1_mumu_gam = convert2d(h_mumu_gam);
+        auto h1_mumu_back = convert2d(h_mumu_back);
+        auto h1_mumu_dy_gg = convert2d(h_mumu_dy_gg);
+        auto h1_mumu_gam = convert2d(h_mumu_gam);
 
         auto h_mumu_pl = *h_mumu_sym + *h_mumu_asym;
         auto h_mumu_mn = *h_mumu_sym - *h_mumu_asym;
         h_mumu_pl.Scale(0.5);
         h_mumu_mn.Scale(0.5);
-        h1_mumu_pl = convert2d(&h_mumu_pl);
-        h1_mumu_mn = convert2d(&h_mumu_mn);
+        auto h1_mumu_pl = convert2d(&h_mumu_pl);
+        auto h1_mumu_mn = convert2d(&h_mumu_mn);
         h1_mumu_pl->SetName((string("mumu_fpl") + sys_label).c_str());
         h1_mumu_mn->SetName((string("mumu_fmn") + sys_label).c_str());
 
@@ -307,16 +304,16 @@ void convert_mc_templates(const string &sys_label){
 
     if(do_el){
         symmetrize2d(h_elel_gam);
-        h1_elel_back = convert2d(h_elel_back);
-        h1_elel_dy_gg = convert2d(h_elel_dy_gg);
-        h1_elel_gam = convert2d(h_elel_gam);
+        auto h1_elel_back = convert2d(h_elel_back);
+        auto h1_elel_dy_gg = convert2d(h_elel_dy_gg);
+        auto h1_elel_gam = convert2d(h_elel_gam);
 
         auto h_elel_pl = *h_elel_sym + *h_elel_asym;
         auto h_elel_mn = *h_elel_sym - *h_elel_asym;
         h_elel_pl.Scale(0.5);
         h_elel_mn.Scale(0.5);
-        h1_elel_pl = convert2d(&h_elel_pl);
-        h1_elel_mn = convert2d(&h_elel_mn);
+        auto h1_elel_pl = convert2d(&h_elel_pl);
+        auto h1_elel_mn = convert2d(&h_elel_mn);
         h1_elel_pl->SetName((string("ee_fpl") + sys_label).c_str());
         h1_elel_mn->SetName((string("ee_fmn") + sys_label).c_str());
 
@@ -327,7 +324,9 @@ void convert_mc_templates(const string &sys_label){
         write_roo_hist(h1_elel_pl, var);
         write_roo_hist(h1_elel_mn, var);
     }
+    cleanup_mc_templates();
 }
+
 void write_groups(FILE *f_log){
 
     char label[4][40], intro[4][40];
@@ -356,7 +355,7 @@ void write_groups(FILE *f_log){
 
 
 void make_templates(int nJobs = 6, int iJob =-1){
-    const TString fout_name("combine/templates/june7_no_sys.root");
+    const TString fout_name("combine/templates/june10_no_sys.root");
     TFile * fout;
 
     init();
