@@ -366,12 +366,12 @@ process.extraVar = cms.EDProducer("B2GEdmExtraVarProducer",
         #"HLT_IsoMu20",
         #"HLT_IsoMu22",
         "HLT_IsoMu24",
-        #"HLT_IsoMu27",
+        "HLT_IsoMu27",
         #"HLT_IsoTkMu18",
         #"HLT_IsoTkMu20",
         #"HLT_IsoTkMu22",
         "HLT_IsoTkMu24",
-        #"HLT_IsoTkMu27",
+        "HLT_IsoTkMu27",
         # Single Ele
         #"HLT_Ele17_CaloIdL_GsfTrkIdVL",
         #"HLT_Ele22_eta2p1_WPLoose_Gsf",
@@ -382,22 +382,10 @@ process.extraVar = cms.EDProducer("B2GEdmExtraVarProducer",
         #"HLT_Ele25_eta2p1_WPTight_Gsf",
         "HLT_Ele27_WPLoose_Gsf",
         "HLT_Ele27_WPTight_Gsf",
-        #"HLT_Ele27_eta2p1_WPLoose_Gsf",
-        #"HLT_Ele27_eta2p1_WPTight_Gsf",
-        #"HLT_Ele30_WPTight_Gsf",
-        #"HLT_Ele30_eta2p1_WPLoose_Gsf",
-        #"HLT_Ele30_eta2p1_WPTight_Gsf",
-        #"HLT_Ele32_WPTight_Gsf",
-        #"HLT_Ele32_eta2p1_WPLoose_Gsf",
-        #"HLT_Ele32_eta2p1_WPTight_Gsf",
-        #"HLT_Ele35_WPLoose_Gsf",
-        #"HLT_Ele45_WPLoose_Gsf",
-        #"HLT_Ele105_CaloIdVT_GsfTrkIdT",
-        #"HLT_Ele115_CaloIdVT_GsfTrkIdT",
-        #"HLT_Ele145_CaloIdVT_GsfTrkIdT",
-        #"HLT_Ele200_CaloIdVT_GsfTrkIdT",
-        #"HLT_Ele250_CaloIdVT_GsfTrkIdT",
-        #"HLT_Ele300_CaloIdVT_GsfTrkIdT",
+        "HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL",
+        "HLT_Ele32_WPTight_Gsf",
+        "HLT_Ele32_WPTight_Gsf_L1DoubleEG",
+        "HLT_Ele35_WPTight_Gsf",
         # Lepton + 2 Jet
         #"HLT_Mu30_eta2p1_PFJet150_PFJet50",
         #"HLT_Mu40_eta2p1_PFJet200_PFJet50",
@@ -594,11 +582,6 @@ process.B2GTTreeMaker.isData = isData
 process.EventCounter = cms.EDAnalyzer("EventCounter",
     isData = cms.untracked.bool(isData)
 )
-#from RecoEgamma.EgammaTools.EgammaPostRecoTools import setupEgammaPostRecoSeq
-#setupEgammaPostRecoSeq(process,
-#                       runVID=False,
-#                       era='2016-Legacy')  #era is new to select between 2016 / 2017,  it defaults to 2017
-##a sequence egammaPostRecoSeq has now been created and should be added to your path, eg process.p=cms.Path(process.egammaPostRecoSeq)
 
 # Paths
 process.muonAnalysisPath = cms.Path(
