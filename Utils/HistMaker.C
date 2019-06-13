@@ -55,6 +55,20 @@ void setHistError(TH1 *h, float e){
     }
 }
 
+float computeChi2(TH1 *h){
+    // only use on ratio plots, with expected value of 1
+    float sum = 0.;
+    int nBins = h->GetNbinsX();
+    for(int i=1; i<= nBins; i++){
+        float val = h->GetBinContent(i);
+        float err = h->GetBinError(i);
+        if (val > 0. && err > 0.){
+            sum += std::pow((val-1)/err,2);
+        }
+    }
+    return sum;
+}
+
 
 void symmetrize1d(TH1F *h){
     int n_cost_bins = h->GetNbinsX();

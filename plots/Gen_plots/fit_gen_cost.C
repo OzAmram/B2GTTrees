@@ -98,7 +98,7 @@ int make_gen_cost(TTree *t1, TH1F *h_cost_st, TH1F *h_cost_r, TH1F* h_pt,  TH1F 
 }
 void fit_gen_cost(){
     gStyle->SetOptStat(0);
-    TFile *f1= TFile::Open("../generator_stuff/root_files/madgraph_m700_may23.root");
+    TFile *f1= TFile::Open("../generator_stuff/root_files/madgraph_m200_may23.root");
     //TFile *f= TFile::Open("../generator_stuff/root_files/powheg_m150_may6.root");
     TTree *t_gen1 = (TTree *)f1->Get("T_lhe");
 
@@ -107,16 +107,17 @@ void fit_gen_cost(){
     TH1F *h_cost_r = new TH1F("h_mad_cost_r", "", 20, -1., 1.);
     TH1F *h_pt = new TH1F("h_pt", "", 20, 0., 300.);
     TH1F *h_xf = new TH1F("h_xf", "", 20, 0., 1.);
-    float m_low = 700.;
-    float m_high = 800.;
+    float m_low = 200.;
+    float m_high = 400.;
 
     int nEvents = make_gen_cost(t_gen1,  h_cost, h_cost_r, h_pt, h_xf, m_low, m_high);
 
 
-    TF1 *func = new TF1("func", "(1 + x*x + [1]*(1-x*x) + (4./3.)*(2. + [1])*[0]*x) /(8./3. + 4.*[1]/3.)", -1., 1.);
+    //TF1 *func = new TF1("func", "(1 + x*x + [1]*(1-x*x) + (4./3.)*(2. + [1])*[0]*x) /(8./3. + 4.*[1]/3.)", -1., 1.);
+    TF1 *func = new TF1("func", "3./8.*(1 + x*x + ([1]/2.)*(1-3*x*x)) + [0]*x", -1., 1.);
     func->SetParameter(0,0.6);
     func->SetParameter(1,0.1);
-    func->SetParLimits(1, 0., 1.0);
+    //func->SetParLimits(1, -1.0, 1.0);
 
     //func->FixParameter(1, 0.098);
     
@@ -132,7 +133,7 @@ void fit_gen_cost(){
 
     printf("Mass range from %.0f to %.0f \n", m_low, m_high);
     printf("AFB: %.4f +/- %.4f \n", func->GetParameter(0), func->GetParError(0));
-    printf("Alpha: %.3f +/- %.3f \n", func->GetParameter(1), func->GetParError(1));
+    printf("A0: %.3f +/- %.3f \n", func->GetParameter(1), func->GetParError(1));
     printf("Counting: NF %.0f NB %.0f \n", nF, nB);
     printf("Counting: AFB %.4f +/- %.4f \n", AFB, dAFB);
 }

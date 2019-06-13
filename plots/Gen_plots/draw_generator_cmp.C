@@ -28,14 +28,14 @@
 
 void draw_generator_cmp(){
     gStyle->SetOptStat(0);
-    TFile *f_mad= TFile::Open("../generator_stuff/root_files/madgraph_m100_may23.root");
+    TFile *f_mad= TFile::Open("../generator_stuff/root_files/madgraph_m700_may23.root");
     TTree *t_mad = (TTree *)f_mad->Get("T_lhe");
 
-    TFile *f_pwg = TFile::Open("../generator_stuff/root_files/powheg_m150_may6.root");
+    TFile *f_pwg = TFile::Open("../generator_stuff/root_files/powheg_m700_april30.root");
     TTree *t_pwg = (TTree *)f_pwg->Get("T_lhe");
 
-    float m_low = 150;
-    float m_high = 200.;
+    float m_low = 700;
+    float m_high = 800.;
     bool phot_ind = false;
 
     char title[80];
@@ -73,10 +73,10 @@ void draw_generator_cmp(){
 
 
     
-    make_ratio_plot("pwg_vs_mad_m150_cost_st_cmp.pdf", h_mad_cost_st, "amc@NLO",h_pwg_cost_st, "POWHEG", "aMC/POWHEG", "cos(#theta_{*})", false);
-    make_ratio_plot("pwg_vs_mad_m150_pt_cmp.pdf", h_mad_pt, "amc@NLO",h_pwg_pt, "POWHEG", "aMC/POWHEG", "dilepton p_{T} (GeV)", false);
-    make_ratio_plot("pwg_vs_mad_m150_xf_cmp.pdf", h_mad_xf, "amc@NLO",h_pwg_xf, "POWHEG", "aMC/POWHEG", "xF", false);
-    make_ratio_plot("pwg_vs_mad_m150_cost_r_cmp.pdf", h_mad_cost_r, "amc@NLO",h_pwg_cost_r, "POWHEG", "aMC/POWHEG", "cos(#theta_{r})", false);
+    make_ratio_plot("pwg_vs_mad_m700_cost_st_cmp.pdf", h_mad_cost_st, "amc@NLO",h_pwg_cost_st, "POWHEG", "aMC/POWHEG", "cos(#theta_{*})", false);
+    make_ratio_plot("pwg_vs_mad_m700_pt_cmp.pdf", h_mad_pt, "amc@NLO",h_pwg_pt, "POWHEG", "aMC/POWHEG", "dilepton p_{T} (GeV)", false);
+    make_ratio_plot("pwg_vs_mad_m700_xf_cmp.pdf", h_mad_xf, "amc@NLO",h_pwg_xf, "POWHEG", "aMC/POWHEG", "xF", false);
+    make_ratio_plot("pwg_vs_mad_m700_cost_r_cmp.pdf", h_mad_cost_r, "amc@NLO",h_pwg_cost_r, "POWHEG", "aMC/POWHEG", "cos(#theta_{r})", false);
 
     return;
 }

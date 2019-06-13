@@ -31,15 +31,15 @@ void draw_AFB_mbins(){
     Double_t y_sm[6] =      {0.622, 0.611, 0.596, 0.597, 0.592, 0.590};
     Double_t y_sm_errs[6] = {0.004, 0.004, 0.005, 0.004, 0.004, 0.004};
 
-    Double_t y_comb[6] =      {0.615, 0.569, 0.617, 0.576, 0.580, 0.527};
-    Double_t y_comb_errs[6] = {0.013, 0.019, 0.020, 0.027, 0.042, 0.058};
+    Double_t y_comb[6] =      {0.614, 0.582, 0.630, 0.584, 0.606, 0.568};
+    Double_t y_comb_errs[6] = {0.016, 0.020, 0.022, 0.028, 0.045, 0.065};
 
-    Double_t y_mumu[6] =      {0.607, 0.545, 0.623, 0.591, 0.605, 0.540};
-    Double_t y_mumu_errs[6] = {0.018, 0.025, 0.026, 0.035, 0.057, 0.086};
+    Double_t y_mumu[6] =      {0.608, 0.577, 0.640, 0.611, 0.630, 0.588};
+    Double_t y_mumu_errs[6] = {0.020, 0.027, 0.029, 0.036, 0.060, 0.094};
 
 
-    Double_t y_elel[6] =      {0.634, 0.606, 0.611, 0.560, 0.553, 0.515};
-    Double_t y_elel_errs[6] = {0.021, 0.031, 0.033, 0.044, 0.063, 0.079};
+    Double_t y_elel[6] =      {0.627, 0.609, 0.610, 0.549, 0.577, 0.542};
+    Double_t y_elel_errs[6] = {0.024, 0.031, 0.034, 0.043, 0.066, 0.085};
 
 
     Double_t ratio[6], ratio_errs[6];
@@ -93,7 +93,7 @@ void draw_AFB_mbins(){
     pad1->Draw();
     pad1->cd();
     g_sm->Draw("ALP");
-    g_sm->GetYaxis()->SetRangeUser(0., 0.7);
+    g_sm->GetYaxis()->SetRangeUser(0.2, 0.75);
     g_sm->GetXaxis()->SetLimits(100., 1000.);
     g_sm->Draw("ALP");
     g_mumu->Draw("PE same");
@@ -130,7 +130,7 @@ void draw_AFB_mbins(){
     g_ratio->Draw("APE");
 
 
-    g_ratio->GetYaxis()->SetTitle("Comb./SM");
+    g_ratio->GetYaxis()->SetTitle("Comb./POWHEG");
     g_ratio->GetYaxis()->SetNdivisions(505);
     g_ratio->GetYaxis()->SetTitleSize(20);
     g_ratio->GetYaxis()->SetTitleFont(43);

@@ -37,16 +37,15 @@ void draw_cmp(){
     mumu_init();
     init_gamgam();
 
-    TH1F *data_m = new TH1F("data_m", "Data Dimuon Mass Distribution", 30, 150, 2000);
-
-    TH1F *mc_pt = new TH1F("mc_pt", "MC signal", 40, 0, 1000);
-    TH1F *mc_nosig_pt = new TH1F("mc_nosig_pt", "MC signal", 40, 0, 1000);
-    TH1F *data_pt = new TH1F("data_pt", "MC signal", 40, 0, 1000);
-    TH1F *ttbar_pt = new TH1F("ttbar_pt", "MC signal", 40, 0, 1000);
-    TH1F *diboson_pt = new TH1F("diboson_pt", "MC signal", 40, 0, 1000);
-    TH1F *wt_pt = new TH1F("wt_pt", "MC signal", 40, 0, 1000);
-    TH1F *QCD_pt = new TH1F("QCD_pt", "MC signal", 40, 0, 1000);
-    TH1F *gg_pt = new TH1F("gg_pt", "MC signal", 40, 0, 1000);
+    int n_pt_bins = 40;
+    TH1F *mc_pt = new TH1F("mc_pt", "MC signal", n_pt_bins, 0, 1000);
+    TH1F *mc_nosig_pt = new TH1F("mc_nosig_pt", "MC signal", n_pt_bins, 0, 1000);
+    TH1F *data_pt = new TH1F("data_pt", "MC signal", n_pt_bins, 0, 1000);
+    TH1F *ttbar_pt = new TH1F("ttbar_pt", "MC signal", n_pt_bins, 0, 1000);
+    TH1F *diboson_pt = new TH1F("diboson_pt", "MC signal", n_pt_bins, 0, 1000);
+    TH1F *wt_pt = new TH1F("wt_pt", "MC signal", n_pt_bins, 0, 1000);
+    TH1F *QCD_pt = new TH1F("QCD_pt", "MC signal", n_pt_bins, 0, 1000);
+    TH1F *gg_pt = new TH1F("gg_pt", "MC signal", n_pt_bins, 0, 1000);
     mc_pt->SetFillColor(kRed+1);
     mc_pt->SetMarkerColor(kRed+1);
     mc_nosig_pt->SetFillColor(kMagenta);
@@ -76,52 +75,47 @@ void draw_cmp(){
     QCD_xf->SetFillColor(kRed -7);
     wt_xf->SetFillColor(kOrange+7); 
 
-    TH1F *mc_m = new TH1F("mc_m", "MC Signal (qqbar, qglu, qbarglu)", 30, 150, 2000);
+    int n_m_bins = 30;
+    TH1F *data_m = new TH1F("data_m", "Data Dimuon Mass Distribution", n_m_bins, 150, 2000);
+    TH1F *mc_m = new TH1F("mc_m", "MC Signal (qqbar, qglu, qbarglu)", n_m_bins, 150, 2000);
+    TH1F *mc_nosig_m = new TH1F("mc_nosig_m", "MC no signal (qq, gluglu qbarqbar)", n_m_bins, 150, 2000);
+    TH1F *ttbar_m = new TH1F("ttbar_m", "TTBar Background", n_m_bins, 150, 2000);
+    TH1F *diboson_m = new TH1F("diboson_m", "DiBoson (WW, WZ, ZZ)", n_m_bins, 150, 2000);
+    TH1F *QCD_m = new TH1F("QCD_m", "QCD", n_m_bins, 150, 2000);
+    TH1F *gg_m = new TH1F("gg_m", "QCD", n_m_bins, 150, 2000);
+    TH1F *WJets_m = new TH1F("WJets_m", "WJets", n_m_bins, 150, 2000);
+    TH1F *wt_m = new TH1F("wt_m", "tw + #bar{t}w", n_m_bins, 150, 2000);
     mc_m->SetFillColor(kRed+1);
     mc_m->SetMarkerStyle(21);
     mc_m->SetMarkerColor(kRed+1);
-    TH1F *mc_nosig_m = new TH1F("mc_nosig_m", "MC no signal (qq, gluglu qbarqbar)", 30, 150, 2000);
     mc_nosig_m->SetFillColor(kMagenta);
     mc_nosig_m->SetMarkerStyle(21);
     mc_nosig_m->SetMarkerColor(kMagenta);
-    TH1F *ttbar_m = new TH1F("ttbar_m", "TTBar Background", 30, 150, 2000);
     ttbar_m->SetFillColor(kBlue);
     ttbar_m->SetMarkerStyle(21);
     ttbar_m->SetMarkerColor(kBlue);
 
 
     int num_cost_bins = 10;
-    TH1F *data_cost = new TH1F("data_cost", "Data", num_cost_bins, -1.,1.);
-    TH1F *mc_cost = new TH1F("mc_cost", "MC Signal (qqbar, qglu, qbarglu)", num_cost_bins, -1,1);
+    TH1F *data_cost = new TH1F("data_cost", "Data", n_cost_bins, -1.,1.);
+    TH1F *mc_cost = new TH1F("mc_cost", "MC Signal (qqbar, qglu, qbarglu)", n_cost_bins, -1,1);
+    TH1F *mc_nosig_cost = new TH1F("mc_nosig_cost", "MC no signal (qq, gluglu qbarqbar)", n_cost_bins, -1.,1.);
+    TH1F *ttbar_cost = new TH1F("ttbar_cost", "TTbar Background", n_cost_bins, -1.,1.);
+    TH1F *diboson_cost = new TH1F("diboson_cost", "DiBoson (WW, WZ,ZZ)", n_cost_bins, -1,1);
+    TH1F *QCD_cost = new TH1F("QCD_cost", "QCD", n_cost_bins, -1,1);
+    TH1F *gg_cost = new TH1F("gg_cost", "QCD", n_cost_bins, -1,1);
+    TH1F *WJets_cost = new TH1F("WJets_cost", "WJets", n_cost_bins, -1,1);
+    TH1F *wt_cost = new TH1F("wt_cost", "tw + #bar{t}w", n_cost_bins, -1,1);
+
     mc_cost->SetFillColor(kRed+1);
     mc_cost->SetMarkerStyle(21);
     mc_cost->SetMarkerColor(kRed+1);
-    TH1F *mc_nosig_cost = new TH1F("mc_nosig_cost", "MC no signal (qq, gluglu qbarqbar)", num_cost_bins, -1.,1.);
     mc_nosig_cost->SetFillColor(kMagenta);
     mc_nosig_cost->SetMarkerStyle(21);
     mc_nosig_cost->SetMarkerColor(kMagenta);
-    TH1F *ttbar_cost = new TH1F("ttbar_cost", "TTbar Background", num_cost_bins, -1.,1.);
     ttbar_cost->SetFillColor(kBlue);
     ttbar_cost->SetMarkerStyle(21);
     ttbar_cost->SetMarkerColor(kBlue);
-
-
-
-
-    TH1F *diboson_m = new TH1F("diboson_m", "DiBoson (WW, WZ, ZZ)", 30, 150, 2000);
-    TH1F *diboson_cost = new TH1F("diboson_cost", "DiBoson (WW, WZ,ZZ)", num_cost_bins, -1,1);
-
-    TH1F *QCD_m = new TH1F("QCD_m", "QCD", 30, 150, 2000);
-    TH1F *QCD_cost = new TH1F("QCD_cost", "QCD", num_cost_bins, -1,1);
-
-    TH1F *gg_m = new TH1F("gg_m", "QCD", 30, 150, 2000);
-    TH1F *gg_cost = new TH1F("gg_cost", "QCD", num_cost_bins, -1,1);
-
-    TH1F *WJets_m = new TH1F("WJets_m", "WJets", 30, 150, 2000);
-    TH1F *WJets_cost = new TH1F("WJets_cost", "WJets", num_cost_bins, -1,1);
-
-    TH1F *wt_m = new TH1F("wt_m", "tw + #bar{t}w", 30, 150, 2000);
-    TH1F *wt_cost = new TH1F("wt_cost", "tw + #bar{t}w", num_cost_bins, -1,1);
 
 
     wt_m->SetFillColor(kOrange+7); 
@@ -136,9 +130,10 @@ void draw_cmp(){
     gg_pt->SetFillColor(kOrange);
     gg_xf->SetFillColor(kOrange);
 
+
     bool do_RC = true;
     float m_low = 150.;
-    float m_high = 200.;
+    float m_high = 100000.;
 
     make_m_cost_pt_xf_hist(t_mumu_data, data_m, data_cost, data_pt, data_xf, true, type, do_RC, m_low, m_high);
     make_m_cost_pt_xf_hist(t_mumu_mc, mc_m, mc_cost, mc_pt, mc_xf, false, type,  do_RC, m_low, m_high);
@@ -151,11 +146,12 @@ void draw_cmp(){
     symmetrize1d(gg_cost);
 
     //gg_cost->Scale(0.);
+    //gg_m->Scale(0.);
 
     bool ss_qcd = true;
     bool in_os_region = true;
     Fakerate_est_mu(t_mumu_WJets, t_mumu_QCD, t_mumu_WJets_contam, t_mumu_QCD_contam, QCD_m, QCD_cost, QCD_pt, QCD_xf, m_low, m_high, ss_qcd, in_os_region);
-    QCD_cost->Scale(0.);
+    //QCD_cost->Scale(0.);
 
 
 
@@ -163,14 +159,11 @@ void draw_cmp(){
     printf("ttbar integral is %.2f \n", ttbar_cost->Integral());
 
 
-    bool scale_qcd_error=true;
     float qcd_err = 0.4;
-    if(scale_qcd_error){
-        setHistError(QCD_m, qcd_err);
-        setHistError(QCD_cost, qcd_err);
-        setHistError(QCD_pt, qcd_err);
-        setHistError(QCD_xf, qcd_err);
-    }
+    setHistError(QCD_m, qcd_err);
+    setHistError(QCD_cost, qcd_err);
+    setHistError(QCD_pt, qcd_err);
+    setHistError(QCD_xf, qcd_err);
 
     float gam_err = 0.4;
     setHistError(gg_m, gam_err);
@@ -265,35 +258,35 @@ void draw_cmp(){
     for (int i=0;i<stackHists->GetSize();++i) {
       m_mc_sum->Add((TH1*)stackHists->At(i));
     }
-    auto ratio = (TH1F *) data_m->Clone("h_ratio");
-    ratio->SetMinimum(0.75);
-    ratio->SetMaximum(1.25);
-    ratio->Sumw2();
-    ratio->SetStats(0);
-    ratio->Divide(m_mc_sum);
-    ratio->SetMarkerStyle(21);
-    ratio->Draw("ep");
+    auto m_ratio = (TH1F *) data_m->Clone("h_m_ratio");
+    m_ratio->SetMinimum(0.75);
+    m_ratio->SetMaximum(1.25);
+    m_ratio->Sumw2();
+    m_ratio->SetStats(0);
+    m_ratio->Divide(m_mc_sum);
+    m_ratio->SetMarkerStyle(21);
+    m_ratio->Draw("ep");
     TLine *l1 = new TLine(150,1,2000,1);
     l1->SetLineStyle(2);
     l1->Draw();
     c_m->cd();
 
-    ratio->SetTitle("");
-    // Y axis ratio plot settings
-   ratio->GetYaxis()->SetTitle("Obs/Exp");
-   ratio->GetYaxis()->SetNdivisions(505);
-   ratio->GetYaxis()->SetTitleSize(20);
-   ratio->GetYaxis()->SetTitleFont(43);
-   ratio->GetYaxis()->SetTitleOffset(1.2);
-   ratio->GetYaxis()->SetLabelFont(43); // Absolute font size in pixel (precision 3)
-   ratio->GetYaxis()->SetLabelSize(15);
-   // X axis ratio plot settings
-   ratio->GetXaxis()->SetTitle("M_{#mu#mu} (GeV)");
-   ratio->GetXaxis()->SetTitleSize(20);
-   ratio->GetXaxis()->SetTitleFont(43);
-   ratio->GetXaxis()->SetTitleOffset(3.);
-   ratio->GetXaxis()->SetLabelFont(43); // Absolute font size in pixel (precision 3)
-   ratio->GetXaxis()->SetLabelSize(20);
+    m_ratio->SetTitle("");
+    // Y axis m_ratio plot settings
+   m_ratio->GetYaxis()->SetTitle("Obs/Exp");
+   m_ratio->GetYaxis()->SetNdivisions(505);
+   m_ratio->GetYaxis()->SetTitleSize(20);
+   m_ratio->GetYaxis()->SetTitleFont(43);
+   m_ratio->GetYaxis()->SetTitleOffset(1.2);
+   m_ratio->GetYaxis()->SetLabelFont(43); // Absolute font size in pixel (precision 3)
+   m_ratio->GetYaxis()->SetLabelSize(15);
+   // X axis m_ratio plot settings
+   m_ratio->GetXaxis()->SetTitle("M_{#mu#mu} (GeV)");
+   m_ratio->GetXaxis()->SetTitleSize(20);
+   m_ratio->GetXaxis()->SetTitleFont(43);
+   m_ratio->GetXaxis()->SetTitleOffset(3.);
+   m_ratio->GetXaxis()->SetLabelFont(43); // Absolute font size in pixel (precision 3)
+   m_ratio->GetXaxis()->SetLabelSize(20);
  
     //lumi_sqrtS = "";       // used with iPeriod = 0, e.g. for simulation-only plots (default is an empty string)
     int iPeriod = 4; 
@@ -492,6 +485,11 @@ void draw_cmp(){
     //CMS_lumi(xf_pad1, iPeriod, 11 );
     c_xf->Update();
  
+    float m_chi2 = computeChi2(m_ratio);
+    float cost_chi2 = computeChi2(cost_ratio);
+
+    printf("M-bins chi2/dof = %.1f/%i \n", m_chi2, n_m_bins);
+    printf("cost-bins chi2/dof = %.1f/%i \n", cost_chi2, n_cost_bins);
 }
 
     
