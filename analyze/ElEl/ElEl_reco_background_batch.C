@@ -3,11 +3,12 @@
 
 
 
-void ElEl_reco_background_batch(int nJobs =1, int iJob = 0)
+void ElEl_reco_background_batch(int nJobs =1, int iJob = 0, string fin ="")
 {
 
 
-    NTupleReader nt("EOS_files/GammaGammaToEE_files_april25.txt","output_files/ElEl_gamgam_back_may7.root", false);
+    if(fin == "") fin = string("EOS_files/2016/GammaGammaToEE_files_may29.txt");
+    NTupleReader nt(fin.c_str(),"output_files/ElEl_gamgam_back_june5.root", false);
     nt.nJobs = nJobs;
     nt.iJob = iJob;
     nt.do_electrons = true;

@@ -3,11 +3,11 @@
 
 
 
-void MuMu_reco_background_batch(int nJobs =1, int iJob = 0)
+void MuMu_reco_background_batch(int nJobs =1, int iJob = 0, string fin ="")
 {
 
-
-    NTupleReader nt("EOS_files/GammaGammaToMuMu_files_april25.txt","output_files/MuMu_gamgam_back_may7.root", false);
+    if(fin == "") fin = string("EOS_files/2016/GammaGammaToMuMu_files_may29.txt");
+    NTupleReader nt(fin.c_str(),"output_files/MuMu_gamgam_back_june5.root", false);
     nt.nJobs = nJobs;
     nt.iJob = iJob;
     nt.do_muons = true;

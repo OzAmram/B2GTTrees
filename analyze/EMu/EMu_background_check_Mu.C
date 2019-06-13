@@ -3,11 +3,11 @@
 
 
 
-void EMu_background_check_Mu(int nJobs =1, int iJob = 0)
+void EMu_background_check_Mu(int nJobs =1, int iJob = 0, string fin = "")
 {
 
-
-    NTupleReader nt("EOS_files/DY_files_test.txt","output_files/test.root", false);
+    if(fin == "") fin = string("EOS_files/2016/non_QCD_files_may29.txt");
+    NTupleReader nt(fin.c_str() ,"output_files/test.root", false);
     nt.nJobs = nJobs;
     nt.iJob = iJob;
     nt.do_emu = true;

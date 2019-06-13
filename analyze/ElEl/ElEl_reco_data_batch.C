@@ -3,11 +3,11 @@
 
 
 
-void ElEl_reco_data_batch(int nJobs =1, int iJob = 0)
+void ElEl_reco_data_batch(int nJobs =1, int iJob = 0, string fin = "")
 {
 
-
-    NTupleReader nt("EOS_files/DY_files_test.txt","output_files/SingleElectron_files_test.txt", true);
+    if (fin == "") fin = string("EOS_files/DY_files_test.txt");
+    NTupleReader nt(fin.c_str(),"output_files/SingleElectron_files_test.txt", true);
     nt.nJobs = nJobs;
     nt.iJob = iJob;
     nt.do_electrons = true;

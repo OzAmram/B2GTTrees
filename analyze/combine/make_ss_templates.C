@@ -77,8 +77,8 @@ void make_ss_data_templates(){
     h_mumu_data->SetDirectory(0);
     bool ss = true;
 
-    gen_data_template(t_elel_ss_data, h_elel_data,  m_low, m_high, FLAG_ELECTRONS, FLAG_M_BINS, do_RC, ss);
-    gen_data_template(t_mumu_ss_data, h_mumu_data,  m_low, m_high, FLAG_MUONS, FLAG_M_BINS, do_RC, ss);
+    gen_data_template(t_elel_ss_data, h_elel_data,  m_low, m_high, FLAG_ELECTRONS, do_RC, ss);
+    gen_data_template(t_mumu_ss_data, h_mumu_data,  m_low, m_high, FLAG_MUONS,  do_RC, ss);
     auto h1_elel_data = convert2d(h_elel_data);
     auto h1_mumu_data = convert2d(h_mumu_data);
 
@@ -101,8 +101,8 @@ void make_ss_qcd_templates(FILE *f_log){
 
 
     bool ss = true;
-    gen_fakes_template(t_elel_WJets, t_elel_QCD, t_elel_WJets_contam, t_elel_QCD_contam, h_elel_qcd, m_low, m_high, FLAG_ELECTRONS, FLAG_M_BINS, ss);
-    gen_fakes_template(t_mumu_WJets, t_mumu_QCD, t_mumu_WJets_contam, t_mumu_QCD_contam, h_mumu_qcd, m_low, m_high, FLAG_MUONS, FLAG_M_BINS, ss);
+    gen_fakes_template(t_elel_WJets, t_elel_QCD, t_elel_WJets_contam, t_elel_QCD_contam, h_elel_qcd, m_low, m_high, FLAG_ELECTRONS,  ss);
+    gen_fakes_template(t_mumu_WJets, t_mumu_QCD, t_mumu_WJets_contam, t_mumu_QCD_contam, h_mumu_qcd, m_low, m_high, FLAG_MUONS, ss);
     printf("Integral of qcd templates are %.2f %.2f \n", h_elel_qcd->Integral(), h_mumu_qcd->Integral()); 
     auto h1_elel_qcd = convert2d(h_elel_qcd);
     auto h1_mumu_qcd = convert2d(h_mumu_qcd);
@@ -128,14 +128,14 @@ void make_ss_mc_templates(){
 
 
     TTree *mumu_ts[1] = {t_mumu_ss_back};
-    gen_combined_background_template(1, mumu_ts, h_mumu_bk, m_low, m_high, FLAG_MUONS, FLAG_M_BINS, do_RC, ss);
+    gen_combined_background_template(1, mumu_ts, h_mumu_bk, m_low, m_high, FLAG_MUONS,  do_RC, ss);
     mumu_ts[0] = t_mumu_ss_dy;
-    gen_combined_background_template(1, mumu_ts, h_mumu_dy, m_low, m_high, FLAG_MUONS, FLAG_M_BINS, do_RC, ss);
+    gen_combined_background_template(1, mumu_ts, h_mumu_dy, m_low, m_high, FLAG_MUONS,  do_RC, ss);
 
     TTree *elel_ts[1] = {t_elel_ss_back};
-    gen_combined_background_template(1, elel_ts, h_elel_bk, m_low, m_high, FLAG_ELECTRONS, FLAG_M_BINS, do_RC, ss);
+    gen_combined_background_template(1, elel_ts, h_elel_bk, m_low, m_high, FLAG_ELECTRONS,  do_RC, ss);
     elel_ts[0] = t_elel_ss_dy;
-    gen_combined_background_template(1, elel_ts, h_elel_dy, m_low, m_high, FLAG_ELECTRONS, FLAG_M_BINS, do_RC, ss);
+    gen_combined_background_template(1, elel_ts, h_elel_dy, m_low, m_high, FLAG_ELECTRONS,  do_RC, ss);
 
     auto h1_elel_bk = convert2d(h_elel_bk);
     auto h1_mumu_bk = convert2d(h_mumu_bk);

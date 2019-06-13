@@ -78,7 +78,7 @@ void print_hist(TH2 *h){
 //static type means functions scope is only this file, to avoid conflicts
 
 int gen_data_template(TTree *t1, TH2F* h,  Double_t var_low, Double_t var_high, 
-        int flag1 = FLAG_MUONS, int flag2 = FLAG_M_BINS, bool turn_on_RC = true, bool ss = false){
+        int flag1 = FLAG_MUONS, bool turn_on_RC = true, bool ss = false){
     h->Sumw2();
     Long64_t nEntries  =  t1->GetEntries();
     //printf("size is %i \n", nEntries);
@@ -143,7 +143,6 @@ int gen_data_template(TTree *t1, TH2F* h,  Double_t var_low, Double_t var_high,
             xF = compute_xF(cm); 
 
         }
-        if(flag2 == FLAG_M_BINS){
 
             if(m >= var_low && m <= var_high && met_pt < 50. && no_bjets && not_cosmic){
                 n++;
@@ -157,17 +156,7 @@ int gen_data_template(TTree *t1, TH2F* h,  Double_t var_low, Double_t var_high,
                 //printf("end\n");
                 nEvents++;
             }
-        }
-        else{
-            if(m>= 150. &&  pt >= var_low && pt <= var_high && met_pt < 50. && no_bjets && not_cosmic){
-                n++;
-                if(!ss) h->Fill(xF, cost, 1); 
-                else{
-                    h->Fill(xF, -abs(cost), 1);
-                }
-                nEvents++;
-            }
-        }
+        
 
     }
 
@@ -178,7 +167,7 @@ int gen_data_template(TTree *t1, TH2F* h,  Double_t var_low, Double_t var_high,
 
 
 int gen_mc_template(TTree *t1, Double_t alpha_num, Double_t alpha_denom, TH2F* h_sym, TH2F *h_asym, 
-        Double_t var_low, Double_t var_high, int flag1 = FLAG_MUONS, int flag2 = FLAG_M_BINS, bool turn_on_RC = true,
+        Double_t var_low, Double_t var_high, int flag1 = FLAG_MUONS, bool turn_on_RC = true,
         const string &sys_label = "" ){
     Long64_t nEntries  =  t1->GetEntries();
 
@@ -189,7 +178,6 @@ int gen_mc_template(TTree *t1, Double_t alpha_num, Double_t alpha_denom, TH2F* h
     Double_t m, xF, cost, gen_weight, reweight_a, reweight_s, jet1_cmva, jet2_cmva, cost_st;
     Double_t bcdef_HLT_SF, bcdef_iso_SF, bcdef_id_SF;
     Double_t gh_HLT_SF, gh_iso_SF, gh_id_SF;
-    Double_t gh_trk_SF, bcdef_trk_SF;
     Double_t el_id_SF, el_reco_SF, pu_SF, el_HLT_SF;
     Double_t jet1_pt, jet2_pt, jet1_b_weight, jet2_b_weight, jet1_eta, jet2_eta;
     Double_t mu1_pt, mu1_eta, mu2_pt, mu2_eta;
@@ -317,11 +305,9 @@ int gen_mc_template(TTree *t1, Double_t alpha_num, Double_t alpha_denom, TH2F* h
         t1->SetBranchAddress("bcdef_HLT_SF", &bcdef_HLT_SF);
         t1->SetBranchAddress("bcdef_iso_SF", &bcdef_iso_SF);
         t1->SetBranchAddress("bcdef_id_SF", &bcdef_id_SF);
-        t1->SetBranchAddress("bcdef_trk_SF", &bcdef_trk_SF);
         t1->SetBranchAddress("gh_HLT_SF", &gh_HLT_SF);
         t1->SetBranchAddress("gh_iso_SF", &gh_iso_SF);
         t1->SetBranchAddress("gh_id_SF", &gh_id_SF);
-        t1->SetBranchAddress("gh_trk_SF", &gh_trk_SF);
         if(turn_on_RC){
             t1->SetBranchAddress("mu_p_SF", &mu_p_SF);
             t1->SetBranchAddress("mu_m_SF", &mu_m_SF);
@@ -339,10 +325,6 @@ int gen_mc_template(TTree *t1, Double_t alpha_num, Double_t alpha_denom, TH2F* h
             t1->GetEntry(i);
             bool no_bjets = has_no_bjets(nJets, jet1_pt, jet2_pt, jet1_cmva, jet2_cmva);
             bool not_cosmic = notCosmic(*lep_p, *lep_m);
-            if(flag2 == FLAG_PT_BINS){
-                TLorentzVector cm = *lep_p + *lep_m;
-                pt = cm.Pt();
-            }
             if(turn_on_RC){
                 TLorentzVector mu_p_new, mu_m_new, cm;
 
@@ -368,9 +350,7 @@ int gen_mc_template(TTree *t1, Double_t alpha_num, Double_t alpha_denom, TH2F* h
             else cost = get_cost(*lep_p, *lep_m);
             if(cost_st>0.) cost_st = fabs(cost);
             else cost_st = -fabs(cost);
-            bool pass = ((flag2 == FLAG_M_BINS && m >= var_low && m <= var_high) ||
-                    (flag2 == FLAG_PT_BINS && m >= 150. && pt >= var_low && pt <= var_high))
-                && met_pt < 50.  && no_bjets && not_cosmic;
+            bool pass = (m >= var_low && m <= var_high) && met_pt < 50.  && no_bjets && not_cosmic;
             if(pass){
                 reweight_a = (4./3.)*cost_st*(2. + alpha_num)/
                     (1. + cost_st*cost_st + alpha_denom*(1.- cost_st*cost_st));
@@ -400,15 +380,13 @@ int gen_mc_template(TTree *t1, Double_t alpha_num, Double_t alpha_denom, TH2F* h
                 if(do_muID_sys)    bcdef_id_SF = get_SF(mu1_pt, mu1_eta, runs_bcdef.ID_SF, do_muID_sys) * get_SF(mu2_pt, mu2_eta, runs_bcdef.ID_SF, do_muID_sys);
                 if(do_muID_sys)    gh_id_SF = get_SF(mu1_pt, mu1_eta, runs_gh.ID_SF, do_muID_sys) * get_SF(mu2_pt, mu2_eta, runs_gh.ID_SF, do_muID_sys);
 
-                if(do_muTRK_sys)   bcdef_trk_SF = get_Mu_trk_SF(abs(mu1_eta), runs_bcdef.TRK_SF, do_muTRK_sys) * get_Mu_trk_SF(abs(mu2_eta), runs_bcdef.TRK_SF, do_muTRK_sys);
-                if(do_muTRK_sys)   gh_trk_SF = get_Mu_trk_SF(abs(mu1_eta), runs_gh.TRK_SF, do_muTRK_sys) * get_Mu_trk_SF(abs(mu2_eta), runs_gh.TRK_SF, do_muTRK_sys);
-                //bcdef_HLT_SF = gh_HLT_SF = bcdef_iso_SF = gh_iso_SF = bcdef_id_SF = gh_id_SF = bcdef_trk_SF = gh_trk_SF = 1.0;
+                //bcdef_HLT_SF = gh_HLT_SF = bcdef_iso_SF = gh_iso_SF = bcdef_id_SF = gh_id_SF =  1.0;
                 jet1_b_weight = get_btag_weight(jet1_pt, jet1_eta, (Float_t) jet1_flavour , btag_effs, b_reader, do_btag_sys);
                 jet2_b_weight = get_btag_weight(jet2_pt, jet2_eta, (Float_t) jet2_flavour , btag_effs, b_reader, do_btag_sys);
 
 
-                Double_t bcdef_weight = gen_weight * bcdef_HLT_SF * bcdef_iso_SF * bcdef_id_SF * bcdef_trk_SF;
-                Double_t gh_weight = gen_weight * gh_HLT_SF * gh_iso_SF * gh_id_SF * gh_trk_SF;
+                Double_t bcdef_weight = gen_weight * bcdef_HLT_SF * bcdef_iso_SF * bcdef_id_SF ;
+                Double_t gh_weight = gen_weight * gh_HLT_SF * gh_iso_SF * gh_id_SF ;
                 if (nJets >= 1){
                     bcdef_weight *= jet1_b_weight;
                     gh_weight *= jet1_b_weight;
@@ -443,12 +421,32 @@ int gen_mc_template(TTree *t1, Double_t alpha_num, Double_t alpha_denom, TH2F* h
         t1->SetBranchAddress("el_reco_SF", &el_reco_SF);
         if(do_elScale_sys || do_elSmear_sys){
             if(do_elScale_sys >0){
-                t1->SetBranchAddress("elp_scale_up", &elp_rescale);
-                t1->SetBranchAddress("elm_scale_up", &elm_rescale);
+                if(sys_label.find("elScaleStat") != string::npos){
+                    t1->SetBranchAddress("elp_scale_stat_up", &elp_rescale);
+                    t1->SetBranchAddress("elm_scale_stat_up", &elm_rescale);
+                }
+                if(sys_label.find("elScaleSyst") != string::npos){
+                    t1->SetBranchAddress("elp_scale_syst_up", &elp_rescale);
+                    t1->SetBranchAddress("elm_scale_syst_up", &elm_rescale);
+                }
+                if(sys_label.find("elScaleGain") != string::npos){
+                    t1->SetBranchAddress("elp_scale_gain_up", &elp_rescale);
+                    t1->SetBranchAddress("elm_scale_gain_up", &elm_rescale);
+                }
             }
             else if(do_elScale_sys < 0){
-                t1->SetBranchAddress("elp_scale_down", &elp_rescale);
-                t1->SetBranchAddress("elm_scale_down", &elm_rescale);
+                if(sys_label.find("elScaleStat") != string::npos){
+                    t1->SetBranchAddress("elp_scale_stat_down", &elp_rescale);
+                    t1->SetBranchAddress("elm_scale_stat_down", &elm_rescale);
+                }
+                if(sys_label.find("elScaleSyst") != string::npos){
+                    t1->SetBranchAddress("elp_scale_syst_down", &elp_rescale);
+                    t1->SetBranchAddress("elm_scale_syst_down", &elm_rescale);
+                }
+                if(sys_label.find("elScaleGain") != string::npos){
+                    t1->SetBranchAddress("elp_scale_gain_down", &elp_rescale);
+                    t1->SetBranchAddress("elm_scale_gain_down", &elm_rescale);
+                }
             }
             else if(do_elSmear_sys < 0){
                 t1->SetBranchAddress("elp_smear_down", &elp_rescale);
@@ -467,10 +465,6 @@ int gen_mc_template(TTree *t1, Double_t alpha_num, Double_t alpha_denom, TH2F* h
             t1->GetEntry(i);
             bool no_bjets = has_no_bjets(nJets, jet1_pt, jet2_pt, jet1_cmva, jet2_cmva);
             bool not_cosmic = notCosmic(*lep_p, *lep_m);
-            if(flag2 == FLAG_PT_BINS){
-                TLorentzVector cm = *lep_p + *lep_m;
-                pt = cm.Pt();
-            }
             if(do_elScale_sys || do_elSmear_sys){
                 lep_p->SetPtEtaPhiE(lep_p->Pt() * (elp_rescale), lep_p->Eta(), lep_p->Phi(), lep_p->E() *(elp_rescale));
                 lep_m->SetPtEtaPhiE(lep_m->Pt() * (elm_rescale), lep_m->Eta(), lep_m->Phi(), lep_m->E() *(elm_rescale));
@@ -479,9 +473,7 @@ int gen_mc_template(TTree *t1, Double_t alpha_num, Double_t alpha_denom, TH2F* h
                 xF = compute_xF(cm);
 
             }
-            bool pass = ((flag2 == FLAG_M_BINS && m >= var_low && m <= var_high) ||
-                    (flag2 == FLAG_PT_BINS && m >= 150. && pt >= var_low && pt <= var_high))
-                && met_pt < 50.  && no_bjets && not_cosmic;
+            bool pass = (m >= var_low && m <= var_high) && met_pt < 50.  && no_bjets && not_cosmic;
             if(pass){
                 cost = get_cost(*lep_p, *lep_m);
                 if(cost_st>0.) cost_st = fabs(cost);
@@ -548,7 +540,7 @@ int gen_mc_template(TTree *t1, Double_t alpha_num, Double_t alpha_denom, TH2F* h
 
 float gen_fakes_template(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_contam, 
         TTree* t_QCD_contam, TH2F *h, Double_t var_low, Double_t var_high, 
-        int flag1 = FLAG_MUONS, int flag2 = FLAG_M_BINS, bool ss = false){
+        int flag1 = FLAG_MUONS, bool ss = false){
     h->Sumw2();
     TH2D *h_err;
     TLorentzVector *lep_p=0;
@@ -650,9 +642,7 @@ float gen_fakes_template(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_contam,
                 TLorentzVector cm = *lep_p + *lep_m;
                 pt = cm.Pt();
                 xF = compute_xF(cm); 
-                bool pass = ((flag2 == FLAG_M_BINS && m >= var_low && m <= var_high) ||
-                        (flag2 == FLAG_PT_BINS && m >= 150. && pt >= var_low && pt <= var_high))
-                    && met_pt < 50.  && no_bjets && not_cosmic;
+                bool pass = (m >= var_low && m <= var_high) && met_pt < 50.  && no_bjets && not_cosmic;
 
                 bool opp_sign = ((abs(mu1_charge - mu2_charge)) > 0.01);
                 if(!ss) pass = pass && opp_sign;
@@ -763,9 +753,7 @@ float gen_fakes_template(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_contam,
                 TLorentzVector cm = *lep_p + *lep_m;
                 pt = cm.Pt();
                 xF = compute_xF(cm); 
-                bool pass = ((flag2 == FLAG_M_BINS && m >= var_low && m <= var_high) ||
-                        (flag2 == FLAG_PT_BINS && m >= 150. && pt >= var_low && pt <= var_high))
-                    && met_pt < 50.  && no_bjets && not_cosmic;
+                bool pass = (m >= var_low && m <= var_high)  && met_pt < 50.  && no_bjets && not_cosmic;
                 bool opp_sign = ((abs(el1_charge - el2_charge)) > 0.01);
                 if(!ss) pass = pass && opp_sign;
                 if(pass){
@@ -816,8 +804,8 @@ void gen_emu_fakes_template(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_MC, TH2
 
         jet1_b_weight = jet2_b_weight =1.;
         Double_t el_id_SF, el_reco_SF;
-        Double_t bcdef_iso_SF, bcdef_id_SF, bcdef_trk_SF;
-        Double_t gh_iso_SF, gh_id_SF, gh_trk_SF;
+        Double_t bcdef_iso_SF, bcdef_id_SF;
+        Double_t gh_iso_SF, gh_id_SF;
         Double_t evt_fakerate, lep1_fakerate, lep2_fakerate, el1_eta, el1_pt, mu1_eta, mu1_pt;
         TLorentzVector *el = 0;
         TLorentzVector *mu = 0;
@@ -849,9 +837,7 @@ void gen_emu_fakes_template(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_MC, TH2
             t->SetBranchAddress("el_reco_SF", &el_reco_SF);
             t->SetBranchAddress("gen_weight", &gen_weight);
             t->SetBranchAddress("pu_SF", &pu_SF);
-            t->SetBranchAddress("bcdef_trk_SF", &bcdef_trk_SF);
             t->SetBranchAddress("bcdef_id_SF", &bcdef_id_SF);
-            t->SetBranchAddress("gh_trk_SF", &gh_trk_SF);
             t->SetBranchAddress("gh_id_SF", &gh_id_SF);
         }
 
@@ -871,8 +857,8 @@ void gen_emu_fakes_template(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_MC, TH2
                 evt_fakerate = -(lep1_fakerate/(1-lep1_fakerate)) * (lep2_fakerate/(1-lep2_fakerate));
             }
             if(l==2){
-                Double_t bcdef_SF = gen_weight * bcdef_trk_SF *  bcdef_id_SF;
-                Double_t gh_SF = gen_weight * gh_trk_SF * gh_id_SF;
+                Double_t bcdef_SF = gen_weight *   bcdef_id_SF;
+                Double_t gh_SF = gen_weight *  gh_id_SF;
                 Double_t mu_SF = (bcdef_SF *bcdef_lumi + gh_SF * gh_lumi) / 
                     (bcdef_lumi + gh_lumi);
 
@@ -888,8 +874,7 @@ void gen_emu_fakes_template(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_MC, TH2
             float pt = cm.Pt();
             float xF = compute_xF(cm); 
             float m = cm.M();
-            bool pass = m>= m_low && m <= m_high && met_pt < 50.  && no_bjets && 
-                mu1_pt > 27.;
+            bool pass = m>= m_low && m <= m_high && met_pt < 50.  && no_bjets;
             if(pass){
                 h->Fill(xF, cost, 0.5*evt_fakerate);
                 h->Fill(xF, -cost, 0.5*evt_fakerate);
@@ -903,7 +888,7 @@ void gen_emu_fakes_template(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_MC, TH2
 }
 
 int gen_combined_background_template(int nTrees, TTree **ts, TH2F* h,  
-        Double_t var_low, Double_t var_high, int flag1 = FLAG_MUONS, int flag2 = FLAG_M_BINS,
+        Double_t var_low, Double_t var_high, int flag1 = FLAG_MUONS, 
         bool turn_on_RC = true, bool ss =false, const string &sys_label = ""){
     h->Sumw2();
 
@@ -916,7 +901,6 @@ int gen_combined_background_template(int nTrees, TTree **ts, TH2F* h,
         Double_t m, xF, cost, gen_weight, jet1_cmva, jet2_cmva, cost_st;
         Double_t bcdef_HLT_SF, bcdef_iso_SF, bcdef_id_SF;
         Double_t gh_HLT_SF, gh_iso_SF, gh_id_SF;
-        Double_t gh_trk_SF, bcdef_trk_SF;
         Double_t el_id_SF, el_reco_SF, pu_SF, el_HLT_SF;
         Double_t jet1_pt, jet2_pt, jet1_b_weight, jet2_b_weight, jet1_eta, jet2_eta;
         Double_t mu1_pt, mu1_eta, mu2_pt, mu2_eta;
@@ -1040,11 +1024,9 @@ int gen_combined_background_template(int nTrees, TTree **ts, TH2F* h,
             t1->SetBranchAddress("bcdef_HLT_SF", &bcdef_HLT_SF);
             t1->SetBranchAddress("bcdef_iso_SF", &bcdef_iso_SF);
             t1->SetBranchAddress("bcdef_id_SF", &bcdef_id_SF);
-            t1->SetBranchAddress("bcdef_trk_SF", &bcdef_trk_SF);
             t1->SetBranchAddress("gh_HLT_SF", &gh_HLT_SF);
             t1->SetBranchAddress("gh_iso_SF", &gh_iso_SF);
             t1->SetBranchAddress("gh_id_SF", &gh_id_SF);
-            t1->SetBranchAddress("gh_trk_SF", &gh_trk_SF);
             if(turn_on_RC){
                 t1->SetBranchAddress("mu_p_SF", &mu_p_SF);
                 t1->SetBranchAddress("mu_m_SF", &mu_m_SF);
@@ -1064,10 +1046,6 @@ int gen_combined_background_template(int nTrees, TTree **ts, TH2F* h,
                 }
                 bool no_bjets = has_no_bjets(nJets, jet1_pt, jet2_pt, jet1_cmva, jet2_cmva);
                 bool not_cosmic = notCosmic(*lep_p, *lep_m);
-                if(flag2 == FLAG_PT_BINS){
-                    TLorentzVector cm = *lep_p + *lep_m;
-                    pt = cm.Pt();
-                }
                 cost = get_cost(*lep_p, *lep_m);
                 if(turn_on_RC){
                     TLorentzVector mu_p_new, mu_m_new, cm;
@@ -1090,9 +1068,7 @@ int gen_combined_background_template(int nTrees, TTree **ts, TH2F* h,
                     pt = cm.Pt();
 
                 }
-                bool pass = ((flag2 == FLAG_M_BINS && m >= var_low && m <= var_high) ||
-                        (flag2 == FLAG_PT_BINS && m >= 150. && pt >= var_low && pt <= var_high))
-                    && met_pt < 50.  && no_bjets && not_cosmic;
+                bool pass = (m >= var_low && m <= var_high) && met_pt < 50.  && no_bjets && not_cosmic;
 
                 if(pass){
 
@@ -1115,14 +1091,12 @@ int gen_combined_background_template(int nTrees, TTree **ts, TH2F* h,
                     if(do_muID_sys)  bcdef_id_SF = get_SF(mu1_pt, mu1_eta, runs_bcdef.ID_SF, do_muID_sys) * get_SF(mu2_pt, mu2_eta, runs_bcdef.ID_SF, do_muID_sys);
                     if(do_muID_sys)  gh_id_SF = get_SF(mu1_pt, mu1_eta, runs_gh.ID_SF, do_muID_sys) * get_SF(mu2_pt, mu2_eta, runs_gh.ID_SF, do_muID_sys);
 
-                    if(do_muTRK_sys) bcdef_trk_SF = get_Mu_trk_SF(abs(mu1_eta), runs_bcdef.TRK_SF, do_muTRK_sys) * get_Mu_trk_SF(abs(mu2_eta), runs_bcdef.TRK_SF, do_muTRK_sys);
-                    if(do_muTRK_sys) gh_trk_SF = get_Mu_trk_SF(abs(mu1_eta), runs_gh.TRK_SF, do_muTRK_sys) * get_Mu_trk_SF(abs(mu2_eta), runs_gh.TRK_SF, do_muTRK_sys);
                     jet1_b_weight = get_btag_weight(jet1_pt, jet1_eta, (Float_t) jet1_flavour , btag_effs, b_reader, do_btag_sys);
                     jet2_b_weight = get_btag_weight(jet2_pt, jet2_eta, (Float_t) jet2_flavour , btag_effs, b_reader, do_btag_sys);
 
 
-                    Double_t bcdef_weight = gen_weight * bcdef_HLT_SF * bcdef_iso_SF * bcdef_id_SF * bcdef_trk_SF;
-                    Double_t gh_weight = gen_weight * gh_HLT_SF * gh_iso_SF * gh_id_SF * gh_trk_SF;
+                    Double_t bcdef_weight = gen_weight * bcdef_HLT_SF * bcdef_iso_SF * bcdef_id_SF ;
+                    Double_t gh_weight = gen_weight * gh_HLT_SF * gh_iso_SF * gh_id_SF ;
                     if (nJets >= 1){
                         bcdef_weight *= jet1_b_weight;
                         gh_weight *= jet1_b_weight;
@@ -1153,13 +1127,34 @@ int gen_combined_background_template(int nTrees, TTree **ts, TH2F* h,
             t1->SetBranchAddress("el_HLT_SF", &el_HLT_SF);
             t1->SetBranchAddress("el_reco_SF", &el_reco_SF);
             if(do_elScale_sys || do_elSmear_sys){
+
                 if(do_elScale_sys >0){
-                    t1->SetBranchAddress("elp_scale_up", &elp_rescale);
-                    t1->SetBranchAddress("elm_scale_up", &elm_rescale);
+                    if(sys_label.find("elScaleStat") != string::npos){
+                        t1->SetBranchAddress("elp_scale_stat_up", &elp_rescale);
+                        t1->SetBranchAddress("elm_scale_stat_up", &elm_rescale);
+                    }
+                    if(sys_label.find("elScaleSyst") != string::npos){
+                        t1->SetBranchAddress("elp_scale_syst_up", &elp_rescale);
+                        t1->SetBranchAddress("elm_scale_syst_up", &elm_rescale);
+                    }
+                    if(sys_label.find("elScaleGain") != string::npos){
+                        t1->SetBranchAddress("elp_scale_gain_up", &elp_rescale);
+                        t1->SetBranchAddress("elm_scale_gain_up", &elm_rescale);
+                    }
                 }
                 else if(do_elScale_sys < 0){
-                    t1->SetBranchAddress("elp_scale_down", &elp_rescale);
-                    t1->SetBranchAddress("elm_scale_down", &elm_rescale);
+                    if(sys_label.find("elScaleStat") != string::npos){
+                        t1->SetBranchAddress("elp_scale_stat_down", &elp_rescale);
+                        t1->SetBranchAddress("elm_scale_stat_down", &elm_rescale);
+                    }
+                    if(sys_label.find("elScaleSyst") != string::npos){
+                        t1->SetBranchAddress("elp_scale_syst_down", &elp_rescale);
+                        t1->SetBranchAddress("elm_scale_syst_down", &elm_rescale);
+                    }
+                    if(sys_label.find("elScaleGain") != string::npos){
+                        t1->SetBranchAddress("elp_scale_gain_down", &elp_rescale);
+                        t1->SetBranchAddress("elm_scale_gain_down", &elm_rescale);
+                    }
                 }
                 else if(do_elSmear_sys < 0){
                     t1->SetBranchAddress("elp_smear_down", &elp_rescale);
@@ -1179,10 +1174,6 @@ int gen_combined_background_template(int nTrees, TTree **ts, TH2F* h,
                 }
                 bool no_bjets = has_no_bjets(nJets, jet1_pt, jet2_pt, jet1_cmva, jet2_cmva);
                 bool not_cosmic = notCosmic(*lep_p, *lep_m);
-                if(flag2 == FLAG_PT_BINS){
-                    TLorentzVector cm = *lep_p + *lep_m;
-                    pt = cm.Pt();
-                }
                 if(do_elScale_sys || do_elSmear_sys){
                     lep_p->SetPtEtaPhiE(lep_p->Pt() * (elp_rescale), lep_p->Eta(), lep_p->Phi(), lep_p->E() *(elp_rescale));
                     lep_m->SetPtEtaPhiE(lep_m->Pt() * (elm_rescale), lep_m->Eta(), lep_m->Phi(), lep_m->E() *(elm_rescale));
@@ -1191,9 +1182,7 @@ int gen_combined_background_template(int nTrees, TTree **ts, TH2F* h,
                     xF = compute_xF(cm);
 
                 }
-                bool pass = ((flag2 == FLAG_M_BINS && m >= var_low && m <= var_high) ||
-                        (flag2 == FLAG_PT_BINS && m >= 150. && pt >= var_low && pt <= var_high))
-                    && met_pt < 50.  && no_bjets && not_cosmic;
+                bool pass = (m >= var_low && m <= var_high)  && met_pt < 50.  && no_bjets && not_cosmic;
                 if(pass){
 
                     cost = get_cost(*lep_p, *lep_m);
@@ -1245,7 +1234,6 @@ void gen_emu_template(TTree *t1, TH2F *h, bool is_data = false,
     Double_t m, xF, cost, mu1_pt, mu2_pt, jet1_cmva, jet2_cmva, gen_weight;
     Double_t bcdef_HLT_SF, bcdef_iso_SF, bcdef_id_SF;
     Double_t gh_HLT_SF, gh_iso_SF, gh_id_SF, el_id_SF, el_reco_SF, el_HLT_SF;
-    Double_t bcdef_trk_SF, gh_trk_SF;
     Double_t jet1_pt, jet2_pt, jet1_b_weight, jet2_b_weight, pu_SF;
     jet1_b_weight = jet2_b_weight =1.;
     Float_t met_pt;
@@ -1273,8 +1261,6 @@ void gen_emu_template(TTree *t1, TH2F *h, bool is_data = false,
         t1->SetBranchAddress("gh_HLT_SF", &gh_HLT_SF);
         t1->SetBranchAddress("gh_iso_SF", &gh_iso_SF);
         t1->SetBranchAddress("gh_id_SF", &gh_id_SF);
-        t1->SetBranchAddress("gh_trk_SF", &gh_trk_SF);
-        t1->SetBranchAddress("bcdef_trk_SF", &bcdef_trk_SF);
         t1->SetBranchAddress("el_id_SF", &el_id_SF);
         t1->SetBranchAddress("el_reco_SF", &el_reco_SF);     
     }
@@ -1296,8 +1282,8 @@ void gen_emu_template(TTree *t1, TH2F *h, bool is_data = false,
             else{
                 nEvents++;
                 Double_t evt_weight = gen_weight * pu_SF * el_id_SF * el_reco_SF;
-                Double_t bcdef_weight = bcdef_iso_SF * bcdef_id_SF * bcdef_trk_SF;
-                Double_t gh_weight = gh_iso_SF * gh_id_SF * gh_trk_SF;
+                Double_t bcdef_weight = bcdef_iso_SF * bcdef_id_SF ;
+                Double_t gh_weight = gh_iso_SF * gh_id_SF ;
                 bcdef_weight *= bcdef_HLT_SF;
                 gh_weight *= gh_HLT_SF;
 

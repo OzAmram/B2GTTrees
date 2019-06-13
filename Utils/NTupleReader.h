@@ -23,7 +23,7 @@ const double root2 = sqrt(2);
 double Ebeam = 6500.;
 double Pbeam = sqrt(Ebeam*Ebeam - 0.938*0.938);
 const float mu_mass = 0.1056; // in GEV
-const float mu_iso = 0.10;
+const float mu_iso = 0.10; //loose tracker iso
 
 
 bool is_empty_line(const char *s) {
@@ -39,7 +39,7 @@ bool is_empty_line(const char *s) {
 
 class NTupleReader{
     public:
-        NTupleReader(char file_list[100], char fout_name[100], bool is_data_);
+        NTupleReader(const char *fin_name, const char *fout_name, bool is_data_);
         ~NTupleReader();
 
         void setupSFs();
@@ -51,7 +51,7 @@ class NTupleReader{
         void fillEventRC();
         bool getNextFile();
         void finish();
-        void parseGenParts(bool PRINT);
+        bool parseGenParts(bool PRINT);
 
 
 
@@ -106,7 +106,8 @@ class NTupleReader{
 
         Double_t el1_pt, el2_pt, el1_eta, el2_eta;
         Double_t el_id_SF, el_reco_SF, el_HLT_SF;
-        Float_t elp_scale_up, elp_scale_down, elm_scale_up, elm_scale_down,
+        Float_t elp_scale_stat_up, elp_scale_stat_down, elp_scale_gain_up, elp_scale_gain_down, elp_scale_syst_up, elp_scale_syst_down, 
+                elm_scale_stat_up, elm_scale_stat_down, elm_scale_gain_up, elm_scale_gain_down, elm_scale_syst_up, elm_scale_syst_down, 
              elp_smear_up, elp_smear_down, elm_smear_up, elm_smear_down;
 
 
@@ -143,7 +144,9 @@ class NTupleReader{
 
         Int_t el_IDMedium[EL_SIZE], el_IDMedium_NoIso[EL_SIZE];
 
-        Float_t el_ScaleCorr[EL_SIZE], el_ScaleCorrUp[EL_SIZE], el_ScaleCorrDown[EL_SIZE],
+        Float_t el_ScaleCorr[EL_SIZE], el_ScaleCorrStatUp[EL_SIZE], el_ScaleCorrStatDown[EL_SIZE],
+                                       el_ScaleCorrGainUp[EL_SIZE], el_ScaleCorrGainDown[EL_SIZE],
+                                       el_ScaleCorrSystUp[EL_SIZE], el_ScaleCorrSystDown[EL_SIZE],
             el_ScaleSmearDown[EL_SIZE], el_ScaleSmearUp[EL_SIZE];
 
 

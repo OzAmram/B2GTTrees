@@ -3,11 +3,12 @@
 
 
 
-void ElEl_reco_mc_batch(int nJobs =1, int iJob = 0)
+void ElEl_reco_mc_batch(int nJobs =1, int iJob = 0, string fin = "")
 {
 
 
-    NTupleReader nt("EOS_files/DY_files_april15.txt","output_files/ElEl_dy.root", false);
+    if(fin == "") fin = string("EOS_files/2016/DY_files_test.txt");
+    NTupleReader nt(fin.c_str(),"output_files/ElEl_dy.root", false);
     nt.nJobs = nJobs;
     nt.iJob = iJob;
     nt.do_electrons = true;
@@ -26,17 +27,16 @@ void ElEl_reco_mc_batch(int nJobs =1, int iJob = 0)
                     nt.el_iso0 && nt.el_iso1 && nt.cm_m > 50. ){
                 nt.fillEvent();
                 nt.fillEventSFs();
-                nt.parseGenParts();
+                nt.parseGenParts(false);
 
-                if(!nt.failed_match){
-                    if(nt.signal_event){
-                        nt.nSignal++;
-                        nt.outTrees[0]->Fill();
-                    }
-                    else{
-                        nt.outTrees[1]->Fill();
-                    }
+                if(nt.signal_event && !nt.failed_match){
+                    nt.nSignal++;
+                    nt.outTrees[0]->Fill();
                 }
+                else{
+                    nt.outTrees[1]->Fill();
+                }
+
 
             }
         } 

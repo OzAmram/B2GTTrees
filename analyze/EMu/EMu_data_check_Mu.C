@@ -3,11 +3,12 @@
 
 
 
-void EMu_data_check_Mu(int nJobs =1, int iJob = 0)
+void EMu_data_check_Mu(int nJobs =1, int iJob = 0, string fin = "")
 {
 
 
-    NTupleReader nt("EOS_files/SingleMuon_files_test.txt","output_files/test.root", true);
+    if (fin == "") fin = string("EOS_files/SingleMuon_files_test.txt");
+    NTupleReader nt(fin.c_str(),"output_files/test.root", true);
     nt.nJobs = nJobs;
     nt.iJob = iJob;
     nt.do_emu = true;

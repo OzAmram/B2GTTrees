@@ -3,11 +3,10 @@
 
 
 
-void MuMu_reco_mc_batch(int nJobs =1, int iJob = 0)
+void MuMu_reco_mc_batch(int nJobs =1, int iJob = 0, string fin = "")
 {
-
-
-    NTupleReader nt("EOS_files/DY_files_april15.txt","output_files/MuMu_DY.root", false);
+    if(fin == "") fin = string("EOS_files/2016/DY_files_test.txt");
+    NTupleReader nt(fin.c_str(),"output_files/MuMu_DY.root", false);
     nt.nJobs = nJobs;
     nt.iJob = iJob;
     nt.do_muons = true;
@@ -32,14 +31,12 @@ void MuMu_reco_mc_batch(int nJobs =1, int iJob = 0)
                 nt.parseGenParts();
                 nt.fillEventRC();
 
-                if(!nt.failed_match){
-                    if(nt.signal_event){
-                        nt.nSignal++;
-                        nt.outTrees[0]->Fill();
-                    }
-                    else{
-                        nt.outTrees[1]->Fill();
-                    }
+                if(nt.signal_event && !nt.failed_match){
+                    nt.nSignal++;
+                    nt.outTrees[0]->Fill();
+                }
+                else{
+                    nt.outTrees[1]->Fill();
                 }
 
             }

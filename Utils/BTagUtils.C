@@ -137,7 +137,7 @@ Double_t get_emu_btag_weight(Double_t pt1, Double_t eta1, Float_t flavour1, Doub
 
 void setup_btag_SFs(BTag_readers *btag_r, BTag_effs *b_effs){
     TH1::AddDirectory(kFALSE);
-    BTagCalibration calib("csvv1", "SFs/cMVAv2_Moriond17_B_H.csv");
+    BTagCalibration calib("csvv1", "SFs/2016/cMVAv2_Moriond17_B_H.csv");
 
 
     btag_r->b_reader = BTagCalibrationReader(BTagEntry::OP_MEDIUM, "central");
@@ -161,7 +161,7 @@ void setup_btag_SFs(BTag_readers *btag_r, BTag_effs *b_effs){
     btag_r->udsg_reader_down = BTagCalibrationReader(BTagEntry::OP_MEDIUM, "down");
     btag_r->udsg_reader_down.load(calib, BTagEntry::FLAV_UDSG, "incl");
 
-    TFile *f0 = TFile::Open("SFs/BTag_efficiency_may24.root");
+    TFile *f0 = TFile::Open("SFs/2016/BTag_efficiency_may24.root");
     TDirectory *subdir0 = gDirectory;
     TH2D *b_eff = (TH2D *) subdir0->Get("b_eff")->Clone();
     TH2D *c_eff = (TH2D *) subdir0->Get("c_eff")->Clone();

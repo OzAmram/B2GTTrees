@@ -81,8 +81,8 @@ Double_t get_Mu_trk_SF(Double_t eta, TGraphAsymmErrors *h, int systematic = 0){
         TAxis* x_ax =  h->GetXaxis();
         int xbin = x_ax->FindBin(eta);
         Double_t err;
-        if(systematic >0) err = h->GetErrorYhigh();
-        else if(systematic <0) err = h->GetErrorYlow();
+        if(systematic >0) err = h->GetErrorYhigh(xbin);
+        else if(systematic <0) err = h->GetErrorYlow(xbin);
         result += err*systematic;
     }
 
@@ -110,20 +110,20 @@ void get_pdf_avg_std_dev(Float_t pdf_Weights[100], Float_t *pdf_avg, Float_t *pd
 
 Double_t get_SF(Double_t pt, Double_t eta, TH2D *h, int systematic = 0){
     //stay in range of histogram
-    if (pt >= 100) pt = 100.;
-    if (pt <= 20) pt = 20.;
+    if (pt >= 90) pt = 90.;
+    if (pt <= 22.5) pt = 22.5;
     eta = abs(eta);
     TAxis* x_ax =  h->GetXaxis();
     TAxis *y_ax =  h->GetYaxis();
-    int xbin = x_ax->FindBin(pt);
-    int ybin = y_ax->FindBin(std::abs(eta));
+    int xbin = x_ax->FindBin(eta);
+    int ybin = y_ax->FindBin(pt);
 
     Double_t result = h->GetBinContent(xbin, ybin);
     if(systematic != 0){
         Double_t err = h->GetBinError(xbin, ybin);
         err = sqrt(err*err + 0.01*0.01);
         //printf("SF is %.3f +/- %.3f \n", result, err);
-        result += (systematic * err);
+        result += (systematic * err );
     }
     if(result < 0.001){ 
         printf("0 muon SF for Pt %.1f, Eta %1.2f \n", pt, eta);
@@ -189,11 +189,11 @@ Double_t get_HLT_SF(Double_t mu1_pt, Double_t mu1_eta, Double_t mu2_pt, Double_t
     mu2_eta = abs(mu2_eta);
     TAxis *x_ax_SF =  h_SF->GetXaxis();
     TAxis *y_ax_SF =  h_SF->GetYaxis();
-    int xbin1_SF = x_ax_SF->FindBin(mu1_pt);
-    int ybin1_SF = y_ax_SF->FindBin(std::abs(mu1_eta));
+    int xbin1_SF = x_ax_SF->FindBin(std::fabs(mu1_eta));
+    int ybin1_SF = y_ax_SF->FindBin(mu1_pt);
 
-    int xbin2_SF = x_ax_SF->FindBin(mu2_pt);
-    int ybin2_SF = y_ax_SF->FindBin(std::abs(mu2_eta));
+    int xbin2_SF = x_ax_SF->FindBin(std::fabs(mu2_eta));
+    int ybin2_SF = y_ax_SF->FindBin(mu2_pt);
 
     Double_t SF1 = h_SF->GetBinContent(xbin1_SF, ybin1_SF);
     Double_t SF2 = h_SF->GetBinContent(xbin2_SF, ybin2_SF);
@@ -211,11 +211,11 @@ Double_t get_HLT_SF(Double_t mu1_pt, Double_t mu1_eta, Double_t mu2_pt, Double_t
 
     TAxis *x_ax_MC_EFF =  h_MC_EFF->GetXaxis();
     TAxis *y_ax_MC_EFF =  h_MC_EFF->GetYaxis();
-    int xbin1_MC_EFF = x_ax_MC_EFF->FindBin(mu1_pt);
-    int ybin1_MC_EFF = y_ax_MC_EFF->FindBin(std::abs(mu1_eta));
+    int xbin1_MC_EFF = x_ax_MC_EFF->FindBin(std::fabs(mu1_eta));
+    int ybin1_MC_EFF = y_ax_MC_EFF->FindBin(mu1_pt);
 
-    int xbin2_MC_EFF = x_ax_MC_EFF->FindBin(mu2_pt);
-    int ybin2_MC_EFF = y_ax_MC_EFF->FindBin(std::abs(mu2_eta));
+    int xbin2_MC_EFF = x_ax_MC_EFF->FindBin(std::fabs(mu2_eta));
+    int ybin2_MC_EFF = y_ax_MC_EFF->FindBin(mu2_pt);
 
     Double_t MC_EFF1 = h_MC_EFF->GetBinContent(xbin1_MC_EFF, ybin1_MC_EFF);
     Double_t MC_EFF2 = h_MC_EFF->GetBinContent(xbin2_MC_EFF, ybin2_MC_EFF);
@@ -235,8 +235,8 @@ Double_t get_el_HLT_SF(Double_t el1_pt, Double_t el1_eta, Double_t el2_pt, Doubl
     //Get HLT SF for event with 2 elons
     //stay in range of histogram
     //restrict to < 200 pt
-    if (el1_pt >= 195.) el1_pt = 195.;
-    if (el2_pt >= 195.) el2_pt = 195.;
+    if (el1_pt >= 350.) el1_pt = 350.;
+    if (el2_pt >= 350.) el2_pt = 350.;
     TAxis *x_ax_SF =  h_SF->GetXaxis();
     TAxis *y_ax_SF =  h_SF->GetYaxis();
     int xbin1_SF = x_ax_SF->FindBin(el1_eta);
@@ -254,8 +254,8 @@ Double_t get_el_HLT_SF(Double_t el1_pt, Double_t el1_eta, Double_t el2_pt, Doubl
         //printf("%.3f %.3f \n", SF1_err, SF2_err);
         //SF1_err = min(SF1_err, 0.001);
         //SF2_err = min(SF2_err, 0.001);
-        SF1_err = std::max(SF1_err, 0.001);
-        SF2_err = std::max(SF2_err, 0.001);
+        SF1_err = std::max(SF1_err, 0.01);
+        SF2_err = std::max(SF2_err, 0.01);
         SF1 += SF1_err * systematic;
         SF2 += SF2_err * systematic;
     }
@@ -315,75 +315,67 @@ Double_t get_el_SF(Double_t pt, Double_t eta, TH2D *h, int systematic = 0){
 
 void setup_SFs(mu_SFs *runs_BCDEF, mu_SFs *runs_GH, pileup_SFs *pu_SF){
     TH1::AddDirectory(kFALSE);
-    TFile *f1 = TFile::Open("SFs/EfficienciesAndSF_RunBtoF.root");
+    TFile *f1 = TFile::Open("SFs/2016/Mu_BCDEF_HLT.root");
     f1->cd("IsoMu24_OR_IsoTkMu24_PtEtaBins");
     TDirectory *subdir1 = gDirectory;
-    TH2D *HLT_1 = (TH2D *) subdir1->Get("pt_abseta_ratio")->Clone();
+    TH2D *HLT_1 = (TH2D *) subdir1->Get("abseta_pt_ratio")->Clone();
     HLT_1->SetDirectory(0);
     runs_BCDEF->HLT_SF = HLT_1;
     subdir1->cd("efficienciesMC");
     TDirectory *subdir12 = gDirectory;
-    TH2D *MC_EFF1 = (TH2D *) subdir12->Get("pt_abseta_MC")->Clone();
+    TH2D *MC_EFF1 = (TH2D *) subdir12->Get("abseta_pt_MC")->Clone();
     MC_EFF1->SetDirectory(0);
     runs_BCDEF->HLT_MC_EFF = MC_EFF1;
     f1->Close();
 
 
-    TFile *f2 = TFile::Open("SFs/EfficienciesAndSF_BCDEF_ID.root");
-    f2->cd("MC_NUM_HighPtID_DEN_genTracks_PAR_newpt_eta");
-    TDirectory *subdir2 = gDirectory;
-    TH2D *ID_1 = (TH2D *) subdir2->Get("pair_ne_ratio")->Clone();
+    TFile *f2 = TFile::Open("SFs/2016/Mu_BCDEF_ID.root");
+    TH2D *ID_1 = (TH2D *) f2->Get("NUM_HighPtID_DEN_genTracks_eta_pair_newTuneP_probe_pt")->Clone();
     ID_1->SetDirectory(0);
     runs_BCDEF->ID_SF = ID_1;
     f2->Close();
 
 
-    TFile *f3 = TFile::Open("SFs/EfficienciesAndSF_BCDEF_ISO.root");
-    f3->cd("tkLooseISO_highptID_newpt_eta");
-    TDirectory *subdir3 = gDirectory;
-    TH2D *ISO_1 = (TH2D *) subdir3->Get("pair_ne_ratio")->Clone();
+    TFile *f3 = TFile::Open("SFs/2016/Mu_BCDEF_ISO.root");
+    TH2D *ISO_1 = (TH2D *) f3->Get("NUM_LooseRelTkIso_DEN_HighPtIDandIPCut_eta_pair_newTuneP_probe_pt")->Clone();
     ISO_1->SetDirectory(0);
     runs_BCDEF->ISO_SF = ISO_1;
     f3->Close();
 
 
-    TFile *f4 = TFile::Open("SFs/EfficienciesAndSF_Period4.root");
+    TFile *f4 = TFile::Open("SFs/2016/Mu_GH_HLT.root");
     f4->cd("IsoMu24_OR_IsoTkMu24_PtEtaBins");
     TDirectory *subdir4 = gDirectory;
-    TH2D *HLT_2 = (TH2D *) subdir4->Get("pt_abseta_ratio")->Clone();
+    TH2D *HLT_2 = (TH2D *) subdir4->Get("abseta_pt_ratio")->Clone();
     HLT_2->SetDirectory(0);
     runs_GH->HLT_SF = HLT_2;
     subdir4->cd("efficienciesMC");
     TDirectory *subdir42 = gDirectory;
-    runs_GH->HLT_MC_EFF = (TH2D *) subdir42->Get("pt_abseta_MC")->Clone();
+    runs_GH->HLT_MC_EFF = (TH2D *) subdir42->Get("abseta_pt_MC")->Clone();
     runs_GH->HLT_MC_EFF ->SetDirectory(0);
     f4->Close();
 
 
-    TFile *f5 = TFile::Open("SFs/EfficienciesAndSF_GH_ID.root");
-    f5->cd("MC_NUM_HighPtID_DEN_genTracks_PAR_newpt_eta");
-    TDirectory *subdir5 = gDirectory;
-    TH2D *ID_2 = (TH2D *) subdir5->Get("pair_ne_ratio")->Clone();
+    TFile *f5 = TFile::Open("SFs/2016/Mu_GH_ID.root");
+    TH2D *ID_2 = (TH2D *) f5->Get("NUM_HighPtID_DEN_genTracks_eta_pair_newTuneP_probe_pt")->Clone();
     ID_2->SetDirectory(0);
     runs_GH->ID_SF = ID_2;
     f5->Close();
 
 
-    TFile *f6 = TFile::Open("SFs/EfficienciesAndSF_GH_ISO.root");
-    f6->cd("tkLooseISO_highptID_newpt_eta");
-    TDirectory *subdir6 = gDirectory;
-    TH2D *ISO_2 = (TH2D *) subdir6->Get("pair_ne_ratio")->Clone();
+    TFile *f6 = TFile::Open("SFs/2016/Mu_GH_ISO.root");
+    TH2D *ISO_2 = (TH2D *) f6->Get("NUM_LooseRelTkIso_DEN_HighPtIDandIPCut_eta_pair_newTuneP_probe_pt")->Clone();
     ISO_2->SetDirectory(0);
     runs_GH->ISO_SF = ISO_2;
     f6->Close();
 
-    TFile *f6a = TFile::Open("SFs/Muon_tracking_SF_BCDEF.root");
+    TFile *f6a = TFile::Open("SFs/2016/Muon_tracking_SF_BCDEF.root");
     TDirectory *subdir6a = gDirectory;
     TGraphAsymmErrors *TRK_1 = (TGraphAsymmErrors *) subdir6a->Get("ratio_eff_aeta_dr030e030_corr");
     runs_BCDEF->TRK_SF = TRK_1;
     f6a->Close();
 
-    TFile *f6b = TFile::Open("SFs/Muon_tracking_SF_GH.root");
+    TFile *f6b = TFile::Open("SFs/2016/Muon_tracking_SF_GH.root");
     TDirectory *subdir6b = gDirectory;
     TGraphAsymmErrors *TRK_2 = (TGraphAsymmErrors *) subdir6b->Get("ratio_eff_aeta_dr030e030_corr");
     runs_GH->TRK_SF = TRK_2;
@@ -391,8 +383,7 @@ void setup_SFs(mu_SFs *runs_BCDEF, mu_SFs *runs_GH, pileup_SFs *pu_SF){
 
 
 
-
-    TFile *f7 = TFile::Open("SFs/DataPileupHistogram_69200.root");
+    TFile *f7 = TFile::Open("SFs/2016/DataPileupHistogram_69200.root");
     TH1D *data_pileup = (TH1D *) f7->Get("pileup")->Clone();
     data_pileup->Scale(1./data_pileup->Integral());
     data_pileup->SetDirectory(0);
@@ -403,7 +394,7 @@ void setup_SFs(mu_SFs *runs_BCDEF, mu_SFs *runs_GH, pileup_SFs *pu_SF){
 
 void setup_el_SF(el_SFs *sf){
     //Setup electron SF's
-    TFile *f7 = TFile::Open("SFs/egammaEffi_cutbased_ID.root");
+    TFile *f7 = TFile::Open("SFs/2016/El_ID.root");
     TDirectory *subdir7 = gDirectory;
     TH2D *h1 = (TH2D *) subdir7->Get("EGamma_SF2D")->Clone();
     h1->SetDirectory(0);
@@ -412,14 +403,14 @@ void setup_el_SF(el_SFs *sf){
     //el_SF->Print();
     //
 
-    TFile *f8 = TFile::Open("SFs/egammaEffi_Reco.root");
+    TFile *f8 = TFile::Open("SFs/2016/El_RECO.root");
     TDirectory *subdir8 = gDirectory;
     TH2D *h2 = (TH2D *) subdir8->Get("EGamma_SF2D")->Clone();
     h2->SetDirectory(0);
     sf->RECO_SF = h2;
     f8->Close();
 
-    TFile *f9 = TFile::Open("SFs/egammaEffi_HLT.root");
+    TFile *f9 = TFile::Open("SFs/2016/El_HLT.root");
     TDirectory *subdir9 = gDirectory;
     TH2D *h_hltsf = (TH2D *) subdir9->Get("EGamma_SF2D")->Clone();
     h_hltsf->SetDirectory(0);
@@ -433,17 +424,17 @@ void setup_el_SF(el_SFs *sf){
 
 void setup_pileup_systematic(pileup_systematics *pu_sys){
 
-    TFile *f7 = TFile::Open("SFs/DataPileupHistogram_69200.root");
+    TFile *f7 = TFile::Open("SFs/2016/DataPileupHistogram_69200.root");
     TH1D * pileup_data_nom = (TH1D *) f7->Get("pileup")->Clone();
     //pileup_data_nom->Scale(1./pileup_data_nom->Integral());
     pileup_data_nom->SetDirectory(0);
 
-    TFile *f8 = TFile::Open("SFs/DataPileupHistogram_66017.root");
+    TFile *f8 = TFile::Open("SFs/2016/DataPileupHistogram_66017.root");
     TH1D * pileup_data_up = (TH1D *) f8->Get("pileup")->Clone();
     //pileup_data_up->Scale(1./pileup_data_up->Integral());
     pileup_data_up->SetDirectory(0);
 
-    TFile *f9 = TFile::Open("SFs/DataPileupHistogram_72383.root");
+    TFile *f9 = TFile::Open("SFs/2016/DataPileupHistogram_72383.root");
     TH1D * pileup_data_down = (TH1D *) f9->Get("pileup")->Clone();
     //pileup_data_down->Scale(1./pileup_data_down->Integral());
     pileup_data_down->SetDirectory(0);
