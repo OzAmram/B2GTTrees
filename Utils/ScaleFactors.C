@@ -17,7 +17,6 @@ typedef struct {
     TH2D *HLT_MC_EFF;
     TH2D *ISO_SF;
     TH2D *ID_SF;
-    TGraphAsymmErrors *TRK_SF;
 } mu_SFs;
 
 
@@ -108,19 +107,30 @@ void get_pdf_avg_std_dev(Float_t pdf_Weights[100], Float_t *pdf_avg, Float_t *pd
 
 
 
-Double_t get_SF(Double_t pt, Double_t eta, TH2D *h, int systematic = 0){
+Double_t get_mu_SF(Double_t pt, Double_t eta, int year, TH2D *h, int systematic = 0){
+    if(year <2016 || year > 2018) printf("Year is not from 2016-2018. This is bad!! \n");
     //stay in range of histogram
-    float sys_unc = 0.005;
+    float sys_unc = 0.;
     if (pt >= 115.){
         sys_unc = 0.01;
         pt = 90.;
     }
     if (pt <= 22.5) pt = 22.5;
-    eta = abs(eta);
     TAxis* x_ax =  h->GetXaxis();
     TAxis *y_ax =  h->GetYaxis();
-    int xbin = x_ax->FindBin(eta);
-    int ybin = y_ax->FindBin(pt);
+
+    int xbin(0),ybin(0);
+    if(year == 2016){
+        //2016 hists are abs(eta) and pt
+        xbin = x_ax->FindBin(eta);
+        ybin = y_ax->FindBin(pt);
+    }
+    else{
+        //2017 & 18 hists are pt and eta
+        xbin = x_ax->FindBin(pt);
+        ybin = y_ax->FindBin(abs(eta));
+    }
+
 
     Double_t result = h->GetBinContent(xbin, ybin);
     if(systematic != 0){
@@ -316,136 +326,200 @@ Double_t get_el_HLT_SF(Double_t el1_pt, Double_t el1_eta, Double_t el2_pt, Doubl
 
 
 
+void setup_pu_SFs(pileup_SFs *pu_SF, int year){
+    TFile *f7;
 
+    //all use 2016 for now
+    if(year == 2016) f7 = TFile::Open("SFs/2016/DataPileupHistogram_69200.root");
+    else if(year == 2017) f7 = TFile::Open("SFs/2016/DataPileupHistogram_69200.root");
+    else if(year == 2018) f7 = TFile::Open("SFs/2016/DataPileupHistogram_69200.root");
 
-
-
-
-void setup_SFs(mu_SFs *runs_BCDEF, mu_SFs *runs_GH, pileup_SFs *pu_SF){
-    TH1::AddDirectory(kFALSE);
-    TFile *f1 = TFile::Open("SFs/2016/Mu_BCDEF_HLT.root");
-    f1->cd("IsoMu24_OR_IsoTkMu24_PtEtaBins");
-    TDirectory *subdir1 = gDirectory;
-    TH2D *HLT_1 = (TH2D *) subdir1->Get("abseta_pt_ratio")->Clone();
-    HLT_1->SetDirectory(0);
-    runs_BCDEF->HLT_SF = HLT_1;
-    subdir1->cd("efficienciesMC");
-    TDirectory *subdir12 = gDirectory;
-    TH2D *MC_EFF1 = (TH2D *) subdir12->Get("abseta_pt_MC")->Clone();
-    MC_EFF1->SetDirectory(0);
-    runs_BCDEF->HLT_MC_EFF = MC_EFF1;
-    f1->Close();
-
-
-    TFile *f2 = TFile::Open("SFs/2016/Mu_BCDEF_ID.root");
-    TH2D *ID_1 = (TH2D *) f2->Get("NUM_HighPtID_DEN_genTracks_eta_pair_newTuneP_probe_pt")->Clone();
-    ID_1->SetDirectory(0);
-    runs_BCDEF->ID_SF = ID_1;
-    f2->Close();
-
-
-    TFile *f3 = TFile::Open("SFs/2016/Mu_BCDEF_ISO.root");
-    TH2D *ISO_1 = (TH2D *) f3->Get("NUM_LooseRelTkIso_DEN_HighPtIDandIPCut_eta_pair_newTuneP_probe_pt")->Clone();
-    ISO_1->SetDirectory(0);
-    runs_BCDEF->ISO_SF = ISO_1;
-    f3->Close();
-
-
-    TFile *f4 = TFile::Open("SFs/2016/Mu_GH_HLT.root");
-    f4->cd("IsoMu24_OR_IsoTkMu24_PtEtaBins");
-    TDirectory *subdir4 = gDirectory;
-    TH2D *HLT_2 = (TH2D *) subdir4->Get("abseta_pt_ratio")->Clone();
-    HLT_2->SetDirectory(0);
-    runs_GH->HLT_SF = HLT_2;
-    subdir4->cd("efficienciesMC");
-    TDirectory *subdir42 = gDirectory;
-    runs_GH->HLT_MC_EFF = (TH2D *) subdir42->Get("abseta_pt_MC")->Clone();
-    runs_GH->HLT_MC_EFF ->SetDirectory(0);
-    f4->Close();
-
-
-    TFile *f5 = TFile::Open("SFs/2016/Mu_GH_ID.root");
-    TH2D *ID_2 = (TH2D *) f5->Get("NUM_HighPtID_DEN_genTracks_eta_pair_newTuneP_probe_pt")->Clone();
-    ID_2->SetDirectory(0);
-    runs_GH->ID_SF = ID_2;
-    f5->Close();
-
-
-    TFile *f6 = TFile::Open("SFs/2016/Mu_GH_ISO.root");
-    TH2D *ISO_2 = (TH2D *) f6->Get("NUM_LooseRelTkIso_DEN_HighPtIDandIPCut_eta_pair_newTuneP_probe_pt")->Clone();
-    ISO_2->SetDirectory(0);
-    runs_GH->ISO_SF = ISO_2;
-    f6->Close();
-
-    TFile *f6a = TFile::Open("SFs/2016/Muon_tracking_SF_BCDEF.root");
-    TDirectory *subdir6a = gDirectory;
-    TGraphAsymmErrors *TRK_1 = (TGraphAsymmErrors *) subdir6a->Get("ratio_eff_aeta_dr030e030_corr");
-    runs_BCDEF->TRK_SF = TRK_1;
-    f6a->Close();
-
-    TFile *f6b = TFile::Open("SFs/2016/Muon_tracking_SF_GH.root");
-    TDirectory *subdir6b = gDirectory;
-    TGraphAsymmErrors *TRK_2 = (TGraphAsymmErrors *) subdir6b->Get("ratio_eff_aeta_dr030e030_corr");
-    runs_GH->TRK_SF = TRK_2;
-    f6b->Close();
-
-
-
-    TFile *f7 = TFile::Open("SFs/2016/DataPileupHistogram_69200.root");
     TH1D *data_pileup = (TH1D *) f7->Get("pileup")->Clone();
     data_pileup->Scale(1./data_pileup->Integral());
     data_pileup->SetDirectory(0);
     pu_SF->data_pileup = data_pileup;
     pu_SF->pileup_ratio = (TH1D *) data_pileup->Clone("pileup_ratio");
+    pu_SF->pileup_ratio->SetDirectory(0);
     f7->Close();
+
+    if(pu_SF->data_pileup == NULL) printf("Something wrong getting Pileup SF!\n\n\n");
 }
 
-void setup_el_SF(el_SFs *sf){
+
+
+
+void setup_mu_SFs(mu_SFs *era1, mu_SFs *era2, int year){
+    TH1::AddDirectory(kFALSE);
+
+    TFile *f1, *f2, *f3, *f4, *f5, *f6;
+
+
+    if(year == 2016){
+        f1 = TFile::Open("SFs/2016/Mu_BCDEF_HLT.root");
+        f1->cd("IsoMu24_OR_IsoTkMu24_PtEtaBins");
+        era1->HLT_SF = (TH2D *) gDirectory->Get("abseta_pt_ratio")->Clone();
+        era1->HLT_SF->SetDirectory(0);
+        gDirectory->cd("efficienciesMC");
+        era1->HLT_MC_EFF = (TH2D *) gDirectory->Get("abseta_pt_MC")->Clone();
+        era1->HLT_MC_EFF->SetDirectory(0);
+        f1->Close();
+
+        f4 = TFile::Open("SFs/2016/Mu_GH_HLT.root");
+        f4->cd("IsoMu24_OR_IsoTkMu24_PtEtaBins");
+        era2->HLT_SF = (TH2D *) gDirectory->Get("abseta_pt_ratio")->Clone();
+        era2->HLT_SF ->SetDirectory(0);
+        gDirectory->cd("efficienciesMC");
+        era2->HLT_MC_EFF = (TH2D *) gDirectory->Get("abseta_pt_MC")->Clone();
+        era2->HLT_MC_EFF ->SetDirectory(0);
+        f4->Close();
+
+        f2 = TFile::Open("SFs/2016/Mu_BCDEF_ID.root");
+        TH2D *ID_1 = (TH2D *) f2->Get("NUM_TightID_DEN_genTracks_eta_pt")->Clone();
+        ID_1->SetDirectory(0);
+        era1->ID_SF = ID_1;
+        f2->Close();
+
+        f3 = TFile::Open("SFs/2016/Mu_BCDEF_ISO.root");
+        TH2D *ISO_1 = (TH2D *) f3->Get("NUM_TightRelIso_DEN_TightIDandIPCut_eta_pt")->Clone();
+        ISO_1->SetDirectory(0);
+        era1->ISO_SF = ISO_1;
+        f3->Close();
+
+
+        f5 = TFile::Open("SFs/2016/Mu_GH_ID.root");
+        TH2D *ID_2 = (TH2D *) f5->Get("NUM_TightID_DEN_genTracks_eta_pt")->Clone();
+        ID_2->SetDirectory(0);
+        era2->ID_SF = ID_2;
+        f5->Close();
+
+        f6 = TFile::Open("SFs/2016/Mu_GH_ISO.root");
+        TH2D *ISO_2 = (TH2D *) f6->Get("NUM_TightRelIso_DEN_TightIDandIPCut_eta_pt")->Clone();
+        ISO_2->SetDirectory(0);
+        era2->ISO_SF = ISO_2;
+        f6->Close();
+
+    }
+    else if(year == 2017){
+        printf("hlt\n");
+        f1 = TFile::Open("SFs/2017/Mu_HLT.root");
+        f1->cd("IsoMu27_PtEtaBins");
+        era1->HLT_SF = (TH2D *) gDirectory->Get("abseta_pt_ratio")->Clone();
+        era1->HLT_SF->SetDirectory(0);
+        gDirectory->cd("efficienciesMC");
+        era1->HLT_MC_EFF = (TH2D *) gDirectory->Get("abseta_pt_MC")->Clone();
+        era1->HLT_MC_EFF->SetDirectory(0);
+        f1->Close();
+        era2->HLT_SF = era1->HLT_SF;
+        era2->HLT_MC_EFF = era1->HLT_MC_EFF;
+
+        printf("id\n");
+        f2 = TFile::Open("SFs/2017/Mu_ID.root");
+        TH2D *ID_1 = (TH2D *) f2->Get("NUM_TightID_DEN_genTracks_pt_abseta")->Clone();
+        ID_1->SetDirectory(0);
+        era1->ID_SF = ID_1;
+        era2->ID_SF = ID_1;
+        f2->Close();
+
+        printf("iso\n");
+        f3 = TFile::Open("SFs/2017/Mu_ISO.root");
+        TH2D *ISO_1 = (TH2D *) f3->Get("NUM_TightRelIso_DEN_TightIDandIPCut_pt_abseta")->Clone();
+        ISO_1->SetDirectory(0);
+        era1->ISO_SF = ISO_1;
+        era2->ISO_SF = ISO_1;
+        f3->Close();
+
+
+    }
+    else if(year == 2018){
+        f1 = TFile::Open("SFs/2018/Mu_per1_HLT.root");
+        f1->cd("IsoMu24_PtEtaBins");
+        era1->HLT_SF = (TH2D *) gDirectory->Get("abseta_pt_ratio")->Clone();
+        era1->HLT_SF->SetDirectory(0);
+        gDirectory->cd("efficienciesMC");
+        era1->HLT_MC_EFF = (TH2D *) gDirectory->Get("abseta_pt_MC")->Clone();
+        era1->HLT_MC_EFF->SetDirectory(0);
+        f1->Close();
+
+        f4 = TFile::Open("SFs/2018/Mu_per2_HLT.root");
+        f4->cd("IsoMu24_PtEtaBins");
+        era2->HLT_SF = (TH2D *) gDirectory->Get("abseta_pt_ratio")->Clone();
+        era2->HLT_SF->SetDirectory(0);
+        gDirectory->cd("efficienciesMC");
+        era2->HLT_MC_EFF = (TH2D *) gDirectory->Get("abseta_pt_MC")->Clone();
+        era2->HLT_MC_EFF->SetDirectory(0);
+        f4->Close();
+
+        f2 = TFile::Open("SFs/2018/Mu_ID.root");
+        TH2D *ID_1 = (TH2D *) f2->Get("NUM_TightID_DEN_TrackerMuons_pt_abseta")->Clone();
+        ID_1->SetDirectory(0);
+        era1->ID_SF = ID_1;
+        era2->ID_SF = ID_1;
+        f2->Close();
+
+        f3 = TFile::Open("SFs/2018/Mu_ISO.root");
+        TH2D *ISO_1 = (TH2D *) f3->Get("NUM_TightRelIso_DEN_TightIDandIPCut_pt_abseta")->Clone();
+        ISO_1->SetDirectory(0);
+        era1->ISO_SF = ISO_1;
+        era2->ISO_SF = ISO_1;
+        f3->Close();
+
+
+    }
+
+    if(era1->HLT_SF == NULL || era1->ID_SF == NULL || era1->ISO_SF == NULL  ||
+       era2->HLT_SF == NULL || era2->ID_SF == NULL || era2->ISO_SF == NULL) printf("Something wrong setup muon SF'S !!!! \n\n\n");
+}
+
+void setup_el_SF(el_SFs *sf, int year){
     //Setup electron SF's
-    TFile *f7 = TFile::Open("SFs/2016/El_ID.root");
-    TDirectory *subdir7 = gDirectory;
-    TH2D *h1 = (TH2D *) subdir7->Get("EGamma_SF2D")->Clone();
+    TFile *f_id, *f_reco, *f_hlt;
+    f_hlt = TFile::Open("SFs/2016/El_HLT.root");
+    if(year == 2016){
+        f_id = TFile::Open("SFs/2016/El_ID.root");
+        f_reco = TFile::Open("SFs/2016/El_RECO.root");
+    }
+    else if(year == 2017){
+        f_id = TFile::Open("SFs/2017/El_ID.root");
+        f_reco = TFile::Open("SFs/2017/El_RECO.root");
+    }
+    else if(year == 2018){
+        f_id = TFile::Open("SFs/2018/El_ID.root");
+        f_reco = TFile::Open("SFs/2018/El_RECO.root");
+    }
+
+    TH2D *h1 = (TH2D *) f_id->Get("EGamma_SF2D")->Clone();
     h1->SetDirectory(0);
     sf->ID_SF = h1;
-    f7->Close();
-    //el_SF->Print();
-    //
+    f_id->Close();
 
-    //Setup electron SF's
-    TFile *f8 = TFile::Open("SFs/2016/El_RECO.root");
-    TDirectory *subdir8 = gDirectory;
-    TH2D *h2 = (TH2D *) subdir8->Get("EGamma_SF2D")->Clone();
+    TH2D *h2 = (TH2D *) f_reco->Get("EGamma_SF2D")->Clone();
     h2->SetDirectory(0);
     sf->RECO_SF = h2;
-    f8->Close();
+    f_reco->Close();
 
-    TFile *f9 = TFile::Open("SFs/2016/El_HLT.root");
-    TDirectory *subdir9 = gDirectory;
-    TH2D *h_hltsf = (TH2D *) subdir9->Get("EGamma_SF2D")->Clone();
+    TH2D *h_hltsf = (TH2D *) f_hlt->Get("EGamma_SF2D")->Clone();
     h_hltsf->SetDirectory(0);
     sf->HLT_SF = h_hltsf;
-    TH2D *h_hltmc = (TH2D *) subdir9->Get("EGamma_EffMC2D")->Clone();
+    TH2D *h_hltmc = (TH2D *) f_hlt->Get("EGamma_EffMC2D")->Clone();
     h_hltmc->SetDirectory(0);
     sf->HLT_MC_EFF = h_hltmc;
-    f9->Close();
+    f_hlt->Close();
     
+    if(sf->HLT_SF == NULL || sf->ID_SF == NULL || sf->RECO_SF == NULL ) printf("Something wrong setup electron SF'S !!!! \n\n\n");
 }
 
-void setup_pileup_systematic(pileup_systematics *pu_sys){
+void setup_pileup_systematic(pileup_systematics *pu_sys, int year){
 
     TFile *f7 = TFile::Open("SFs/2016/DataPileupHistogram_69200.root");
     TH1D * pileup_data_nom = (TH1D *) f7->Get("pileup")->Clone();
-    //pileup_data_nom->Scale(1./pileup_data_nom->Integral());
     pileup_data_nom->SetDirectory(0);
 
     TFile *f8 = TFile::Open("SFs/2016/DataPileupHistogram_66017.root");
     TH1D * pileup_data_up = (TH1D *) f8->Get("pileup")->Clone();
-    //pileup_data_up->Scale(1./pileup_data_up->Integral());
     pileup_data_up->SetDirectory(0);
 
     TFile *f9 = TFile::Open("SFs/2016/DataPileupHistogram_72383.root");
     TH1D * pileup_data_down = (TH1D *) f9->Get("pileup")->Clone();
-    //pileup_data_down->Scale(1./pileup_data_down->Integral());
     pileup_data_down->SetDirectory(0);
 
     //Printf(" Ints are %.4e %.4e %.4e \n", pileup_data_nom->Integral(), pileup_data_up->Integral(), pileup_data_down->Integral());

@@ -71,15 +71,20 @@ NTupleReader::NTupleReader(const char *fin_name, const char *fout_name, bool is_
 void NTupleReader::setupSFs(){
     do_SFs = true;
 
-    //separate SFs for runs BCDEF and GH
-    printf("getting SFs \n");
-    setup_SFs(&runs_bcdef, &runs_gh, &pu_SFs);
+    printf("getting pu SFs \n");
+
+    setup_pu_SFs(&pu_SFs, year);
+
+    if(do_muons || do_emu){
+        printf("getting muon SFs \n");
+        setup_mu_SFs(&era1, &era2, year);
+    }
 
 
 
     if(do_electrons || do_emu){
         printf("getting electron SFs \n");
-        setup_el_SF(&el_SF);
+        setup_el_SF(&el_SF, year);
     }
     printf("Retrieved Scale Factors \n\n");
 }
@@ -145,15 +150,17 @@ bool NTupleReader::getNextFile(){
             if(do_muons || do_emu){
 
                 tin->SetBranchAddress("mu_size", &mu_size); //number of muons in the event
-                tin->SetBranchAddress("mu_TunePMuonBestTrackPt", &mu_Pt);
+                tin->SetBranchAddress("mu_Pt", &mu_Pt);
                 tin->SetBranchAddress("mu_Eta", &mu_Eta);
                 tin->SetBranchAddress("mu_Phi", &mu_Phi);
                 tin->SetBranchAddress("mu_E", &mu_E);
                 tin->SetBranchAddress("mu_Charge", &mu_Charge);
 
-                tin->SetBranchAddress("mu_IsHighPtMuon", &mu_IsHighPtMuon);
-                tin->SetBranchAddress("mu_TrackerIso", &mu_TrackerIso);
+                tin->SetBranchAddress("mu_IsTightMuon", &mu_IsTightMuon);
                 tin->SetBranchAddress("mu_NumberTrackerLayers", &mu_NumberTrackerLayers);
+                tin->SetBranchAddress("mu_Iso04", &mu_PFIso);
+                //tin->SetBranchAddress("mu_IsHighPtMuon", &mu_IsHighPtMuon);
+                //tin->SetBranchAddress("mu_TrackerIso", &mu_TrackerIso);
                 //tin->SetBranchAddress("mu_SumChargedHadronPt", &mu_SumChargedHadronPt);
                 //tin->SetBranchAddress("mu_SumNeutralHadronPt", &mu_SumNeutralHadronPt);
                 //tin->SetBranchAddress("mu_SumPUPt", &mu_SumPUPt);
@@ -163,9 +170,12 @@ bool NTupleReader::getNextFile(){
                     tin->SetBranchAddress("HLT_IsoMu24", &HLT_IsoMu24);
                     tin->SetBranchAddress("HLT_IsoTkMu24", &HLT_IsoTkMu24);
                 }
-                else{
+                else if(year == 2017){
                     tin->SetBranchAddress("HLT_IsoMu27", &HLT_IsoMu27);
                     tin->SetBranchAddress("HLT_IsoTkMu27", &HLT_IsoTkMu27);
+                }
+                else if(year == 2018){
+                    tin->SetBranchAddress("HLT_IsoMu24", &HLT_IsoMu24);
                 }
 
             }
@@ -245,6 +255,7 @@ void NTupleReader::setupOutputTree(char treeName[100]){
     nOutTrees++;
     outTrees[idx] = new TTree(treeName, "");
 
+    outTrees[idx]->Branch("year", &year, "year/I");
     outTrees[idx]->Branch("m", &cm_m, "m/D");
     outTrees[idx]->Branch("xF", &xF, "xF/D");
     outTrees[idx]->Branch("cost", &cost_r, "cost/D");
@@ -315,24 +326,20 @@ void NTupleReader::setupOutputTree(char treeName[100]){
         if(do_muons || do_emu){
             outTrees[idx]->Branch("gen_mu_m", "TLorentzVector", &gen_mu_m_vec);
             outTrees[idx]->Branch("gen_mu_p", "TLorentzVector", &gen_mu_p_vec);
-            outTrees[idx]->Branch("bcdef_HLT_SF", &bcdef_HLT_SF);
-            outTrees[idx]->Branch("bcdef_iso_SF", &bcdef_iso_SF);
-            outTrees[idx]->Branch("bcdef_id_SF", &bcdef_id_SF);
-            outTrees[idx]->Branch("bcdef_trk_SF", &bcdef_trk_SF);
-            outTrees[idx]->Branch("gh_HLT_SF", &gh_HLT_SF);
-            outTrees[idx]->Branch("gh_iso_SF", &gh_iso_SF);
-            outTrees[idx]->Branch("gh_id_SF", &gh_id_SF);
-            outTrees[idx]->Branch("gh_trk_SF", &gh_trk_SF);
+            outTrees[idx]->Branch("era1_HLT_SF", &era1_HLT_SF);
+            outTrees[idx]->Branch("era1_iso_SF", &era1_iso_SF);
+            outTrees[idx]->Branch("era1_id_SF", &era1_id_SF);
+            outTrees[idx]->Branch("era2_HLT_SF", &era2_HLT_SF);
+            outTrees[idx]->Branch("era2_iso_SF", &era2_iso_SF);
+            outTrees[idx]->Branch("era2_id_SF", &era2_id_SF);
 
             if(do_RC){
                 outTrees[idx]->Branch("mu_p_SF", &mu_p_SF, "mu_p_SF/D");
                 outTrees[idx]->Branch("mu_m_SF", &mu_m_SF, "mu_m_SF/D");
                 outTrees[idx]->Branch("mu_p_SF_up", &mu_p_SF_up, "mu_p_SF_up/D");
-                outTrees[idx]->Branch("mu_m_SF_up", &mu_m_SF, "mu_m_SF_up/D");
+                outTrees[idx]->Branch("mu_m_SF_up", &mu_m_SF_up, "mu_m_SF_up/D");
                 outTrees[idx]->Branch("mu_p_SF_down", &mu_p_SF_down, "mu_p_SF_down/D");
-                outTrees[idx]->Branch("mu_m_SF_down", &mu_m_SF, "mu_m_SF_down/D");
-                outTrees[idx]->Branch("mu_p_SF_alt", &mu_p_SF_alt, "mu_p_SF_alt/D");
-                outTrees[idx]->Branch("mu_m_SF_alt", &mu_m_SF_alt, "mu_m_SF_alt/D");
+                outTrees[idx]->Branch("mu_m_SF_down", &mu_m_SF_down, "mu_m_SF_down/D");
             }
         }
 
@@ -415,12 +422,12 @@ void NTupleReader::getEvent(int i){
                 min_pt = 26.;
             }
 
-            dimuon_id = mu_IsHighPtMuon[0] && mu_IsHighPtMuon[1] &&
+            dimuon_id = mu_IsTightMuon[0] && mu_IsTightMuon[1] &&
                 mu_Pt[0] > min_pt &&  mu_Pt[1] > 15. &&
                 abs(mu_Eta[0]) < 2.4 && abs(mu_Eta[1]) < 2.4;
             //See https://twiki.cern.ch/twiki/bin/viewauth/CMS/SWGuideMuonIdRun2 for iso cuts
-            mu_iso0 = mu_TrackerIso[0] < mu_iso;
-            mu_iso1 = mu_TrackerIso[1] < mu_iso;
+            mu_iso0 = mu_PFIso[0] < mu_iso;
+            mu_iso1 = mu_PFIso[1] < mu_iso;
 
             if(mu_Charge[0] >0){
                 mu_p.SetPtEtaPhiM(mu_Pt[0], mu_Eta[0], mu_Phi[0], mu_mass);
@@ -504,12 +511,12 @@ void NTupleReader::getEvent(int i){
             }
 
 
-            emu_ids = el_IDMedium_NoIso[0] && mu_IsHighPtMuon[0] &&
+            emu_ids = el_IDMedium_NoIso[0] && mu_IsTightMuon[0] &&
                 mu_Pt[0] > min_pt &&  el_ScaleCorr[1] * el_Pt[1] > 15. &&
                 abs(mu_Eta[0])  && goodElEta(el_SCEta[1]);
 
             el_iso0 = el_IDMedium[0];
-            mu_iso0 = mu_TrackerIso[0] < mu_iso;
+            mu_iso0 = mu_PFIso[0] < mu_iso;
 
             mu.SetPtEtaPhiE(mu_Pt[0], mu_Eta[0], mu_Phi[0], mu_E[0]);
             el.SetPtEtaPhiE(el_ScaleCorr[0] * el_Pt[0], el_Eta[0], el_Phi[0], el_ScaleCorr[0] * el_E[0]);
@@ -619,17 +626,15 @@ void NTupleReader::fillEventSFs(){
 
     if(do_muons){
 
-        bcdef_HLT_SF = get_HLT_SF(mu1_pt, mu1_eta, mu2_pt, mu2_eta, runs_bcdef.HLT_SF, runs_bcdef.HLT_MC_EFF);
-        gh_HLT_SF = get_HLT_SF(mu1_pt, mu1_eta, mu2_pt, mu2_eta, runs_gh.HLT_SF, runs_gh.HLT_MC_EFF);
+        era1_HLT_SF = get_HLT_SF(mu1_pt, mu1_eta, mu2_pt, mu2_eta, era1.HLT_SF, era1.HLT_MC_EFF);
+        era2_HLT_SF = get_HLT_SF(mu1_pt, mu1_eta, mu2_pt, mu2_eta, era2.HLT_SF, era2.HLT_MC_EFF);
 
-        bcdef_iso_SF = get_SF(mu1_pt, mu1_eta, runs_bcdef.ISO_SF) * get_SF(mu2_pt, mu2_eta, runs_bcdef.ISO_SF);
-        bcdef_id_SF = get_SF(mu1_pt, mu1_eta, runs_bcdef.ID_SF) * get_SF(mu2_pt, mu2_eta, runs_bcdef.ID_SF);
+        era1_id_SF = get_mu_SF(mu1_pt, mu1_eta,  year, era1.ID_SF) * get_mu_SF(mu2_pt, mu2_eta,  year, era1.ID_SF);
+        era2_id_SF = get_mu_SF(mu1_pt, mu1_eta,  year, era2.ID_SF) * get_mu_SF(mu2_pt, mu2_eta,  year, era2.ID_SF);
 
-        gh_iso_SF = get_SF(mu1_pt, mu1_eta, runs_gh.ISO_SF) * get_SF(mu2_pt, mu2_eta, runs_gh.ISO_SF);
-        gh_id_SF = get_SF(mu1_pt, mu1_eta, runs_gh.ID_SF) * get_SF(mu2_pt, mu2_eta, runs_gh.ID_SF);
+        era2_iso_SF = get_mu_SF(mu1_pt, mu1_eta, year, era2.ISO_SF) * get_mu_SF(mu2_pt, mu2_eta, year, era2.ISO_SF);
+        era1_iso_SF = get_mu_SF(mu1_pt, mu1_eta, year, era1.ISO_SF) * get_mu_SF(mu2_pt, mu2_eta, year, era1.ISO_SF);
 
-        bcdef_trk_SF = get_Mu_trk_SF(abs(mu1_eta), runs_bcdef.TRK_SF) * get_Mu_trk_SF(abs(mu2_eta), runs_bcdef.TRK_SF);
-        gh_trk_SF = get_Mu_trk_SF(abs(mu1_eta), runs_gh.TRK_SF) * get_Mu_trk_SF(abs(mu2_eta), runs_gh.TRK_SF);
     }
     if(do_electrons){
 
@@ -659,17 +664,15 @@ void NTupleReader::fillEventSFs(){
     }
     if(do_emu){
 
-        bcdef_HLT_SF = get_HLT_SF_1mu(mu1_pt, mu1_eta, runs_bcdef.HLT_SF);
-        gh_HLT_SF = get_HLT_SF_1mu(mu1_pt, mu1_eta, runs_gh.HLT_SF);
+        era1_HLT_SF = get_HLT_SF_1mu(mu1_pt, mu1_eta, era1.HLT_SF);
+        era2_HLT_SF = get_HLT_SF_1mu(mu1_pt, mu1_eta, era2.HLT_SF);
 
-        bcdef_iso_SF = get_SF(mu1_pt, mu1_eta, runs_bcdef.ISO_SF);
-        bcdef_id_SF = get_SF(mu1_pt, mu1_eta, runs_bcdef.ID_SF);
+        era1_iso_SF = get_mu_SF(mu1_pt, mu1_eta,year, era1.ISO_SF);
+        era1_id_SF = get_mu_SF(mu1_pt, mu1_eta, year, era1.ID_SF);
 
-        gh_iso_SF = get_SF(mu1_pt, mu1_eta, runs_gh.ISO_SF);
-        gh_id_SF = get_SF(mu1_pt, mu1_eta, runs_gh.ID_SF);
+        era2_iso_SF = get_mu_SF(mu1_pt, mu1_eta, year, era2.ISO_SF);
+        era2_id_SF = get_mu_SF(mu1_pt, mu1_eta,  year, era2.ID_SF);
 
-        bcdef_trk_SF = get_Mu_trk_SF(abs(mu1_eta), runs_bcdef.TRK_SF);
-        gh_trk_SF = get_Mu_trk_SF(abs(mu1_eta), runs_gh.TRK_SF);
 
         el_id_SF = get_el_SF(el1_pt, el1_eta, el_SF.ID_SF);
         el_reco_SF = get_el_SF(el1_pt, el1_eta, el_SF.RECO_SF);
@@ -683,6 +686,7 @@ void NTupleReader::fillEventRC(){
     double mu_m_SF_alt1, mu_m_SF_alt2, mu_m_SF_alt3, mu_m_SF_alt4; 
 
 
+
     if(mu_Charge[0] < 0){
         mu_m_n_TL = (int) mu_NumberTrackerLayers[0];
         mu_p_n_TL = (int) mu_NumberTrackerLayers[1];
@@ -691,6 +695,11 @@ void NTupleReader::fillEventRC(){
         mu_m_n_TL = (int) mu_NumberTrackerLayers[1];
         mu_p_n_TL = (int) mu_NumberTrackerLayers[0];
     }
+    if(year > 2016){
+        mu_m_n_TL = 13;
+        mu_p_n_TL = 13;
+    }
+
 
     Double_t mu_p_SF_vars[100], mu_m_SF_vars[100];
     if(is_data){
@@ -757,6 +766,7 @@ void NTupleReader::fillEventRC(){
 
     double mu_p_SF_var = get_var(mu_p_SF_vars);
     double mu_m_SF_var = get_var(mu_m_SF_vars);
+
 
     double mu_p_unc = sqrt(mu_p_SF_var + mu_p_SF_alt1*mu_p_SF_alt1 + mu_p_SF_alt2*mu_p_SF_alt2  + mu_p_SF_alt3*mu_p_SF_alt3  + mu_p_SF_alt4*mu_p_SF_alt4);
     double mu_m_unc = sqrt(mu_m_SF_var + mu_m_SF_alt1*mu_m_SF_alt1 + mu_m_SF_alt2*mu_m_SF_alt2  + mu_m_SF_alt3*mu_m_SF_alt3  + mu_m_SF_alt4*mu_m_SF_alt4);

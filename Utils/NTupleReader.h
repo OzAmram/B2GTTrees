@@ -23,7 +23,7 @@ const double root2 = sqrt(2);
 double Ebeam = 6500.;
 double Pbeam = sqrt(Ebeam*Ebeam - 0.938*0.938);
 const float mu_mass = 0.1056; // in GEV
-const float mu_iso = 0.10; //loose tracker iso
+const float mu_iso = 0.15; //tight PF based iso
 
 
 bool is_empty_line(const char *s) {
@@ -64,7 +64,7 @@ class NTupleReader{
 
         RoccoR rc;
         TRandom *rand;
-        mu_SFs runs_bcdef, runs_gh;
+        mu_SFs era1, era2;
         pileup_SFs pu_SFs;
         el_SFs el_SF;
 
@@ -102,8 +102,8 @@ class NTupleReader{
         Double_t cm_m, xF, cost, cost_r, cost_st, mu1_pt, mu2_pt, mu1_eta, mu2_eta, jet1_pt, jet2_pt, jet1_eta, jet2_eta, 
                  gen_weight, jet1_csv, jet1_cmva, jet2_csv, jet2_cmva, gen_m;
         Double_t mu_p_SF, mu_m_SF, mu_p_SF_alt, mu_m_SF_alt, mu_p_SF_up, mu_p_SF_down, mu_m_SF_up, mu_m_SF_down;
-        Double_t bcdef_HLT_SF, bcdef_iso_SF, bcdef_id_SF, gh_HLT_SF, gh_iso_SF, gh_id_SF,
-                 bcdef_trk_SF, gh_trk_SF,
+        Double_t era1_HLT_SF, era1_iso_SF, era1_id_SF, era2_HLT_SF, era2_iso_SF, era2_id_SF,
+                 era1_trk_SF, era2_trk_SF,
                  jet1_b_weight, jet2_b_weight, pu_SF;
 
         Double_t el1_pt, el2_pt, el1_eta, el2_eta;
@@ -133,11 +133,11 @@ class NTupleReader{
         Float_t gen_Pt[GEN_SIZE], gen_Eta[GEN_SIZE], gen_Phi[GEN_SIZE], gen_E[GEN_SIZE];
 
         Float_t mu_Pt[MU_SIZE], mu_Eta[MU_SIZE], mu_Phi[MU_SIZE], mu_E[MU_SIZE], 
-                mu_Charge[MU_SIZE], mu_IsHighPtMuon[MU_SIZE];
+                mu_Charge[MU_SIZE], mu_IsHighPtMuon[MU_SIZE], mu_IsTightMuon[MU_SIZE];
         Float_t mu_SumChargedHadronPt[MU_SIZE], mu_SumNeutralHadronPt[MU_SIZE], mu_SumPUPt[MU_SIZE], mu_SumPhotonPt[MU_SIZE],
                 mu_NumberTrackerLayers[MU_SIZE];
 
-        Float_t mu_TrackerIso[MU_SIZE];
+        Float_t mu_PFIso[MU_SIZE];
         Float_t jet_Pt[JET_SIZE], jet_Eta[JET_SIZE], jet_Phi[JET_SIZE], jet_E[JET_SIZE],
                 jet_CSV[JET_SIZE], jet_CMVA[JET_SIZE], jet_partonflavour[JET_SIZE];
 
