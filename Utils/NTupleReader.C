@@ -352,9 +352,18 @@ void NTupleReader::setupRC(){
     printf("Getting RC  \n");
     char path[400], env_var[400];
 
-    sprintf(path, "%s/src/Analysis/B2GTTrees/Utils/rcdata.2016.v3", getenv("CMSSW_BASE"));
+    if (year == 2016){
+        sprintf(path, "%s/src/Analysis/B2GTTrees/Utils/roccor_Run2_v3/RoccoR2016.txt", getenv("CMSSW_BASE"));
+    }
+    else if(year ==2017){
+        sprintf(path, "%s/src/Analysis/B2GTTrees/Utils/roccor_Run2_v3/RoccoR2017.txt", getenv("CMSSW_BASE"));
+    }
+    else if(year == 2018){
+        sprintf(path, "%s/src/Analysis/B2GTTrees/Utils/roccor_Run2_v3/RoccoR2018.txt", getenv("CMSSW_BASE"));
+    }
+
+   
     printf("path %s \n", path);
-    //rc =  RoccoR("/uscms_data/d3/oamram/CMSSW_8_0_24_patch1/src/Analysis/B2GTTrees/Utils/rcdata.2016.v3");
     rc =  RoccoR(path);
     rand = new TRandom3();
 }
@@ -612,6 +621,10 @@ void NTupleReader::fillEventSFs(){
 void NTupleReader::fillEventRC(){
 
     int mu_p_n_TL, mu_m_n_TL;
+    double mu_p_SF_alt1, mu_p_SF_alt2, mu_p_SF_alt3, mu_p_SF_alt4; 
+    double mu_m_SF_alt1, mu_m_SF_alt2, mu_m_SF_alt3, mu_m_SF_alt4; 
+
+
     if(mu_Charge[0] < 0){
         mu_m_n_TL = (int) mu_NumberTrackerLayers[0];
         mu_p_n_TL = (int) mu_NumberTrackerLayers[1];
@@ -625,15 +638,8 @@ void NTupleReader::fillEventRC(){
     if(is_data){
         mu_p_SF = rc.kScaleDT(1, mu_p.Pt(), mu_p.Eta(), mu_p.Phi(), 0, 0);
         mu_m_SF = rc.kScaleDT(-1, mu_m.Pt(), mu_m.Eta(), mu_m.Phi(), 0, 0);
-        mu_p_SF_alt = rc.kScaleDT(1, mu_p.Pt(), mu_p.Eta(), mu_p.Phi(), 2, 0);
-        mu_m_SF_alt = rc.kScaleDT(-1, mu_m.Pt(), mu_m.Eta(), mu_m.Phi(), 2, 0);
 
-
-        Double_t mu_p_SF_vars[100], mu_m_SF_vars[100];
-        for(int k=0; k<100; k++){
-            mu_p_SF_vars[k] = rc.kScaleDT(1, mu_p.Pt(), mu_p.Eta(), mu_p.Phi(), 1, k);
-            mu_m_SF_vars[k] = rc.kScaleDT(-1, mu_m.Pt(), mu_m.Eta(), mu_m.Phi(), 1, k);
-        }
+        return;
     }
     else if(!is_data && RC_from_gen){
         double rand1 = rand->Rndm(); 
@@ -641,8 +647,18 @@ void NTupleReader::fillEventRC(){
 
         mu_p_SF = rc.kScaleFromGenMC(1, mu_p.Pt(), mu_p.Eta(), mu_p.Phi(), mu_p_n_TL, gen_mu_p_vec.Pt(), rand1, 0, 0);
         mu_m_SF = rc.kScaleFromGenMC(-1, mu_m.Pt(), mu_m.Eta(), mu_m.Phi(), mu_m_n_TL, gen_mu_m_vec.Pt(), rand2, 0, 0);
-        mu_p_SF_alt = rc.kScaleFromGenMC(1, mu_p.Pt(), mu_p.Eta(), mu_p.Phi(), mu_p_n_TL, gen_mu_p_vec.Pt(), rand1, 2, 0);
-        mu_m_SF_alt = rc.kScaleFromGenMC(-1, mu_m.Pt(), mu_m.Eta(), mu_m.Phi(), mu_m_n_TL, gen_mu_m_vec.Pt(), rand2, 2, 0);
+
+        mu_p_SF_alt1 = rc.kScaleFromGenMC(1, mu_p.Pt(), mu_p.Eta(), mu_p.Phi(), mu_p_n_TL, gen_mu_p_vec.Pt(), rand1, 2, 0) - mu_p_SF;
+        mu_m_SF_alt1 = rc.kScaleFromGenMC(-1, mu_m.Pt(), mu_m.Eta(), mu_m.Phi(), mu_m_n_TL, gen_mu_m_vec.Pt(), rand2, 2, 0) - mu_m_SF;
+
+        mu_p_SF_alt2 = rc.kScaleFromGenMC(1, mu_p.Pt(), mu_p.Eta(), mu_p.Phi(), mu_p_n_TL, gen_mu_p_vec.Pt(), rand1, 2, 0) - mu_p_SF;
+        mu_m_SF_alt2 = rc.kScaleFromGenMC(-1, mu_m.Pt(), mu_m.Eta(), mu_m.Phi(), mu_m_n_TL, gen_mu_m_vec.Pt(), rand2, 2, 0) - mu_m_SF;;
+
+        mu_p_SF_alt3 = rc.kScaleFromGenMC(1, mu_p.Pt(), mu_p.Eta(), mu_p.Phi(), mu_p_n_TL, gen_mu_p_vec.Pt(), rand1, 2, 0) - mu_p_SF;
+        mu_m_SF_alt3 = rc.kScaleFromGenMC(-1, mu_m.Pt(), mu_m.Eta(), mu_m.Phi(), mu_m_n_TL, gen_mu_m_vec.Pt(), rand2, 2, 0) - mu_m_SF;
+
+        mu_p_SF_alt4 = rc.kScaleFromGenMC(1, mu_p.Pt(), mu_p.Eta(), mu_p.Phi(), mu_p_n_TL, gen_mu_p_vec.Pt(), rand1, 2, 0) - mu_p_SF;
+        mu_m_SF_alt4 = rc.kScaleFromGenMC(-1, mu_m.Pt(), mu_m.Eta(), mu_m.Phi(), mu_m_n_TL, gen_mu_m_vec.Pt(), rand2, 2, 0) - mu_m_SF;
 
         for(int k=0; k<100; k++){
             mu_p_SF_vars[k] = rc.kScaleFromGenMC(1, mu_p.Pt(), mu_p.Eta(), mu_p.Phi(), mu_p_n_TL, gen_mu_p_vec.Pt(), rand1, 1, k);
@@ -659,8 +675,19 @@ void NTupleReader::fillEventRC(){
 
         mu_p_SF = rc.kScaleAndSmearMC(1, mu_p.Pt(), mu_p.Eta(), mu_p.Phi(), mu_p_n_TL, rand1a, rand1b, 0, 0);
         mu_m_SF = rc.kScaleAndSmearMC(-1, mu_m.Pt(), mu_m.Eta(), mu_m.Phi(), mu_m_n_TL, rand2a, rand2b, 0, 0);
-        mu_p_SF_alt = rc.kScaleAndSmearMC(1, mu_p.Pt(), mu_p.Eta(), mu_p.Phi(), mu_p_n_TL, rand1a, rand1b, 2, 0);
-        mu_m_SF_alt = rc.kScaleAndSmearMC(-1, mu_m.Pt(), mu_m.Eta(), mu_m.Phi(), mu_m_n_TL, rand2a, rand2b, 2, 0);
+
+        mu_p_SF_alt1 = rc.kScaleAndSmearMC(1, mu_p.Pt(), mu_p.Eta(), mu_p.Phi(), mu_p_n_TL, rand1a, rand1b, 2, 0) - mu_p_SF;
+        mu_m_SF_alt1 = rc.kScaleAndSmearMC(-1, mu_m.Pt(), mu_m.Eta(), mu_m.Phi(), mu_m_n_TL, rand2a, rand2b, 2, 0)- mu_m_SF;
+
+        mu_p_SF_alt2 = rc.kScaleAndSmearMC(1, mu_p.Pt(), mu_p.Eta(), mu_p.Phi(), mu_p_n_TL, rand1a, rand1b, 3, 0) - mu_p_SF;
+        mu_m_SF_alt2 = rc.kScaleAndSmearMC(-1, mu_m.Pt(), mu_m.Eta(), mu_m.Phi(), mu_m_n_TL, rand2a, rand2b, 3, 0)- mu_m_SF;
+
+        mu_p_SF_alt3 = rc.kScaleAndSmearMC(1, mu_p.Pt(), mu_p.Eta(), mu_p.Phi(), mu_p_n_TL, rand1a, rand1b, 4, 0) - mu_p_SF;
+        mu_m_SF_alt3 = rc.kScaleAndSmearMC(-1, mu_m.Pt(), mu_m.Eta(), mu_m.Phi(), mu_m_n_TL, rand2a, rand2b, 4, 0)- mu_m_SF;
+
+        mu_p_SF_alt4 = rc.kScaleAndSmearMC(1, mu_p.Pt(), mu_p.Eta(), mu_p.Phi(), mu_p_n_TL, rand1a, rand1b, 5, 0) - mu_p_SF;
+        mu_m_SF_alt4 = rc.kScaleAndSmearMC(-1, mu_m.Pt(), mu_m.Eta(), mu_m.Phi(), mu_m_n_TL, rand2a, rand2b, 5, 0)- mu_m_SF;
+        
 
         Double_t mu_p_SF_vars[100], mu_m_SF_vars[100];
         for(int k=0; k<100; k++){
@@ -670,12 +697,16 @@ void NTupleReader::fillEventRC(){
     }
 
 
-    double mu_p_SF_std = sqrt(get_var(mu_p_SF_vars));
-    double mu_m_SF_std = sqrt(get_var(mu_m_SF_vars));
-    mu_p_SF_up = mu_p_SF + mu_p_SF_std;
-    mu_p_SF_down = mu_p_SF - mu_p_SF_std;
-    mu_m_SF_up = mu_m_SF + mu_m_SF_std;
-    mu_m_SF_down = mu_m_SF - mu_m_SF_std;
+    double mu_p_SF_var = get_var(mu_p_SF_vars);
+    double mu_m_SF_var = get_var(mu_m_SF_vars);
+
+    double mu_p_unc = sqrt(mu_p_SF_var + mu_p_SF_alt1*mu_p_SF_alt1 + mu_p_SF_alt2*mu_p_SF_alt2  + mu_p_SF_alt3*mu_p_SF_alt3  + mu_p_SF_alt4*mu_p_SF_alt4);
+    double mu_m_unc = sqrt(mu_m_SF_var + mu_m_SF_alt1*mu_m_SF_alt1 + mu_m_SF_alt2*mu_m_SF_alt2  + mu_m_SF_alt3*mu_m_SF_alt3  + mu_m_SF_alt4*mu_m_SF_alt4);
+
+    mu_p_SF_up = mu_p_SF + mu_p_unc;
+    mu_p_SF_down = mu_p_SF - mu_p_unc;
+    mu_m_SF_up = mu_m_SF + mu_m_unc;
+    mu_m_SF_down = mu_m_SF - mu_m_unc;
 
 }
 
