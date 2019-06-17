@@ -110,7 +110,11 @@ void get_pdf_avg_std_dev(Float_t pdf_Weights[100], Float_t *pdf_avg, Float_t *pd
 
 Double_t get_SF(Double_t pt, Double_t eta, TH2D *h, int systematic = 0){
     //stay in range of histogram
-    if (pt >= 90) pt = 90.;
+    float sys_unc = 0.005;
+    if (pt >= 115.){
+        sys_unc = 0.01;
+        pt = 90.;
+    }
     if (pt <= 22.5) pt = 22.5;
     eta = abs(eta);
     TAxis* x_ax =  h->GetXaxis();
@@ -121,7 +125,7 @@ Double_t get_SF(Double_t pt, Double_t eta, TH2D *h, int systematic = 0){
     Double_t result = h->GetBinContent(xbin, ybin);
     if(systematic != 0){
         Double_t err = h->GetBinError(xbin, ybin);
-        err = sqrt(err*err + 0.01*0.01);
+        err = sqrt(err*err + sys_unc*sys_unc);
         //printf("SF is %.3f +/- %.3f \n", result, err);
         result += (systematic * err );
     }
@@ -132,6 +136,32 @@ Double_t get_SF(Double_t pt, Double_t eta, TH2D *h, int systematic = 0){
     return result;
 }
 
+Double_t get_el_SF(Double_t pt, Double_t eta, TH2D *h, int systematic = 0){
+    float sys_unc = 0.;
+    if( pt <= 25.) pt = 25;
+    if (pt >= 500.){
+        pt = 200.;
+        sys_unc = 0.01;
+    }
+    TAxis* x_ax =  h->GetXaxis();
+
+    TAxis *y_ax =  h->GetYaxis();
+    int xbin = x_ax->FindBin(eta);
+    int ybin = y_ax->FindBin(pt);
+    Double_t result = h->GetBinContent(xbin, ybin);
+    if(systematic != 0){
+        Double_t err = h->GetBinError(xbin, ybin);
+        err =abs(err);
+        err = sqrt(err*err + sys_unc*sys_unc);
+        result += (systematic * err);
+    }
+
+    if(result < 0.01){
+        printf("0 el SF for Pt %.1f, Eta %1.2f \n", pt, eta);
+        result = 1;
+    }
+    return result;
+}
 Double_t get_HLT_SF_1mu(Double_t mu1_pt, Double_t mu1_eta, TH2D *h_SF){
     //get HLT SF for event with just 1 muon
     //stay in range of histogram
@@ -254,8 +284,8 @@ Double_t get_el_HLT_SF(Double_t el1_pt, Double_t el1_eta, Double_t el2_pt, Doubl
         //printf("%.3f %.3f \n", SF1_err, SF2_err);
         //SF1_err = min(SF1_err, 0.001);
         //SF2_err = min(SF2_err, 0.001);
-        SF1_err = std::max(SF1_err, 0.01);
-        SF2_err = std::max(SF2_err, 0.01);
+        //SF1_err = std::max(SF1_err, 0.01);
+        //SF2_err = std::max(SF2_err, 0.01);
         SF1 += SF1_err * systematic;
         SF2 += SF2_err * systematic;
     }
@@ -284,28 +314,6 @@ Double_t get_el_HLT_SF(Double_t el1_pt, Double_t el1_eta, Double_t el2_pt, Doubl
 }
 
 
-Double_t get_el_SF(Double_t pt, Double_t eta, TH2D *h, int systematic = 0){
-    if( pt <= 25.) pt = 25;
-    if (pt >= 150.) pt = 149.;
-    TAxis* x_ax =  h->GetXaxis();
-
-    TAxis *y_ax =  h->GetYaxis();
-    int xbin = x_ax->FindBin(eta);
-    int ybin = y_ax->FindBin(pt);
-    Double_t result = h->GetBinContent(xbin, ybin);
-    if(systematic != 0){
-        Double_t err = h->GetBinError(xbin, ybin);
-        err =abs(err);
-        //Systematics already included for ELectrons
-        result += (systematic * err);
-    }
-
-    if(result < 0.01){
-        printf("0 el SF for Pt %.1f, Eta %1.2f \n", pt, eta);
-        result = 1;
-    }
-    return result;
-}
 
 
 
@@ -403,6 +411,7 @@ void setup_el_SF(el_SFs *sf){
     //el_SF->Print();
     //
 
+    //Setup electron SF's
     TFile *f8 = TFile::Open("SFs/2016/El_RECO.root");
     TDirectory *subdir8 = gDirectory;
     TH2D *h2 = (TH2D *) subdir8->Get("EGamma_SF2D")->Clone();

@@ -120,6 +120,7 @@ void make_sys_templates(int nJobs = 1, int iJob =0, int type=0){
         pdf_fout->cd();
         gDirectory->cd(dirname);
         w->Write();
+        cleanup_mc_templates();
     }
 
 

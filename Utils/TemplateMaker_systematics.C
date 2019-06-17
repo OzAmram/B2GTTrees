@@ -352,14 +352,12 @@ int gen_mc_template(TTree *t1, Double_t alpha_num, Double_t alpha_denom, TH2F* h
             else cost_st = -fabs(cost);
             bool pass = (m >= var_low && m <= var_high) && met_pt < 50.  && no_bjets && not_cosmic;
             if(pass){
-                reweight_a = (4./3.)*cost_st*(2. + alpha_num)/
-                    (1. + cost_st*cost_st + alpha_denom*(1.- cost_st*cost_st));
+                double denom = 3./8.*(1.+cost_st*cost_st + 0.5 * alpha_denom * (1. - 3. *cost_st*cost_st));
+                reweight_a = cost_st/ denom;
 
-                double alpha_ratio_s = (1. + cost_st*cost_st + alpha_num*(1.- cost_st*cost_st)) /
-                    (1. + cost_st*cost_st + alpha_denom*(1.- cost_st*cost_st));
-                //keep normalization same due to changing alpha
-                double norm_ratio_s = (8./3. + 4./3.*alpha_denom)/(8./3. + 4./3.*alpha_num);
-                reweight_s = alpha_ratio_s*norm_ratio_s;
+                double new_num =  3./8.*(1.+cost_st*cost_st + 0.5 * alpha_num * (1. - 3. *cost_st*cost_st));
+
+                reweight_s = new_num/denom;
                 n++;
                 Double_t pu_SF_sys = 1.;
                 if(do_pileup_sys == -1) pu_SF_sys = get_pileup_SF(pu_NtrueInt, pu_sys.pileup_down);
@@ -478,14 +476,12 @@ int gen_mc_template(TTree *t1, Double_t alpha_num, Double_t alpha_denom, TH2F* h
                 cost = get_cost(*lep_p, *lep_m);
                 if(cost_st>0.) cost_st = fabs(cost);
                 else cost_st = -fabs(cost);
-                reweight_a = (4./3.)*cost_st*(2. + alpha_num)/
-                    (1. + cost_st*cost_st + alpha_denom*(1.- cost_st*cost_st));
+                double denom = 3./8.*(1.+cost_st*cost_st + 0.5 * alpha_denom * (1. - 3. *cost_st*cost_st));
+                reweight_a = cost_st/ denom;
 
-                //keep normalization same due to changing alpha
-                double alpha_ratio_s = (1. + cost_st*cost_st + alpha_num*(1.- cost_st*cost_st)) /
-                    (1. + cost_st*cost_st + alpha_denom*(1.- cost_st*cost_st));
-                double norm_ratio_s = (8./3. + 4./3.*alpha_denom)/(8./3. + 4./3.*alpha_num);
-                reweight_s = alpha_ratio_s*norm_ratio_s;
+                double new_num =  3./8.*(1.+cost_st*cost_st + 0.5 * alpha_num * (1. - 3. *cost_st*cost_st));
+
+                reweight_s = new_num/denom;
 
 
                 n++;

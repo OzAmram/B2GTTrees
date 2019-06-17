@@ -324,7 +324,6 @@ void convert_mc_templates(const string &sys_label){
         write_roo_hist(h1_elel_pl, var);
         write_roo_hist(h1_elel_mn, var);
     }
-    cleanup_mc_templates();
 }
 
 void write_groups(FILE *f_log){
@@ -355,7 +354,7 @@ void write_groups(FILE *f_log){
 
 
 void make_templates(int nJobs = 6, int iJob =-1){
-    const TString fout_name("combine/templates/june10_no_sys.root");
+    const TString fout_name("combine/templates/june13_no_sys.root");
     TFile * fout;
 
     init();
@@ -417,6 +416,7 @@ void make_templates(int nJobs = 6, int iJob =-1){
         w->Write();
         write_groups(f_log);
         fclose(f_log);
+        cleanup_mc_templates();
     }
 
 

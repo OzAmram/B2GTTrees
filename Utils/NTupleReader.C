@@ -78,6 +78,7 @@ void NTupleReader::setupSFs(){
 
 
     if(do_electrons || do_emu){
+        printf("getting electron SFs \n");
         setup_el_SF(&el_SF);
     }
     printf("Retrieved Scale Factors \n\n");
@@ -142,8 +143,6 @@ bool NTupleReader::getNextFile(){
             tin->SetBranchAddress("met_MuCleanOnly_Pt", &met_pt);
 
             if(do_muons || do_emu){
-                tin->SetBranchAddress("HLT_IsoMu24", &HLT_IsoMu);
-                tin->SetBranchAddress("HLT_IsoTkMu24", &HLT_IsoTkMu);
 
                 tin->SetBranchAddress("mu_size", &mu_size); //number of muons in the event
                 tin->SetBranchAddress("mu_TunePMuonBestTrackPt", &mu_Pt);
@@ -159,6 +158,16 @@ bool NTupleReader::getNextFile(){
                 //tin->SetBranchAddress("mu_SumNeutralHadronPt", &mu_SumNeutralHadronPt);
                 //tin->SetBranchAddress("mu_SumPUPt", &mu_SumPUPt);
                 //tin->SetBranchAddress("mu_SumPhotonPt", &mu_SumPhotonPt);
+                //
+                if(year == 2016){
+                    tin->SetBranchAddress("HLT_IsoMu24", &HLT_IsoMu24);
+                    tin->SetBranchAddress("HLT_IsoTkMu24", &HLT_IsoTkMu24);
+                }
+                else{
+                    tin->SetBranchAddress("HLT_IsoMu27", &HLT_IsoMu27);
+                    tin->SetBranchAddress("HLT_IsoTkMu27", &HLT_IsoTkMu27);
+                }
+
             }
             if(do_electrons || do_emu){
 
@@ -169,7 +178,6 @@ bool NTupleReader::getNextFile(){
                 tin->SetBranchAddress("el_E", &el_E);
                 tin->SetBranchAddress("el_Charge", &el_Charge);
                 tin->SetBranchAddress("el_IDMedium", &el_IDMedium);
-                tin->SetBranchAddress("el_IDMedium_NoIso", &el_IDMedium_NoIso);
                 tin->SetBranchAddress("el_SCEta", &el_SCEta);
                 tin->SetBranchAddress("el_ScaleCorr", &el_ScaleCorr);
                 tin->SetBranchAddress("el_ScaleCorrStatUp", &el_ScaleCorrStatUp);
@@ -180,7 +188,18 @@ bool NTupleReader::getNextFile(){
                 tin->SetBranchAddress("el_ScaleCorrGainDown", &el_ScaleCorrGainDown);
                 tin->SetBranchAddress("el_ScaleSmearUp", &el_ScaleSmearUp);
                 tin->SetBranchAddress("el_ScaleSmearDown", &el_ScaleSmearDown);
-                tin->SetBranchAddress("HLT_Ele27_WPTight_Gsf", &HLT_El);
+
+                if(year == 2016){
+                    tin->SetBranchAddress("HLT_Ele27_WPTight_Gsf", &HLT_El27);
+                    tin->SetBranchAddress("el_IDMedium_NoIso", &el_IDMedium_NoIso);
+                }
+                else{
+                    tin->SetBranchAddress("el_IDMediumNoIso", &el_IDMedium_NoIso);
+                    tin->SetBranchAddress("HLT_Ele32_WPTight_Gsf", &HLT_El32);
+                    tin->SetBranchAddress("HLT_Ele35_WPTight_Gsf", &HLT_El35);
+                    tin->SetBranchAddress("HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL", &HLT_doubleEl23);
+                }
+
             }
 
 
@@ -371,10 +390,24 @@ void NTupleReader::getEvent(int i){
 
             opp_sign = ((abs(mu_Charge[0] - mu_Charge[1])) > 0.01);
             good_sign = opp_sign ^ do_samesign;
-            good_trigger = HLT_IsoMu || HLT_IsoTkMu;
+
+            double min_pt = 26.;
+
+            if(year == 2016){ 
+                good_trigger = HLT_IsoMu24 || HLT_IsoTkMu24;
+                min_pt = 26.;
+            }
+            else if(year == 2017) {
+                good_trigger = HLT_IsoMu27;
+                min_pt = 29.;
+            }
+            else if(year == 2018) {
+                good_trigger = HLT_IsoMu24;
+                min_pt = 26.;
+            }
 
             dimuon_id = mu_IsHighPtMuon[0] && mu_IsHighPtMuon[1] &&
-                mu_Pt[0] > 26. &&  mu_Pt[1] > 15. &&
+                mu_Pt[0] > min_pt &&  mu_Pt[1] > 15. &&
                 abs(mu_Eta[0]) < 2.4 && abs(mu_Eta[1]) < 2.4;
             //See https://twiki.cern.ch/twiki/bin/viewauth/CMS/SWGuideMuonIdRun2 for iso cuts
             mu_iso0 = mu_TrackerIso[0] < mu_iso;
@@ -402,10 +435,25 @@ void NTupleReader::getEvent(int i){
 
             opp_sign = ((abs(el_Charge[0] - el_Charge[1])) > 0.01);
             good_sign = opp_sign ^ do_samesign;
-            good_trigger = HLT_El;
+
+            double min_pt = 29.;
+
+            
+            if(year == 2016){
+                good_trigger = HLT_El27;
+                min_pt = 29.;
+            }
+            else if(year == 2017){
+                good_trigger = HLT_El35;
+                min_pt = 38.;
+            }
+            else if(year == 2018){
+                good_trigger = HLT_El32;
+                min_pt = 35.;
+            }
 
             dielec_id = el_IDMedium_NoIso[0] && el_IDMedium_NoIso[1] &&
-                el_ScaleCorr[0] * el_Pt[0] > 29. &&  el_ScaleCorr[1] * el_Pt[1] > 15. &&
+                el_ScaleCorr[0] * el_Pt[0] > min_pt &&  el_ScaleCorr[1] * el_Pt[1] > 15. &&
                 goodElEta(el_SCEta[0]) && goodElEta(el_SCEta[1]);
 
             el_iso0 = el_IDMedium[0];
@@ -434,11 +482,21 @@ void NTupleReader::getEvent(int i){
         if(el_size >=1 && mu_size >= 1){
             opp_sign = ((abs(el_Charge[0] - mu_Charge[0])) > 0.01);
             good_sign = opp_sign ^ do_samesign;
-            good_trigger = HLT_IsoMu || HLT_IsoTkMu;
+
+            double min_pt = 26.;
+
+            if(year == 2016){ 
+                good_trigger = HLT_IsoMu24 || HLT_IsoTkMu24;
+                min_pt = 26.;
+            }
+            else if(year == 2017 || year == 2018){
+                good_trigger = HLT_IsoMu27;
+                min_pt = 29.;
+            }
 
 
             emu_ids = el_IDMedium_NoIso[0] && mu_IsHighPtMuon[0] &&
-                mu_Pt[0] > 26. &&  el_ScaleCorr[1] * el_Pt[1] > 15. &&
+                mu_Pt[0] > min_pt &&  el_ScaleCorr[1] * el_Pt[1] > 15. &&
                 abs(mu_Eta[0])  && goodElEta(el_SCEta[1]);
 
             el_iso0 = el_IDMedium[0];

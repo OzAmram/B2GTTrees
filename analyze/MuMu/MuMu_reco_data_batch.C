@@ -6,8 +6,9 @@
 void MuMu_reco_data_batch(int nJobs =1, int iJob = 0, string fin="")
 {
 
-    if(fin == "") fin = string("EOS_files/SingleMuon_files_test.txt");
+    if(fin == "") fin = string("EOS_files/2017/data_test.txt");
     NTupleReader nt(fin.c_str(),"output_files/MuMu_data_test.root", true);
+    nt.year = 2017;
     nt.nJobs = nJobs;
     nt.iJob = iJob;
     nt.do_muons = true;

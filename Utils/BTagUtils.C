@@ -172,5 +172,5 @@ void setup_btag_SFs(BTag_readers *btag_r, BTag_effs *b_effs){
     b_effs->b_eff = b_eff;
     b_effs->c_eff = c_eff;
     b_effs->udsg_eff = udsg_eff;
-    printf("Btag SF's set up");
+    printf("Btag SF's set up \n");
 }

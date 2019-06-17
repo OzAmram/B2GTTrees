@@ -68,6 +68,8 @@ class NTupleReader{
         pileup_SFs pu_SFs;
         el_SFs el_SF;
 
+        int year = 2016;
+
 
         int nJobs =1;
         int iJob = 0;
@@ -155,7 +157,7 @@ class NTupleReader{
 
 
         Float_t evt_Gen_Weight;
-        Int_t HLT_IsoMu, HLT_IsoTkMu, HLT_El;
+        Int_t HLT_IsoMu24, HLT_IsoTkMu24, HLT_IsoMu27, HLT_IsoTkMu27, HLT_El27, HLT_El35, HLT_El32, HLT_doubleEl23;
 
 
         int elp_index, elm_index;
