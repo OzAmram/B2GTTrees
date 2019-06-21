@@ -234,7 +234,7 @@ else:
         #'NumberValidMuonHits',
         #'NumberMatchedStations',
         #'NumberValidPixelHits',
-        #'NumberTrackerLayers',
+        'NumberTrackerLayers',
         #'NumberOfValidTrackerHits',
         #'NumberOfPixelLayers',
         #'InTrkNormChi2',
