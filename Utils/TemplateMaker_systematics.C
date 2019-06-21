@@ -37,7 +37,7 @@
 using namespace std;
 
 el_SFs el_SF;
-mu_SFs runs_bcdef, runs_gh;
+mu_SFs era1_SFs, era2_SFs;
 pileup_SFs pu_SFs;
 pileup_systematics pu_sys;
 
@@ -45,11 +45,12 @@ BTag_readers b_reader;
 BTag_effs btag_effs;
 bool btag_setup = false;
 
-void setup_all_SFs(){
-    setup_btag_SFs(&b_reader, &btag_effs);
-    setup_el_SF(&el_SF);
-    setup_SFs(&runs_bcdef, &runs_gh, &pu_SFs);
-    setup_pileup_systematic(&pu_sys); 
+void setup_all_SFs(int year){
+    setup_btag_SFs(&b_reader, &btag_effs, year);
+    setup_el_SF(&el_SF, year);
+    setup_mu_SFs(&era1_SFs, &era2_SFs,  year);
+    setup_pu_SFs(&pu_SFs, year);
+    setup_pileup_systematic(&pu_sys, year); 
 }
 
 
@@ -77,8 +78,8 @@ void print_hist(TH2 *h){
 //
 //static type means functions scope is only this file, to avoid conflicts
 
-int gen_data_template(TTree *t1, TH2F* h,  Double_t var_low, Double_t var_high, 
-        int flag1 = FLAG_MUONS, bool turn_on_RC = true, bool ss = false){
+int gen_data_template(TTree *t1, TH2F* h,  
+        int year, Double_t m_low, Double_t m_high, int flag1 = FLAG_MUONS, bool turn_on_RC = true, bool ss = false){
     h->Sumw2();
     Long64_t nEntries  =  t1->GetEntries();
     //printf("size is %i \n", nEntries);
@@ -144,7 +145,7 @@ int gen_data_template(TTree *t1, TH2F* h,  Double_t var_low, Double_t var_high,
 
         }
 
-            if(m >= var_low && m <= var_high && met_pt < 50. && no_bjets && not_cosmic){
+            if(m >= m_low && m <= m_high && met_pt < 50. && no_bjets && not_cosmic){
                 n++;
                 if(!ss) h->Fill(xF, cost, 1); 
                 else{
@@ -167,7 +168,7 @@ int gen_data_template(TTree *t1, TH2F* h,  Double_t var_low, Double_t var_high,
 
 
 int gen_mc_template(TTree *t1, Double_t alpha_num, Double_t alpha_denom, TH2F* h_sym, TH2F *h_asym, 
-        Double_t var_low, Double_t var_high, int flag1 = FLAG_MUONS, bool turn_on_RC = true,
+        int year, Double_t m_low, Double_t m_high, int flag1 = FLAG_MUONS, bool turn_on_RC = true,
         const string &sys_label = "" ){
     Long64_t nEntries  =  t1->GetEntries();
 
@@ -176,8 +177,8 @@ int gen_mc_template(TTree *t1, Double_t alpha_num, Double_t alpha_denom, TH2F* h
 
 
     Double_t m, xF, cost, gen_weight, reweight_a, reweight_s, jet1_cmva, jet2_cmva, cost_st;
-    Double_t bcdef_HLT_SF, bcdef_iso_SF, bcdef_id_SF;
-    Double_t gh_HLT_SF, gh_iso_SF, gh_id_SF;
+    Double_t era1_HLT_SF, era1_iso_SF, era1_id_SF;
+    Double_t era2_HLT_SF, era2_iso_SF, era2_id_SF;
     Double_t el_id_SF, el_reco_SF, pu_SF, el_HLT_SF;
     Double_t jet1_pt, jet2_pt, jet1_b_weight, jet2_b_weight, jet1_eta, jet2_eta;
     Double_t mu1_pt, mu1_eta, mu2_pt, mu2_eta;
@@ -244,7 +245,6 @@ int gen_mc_template(TTree *t1, Double_t alpha_num, Double_t alpha_denom, TH2F* h
     int do_muHLT_sys = 0;
     int do_muID_sys = 0;
     int do_muISO_sys = 0;
-    int do_muTRK_sys = 0;
     int do_muRC_sys = 0;
 
     int do_elID_sys = 0;
@@ -262,7 +262,6 @@ int gen_mc_template(TTree *t1, Double_t alpha_num, Double_t alpha_denom, TH2F* h
         else if(sys_label.find("muHLT") != string::npos) do_muHLT_sys = shift;
         else if(sys_label.find("muID") != string::npos) do_muID_sys = shift;
         else if(sys_label.find("muISO") != string::npos) do_muISO_sys = shift;
-        else if(sys_label.find("muTRK") != string::npos) do_muTRK_sys = shift;
         else if(sys_label.find("muRC") != string::npos) do_muRC_sys = shift;
 
         else if(sys_label.find("elID") != string::npos) do_elID_sys = shift;
@@ -302,12 +301,12 @@ int gen_mc_template(TTree *t1, Double_t alpha_num, Double_t alpha_denom, TH2F* h
         t1->SetBranchAddress("mu1_eta", &mu1_eta);
         t1->SetBranchAddress("mu2_pt", &mu2_pt);
         t1->SetBranchAddress("mu2_eta", &mu2_eta);
-        t1->SetBranchAddress("bcdef_HLT_SF", &bcdef_HLT_SF);
-        t1->SetBranchAddress("bcdef_iso_SF", &bcdef_iso_SF);
-        t1->SetBranchAddress("bcdef_id_SF", &bcdef_id_SF);
-        t1->SetBranchAddress("gh_HLT_SF", &gh_HLT_SF);
-        t1->SetBranchAddress("gh_iso_SF", &gh_iso_SF);
-        t1->SetBranchAddress("gh_id_SF", &gh_id_SF);
+        t1->SetBranchAddress("era1_HLT_SF", &era1_HLT_SF);
+        t1->SetBranchAddress("era1_iso_SF", &era1_iso_SF);
+        t1->SetBranchAddress("era1_id_SF", &era1_id_SF);
+        t1->SetBranchAddress("era2_HLT_SF", &era2_HLT_SF);
+        t1->SetBranchAddress("era2_iso_SF", &era2_iso_SF);
+        t1->SetBranchAddress("era2_id_SF", &era2_id_SF);
         if(turn_on_RC){
             t1->SetBranchAddress("mu_p_SF", &mu_p_SF);
             t1->SetBranchAddress("mu_m_SF", &mu_m_SF);
@@ -350,7 +349,7 @@ int gen_mc_template(TTree *t1, Double_t alpha_num, Double_t alpha_denom, TH2F* h
             else cost = get_cost(*lep_p, *lep_m);
             if(cost_st>0.) cost_st = fabs(cost);
             else cost_st = -fabs(cost);
-            bool pass = (m >= var_low && m <= var_high) && met_pt < 50.  && no_bjets && not_cosmic;
+            bool pass = (m >= m_low && m <= m_high) && met_pt < 50.  && no_bjets && not_cosmic;
             if(pass){
                 double denom = 3./8.*(1.+cost_st*cost_st + 0.5 * alpha_denom * (1. - 3. *cost_st*cost_st));
                 reweight_a = cost_st/ denom;
@@ -369,38 +368,41 @@ int gen_mc_template(TTree *t1, Double_t alpha_num, Double_t alpha_denom, TH2F* h
                 gen_weight *= *systematic * pu_SF * pu_SF_sys;
 
 
-                if(do_muHLT_sys)   bcdef_HLT_SF = get_HLT_SF(mu1_pt, mu1_eta, mu2_pt, mu2_eta, runs_bcdef.HLT_SF, runs_bcdef.HLT_MC_EFF, do_muHLT_sys);
-                if(do_muHLT_sys)   gh_HLT_SF = get_HLT_SF(mu1_pt, mu1_eta, mu2_pt, mu2_eta, runs_gh.HLT_SF, runs_gh.HLT_MC_EFF, do_muHLT_sys);
+                if(do_muHLT_sys)   era1_HLT_SF = get_HLT_SF(mu1_pt, mu1_eta, mu2_pt, mu2_eta, era1_SFs.HLT_SF, era1_SFs.HLT_MC_EFF, do_muHLT_sys);
+                if(do_muHLT_sys)   era2_HLT_SF = get_HLT_SF(mu1_pt, mu1_eta, mu2_pt, mu2_eta, era2_SFs.HLT_SF, era2_SFs.HLT_MC_EFF, do_muHLT_sys);
 
-                if(do_muISO_sys)   bcdef_iso_SF = get_SF(mu1_pt, mu1_eta, runs_bcdef.ISO_SF, do_muISO_sys) * get_SF(mu2_pt, mu2_eta, runs_bcdef.ISO_SF, do_muISO_sys);
-                if(do_muISO_sys)   gh_iso_SF = get_SF(mu1_pt, mu1_eta, runs_gh.ISO_SF, do_muISO_sys) * get_SF(mu2_pt, mu2_eta, runs_gh.ISO_SF, do_muISO_sys);
+                if(do_muISO_sys)   era1_iso_SF = get_mu_SF(mu1_pt, mu1_eta, year, era1_SFs.ISO_SF,  do_muISO_sys) * get_mu_SF(mu2_pt, mu2_eta, year, era1_SFs.ISO_SF,  do_muISO_sys);
+                if(do_muISO_sys)   era2_iso_SF = get_mu_SF(mu1_pt, mu1_eta, year, era2_SFs.ISO_SF,  do_muISO_sys) * get_mu_SF(mu2_pt, mu2_eta, year, era2_SFs.ISO_SF,  do_muISO_sys);
 
-                if(do_muID_sys)    bcdef_id_SF = get_SF(mu1_pt, mu1_eta, runs_bcdef.ID_SF, do_muID_sys) * get_SF(mu2_pt, mu2_eta, runs_bcdef.ID_SF, do_muID_sys);
-                if(do_muID_sys)    gh_id_SF = get_SF(mu1_pt, mu1_eta, runs_gh.ID_SF, do_muID_sys) * get_SF(mu2_pt, mu2_eta, runs_gh.ID_SF, do_muID_sys);
+                if(do_muID_sys)    era1_id_SF = get_mu_SF(mu1_pt, mu1_eta, year, era1_SFs.ID_SF,  do_muID_sys) * get_mu_SF(mu2_pt, mu2_eta, year, era1_SFs.ID_SF,  do_muID_sys);
+                if(do_muID_sys)    era2_id_SF = get_mu_SF(mu1_pt, mu1_eta, year, era2_SFs.ID_SF,  do_muID_sys) * get_mu_SF(mu2_pt, mu2_eta, year, era2_SFs.ID_SF,  do_muID_sys);
 
-                //bcdef_HLT_SF = gh_HLT_SF = bcdef_iso_SF = gh_iso_SF = bcdef_id_SF = gh_id_SF =  1.0;
+                //era1_HLT_SF = era2_HLT_SF = era1_iso_SF = era2_iso_SF = era1_id_SF = era2_id_SF =  1.0;
                 jet1_b_weight = get_btag_weight(jet1_pt, jet1_eta, (Float_t) jet1_flavour , btag_effs, b_reader, do_btag_sys);
                 jet2_b_weight = get_btag_weight(jet2_pt, jet2_eta, (Float_t) jet2_flavour , btag_effs, b_reader, do_btag_sys);
 
 
-                Double_t bcdef_weight = gen_weight * bcdef_HLT_SF * bcdef_iso_SF * bcdef_id_SF ;
-                Double_t gh_weight = gen_weight * gh_HLT_SF * gh_iso_SF * gh_id_SF ;
+                Double_t era1_weight = gen_weight * era1_HLT_SF * era1_iso_SF * era1_id_SF ;
+                Double_t era2_weight = gen_weight * era2_HLT_SF * era2_iso_SF * era2_id_SF ;
                 if (nJets >= 1){
-                    bcdef_weight *= jet1_b_weight;
-                    gh_weight *= jet1_b_weight;
+                    era1_weight *= jet1_b_weight;
+                    era2_weight *= jet1_b_weight;
                 }
                 if (nJets >= 2){
-                    bcdef_weight *= jet2_b_weight;
-                    gh_weight *= jet2_b_weight;
+                    era1_weight *= jet2_b_weight;
+                    era2_weight *= jet2_b_weight;
                 }
 
 
-                Double_t final_weight = 1000*(bcdef_weight*bcdef_lumi + gh_weight*gh_lumi);
-                h_sym->Fill(xF, cost, reweight_s * final_weight); 
-                h_sym->Fill(xF, -cost, reweight_s * final_weight); 
+                Double_t tot_weight;
+                if(year==2016) tot_weight = 1000*(era1_weight*bcdef_lumi16 + era2_weight*gh_lumi16);
+                if(year==2017) tot_weight = 1000*(era1_weight*mu_lumi17);
+                if(year==2018) tot_weight = 1000*(era1_weight*mu_lumi18);
+                h_sym->Fill(xF, cost, reweight_s * tot_weight); 
+                h_sym->Fill(xF, -cost, reweight_s * tot_weight); 
 
-                h_asym->Fill(xF, cost, reweight_a * final_weight);
-                h_asym->Fill(xF, -cost, -reweight_a * final_weight);
+                h_asym->Fill(xF, cost, reweight_a * tot_weight);
+                h_asym->Fill(xF, -cost, -reweight_a * tot_weight);
                 //h_reweights->Fill(xF, fabs(cost), fabs(reweight));
 
             }
@@ -471,7 +473,7 @@ int gen_mc_template(TTree *t1, Double_t alpha_num, Double_t alpha_denom, TH2F* h
                 xF = compute_xF(cm);
 
             }
-            bool pass = (m >= var_low && m <= var_high) && met_pt < 50.  && no_bjets && not_cosmic;
+            bool pass = (m >= m_low && m <= m_high) && met_pt < 50.  && no_bjets && not_cosmic;
             if(pass){
                 cost = get_cost(*lep_p, *lep_m);
                 if(cost_st>0.) cost_st = fabs(cost);
@@ -501,6 +503,11 @@ int gen_mc_template(TTree *t1, Double_t alpha_num, Double_t alpha_denom, TH2F* h
                 if(do_elHLT_sys) el_HLT_SF = get_el_HLT_SF(el1_pt, el1_eta, el2_pt, el2_eta, el_SF.HLT_SF, el_SF.HLT_MC_EFF, do_elHLT_sys);
                 jet1_b_weight = get_btag_weight(jet1_pt, jet1_eta,(Float_t) jet1_flavour , btag_effs, b_reader, do_btag_sys);
                 jet2_b_weight = get_btag_weight(jet2_pt, jet2_eta,(Float_t) jet2_flavour , btag_effs, b_reader, do_btag_sys);
+
+                Double_t el_lumi;
+                if(year == 2016) el_lumi=el_lumi16;
+                if(year == 2017) el_lumi=el_lumi17;
+                if(year == 2018) el_lumi=el_lumi18;
 
 
                 Double_t evt_weight = gen_weight * el_id_SF *el_reco_SF * el_HLT_SF * 1000. * el_lumi;
@@ -534,9 +541,8 @@ int gen_mc_template(TTree *t1, Double_t alpha_num, Double_t alpha_denom, TH2F* h
 
 
 
-float gen_fakes_template(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_contam, 
-        TTree* t_QCD_contam, TH2F *h, Double_t var_low, Double_t var_high, 
-        int flag1 = FLAG_MUONS, bool ss = false){
+float gen_fakes_template(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_contam, TTree* t_QCD_contam, TH2F *h, 
+      int year,  Double_t m_low, Double_t m_high, int flag1 = FLAG_MUONS, bool ss = false){
     h->Sumw2();
     TH2D *h_err;
     TLorentzVector *lep_p=0;
@@ -547,7 +553,7 @@ float gen_fakes_template(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_contam,
     float tot_weight_ss = 0.;
     if(flag1 == FLAG_MUONS){
         //TH2D *FR;
-        setup_new_mu_fakerate(&FR);
+        setup_new_mu_fakerate(&FR, year);
         h_err = (TH2D *) FR.h->Clone("h_err");
         h_err->Reset();
         for (int l=0; l<=3; l++){
@@ -557,8 +563,8 @@ float gen_fakes_template(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_contam,
             if (l==2) t = t_WJets_contam;
             if (l==3) t = t_QCD_contam;
             Double_t m, xF, cost, jet1_cmva, jet2_cmva, gen_weight;
-            Double_t bcdef_HLT_SF, bcdef_iso_SF, bcdef_id_SF;
-            Double_t gh_HLT_SF, gh_iso_SF, gh_id_SF;
+            Double_t era1_HLT_SF, era1_iso_SF, era1_id_SF;
+            Double_t era2_HLT_SF, era2_iso_SF, era2_id_SF;
             Double_t jet1_pt, jet2_pt, jet1_b_weight, jet2_b_weight, pu_SF;
             Double_t evt_fakerate, mu1_fakerate, mu2_fakerate, mu1_eta, mu1_pt, mu2_eta, mu2_pt;
             Float_t mu1_charge, mu2_charge;
@@ -595,12 +601,12 @@ float gen_fakes_template(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_contam,
                 t->SetBranchAddress("jet1_b_weight", &jet1_b_weight);
                 t->SetBranchAddress("jet2_b_weight", &jet2_b_weight);
                 t->SetBranchAddress("pu_SF", &pu_SF);
-                t->SetBranchAddress("bcdef_HLT_SF", &bcdef_HLT_SF);
-                t->SetBranchAddress("bcdef_iso_SF", &bcdef_iso_SF);
-                t->SetBranchAddress("bcdef_id_SF", &bcdef_id_SF);
-                t->SetBranchAddress("gh_HLT_SF", &gh_HLT_SF);
-                t->SetBranchAddress("gh_iso_SF", &gh_iso_SF);
-                t->SetBranchAddress("gh_id_SF", &gh_id_SF);
+                t->SetBranchAddress("era1_HLT_SF", &era1_HLT_SF);
+                t->SetBranchAddress("era1_iso_SF", &era1_iso_SF);
+                t->SetBranchAddress("era1_id_SF", &era1_id_SF);
+                t->SetBranchAddress("era2_HLT_SF", &era2_HLT_SF);
+                t->SetBranchAddress("era2_iso_SF", &era2_iso_SF);
+                t->SetBranchAddress("era2_id_SF", &era2_id_SF);
             }
 
             Long64_t size  =  t->GetEntries();
@@ -619,17 +625,23 @@ float gen_fakes_template(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_contam,
                     evt_fakerate = -(mu1_fakerate/(1-mu1_fakerate)) * (mu2_fakerate/(1-mu2_fakerate));
                 }
                 if(l==2){
-                    Double_t bcdef_weight = gen_weight * bcdef_HLT_SF *  bcdef_id_SF * bcdef_iso_SF;
-                    Double_t gh_weight = gen_weight * gh_HLT_SF * gh_id_SF * gh_iso_SF;
-                    Double_t mc_weight = (bcdef_weight *bcdef_lumi + gh_weight * gh_lumi) * 1000;
+                    Double_t era1_weight = gen_weight * era1_HLT_SF *  era1_id_SF * era1_iso_SF;
+                    Double_t era2_weight = gen_weight * era2_HLT_SF * era2_id_SF * era2_iso_SF;
+                    Double_t mc_weight;
+                    if(year ==2016) mc_weight = 1000 * (mc_weight * era2_weight * gh_lumi16 + mc_weight * era1_weight * bcdef_lumi16);
+                    if(year ==2017) mc_weight = 1000 * mc_weight * era1_weight * mu_lumi17;
+                    if(year ==2018) mc_weight = 1000 * mc_weight * era1_weight * mu_lumi18;
                     if(iso_mu ==1) mu1_fakerate = get_new_fakerate_prob(mu1_pt, mu1_eta, FR.h);
                     if(iso_mu ==0) mu1_fakerate = get_new_fakerate_prob(mu2_pt, mu2_eta, FR.h);
                     evt_fakerate = -(mu1_fakerate * mc_weight)/(1-mu1_fakerate);
                 }
                 if(l==3){
-                    Double_t bcdef_weight = gen_weight * bcdef_HLT_SF *  bcdef_id_SF;
-                    Double_t gh_weight = gen_weight * gh_HLT_SF * gh_id_SF;
-                    Double_t mc_weight = (bcdef_weight *bcdef_lumi + gh_weight * gh_lumi) * 1000;
+                    Double_t era1_weight = gen_weight * era1_HLT_SF *  era1_id_SF;
+                    Double_t era2_weight = gen_weight * era2_HLT_SF * era2_id_SF;
+                    Double_t mc_weight;
+                    if(year ==2016) mc_weight = 1000 * (mc_weight * era2_weight * gh_lumi16 + mc_weight * era1_weight * bcdef_lumi16);
+                    if(year ==2017) mc_weight = 1000 * mc_weight * era1_weight * mu_lumi17;
+                    if(year ==2018) mc_weight = 1000 * mc_weight * era1_weight * mu_lumi18;
                     mu1_fakerate = get_new_fakerate_prob(mu1_pt, mu1_eta, FR.h);
                     mu2_fakerate = get_new_fakerate_prob(mu2_pt, mu2_eta, FR.h);
                     evt_fakerate = mc_weight * (mu1_fakerate/(1-mu1_fakerate)) * (mu2_fakerate/(1-mu2_fakerate));
@@ -638,7 +650,7 @@ float gen_fakes_template(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_contam,
                 TLorentzVector cm = *lep_p + *lep_m;
                 pt = cm.Pt();
                 xF = compute_xF(cm); 
-                bool pass = (m >= var_low && m <= var_high) && met_pt < 50.  && no_bjets && not_cosmic;
+                bool pass = (m >= m_low && m <= m_high) && met_pt < 50.  && no_bjets && not_cosmic;
 
                 bool opp_sign = ((abs(mu1_charge - mu2_charge)) > 0.01);
                 if(!ss) pass = pass && opp_sign;
@@ -664,7 +676,7 @@ float gen_fakes_template(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_contam,
     else{
 
         //TH2D *FR;
-        setup_new_el_fakerate(&FR);
+        setup_new_el_fakerate(&FR, year);
         h_err = (TH2D *) FR.h->Clone("h_err");
         h_err->Reset();
         for (int l=0; l<=3; l++){
@@ -714,6 +726,11 @@ float gen_fakes_template(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_contam,
                 t->SetBranchAddress("pu_SF", &pu_SF);
             }
 
+            Double_t el_lumi;
+            if(year == 2016) el_lumi=el_lumi16;
+            if(year == 2017) el_lumi=el_lumi17;
+            if(year == 2018) el_lumi=el_lumi18;
+
             Long64_t size  =  t->GetEntries();
             for (int i=0; i<size; i++) {
                 t->GetEntry(i);
@@ -749,7 +766,7 @@ float gen_fakes_template(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_contam,
                 TLorentzVector cm = *lep_p + *lep_m;
                 pt = cm.Pt();
                 xF = compute_xF(cm); 
-                bool pass = (m >= var_low && m <= var_high)  && met_pt < 50.  && no_bjets && not_cosmic;
+                bool pass = (m >= m_low && m <= m_high)  && met_pt < 50.  && no_bjets && not_cosmic;
                 bool opp_sign = ((abs(el1_charge - el2_charge)) > 0.01);
                 if(!ss) pass = pass && opp_sign;
                 if(pass){
@@ -784,11 +801,11 @@ float gen_fakes_template(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_contam,
 }
 
 void gen_emu_fakes_template(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_MC, TH2F *h, 
-        float m_low = 150., float m_high = 10000.){
+        int year, float m_low = 150., float m_high = 10000.){
     FakeRate el_FR, mu_FR;
     //TH2D *FR;
-    setup_new_el_fakerate(&el_FR);
-    setup_new_mu_fakerate(&mu_FR);
+    setup_new_el_fakerate(&el_FR, year);
+    setup_new_mu_fakerate(&mu_FR, year);
     //FR.h->Print();
     for (int l=0; l<=2; l++){
         TTree *t;
@@ -800,8 +817,8 @@ void gen_emu_fakes_template(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_MC, TH2
 
         jet1_b_weight = jet2_b_weight =1.;
         Double_t el_id_SF, el_reco_SF;
-        Double_t bcdef_iso_SF, bcdef_id_SF;
-        Double_t gh_iso_SF, gh_id_SF;
+        Double_t era1_iso_SF, era1_id_SF;
+        Double_t era2_iso_SF, era2_id_SF;
         Double_t evt_fakerate, lep1_fakerate, lep2_fakerate, el1_eta, el1_pt, mu1_eta, mu1_pt;
         TLorentzVector *el = 0;
         TLorentzVector *mu = 0;
@@ -833,8 +850,8 @@ void gen_emu_fakes_template(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_MC, TH2
             t->SetBranchAddress("el_reco_SF", &el_reco_SF);
             t->SetBranchAddress("gen_weight", &gen_weight);
             t->SetBranchAddress("pu_SF", &pu_SF);
-            t->SetBranchAddress("bcdef_id_SF", &bcdef_id_SF);
-            t->SetBranchAddress("gh_id_SF", &gh_id_SF);
+            t->SetBranchAddress("era1_id_SF", &era1_id_SF);
+            t->SetBranchAddress("era2_id_SF", &era2_id_SF);
         }
 
         Long64_t size  =  t->GetEntries();
@@ -853,10 +870,22 @@ void gen_emu_fakes_template(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_MC, TH2
                 evt_fakerate = -(lep1_fakerate/(1-lep1_fakerate)) * (lep2_fakerate/(1-lep2_fakerate));
             }
             if(l==2){
-                Double_t bcdef_SF = gen_weight *   bcdef_id_SF;
-                Double_t gh_SF = gen_weight *  gh_id_SF;
-                Double_t mu_SF = (bcdef_SF *bcdef_lumi + gh_SF * gh_lumi) / 
-                    (bcdef_lumi + gh_lumi);
+                Double_t era1_SF = gen_weight *   era1_id_SF;
+                Double_t era2_SF = gen_weight *  era2_id_SF;
+                Double_t mu_SF, mu_lumi;
+                if(year ==2016){
+                    mu_SF = (era1_SF *bcdef_lumi16 + era2_SF * gh_lumi16) / 
+                    (bcdef_lumi16 + gh_lumi16);
+                    mu_lumi=mu_lumi16;
+                }
+                if(year==2017){
+                    mu_SF = era1_SF;
+                    mu_lumi=mu_lumi17;
+                }
+                if(year==2018){
+                    mu_SF = era1_SF;
+                    mu_lumi=mu_lumi18;
+                }
 
                 Double_t mc_weight = gen_weight * el_id_SF * el_reco_SF *pu_SF *
                     mu_SF  * 1000. * mu_lumi;
@@ -884,7 +913,7 @@ void gen_emu_fakes_template(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_MC, TH2
 }
 
 int gen_combined_background_template(int nTrees, TTree **ts, TH2F* h,  
-        Double_t var_low, Double_t var_high, int flag1 = FLAG_MUONS, 
+        int year, Double_t m_low, Double_t m_high, int flag1 = FLAG_MUONS, 
         bool turn_on_RC = true, bool ss =false, const string &sys_label = ""){
     h->Sumw2();
 
@@ -895,8 +924,8 @@ int gen_combined_background_template(int nTrees, TTree **ts, TH2F* h,
         Long64_t nEntries  =  t1->GetEntries();
 
         Double_t m, xF, cost, gen_weight, jet1_cmva, jet2_cmva, cost_st;
-        Double_t bcdef_HLT_SF, bcdef_iso_SF, bcdef_id_SF;
-        Double_t gh_HLT_SF, gh_iso_SF, gh_id_SF;
+        Double_t era1_HLT_SF, era1_iso_SF, era1_id_SF;
+        Double_t era2_HLT_SF, era2_iso_SF, era2_id_SF;
         Double_t el_id_SF, el_reco_SF, pu_SF, el_HLT_SF;
         Double_t jet1_pt, jet2_pt, jet1_b_weight, jet2_b_weight, jet1_eta, jet2_eta;
         Double_t mu1_pt, mu1_eta, mu2_pt, mu2_eta;
@@ -962,7 +991,6 @@ int gen_combined_background_template(int nTrees, TTree **ts, TH2F* h,
         int do_muHLT_sys = 0;
         int do_muID_sys = 0;
         int do_muISO_sys = 0;
-        int do_muTRK_sys = 0;
         int do_muRC_sys = 0;
 
         int do_elID_sys = 0;
@@ -978,7 +1006,6 @@ int gen_combined_background_template(int nTrees, TTree **ts, TH2F* h,
             else if(sys_label.find("muHLT") != string::npos) do_muHLT_sys = shift;
             else if(sys_label.find("muID") != string::npos) do_muID_sys = shift;
             else if(sys_label.find("muISO") != string::npos) do_muISO_sys = shift;
-            else if(sys_label.find("muTRK") != string::npos) do_muTRK_sys = shift;
             else if(sys_label.find("muRC") != string::npos) do_muRC_sys = shift;
 
             else if(sys_label.find("elID") != string::npos) do_elID_sys = shift;
@@ -1017,12 +1044,12 @@ int gen_combined_background_template(int nTrees, TTree **ts, TH2F* h,
             t1->SetBranchAddress("mu1_eta", &mu1_eta);
             t1->SetBranchAddress("mu2_pt", &mu2_pt);
             t1->SetBranchAddress("mu2_eta", &mu2_eta);
-            t1->SetBranchAddress("bcdef_HLT_SF", &bcdef_HLT_SF);
-            t1->SetBranchAddress("bcdef_iso_SF", &bcdef_iso_SF);
-            t1->SetBranchAddress("bcdef_id_SF", &bcdef_id_SF);
-            t1->SetBranchAddress("gh_HLT_SF", &gh_HLT_SF);
-            t1->SetBranchAddress("gh_iso_SF", &gh_iso_SF);
-            t1->SetBranchAddress("gh_id_SF", &gh_id_SF);
+            t1->SetBranchAddress("era1_HLT_SF", &era1_HLT_SF);
+            t1->SetBranchAddress("era1_iso_SF", &era1_iso_SF);
+            t1->SetBranchAddress("era1_id_SF", &era1_id_SF);
+            t1->SetBranchAddress("era2_HLT_SF", &era2_HLT_SF);
+            t1->SetBranchAddress("era2_iso_SF", &era2_iso_SF);
+            t1->SetBranchAddress("era2_id_SF", &era2_id_SF);
             if(turn_on_RC){
                 t1->SetBranchAddress("mu_p_SF", &mu_p_SF);
                 t1->SetBranchAddress("mu_m_SF", &mu_m_SF);
@@ -1064,7 +1091,7 @@ int gen_combined_background_template(int nTrees, TTree **ts, TH2F* h,
                     pt = cm.Pt();
 
                 }
-                bool pass = (m >= var_low && m <= var_high) && met_pt < 50.  && no_bjets && not_cosmic;
+                bool pass = (m >= m_low && m <= m_high) && met_pt < 50.  && no_bjets && not_cosmic;
 
                 if(pass){
 
@@ -1078,33 +1105,36 @@ int gen_combined_background_template(int nTrees, TTree **ts, TH2F* h,
                     }
                     gen_weight *= (*systematic) * pu_SF * pu_SF_sys;
 
-                    if(do_muHLT_sys) bcdef_HLT_SF = get_HLT_SF(mu1_pt, mu1_eta, mu2_pt, mu2_eta, runs_bcdef.HLT_SF, runs_bcdef.HLT_MC_EFF, do_muHLT_sys);
-                    if(do_muHLT_sys) gh_HLT_SF = get_HLT_SF(mu1_pt, mu1_eta, mu2_pt, mu2_eta, runs_gh.HLT_SF, runs_gh.HLT_MC_EFF, do_muHLT_sys);
+                    if(do_muHLT_sys) era1_HLT_SF = get_HLT_SF(mu1_pt, mu1_eta, mu2_pt, mu2_eta, era1_SFs.HLT_SF, era1_SFs.HLT_MC_EFF, do_muHLT_sys);
+                    if(do_muHLT_sys) era2_HLT_SF = get_HLT_SF(mu1_pt, mu1_eta, mu2_pt, mu2_eta, era2_SFs.HLT_SF, era2_SFs.HLT_MC_EFF, do_muHLT_sys);
 
-                    if(do_muISO_sys)   bcdef_iso_SF = get_SF(mu1_pt, mu1_eta, runs_bcdef.ISO_SF, do_muISO_sys) * get_SF(mu2_pt, mu2_eta, runs_bcdef.ISO_SF, do_muISO_sys);
-                    if(do_muISO_sys)   gh_iso_SF = get_SF(mu1_pt, mu1_eta, runs_gh.ISO_SF, do_muISO_sys) * get_SF(mu2_pt, mu2_eta, runs_gh.ISO_SF, do_muISO_sys);
+                    if(do_muISO_sys)   era1_iso_SF = get_mu_SF(mu1_pt, mu1_eta, year, era1_SFs.ISO_SF,  do_muISO_sys) * get_mu_SF(mu2_pt, mu2_eta, year, era1_SFs.ISO_SF,  do_muISO_sys);
+                    if(do_muISO_sys)   era2_iso_SF = get_mu_SF(mu1_pt, mu1_eta, year, era2_SFs.ISO_SF,  do_muISO_sys) * get_mu_SF(mu2_pt, mu2_eta, year, era2_SFs.ISO_SF,  do_muISO_sys);
 
-                    if(do_muID_sys)  bcdef_id_SF = get_SF(mu1_pt, mu1_eta, runs_bcdef.ID_SF, do_muID_sys) * get_SF(mu2_pt, mu2_eta, runs_bcdef.ID_SF, do_muID_sys);
-                    if(do_muID_sys)  gh_id_SF = get_SF(mu1_pt, mu1_eta, runs_gh.ID_SF, do_muID_sys) * get_SF(mu2_pt, mu2_eta, runs_gh.ID_SF, do_muID_sys);
+                    if(do_muID_sys)    era1_id_SF = get_mu_SF(mu1_pt, mu1_eta, year, era1_SFs.ID_SF,  do_muID_sys) * get_mu_SF(mu2_pt, mu2_eta, year, era1_SFs.ID_SF,  do_muID_sys);
+                    if(do_muID_sys)    era2_id_SF = get_mu_SF(mu1_pt, mu1_eta, year, era2_SFs.ID_SF,  do_muID_sys) * get_mu_SF(mu2_pt, mu2_eta, year, era2_SFs.ID_SF,  do_muID_sys);
 
                     jet1_b_weight = get_btag_weight(jet1_pt, jet1_eta, (Float_t) jet1_flavour , btag_effs, b_reader, do_btag_sys);
                     jet2_b_weight = get_btag_weight(jet2_pt, jet2_eta, (Float_t) jet2_flavour , btag_effs, b_reader, do_btag_sys);
 
 
-                    Double_t bcdef_weight = gen_weight * bcdef_HLT_SF * bcdef_iso_SF * bcdef_id_SF ;
-                    Double_t gh_weight = gen_weight * gh_HLT_SF * gh_iso_SF * gh_id_SF ;
+                    Double_t era1_weight = gen_weight * era1_HLT_SF * era1_iso_SF * era1_id_SF ;
+                    Double_t era2_weight = gen_weight * era2_HLT_SF * era2_iso_SF * era2_id_SF ;
                     if (nJets >= 1){
-                        bcdef_weight *= jet1_b_weight;
-                        gh_weight *= jet1_b_weight;
+                        era1_weight *= jet1_b_weight;
+                        era2_weight *= jet1_b_weight;
                     }
                     if (nJets >= 2){
-                        bcdef_weight *= jet2_b_weight;
-                        gh_weight *= jet2_b_weight;
+                        era1_weight *= jet2_b_weight;
+                        era2_weight *= jet2_b_weight;
                     }
 
 
                     nEvents++;
-                    Double_t evt_weight = 1000*(bcdef_lumi * bcdef_weight + gh_lumi *gh_weight);
+                    Double_t evt_weight;
+                    if(year ==2016) evt_weight = 1000 * (evt_weight * era2_weight * gh_lumi16 + evt_weight * era1_weight * bcdef_lumi16);
+                    if(year ==2017) evt_weight = 1000 * evt_weight * era1_weight * mu_lumi17;
+                    if(year ==2018) evt_weight = 1000 * evt_weight * era1_weight * mu_lumi18;
                     if(!ss) h->Fill(xF, cost, evt_weight);
                     else{
                         h->Fill(xF, -abs(cost), evt_weight);
@@ -1162,6 +1192,12 @@ int gen_combined_background_template(int nTrees, TTree **ts, TH2F* h,
                 }
 
             }
+
+            Double_t el_lumi;
+            if(year == 2016) el_lumi=el_lumi16;
+            if(year == 2017) el_lumi=el_lumi17;
+            if(year == 2018) el_lumi=el_lumi18;
+
             for (int i=0; i<nEntries; i++) {
                 t1->GetEntry(i);
                 if(abs(*systematic) > 10.0 || abs(*systematic) < 0.01 || std::isnan(*systematic)){
@@ -1178,7 +1214,7 @@ int gen_combined_background_template(int nTrees, TTree **ts, TH2F* h,
                     xF = compute_xF(cm);
 
                 }
-                bool pass = (m >= var_low && m <= var_high)  && met_pt < 50.  && no_bjets && not_cosmic;
+                bool pass = (m >= m_low && m <= m_high)  && met_pt < 50.  && no_bjets && not_cosmic;
                 if(pass){
 
                     cost = get_cost(*lep_p, *lep_m);
@@ -1224,12 +1260,12 @@ int gen_combined_background_template(int nTrees, TTree **ts, TH2F* h,
 }
 
 
-void gen_emu_template(TTree *t1, TH2F *h, bool is_data = false, 
-        float m_low = 150., float m_high = 999999.){
+void gen_emu_template(TTree *t1, TH2F *h, 
+        bool is_data = false, int year=2016, float m_low = 150., float m_high = 999999.){
     Long64_t size  =  t1->GetEntries();
     Double_t m, xF, cost, mu1_pt, mu2_pt, jet1_cmva, jet2_cmva, gen_weight;
-    Double_t bcdef_HLT_SF, bcdef_iso_SF, bcdef_id_SF;
-    Double_t gh_HLT_SF, gh_iso_SF, gh_id_SF, el_id_SF, el_reco_SF, el_HLT_SF;
+    Double_t era1_HLT_SF, era1_iso_SF, era1_id_SF;
+    Double_t era2_HLT_SF, era2_iso_SF, era2_id_SF, el_id_SF, el_reco_SF, el_HLT_SF;
     Double_t jet1_pt, jet2_pt, jet1_b_weight, jet2_b_weight, pu_SF;
     jet1_b_weight = jet2_b_weight =1.;
     Float_t met_pt;
@@ -1251,12 +1287,12 @@ void gen_emu_template(TTree *t1, TH2F *h, bool is_data = false,
     if(!is_data){
         t1->SetBranchAddress("gen_weight", &gen_weight);
         t1->SetBranchAddress("pu_SF", &pu_SF);
-        t1->SetBranchAddress("bcdef_HLT_SF", &bcdef_HLT_SF);
-        t1->SetBranchAddress("bcdef_iso_SF", &bcdef_iso_SF);
-        t1->SetBranchAddress("bcdef_id_SF", &bcdef_id_SF);
-        t1->SetBranchAddress("gh_HLT_SF", &gh_HLT_SF);
-        t1->SetBranchAddress("gh_iso_SF", &gh_iso_SF);
-        t1->SetBranchAddress("gh_id_SF", &gh_id_SF);
+        t1->SetBranchAddress("era1_HLT_SF", &era1_HLT_SF);
+        t1->SetBranchAddress("era1_iso_SF", &era1_iso_SF);
+        t1->SetBranchAddress("era1_id_SF", &era1_id_SF);
+        t1->SetBranchAddress("era2_HLT_SF", &era2_HLT_SF);
+        t1->SetBranchAddress("era2_iso_SF", &era2_iso_SF);
+        t1->SetBranchAddress("era2_id_SF", &era2_id_SF);
         t1->SetBranchAddress("el_id_SF", &el_id_SF);
         t1->SetBranchAddress("el_reco_SF", &el_reco_SF);     
     }
@@ -1278,10 +1314,10 @@ void gen_emu_template(TTree *t1, TH2F *h, bool is_data = false,
             else{
                 nEvents++;
                 Double_t evt_weight = gen_weight * pu_SF * el_id_SF * el_reco_SF;
-                Double_t bcdef_weight = bcdef_iso_SF * bcdef_id_SF ;
-                Double_t gh_weight = gh_iso_SF * gh_id_SF ;
-                bcdef_weight *= bcdef_HLT_SF;
-                gh_weight *= gh_HLT_SF;
+                Double_t era1_weight = era1_iso_SF * era1_id_SF ;
+                Double_t era2_weight = era2_iso_SF * era2_id_SF ;
+                era1_weight *= era1_HLT_SF;
+                era2_weight *= era2_HLT_SF;
 
                 if (nJets >= 1){
                     evt_weight *= jet1_b_weight;
@@ -1289,10 +1325,13 @@ void gen_emu_template(TTree *t1, TH2F *h, bool is_data = false,
                 if (nJets >= 2){
                     evt_weight *= jet2_b_weight;
                 }
-                //printf(" %.2e %.2e %.2e \n", evt_weight, evt_weight *bcdef_weight, evt_weight *gh_weight);
-                double total_weight = 1000 * (evt_weight * gh_weight * gh_lumi + evt_weight * bcdef_weight * bcdef_lumi);
-                h->Fill(xF, cost, 0.5 *total_weight);
-                h->Fill(xF, -cost, 0.5 *total_weight);
+                //printf(" %.2e %.2e %.2e \n", evt_weight, evt_weight *era1_weight, evt_weight *era2_weight);
+                Double_t tot_weight;
+                if(year ==2016) tot_weight = 1000 * (evt_weight * era2_weight * gh_lumi16 + evt_weight * era1_weight * bcdef_lumi16);
+                if(year ==2017) tot_weight = 1000 * evt_weight * era1_weight * mu_lumi17;
+                if(year ==2018) tot_weight = 1000 * evt_weight * era1_weight * mu_lumi18;
+                h->Fill(xF, cost, 0.5 *tot_weight);
+                h->Fill(xF, -cost, 0.5 *tot_weight);
             }
 
 

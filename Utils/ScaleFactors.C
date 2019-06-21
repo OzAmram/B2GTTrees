@@ -473,16 +473,18 @@ void setup_mu_SFs(mu_SFs *era1, mu_SFs *era2, int year){
 void setup_el_SF(el_SFs *sf, int year){
     //Setup electron SF's
     TFile *f_id, *f_reco, *f_hlt;
-    f_hlt = TFile::Open("SFs/2016/El_HLT.root");
     if(year == 2016){
+        f_hlt = TFile::Open("SFs/2016/El_HLT.root");
         f_id = TFile::Open("SFs/2016/El_ID.root");
         f_reco = TFile::Open("SFs/2016/El_RECO.root");
     }
     else if(year == 2017){
+        f_hlt = TFile::Open("SFs/2016/El_HLT.root");
         f_id = TFile::Open("SFs/2017/El_ID.root");
         f_reco = TFile::Open("SFs/2017/El_RECO.root");
     }
     else if(year == 2018){
+        f_hlt = TFile::Open("SFs/2016/El_HLT.root");
         f_id = TFile::Open("SFs/2018/El_ID.root");
         f_reco = TFile::Open("SFs/2018/El_RECO.root");
     }
@@ -510,15 +512,31 @@ void setup_el_SF(el_SFs *sf, int year){
 
 void setup_pileup_systematic(pileup_systematics *pu_sys, int year){
 
-    TFile *f7 = TFile::Open("SFs/2016/DataPileupHistogram_69200.root");
+
+    TFile *f7, *f8, *f9;
+    if(year == 2016){
+        f7 = TFile::Open("SFs/2016/DataPileupHistogram_69200.root");
+        f8 = TFile::Open("SFs/2016/DataPileupHistogram_66017.root");
+        f9 = TFile::Open("SFs/2016/DataPileupHistogram_72383.root");
+    }
+    if(year == 2017){
+        f7 = TFile::Open("SFs/2016/DataPileupHistogram_69200.root");
+        f8 = TFile::Open("SFs/2016/DataPileupHistogram_66017.root");
+        f9 = TFile::Open("SFs/2016/DataPileupHistogram_72383.root");
+    }
+    if(year == 2018){
+        f7 = TFile::Open("SFs/2016/DataPileupHistogram_69200.root");
+        f8 = TFile::Open("SFs/2016/DataPileupHistogram_66017.root");
+        f9 = TFile::Open("SFs/2016/DataPileupHistogram_72383.root");
+    }
+
+
     TH1D * pileup_data_nom = (TH1D *) f7->Get("pileup")->Clone();
     pileup_data_nom->SetDirectory(0);
 
-    TFile *f8 = TFile::Open("SFs/2016/DataPileupHistogram_66017.root");
     TH1D * pileup_data_up = (TH1D *) f8->Get("pileup")->Clone();
     pileup_data_up->SetDirectory(0);
 
-    TFile *f9 = TFile::Open("SFs/2016/DataPileupHistogram_72383.root");
     TH1D * pileup_data_down = (TH1D *) f9->Get("pileup")->Clone();
     pileup_data_down->SetDirectory(0);
 

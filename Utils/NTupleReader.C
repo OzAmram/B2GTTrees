@@ -695,11 +695,6 @@ void NTupleReader::fillEventRC(){
         mu_m_n_TL = (int) mu_NumberTrackerLayers[1];
         mu_p_n_TL = (int) mu_NumberTrackerLayers[0];
     }
-    if(year > 2016){
-        mu_m_n_TL = 13;
-        mu_p_n_TL = 13;
-    }
-
 
     Double_t mu_p_SF_vars[100], mu_m_SF_vars[100];
     if(is_data){

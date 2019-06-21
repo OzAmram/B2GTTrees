@@ -73,13 +73,15 @@ void convert_emu_qcd_to_param_hist(TH1F *h, FILE *f_log){
 }
 
 
-void make_emu_data_templates(){
-    auto h_emu_data = new TH2F("emu_data_obs", "Data template of (x_f, cost_r)",
+void make_emu_data_templates(int year){
+    char title[100];
+    sprintf(title, "emu%i_data_obs", year%2000);
+    auto h_emu_data = new TH2F(title, "Data template of (x_f, cost_r)",
             n_xf_bins, xf_bins, n_cost_bins, cost_bins);
     h_emu_data->SetDirectory(0);
     bool ss = false;
 
-    gen_emu_template(t_emu_data, h_emu_data,  true, m_low, m_high);
+    gen_emu_template(t_emu_data, h_emu_data,  true, year, m_low, m_high);
     auto h1_emu_data = convert2d(h_emu_data);
 
 
@@ -89,8 +91,10 @@ void make_emu_data_templates(){
     printf("Made emu data templates \n");
 }
 
-void make_emu_qcd_templates(FILE *f_log){
-    auto h_emu_qcd = new TH2F("emu_qcd", "Combined background template",
+void make_emu_qcd_templates(int year, FILE *f_log){
+    char title[100];
+    sprintf(title, "emu%i_qcd", year%2000);
+    auto h_emu_qcd = new TH2F(title, "Combined background template",
             n_xf_bins, xf_bins, n_cost_bins, cost_bins);
     h_emu_qcd->SetDirectory(0);
 
@@ -102,11 +106,14 @@ void make_emu_qcd_templates(FILE *f_log){
     printf("Made emu qcd templates \n");
 }
 
-void make_emu_mc_templates(){
-    auto h_emu_dy = new TH2F("emu_dy", "dy template of (x_f, cost_r)",
+void make_emu_mc_templates(int year){
+    char title[100];
+    sprintf(title, "emu%i_dy", year%2000);
+    auto h_emu_dy = new TH2F(title, "dy template of (x_f, cost_r)",
             n_xf_bins, xf_bins, n_cost_bins, cost_bins);
     h_emu_dy->SetDirectory(0);
-    auto h_emu_bk = new TH2F("emu_bk", "bk template of (x_f, cost_r)",
+    sprintf(title, "emu%i_bk", year%2000);
+    auto h_emu_bk = new TH2F(title, "bk template of (x_f, cost_r)",
             n_xf_bins, xf_bins, n_cost_bins, cost_bins);
     h_emu_bk->SetDirectory(0);
 
@@ -114,8 +121,8 @@ void make_emu_mc_templates(){
     
 
 
-    gen_emu_template(t_emu_back, h_emu_bk,  false, m_low, m_high);
-    gen_emu_template(t_emu_dy, h_emu_dy,  false, m_low, m_high);
+    gen_emu_template(t_emu_back, h_emu_bk,  false, year, m_low, m_high);
+    gen_emu_template(t_emu_dy, h_emu_dy,  false, year, m_low, m_high);
 
     auto h1_emu_bk = convert2d(h_emu_bk);
     auto h1_emu_dy = convert2d(h_emu_dy);
@@ -138,9 +145,9 @@ void make_emu_mc_templates(){
 
 
 
-void make_emu_templates(){
+void make_emu_templates(int year=2016){
 
-    init_emu();
+    init_emu(year);
 
 
     emu_fout = TFile::Open(emu_fout_name, "RECREATE");
@@ -159,14 +166,14 @@ void make_emu_templates(){
         m_low = m_bins[i];
         m_high = m_bins[i+1];
 
-        sprintf(f_log_name, "combine/EMu_fits/cards/mbin%i_bins.txt", i);
+        sprintf(f_log_name, "combine/EMu_fits/cards/y%i_mbin%i_bins.txt", year, i);
         f_log = fopen(f_log_name, "w");
 
 
 
-        make_emu_data_templates();
-        make_emu_qcd_templates(f_log);
-        make_emu_mc_templates();
+        make_emu_data_templates(year);
+        make_emu_qcd_templates(year,f_log);
+        make_emu_mc_templates(year);
         emu_fout->cd();
         gDirectory->cd(dirname);
         w->Write();

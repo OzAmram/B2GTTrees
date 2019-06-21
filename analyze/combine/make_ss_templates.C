@@ -68,17 +68,21 @@ void convert_ss_qcd_to_param_hist(TH1F *h, FILE *f_log, int flag){
 }
 
 
-void make_ss_data_templates(){
-    auto h_elel_data = new TH2F("ee_ss_data_obs", "Data template of (x_f, cost_r)",
+void make_ss_data_templates(int year){
+
+    char title[100];
+    sprintf(title, "ee%i_ss_data_obs", year %2000);
+    auto h_elel_data = new TH2F(title, "Data template of (x_f, cost_r)",
             n_xf_bins, xf_bins, n_cost_ss_bins, cost_ss_bins);
     h_elel_data->SetDirectory(0);
+    sprintf(title, "mumu%i_ss_data_obs", year %2000);
     auto h_mumu_data = new TH2F("mumu_ss_data_obs", "Data template of (x_f, cost_r)",
             n_xf_bins, xf_bins, n_cost_ss_bins, cost_ss_bins);
     h_mumu_data->SetDirectory(0);
     bool ss = true;
 
-    gen_data_template(t_elel_ss_data, h_elel_data,  m_low, m_high, FLAG_ELECTRONS, do_RC, ss);
-    gen_data_template(t_mumu_ss_data, h_mumu_data,  m_low, m_high, FLAG_MUONS,  do_RC, ss);
+    gen_data_template(t_elel_ss_data, h_elel_data,  year, m_low, m_high, FLAG_ELECTRONS, do_RC, ss);
+    gen_data_template(t_mumu_ss_data, h_mumu_data,  year, m_low, m_high, FLAG_MUONS,  do_RC, ss);
     auto h1_elel_data = convert2d(h_elel_data);
     auto h1_mumu_data = convert2d(h_mumu_data);
 
@@ -91,18 +95,21 @@ void make_ss_data_templates(){
     printf("Made ss data templates \n");
 }
 
-void make_ss_qcd_templates(FILE *f_log){
-    auto h_elel_qcd = new TH2F((string("ee_ss_qcd") ).c_str(), "Combined background template",
+void make_ss_qcd_templates(int year, FILE *f_log){
+    char title[100];
+    sprintf(title, "ee%i_ss_qcd", year %2000);
+    auto h_elel_qcd = new TH2F(title, "Combined background template",
             n_xf_bins, xf_bins, n_cost_ss_bins, cost_ss_bins);
     h_elel_qcd->SetDirectory(0);
-    auto h_mumu_qcd = new TH2F((string("mumu_ss_qcd") ).c_str(), "Combined background template",
+    sprintf(title, "mumu%i_ss_qcd", year %2000);
+    auto h_mumu_qcd = new TH2F(title, "Combined background template",
             n_xf_bins, xf_bins, n_cost_ss_bins, cost_ss_bins);
     h_mumu_qcd->SetDirectory(0);
 
 
     bool ss = true;
-    gen_fakes_template(t_elel_WJets, t_elel_QCD, t_elel_WJets_contam, t_elel_QCD_contam, h_elel_qcd, m_low, m_high, FLAG_ELECTRONS,  ss);
-    gen_fakes_template(t_mumu_WJets, t_mumu_QCD, t_mumu_WJets_contam, t_mumu_QCD_contam, h_mumu_qcd, m_low, m_high, FLAG_MUONS, ss);
+    gen_fakes_template(t_elel_WJets, t_elel_QCD, t_elel_WJets_contam, t_elel_QCD_contam, h_elel_qcd, year, m_low, m_high, FLAG_ELECTRONS,  ss);
+    gen_fakes_template(t_mumu_WJets, t_mumu_QCD, t_mumu_WJets_contam, t_mumu_QCD_contam, h_mumu_qcd, year, m_low, m_high, FLAG_MUONS, ss);
     printf("Integral of qcd templates are %.2f %.2f \n", h_elel_qcd->Integral(), h_mumu_qcd->Integral()); 
     auto h1_elel_qcd = convert2d(h_elel_qcd);
     auto h1_mumu_qcd = convert2d(h_mumu_qcd);
@@ -112,15 +119,21 @@ void make_ss_qcd_templates(FILE *f_log){
     printf("Made ss qcd templates \n");
 }
 
-void make_ss_mc_templates(){
-    auto h_elel_dy = new TH2F((string("ee_ss_dy") ).c_str(), "ss DY",
+void make_ss_mc_templates(int year){
+    char title[100];
+    sprintf(title, "ee%i_ss_dy", year %2000);
+    auto h_elel_dy = new TH2F(title, "ss DY",
             n_xf_bins, xf_bins, n_cost_ss_bins, cost_ss_bins);
     h_elel_dy->SetDirectory(0);
-    auto h_mumu_dy = new TH2F((string("mumu_ss_dy") ).c_str(), "ss DY",
+    sprintf(title, "mumu%i_ss_dy", year %2000);
+    auto h_mumu_dy = new TH2F(title, "ss DY",
             n_xf_bins, xf_bins, n_cost_ss_bins, cost_ss_bins);
-    auto h_elel_bk = new TH2F((string("ee_ss_bk") ).c_str(), "Combined background template",
+
+    sprintf(title, "ee%i_ss_bk", year %2000);
+    auto h_elel_bk = new TH2F(title, "Combined background template",
             n_xf_bins, xf_bins, n_cost_ss_bins, cost_ss_bins);
     h_elel_bk->SetDirectory(0);
+    sprintf(title, "mumu%i_ss_bk", year %2000);
     auto h_mumu_bk = new TH2F((string("mumu_ss_bk") ).c_str(), "Combined background template",
             n_xf_bins, xf_bins, n_cost_ss_bins, cost_ss_bins);
 
@@ -163,10 +176,10 @@ void make_ss_mc_templates(){
 
 
 
-void make_ss_templates(){
+void make_ss_templates(int year=2016){
 
-    init();
-    init_ss();
+    init(year);
+    init_ss(year);
 
 
     ss_fout = TFile::Open(ss_fout_name, "RECREATE");
@@ -185,14 +198,14 @@ void make_ss_templates(){
         m_low = m_bins[i];
         m_high = m_bins[i+1];
 
-        sprintf(f_log_name, "combine/SameSign_fits/cards/mbin%i_bins.txt", i);
+        sprintf(f_log_name, "combine/SameSign_fits/cards/y%i_mbin%i_bins.txt", year, i);
         f_log = fopen(f_log_name, "w");
 
 
 
-        make_ss_data_templates();
-        make_ss_qcd_templates(f_log);
-        make_ss_mc_templates();
+        make_ss_data_templates(year);
+        make_ss_qcd_templates(year, f_log);
+        make_ss_mc_templates(year);
         ss_fout->cd();
         gDirectory->cd(dirname);
         w->Write();

@@ -36,7 +36,7 @@ Double_t alpha_num_unc[6] = {0.04, 0.04, 0.04, 0.04,   0.03, 0.03};
 Double_t alphas_denom[6] = {0.15, 0.13, 0.08, 0.065, 0.07, 0.045};
 Double_t alpha_denom_unc[6] = {0.05, 0.03, 0.03, 0.04,   0.04, 0.04};
 
-void init(){
+void init(int year){
     //MC templates
     printf("init \n");
     f_elel_data = TFile::Open("../analyze/output_files/SingleElectron_data_slim_nov26.root");
@@ -87,7 +87,7 @@ void init(){
 
     return;
 }
-void init_emu(){
+void init_emu(int year){
 
 
     f_emu_data = TFile::Open("../analyze/output_files/EMu_data_nov26.root");
@@ -111,7 +111,7 @@ void init_emu(){
 
 }
 
-void init_emu_ss(){
+void init_emu_ss(int year){
 
 
     f_emu_ss_data = TFile::Open("../analyze/output_files/EMu_data_samesign_jan17.root");
@@ -129,7 +129,7 @@ void init_emu_ss(){
 }
 
 
-void init_ss(){
+void init_ss(int year){
     f_elel_ss_data = TFile::Open("../analyze/output_files/ElEl_samesign_data_dec3.root");
     t_elel_ss_data = (TTree *)f_elel_ss_data->Get("T_data");
 
@@ -172,7 +172,7 @@ void init_ss(){
     t_mumu_ss_back = (TTree *)f_mumu_ss_back->Get("T_data");
 }
 
-void init_gamgam(){
+void init_gamgam(int year){
     f_mumu_gamgam = TFile::Open("../analyze/output_files/MuMu_gamgam_back_may7.root");
     t_mumu_gamgam = (TTree *)f_mumu_gamgam->Get("T_data");
 

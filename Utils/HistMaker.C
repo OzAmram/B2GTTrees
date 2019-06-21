@@ -32,12 +32,17 @@ using namespace std;
 #define FLAG_M_BINS 0
 #define FLAG_PT_BINS 1
 
-Double_t bcdef_lumi = 6.04 + 2.68 + 4.37 + 4.06 + 3.17;
-// adding new Hv2 data set to get full 2016 luminosity
-Double_t gh_lumi =  7.69 + 0.216 + 8.67;
-Double_t mu_lumi = bcdef_lumi + gh_lumi;
-Double_t el_lumi = 36.5;
-Double_t R_mu_ss_os = 0.57;
+Double_t bcdef_lumi16 = 6.04 + 2.68 + 4.37 + 4.06 + 3.17;
+Double_t gh_lumi16 =  7.69 + 0.216 + 8.67;
+Double_t mu_lumi16 = bcdef_lumi16 + gh_lumi16;
+Double_t el_lumi16 = 35.9;
+
+Double_t mu_lumi17 = 42.13;
+Double_t el_lumi17 = 41.52;
+
+Double_t mu_lumi18 = 60.43;
+Double_t el_lumi18 = 58.83;
+
 
 void cleanup_hist(TH1 *h){
     int nBins = h->GetNbinsX();
@@ -230,16 +235,21 @@ typedef struct {
 } FakeRate;
 //
 //static type means functions scope is only this file, to avoid conflicts
-static void setup_new_el_fakerate(FakeRate *FR){
-    TFile *f0 = TFile::Open("../analyze/FakeRate/root_files/SingleElectron_data_fakerate_corrected_nov27.root");
+static void setup_new_el_fakerate(FakeRate *FR, int year){
+    TFile *f0;
+    if (year == 2016) f0 = TFile::Open("../analyze/FakeRate/root_files/2016/SingleElectron_data_fakerate_corrected_nov27.root");
+    if (year == 2017) f0 = TFile::Open("../analyze/FakeRate/root_files/2016/SingleElectron_data_fakerate_corrected_nov27.root");
+    if (year == 2018) f0 = TFile::Open("../analyze/FakeRate/root_files/2016/SingleElectron_data_fakerate_corrected_nov27.root");
     TH2D *h1 = (TH2D *) gDirectory->Get("h_rate_new")->Clone();
     h1->SetDirectory(0);
     FR->h = h1;
     f0->Close();
 }
-static void setup_new_mu_fakerate(FakeRate *FR){
-    TFile *f0 = TFile::Open("../analyze/FakeRate/root_files/SingleMuon_data_fakerate_corrected_nov27.root");
-    //f0->ls();
+static void setup_new_mu_fakerate(FakeRate *FR, int year){
+    TFile *f0;
+    if (year == 2016) f0 = TFile::Open("../analyze/FakeRate/root_files/2016/SingleMuon_data_fakerate_corrected_nov27.root");
+    if (year == 2017) f0 = TFile::Open("../analyze/FakeRate/root_files/2016/SingleMuon_data_fakerate_corrected_nov27.root");
+    if (year == 2018) f0 = TFile::Open("../analyze/FakeRate/root_files/2016/SingleMuon_data_fakerate_corrected_nov27.root");
     TDirectory *subdir = gDirectory;
     TH2D *h1 = (TH2D *) subdir->Get("h_rate_new")->Clone();
     h1->SetDirectory(0);
@@ -304,12 +314,11 @@ static Double_t get_new_fakerate_unc(Double_t pt, Double_t eta, TH2D *h){
 
 
 void make_emu_m_cost_pt_xf_hist(TTree *t1, TH1F *h_m, TH1F *h_cost,  TH1F *h_pt, TH1F *h_xf, bool is_data = false, 
-        float m_low = 150., float m_high = 999999., bool ss = false){
+        int year=2016, float m_low = 150., float m_high = 999999., bool ss = false){
     Long64_t size  =  t1->GetEntries();
     Double_t m, xF, cost, mu1_pt, mu2_pt, jet1_cmva, jet2_cmva, gen_weight;
-    Double_t bcdef_HLT_SF, bcdef_iso_SF, bcdef_id_SF;
-    Double_t gh_HLT_SF, gh_iso_SF, gh_id_SF, el_id_SF, el_reco_SF, el_HLT_SF;
-    Double_t bcdef_trk_SF, gh_trk_SF;
+    Double_t era1_HLT_SF, era1_iso_SF, era1_id_SF;
+    Double_t era2_HLT_SF, era2_iso_SF, era2_id_SF, el_id_SF, el_reco_SF, el_HLT_SF;
     Double_t jet1_pt, jet2_pt, pu_SF;
     Float_t met_pt;
     Int_t nJets;
@@ -330,14 +339,12 @@ void make_emu_m_cost_pt_xf_hist(TTree *t1, TH1F *h_m, TH1F *h_cost,  TH1F *h_pt,
     if(!is_data){
         t1->SetBranchAddress("gen_weight", &gen_weight);
         t1->SetBranchAddress("pu_SF", &pu_SF);
-        t1->SetBranchAddress("bcdef_HLT_SF", &bcdef_HLT_SF);
-        t1->SetBranchAddress("bcdef_iso_SF", &bcdef_iso_SF);
-        t1->SetBranchAddress("bcdef_id_SF", &bcdef_id_SF);
-        t1->SetBranchAddress("gh_HLT_SF", &gh_HLT_SF);
-        t1->SetBranchAddress("gh_iso_SF", &gh_iso_SF);
-        t1->SetBranchAddress("gh_id_SF", &gh_id_SF);
-        t1->SetBranchAddress("gh_trk_SF", &gh_trk_SF);
-        t1->SetBranchAddress("bcdef_trk_SF", &bcdef_trk_SF);
+        t1->SetBranchAddress("era1_HLT_SF", &era1_HLT_SF);
+        t1->SetBranchAddress("era1_iso_SF", &era1_iso_SF);
+        t1->SetBranchAddress("era1_id_SF", &era1_id_SF);
+        t1->SetBranchAddress("era2_HLT_SF", &era2_HLT_SF);
+        t1->SetBranchAddress("era2_iso_SF", &era2_iso_SF);
+        t1->SetBranchAddress("era2_id_SF", &era2_id_SF);
         t1->SetBranchAddress("el_id_SF", &el_id_SF);
         t1->SetBranchAddress("el_reco_SF", &el_reco_SF);     
     }
@@ -362,18 +369,21 @@ void make_emu_m_cost_pt_xf_hist(TTree *t1, TH1F *h_m, TH1F *h_cost,  TH1F *h_pt,
             else{
                 nEvents++;
                 Double_t evt_weight = gen_weight * pu_SF * el_id_SF * el_reco_SF;
-                Double_t bcdef_weight = bcdef_iso_SF * bcdef_id_SF * bcdef_trk_SF;
-                Double_t gh_weight = gh_iso_SF * gh_id_SF * gh_trk_SF;
-                bcdef_weight *= bcdef_HLT_SF;
-                gh_weight *= gh_HLT_SF;
+                Double_t era1_weight = era1_iso_SF * era1_id_SF;
+                Double_t era2_weight = era2_iso_SF * era2_id_SF;
+                era1_weight *= era1_HLT_SF;
+                era2_weight *= era2_HLT_SF;
 
-                //printf(" %.2e %.2e %.2e \n", evt_weight, evt_weight *bcdef_weight, evt_weight *gh_weight);
-                double total_weight = 1000 * (evt_weight * gh_weight * gh_lumi + evt_weight * bcdef_weight * bcdef_lumi);
-                h_m->Fill(m, total_weight);
-                if(ss) h_cost->Fill(abs(cost), total_weight);
-                else h_cost->Fill(cost, total_weight);
-                h_xf->Fill(xf, total_weight);
-                h_pt->Fill(cm.Pt(), total_weight);
+                //printf(" %.2e %.2e %.2e \n", tot_weight, tot_weight *era1_weight, tot_weight *era2_weight);
+                Double_t tot_weight;
+                if(year ==2016) tot_weight = 1000 * (evt_weight * era2_weight * gh_lumi16 + evt_weight * era1_weight * bcdef_lumi16);
+                if(year ==2017) tot_weight = 1000 * evt_weight * era1_weight * mu_lumi17;
+                if(year ==2018) tot_weight = 1000 * evt_weight * era1_weight * mu_lumi18;
+                h_m->Fill(m, tot_weight);
+                if(ss) h_cost->Fill(abs(cost), tot_weight);
+                else h_cost->Fill(cost, tot_weight);
+                h_xf->Fill(xf, tot_weight);
+                h_pt->Fill(cm.Pt(), tot_weight);
             }
 
 
@@ -381,7 +391,7 @@ void make_emu_m_cost_pt_xf_hist(TTree *t1, TH1F *h_m, TH1F *h_cost,  TH1F *h_pt,
         }
     }
     if(!is_data){
-        //Printf("%.1f %.1f", h_m_bcdef->Integral(), h_m_gh->Integral());
+        //Printf("%.1f %.1f", h_m_era1->Integral(), h_m_gh->Integral());
         printf("%i MC events. Poission unc. is %.2f \n", nEvents, 1./(sqrt(nEvents)));
     }
 }
@@ -449,13 +459,12 @@ void make_qcd_from_emu_m_cost_pt_xf_hist(TTree *t_data, TTree *t_ttbar, TTree *t
 
 
 void make_m_cost_pt_xf_hist(TTree *t1, TH1F *h_m, TH1F *h_cost, TH1F *h_pt, TH1F *h_xf, bool is_data=false, int flag1 = FLAG_MUONS, bool turn_on_RC = true,
-        Double_t m_low = 150., Double_t m_high = 9999999., bool ss = false){
+        int year = 2016, Double_t m_low = 150., Double_t m_high = 9999999., bool ss = false){
     //read event data
     Long64_t size  =  t1->GetEntries();
     Double_t m, xF, cost, mu1_pt, mu2_pt, jet1_cmva, jet2_cmva, gen_weight;
-    Double_t bcdef_HLT_SF, bcdef_iso_SF, bcdef_id_SF;
-    Double_t gh_HLT_SF, gh_iso_SF, gh_id_SF, el_id_SF, el_reco_SF, el_HLT_SF;
-    Double_t bcdef_trk_SF, gh_trk_SF;
+    Double_t era1_HLT_SF, era1_iso_SF, era1_id_SF;
+    Double_t era2_HLT_SF, era2_iso_SF, era2_id_SF, el_id_SF, el_reco_SF, el_HLT_SF;
     Double_t jet1_pt, jet2_pt, pu_SF;
     Double_t mu_p_SF, mu_m_SF, mu_p_SF_alt, mu_m_SF_alt;
     TLorentzVector *mu_p = 0;
@@ -486,14 +495,12 @@ void make_m_cost_pt_xf_hist(TTree *t1, TH1F *h_m, TH1F *h_cost, TH1F *h_pt, TH1F
         t1->SetBranchAddress("mu1_pt", &mu1_pt);
         t1->SetBranchAddress("mu2_pt", &mu2_pt);
         if(!is_data){
-            t1->SetBranchAddress("bcdef_HLT_SF", &bcdef_HLT_SF);
-            t1->SetBranchAddress("bcdef_iso_SF", &bcdef_iso_SF);
-            t1->SetBranchAddress("bcdef_id_SF", &bcdef_id_SF);
-            t1->SetBranchAddress("gh_HLT_SF", &gh_HLT_SF);
-            t1->SetBranchAddress("gh_iso_SF", &gh_iso_SF);
-            t1->SetBranchAddress("gh_id_SF", &gh_id_SF);
-            t1->SetBranchAddress("gh_trk_SF", &gh_trk_SF);
-            t1->SetBranchAddress("bcdef_trk_SF", &bcdef_trk_SF);
+            t1->SetBranchAddress("era1_HLT_SF", &era1_HLT_SF);
+            t1->SetBranchAddress("era1_iso_SF", &era1_iso_SF);
+            t1->SetBranchAddress("era1_id_SF", &era1_id_SF);
+            t1->SetBranchAddress("era2_HLT_SF", &era2_HLT_SF);
+            t1->SetBranchAddress("era2_iso_SF", &era2_iso_SF);
+            t1->SetBranchAddress("era2_id_SF", &era2_id_SF);
         }
         if(turn_on_RC){
             t1->SetBranchAddress("mu_p_SF", &mu_p_SF);
@@ -538,20 +545,22 @@ void make_m_cost_pt_xf_hist(TTree *t1, TH1F *h_m, TH1F *h_cost, TH1F *h_pt, TH1F
                     h_xf->Fill(xF);
                 }
                 else{
-                    //bcdef_trk_SF = gh_trk_SF = 1.0;
 
-                    Double_t bcdef_weight = gen_weight *pu_SF * bcdef_HLT_SF * bcdef_iso_SF * bcdef_id_SF * bcdef_trk_SF;
-                    Double_t gh_weight = gen_weight *pu_SF * gh_HLT_SF * gh_iso_SF * gh_id_SF * gh_trk_SF;
-                    Double_t evt_weight = 1000*(bcdef_lumi * bcdef_weight + gh_lumi *gh_weight);
+                    Double_t era1_weight = gen_weight *pu_SF * era1_HLT_SF * era1_iso_SF * era1_id_SF;
+                    Double_t era2_weight = gen_weight *pu_SF * era2_HLT_SF * era2_iso_SF * era2_id_SF;
+                    Double_t tot_weight;
+                    if(year == 2016) tot_weight = 1000*(bcdef_lumi16 * era1_weight + gh_lumi16 *era2_weight);
+                    if(year == 2017) tot_weight = 1000*(mu_lumi17 * era1_weight);
+                    if(year == 2018) tot_weight = 1000*(mu_lumi18 * era1_weight);
                     //Double_t weight = gen_weight;
-                    h_m->Fill(m,evt_weight);
+                    h_m->Fill(m,tot_weight);
                     if(ss){
-                        h_cost->Fill(-cost, 0.5* evt_weight);
-                        h_cost->Fill(cost, 0.5* evt_weight);
+                        h_cost->Fill(-cost, 0.5* tot_weight);
+                        h_cost->Fill(cost, 0.5* tot_weight);
                     }
-                    else h_cost->Fill(cost, evt_weight);
-                    h_pt->Fill(pt,evt_weight);
-                    h_xf->Fill(xF, evt_weight);
+                    else h_cost->Fill(cost, tot_weight);
+                    h_pt->Fill(pt,tot_weight);
+                    h_xf->Fill(xF, tot_weight);
                 }
 
 
@@ -584,15 +593,20 @@ void make_m_cost_pt_xf_hist(TTree *t1, TH1F *h_m, TH1F *h_cost, TH1F *h_pt, TH1F
                 }
                 else{
 
-                    Double_t evt_weight = gen_weight *pu_SF * el_id_SF * el_reco_SF * el_HLT_SF * 1000. * el_lumi;
-                    h_m->Fill(m, evt_weight);
+                    Double_t el_lumi;
+                    if(year == 2016) el_lumi = el_lumi16;
+                    if(year == 2017) el_lumi = el_lumi17;
+                    if(year == 2018) el_lumi = el_lumi18;
+
+                    Double_t tot_weight = gen_weight *pu_SF * el_id_SF * el_reco_SF * el_HLT_SF * 1000. * el_lumi;
+                    h_m->Fill(m, tot_weight);
                     if(ss){
-                        h_cost->Fill(-cost, 0.5* evt_weight);
-                        h_cost->Fill(cost, 0.5* evt_weight);
+                        h_cost->Fill(-cost, 0.5* tot_weight);
+                        h_cost->Fill(cost, 0.5* tot_weight);
                     }
-                    else h_cost->Fill(cost, evt_weight);
-                    h_pt->Fill(pt, evt_weight);
-                    h_xf->Fill(xF, evt_weight);
+                    else h_cost->Fill(cost, tot_weight);
+                    h_pt->Fill(pt, tot_weight);
+                    h_xf->Fill(xF, tot_weight);
                 }
             }
         }
@@ -604,11 +618,11 @@ void make_m_cost_pt_xf_hist(TTree *t1, TH1F *h_m, TH1F *h_cost, TH1F *h_pt, TH1F
 
 
 void Fakerate_est_mu(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_contam, TTree *t_QCD_contam, TH1F *h_m, TH1F *h_cost, TH1F *h_pt, TH1F *h_xf, 
-        float m_low=150., float m_high = 99999., bool ss = false, bool in_os_region=true){
+        int year = 2016, float m_low=150., float m_high = 99999., bool ss = false, bool in_os_region=true){
     
     FakeRate FR;
     //TH2D *FR;
-    setup_new_mu_fakerate(&FR);
+    setup_new_mu_fakerate(&FR, year);
     TH2D *h_err = (TH2D *) FR.h->Clone("h_err");
     h_err->Reset();
     float tot_weight_os = 0.;
@@ -622,8 +636,8 @@ void Fakerate_est_mu(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_contam, TTree 
         if (l==2) t = t_WJets_contam;
         if (l==3) t = t_QCD_contam;
         Double_t m, xF, cost, jet1_cmva, jet2_cmva, gen_weight;
-        Double_t bcdef_HLT_SF, bcdef_iso_SF, bcdef_id_SF;
-        Double_t gh_HLT_SF, gh_iso_SF, gh_id_SF;
+        Double_t era1_HLT_SF, era1_iso_SF, era1_id_SF;
+        Double_t era2_HLT_SF, era2_iso_SF, era2_id_SF;
         Double_t jet1_pt, jet2_pt,  pu_SF;
         Float_t mu1_charge, mu2_charge;
         Double_t evt_fakerate, mu1_fakerate, mu2_fakerate, mu1_eta, mu1_pt, mu2_eta, mu2_pt;
@@ -658,12 +672,12 @@ void Fakerate_est_mu(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_contam, TTree 
         if(l==2 || l==3){
             t->SetBranchAddress("gen_weight", &gen_weight);
             t->SetBranchAddress("pu_SF", &pu_SF);
-            t->SetBranchAddress("bcdef_HLT_SF", &bcdef_HLT_SF);
-            t->SetBranchAddress("bcdef_iso_SF", &bcdef_iso_SF);
-            t->SetBranchAddress("bcdef_id_SF", &bcdef_id_SF);
-            t->SetBranchAddress("gh_HLT_SF", &gh_HLT_SF);
-            t->SetBranchAddress("gh_iso_SF", &gh_iso_SF);
-            t->SetBranchAddress("gh_id_SF", &gh_id_SF);
+            t->SetBranchAddress("era1_HLT_SF", &era1_HLT_SF);
+            t->SetBranchAddress("era1_iso_SF", &era1_iso_SF);
+            t->SetBranchAddress("era1_id_SF", &era1_id_SF);
+            t->SetBranchAddress("era2_HLT_SF", &era2_HLT_SF);
+            t->SetBranchAddress("era2_iso_SF", &era2_iso_SF);
+            t->SetBranchAddress("era2_id_SF", &era2_id_SF);
         }
 
         Long64_t size  =  t->GetEntries();
@@ -682,20 +696,26 @@ void Fakerate_est_mu(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_contam, TTree 
                 evt_fakerate = -(mu1_fakerate/(1-mu1_fakerate)) * (mu2_fakerate/(1-mu2_fakerate));
             }
             if(l==2){
-                Double_t bcdef_weight = gen_weight * bcdef_HLT_SF *  bcdef_id_SF * bcdef_iso_SF;
-                Double_t gh_weight = gen_weight * gh_HLT_SF * gh_id_SF * gh_iso_SF;
-                Double_t mc_weight = (bcdef_weight *bcdef_lumi + gh_weight * gh_lumi) * 1000;
+                Double_t era1_weight = gen_weight * era1_HLT_SF *  era1_id_SF * era1_iso_SF;
+                Double_t era2_weight = gen_weight * era2_HLT_SF * era2_id_SF * era2_iso_SF;
+
+                Double_t mc_weight;
+                if(year ==2016) mc_weight = 1000 * (mc_weight * era2_weight * gh_lumi16 + mc_weight * era1_weight * bcdef_lumi16);
+                if(year ==2017) mc_weight = 1000 * mc_weight * era1_weight * mu_lumi17;
+                if(year ==2018) mc_weight = 1000 * mc_weight * era1_weight * mu_lumi18;
+
+
                 if(iso_mu ==1) mu1_fakerate = get_new_fakerate_prob(mu1_pt, mu1_eta, FR.h);
                 else           mu1_fakerate = get_new_fakerate_prob(mu2_pt, mu2_eta, FR.h);
                 evt_fakerate = -(mu1_fakerate * mc_weight)/(1-mu1_fakerate);
             }
             if(l==3){
-                Double_t bcdef_weight = gen_weight * bcdef_HLT_SF *  bcdef_id_SF;
-                Double_t gh_weight = gen_weight * gh_HLT_SF * gh_id_SF;
-                Double_t mc_weight = (bcdef_weight *bcdef_lumi + gh_weight * gh_lumi) * 1000;
-                mu1_fakerate = get_new_fakerate_prob(mu1_pt, mu1_eta, FR.h);
-                mu2_fakerate = get_new_fakerate_prob(mu2_pt, mu2_eta, FR.h);
-                evt_fakerate = mc_weight * (mu1_fakerate/(1-mu1_fakerate)) * (mu2_fakerate/(1-mu2_fakerate));
+                Double_t era1_weight = gen_weight * era1_HLT_SF *  era1_id_SF;
+                Double_t era2_weight = gen_weight * era2_HLT_SF * era2_id_SF;
+                Double_t mc_weight;
+                if(year ==2016) mc_weight = 1000 * (mc_weight * era2_weight * gh_lumi16 + mc_weight * era1_weight * bcdef_lumi16);
+                if(year ==2017) mc_weight = 1000 * mc_weight * era1_weight * mu_lumi17;
+                if(year ==2018) mc_weight = 1000 * mc_weight * era1_weight * mu_lumi18;
             }
 
 
@@ -743,10 +763,10 @@ void Fakerate_est_mu(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_contam, TTree 
 }
 
 void Fakerate_est_el(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_MC, TTree *t_QCD_MC, TH1F *h_m, TH1F *h_cost, TH1F *h_pt, TH1F *h_xf,
-        float m_low = 150., float m_high = 99999., bool ss = false, bool in_os_region = true){
+        int year=2016, float m_low = 150., float m_high = 99999., bool ss = false, bool in_os_region = true){
     FakeRate FR;
     //TH2D *FR;
-    setup_new_el_fakerate(&FR);
+    setup_new_el_fakerate(&FR, year);
     TH2D *h_err = (TH2D *) FR.h->Clone("h_err");
     h_err->Reset();
     TH1F *h_rw;
@@ -800,6 +820,10 @@ void Fakerate_est_el(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_MC, TTree *t_Q
             t->SetBranchAddress("gen_weight", &gen_weight);
             t->SetBranchAddress("pu_SF", &pu_SF);
         }
+        Double_t el_lumi;
+        if(year == 2016) el_lumi = el_lumi16;
+        if(year == 2017) el_lumi = el_lumi17;
+        if(year == 2018) el_lumi = el_lumi18;
 
         Long64_t size  =  t->GetEntries();
         for (int i=0; i<size; i++) {
@@ -883,11 +907,11 @@ void Fakerate_est_el(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_MC, TTree *t_Q
 
 
 void Fakerate_est_emu(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_MC, TH1F *h_m, int flag1 = FLAG_MUONS, 
-        float m_low = 150., float m_high = 10000.){
+        int year=2016, float m_low = 150., float m_high = 10000.){
     FakeRate el_FR, mu_FR;
     //TH2D *FR;
-    setup_new_el_fakerate(&el_FR);
-    setup_new_mu_fakerate(&mu_FR);
+    setup_new_el_fakerate(&el_FR, year);
+    setup_new_mu_fakerate(&mu_FR, year);
     //FR.h->Print();
     for (int l=0; l<=2; l++){
         TTree *t;
@@ -898,8 +922,8 @@ void Fakerate_est_emu(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_MC, TH1F *h_m
         Double_t jet1_pt, jet2_pt, pu_SF;
 
         Double_t el_id_SF, el_reco_SF;
-        Double_t bcdef_iso_SF, bcdef_id_SF, bcdef_trk_SF;
-        Double_t gh_iso_SF, gh_id_SF, gh_trk_SF;
+        Double_t era1_iso_SF, era1_id_SF;
+        Double_t era2_iso_SF, era2_id_SF;
         Double_t evt_fakerate, lep1_fakerate, lep2_fakerate, el1_eta, el1_pt, mu1_eta, mu1_pt;
         TLorentzVector *el = 0;
         TLorentzVector *mu = 0;
@@ -931,10 +955,8 @@ void Fakerate_est_emu(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_MC, TH1F *h_m
             t->SetBranchAddress("el_reco_SF", &el_reco_SF);
             t->SetBranchAddress("gen_weight", &gen_weight);
             t->SetBranchAddress("pu_SF", &pu_SF);
-            t->SetBranchAddress("bcdef_trk_SF", &bcdef_trk_SF);
-            t->SetBranchAddress("bcdef_id_SF", &bcdef_id_SF);
-            t->SetBranchAddress("gh_trk_SF", &gh_trk_SF);
-            t->SetBranchAddress("gh_id_SF", &gh_id_SF);
+            t->SetBranchAddress("era1_id_SF", &era1_id_SF);
+            t->SetBranchAddress("era2_id_SF", &era2_id_SF);
         }
 
         Long64_t size  =  t->GetEntries();
@@ -953,10 +975,23 @@ void Fakerate_est_emu(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_MC, TH1F *h_m
                 evt_fakerate = -(lep1_fakerate/(1-lep1_fakerate)) * (lep2_fakerate/(1-lep2_fakerate));
             }
             if(l==2){
-                Double_t bcdef_SF = gen_weight * bcdef_trk_SF *  bcdef_id_SF;
-                Double_t gh_SF = gen_weight * gh_trk_SF * gh_id_SF;
-                Double_t mu_SF = (bcdef_SF *bcdef_lumi + gh_SF * gh_lumi) / 
-                    (bcdef_lumi + gh_lumi);
+                Double_t era1_SF = gen_weight *   era1_id_SF;
+                Double_t era2_SF = gen_weight *  era2_id_SF;
+
+                Double_t mu_SF, mu_lumi;
+                if(year ==2016){
+                    mu_SF = (era1_SF *bcdef_lumi16 + era2_SF * gh_lumi16) / 
+                    (bcdef_lumi16 + gh_lumi16);
+                    mu_lumi=mu_lumi16;
+                }
+                if(year==2017){
+                    mu_SF = era1_SF;
+                    mu_lumi=mu_lumi17;
+                }
+                if(year==2018){
+                    mu_SF = era1_SF;
+                    mu_lumi=mu_lumi18;
+                }
 
                 Double_t mc_weight = gen_weight * el_id_SF * el_reco_SF *pu_SF *
                     mu_SF  * 1000. * mu_lumi;

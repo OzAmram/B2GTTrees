@@ -135,9 +135,13 @@ Double_t get_emu_btag_weight(Double_t pt1, Double_t eta1, Float_t flavour1, Doub
     return P_data/P_mc;
 }
 
-void setup_btag_SFs(BTag_readers *btag_r, BTag_effs *b_effs){
+void setup_btag_SFs(BTag_readers *btag_r, BTag_effs *b_effs, int year){
     TH1::AddDirectory(kFALSE);
-    BTagCalibration calib("csvv1", "SFs/2016/cMVAv2_Moriond17_B_H.csv");
+    char file[80];
+    if(year == 2016) sprintf(file, "%s", "SFs/2016/cMVAv2_Moriond17_B_H.csv");
+    if(year == 2017) sprintf(file, "%s", "SFs/2016/cMVAv2_Moriond17_B_H.csv");
+    if(year == 2018) sprintf(file, "%s", "SFs/2016/cMVAv2_Moriond17_B_H.csv");
+    BTagCalibration calib("csvv1", file);
 
 
     btag_r->b_reader = BTagCalibrationReader(BTagEntry::OP_MEDIUM, "central");
