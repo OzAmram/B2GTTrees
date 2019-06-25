@@ -3,16 +3,18 @@
 
 
 
-void MuMu_QCD_fake_rate_estimate(int nJobs =1, int iJob = 0)
+void MuMu_QCD_fake_rate_estimate(int nJobs =1, int iJob = 0, string fin="")
 {
 
 
-    NTupleReader nt("EOS_files/SingleMuon_files_test.txt","output_files/test.root", true);
+    if(fin == "") fin = string("EOS_files/2016/SingleMuon_files_may31.txt");
+    NTupleReader nt(fin.c_str(),"output_files/MuMu_data_test.root", true);
+    nt.year = 2016;
     nt.nJobs = nJobs;
     nt.iJob = iJob;
     nt.do_muons = true;
-    nt.do_SFs = true;
-    nt.setupSFs();
+    nt.do_SFs = false;
+    nt.do_RC = true;
     nt.setupOutputTree("T_data");
 
 
@@ -22,9 +24,8 @@ void MuMu_QCD_fake_rate_estimate(int nJobs =1, int iJob = 0)
         for (int i=0; i<nt.tin_nEntries; i++) {
             nt.getEvent(i);
             if(nt.good_trigger && nt.dimuon_id &&
-                    !nt.mu_iso0 && !nt.mu_iso1 && nt.cm_m > 15. ){
+                    !nt.mu_iso0 && !nt.mu_iso1 && nt.cm_m > 130. ){
                 nt.fillEvent();
-                nt.fillEventSFs();
                 nt.outTrees[0]->Fill();
 
 

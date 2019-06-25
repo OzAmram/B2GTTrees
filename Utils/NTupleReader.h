@@ -23,7 +23,6 @@ const double root2 = sqrt(2);
 double Ebeam = 6500.;
 double Pbeam = sqrt(Ebeam*Ebeam - 0.938*0.938);
 const float mu_mass = 0.1056; // in GEV
-const float mu_iso = 0.15; //tight PF based iso
 
 
 bool is_empty_line(const char *s) {
@@ -67,6 +66,8 @@ class NTupleReader{
         mu_SFs era1, era2;
         pileup_SFs pu_SFs;
         el_SFs el_SF;
+
+        const float mu_iso_cut = 0.15; //tight PF based iso
 
         int year = 2016;
 

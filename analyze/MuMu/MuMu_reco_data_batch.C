@@ -6,9 +6,9 @@
 void MuMu_reco_data_batch(int nJobs =1, int iJob = 0, string fin="")
 {
 
-    if(fin == "") fin = string("EOS_files/2017/data_test.txt");
+    if(fin == "") fin = string("EOS_files/2016/SingleMuon_files_may31.txt");
     NTupleReader nt(fin.c_str(),"output_files/MuMu_data_test.root", true);
-    nt.year = 2017;
+    nt.year = 2016;
     nt.nJobs = nJobs;
     nt.iJob = iJob;
     nt.do_muons = true;
@@ -24,7 +24,7 @@ void MuMu_reco_data_batch(int nJobs =1, int iJob = 0, string fin="")
         for (int i=0; i<nt.tin_nEntries; i++) {
             nt.getEvent(i);
             if(nt.good_trigger && nt.good_sign && nt.dimuon_id &&
-                    nt.mu_iso0 && nt.mu_iso1 && nt.cm_m > 50. ){
+                    nt.mu_iso0 && nt.mu_iso1 && nt.cm_m > 130. ){
                 nt.fillEvent();
                 nt.fillEventRC();
                 nt.outTrees[0]->Fill();

@@ -7,7 +7,8 @@ void MuMu_reco_background_batch(int nJobs =1, int iJob = 0, string fin ="")
 {
 
     if(fin == "") fin = string("EOS_files/2016/GammaGammaToMuMu_files_may29.txt");
-    NTupleReader nt(fin.c_str(),"output_files/MuMu_gamgam_back_june5.root", false);
+    NTupleReader nt(fin.c_str(),"output_files/2016/MuMu_gamgam_back_june25.root", false);
+    nt.year = 2016;
     nt.nJobs = nJobs;
     nt.iJob = iJob;
     nt.do_muons = true;
@@ -25,7 +26,7 @@ void MuMu_reco_background_batch(int nJobs =1, int iJob = 0, string fin ="")
         for (int i=0; i<nt.tin_nEntries; i++) {
             nt.getEvent(i);
             if(nt.good_trigger && nt.good_sign && nt.dimuon_id &&
-                    nt.mu_iso0 && nt.mu_iso1 && nt.cm_m > 50. ){
+                    nt.mu_iso0 && nt.mu_iso1 && nt.cm_m > 130. ){
                 nt.fillEvent();
                 nt.fillEventSFs();
                 nt.fillEventRC();

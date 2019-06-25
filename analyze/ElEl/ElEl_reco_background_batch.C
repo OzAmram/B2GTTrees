@@ -8,7 +8,8 @@ void ElEl_reco_background_batch(int nJobs =1, int iJob = 0, string fin ="")
 
 
     if(fin == "") fin = string("EOS_files/2016/GammaGammaToEE_files_may29.txt");
-    NTupleReader nt(fin.c_str(),"output_files/ElEl_gamgam_back_june5.root", false);
+    NTupleReader nt(fin.c_str(),"output_files/ElEl_gamgam_back_june25.root", false);
+    nt.year = 2016;
     nt.nJobs = nJobs;
     nt.iJob = iJob;
     nt.do_electrons = true;

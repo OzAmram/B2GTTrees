@@ -124,13 +124,14 @@ bool NTupleReader::getNextFile(){
             printf("Opening file: %s   ", lines);
             fin=  TFile::Open(lines);
 
-            if(!is_data){
+            if(!is_data && do_SFs){
                 fin->cd("EventCounter");
                 TDirectory *subdir = gDirectory;
                 TH1D *mc_pileup = (TH1D *)subdir->Get("pileup");
                 mc_pileup->Scale(1./mc_pileup->Integral());
                 pu_SFs.pileup_ratio->Divide(pu_SFs.data_pileup, mc_pileup);
             }
+
 
             fin->cd("B2GTTreeMaker");
             tin = (TTree *)gDirectory->Get("B2GTree");
@@ -426,8 +427,8 @@ void NTupleReader::getEvent(int i){
                 mu_Pt[0] > min_pt &&  mu_Pt[1] > 15. &&
                 abs(mu_Eta[0]) < 2.4 && abs(mu_Eta[1]) < 2.4;
             //See https://twiki.cern.ch/twiki/bin/viewauth/CMS/SWGuideMuonIdRun2 for iso cuts
-            mu_iso0 = mu_PFIso[0] < mu_iso;
-            mu_iso1 = mu_PFIso[1] < mu_iso;
+            mu_iso0 = mu_PFIso[0] < mu_iso_cut;
+            mu_iso1 = mu_PFIso[1] < mu_iso_cut;
 
             if(mu_Charge[0] >0){
                 mu_p.SetPtEtaPhiM(mu_Pt[0], mu_Eta[0], mu_Phi[0], mu_mass);
@@ -516,7 +517,7 @@ void NTupleReader::getEvent(int i){
                 abs(mu_Eta[0])  && goodElEta(el_SCEta[1]);
 
             el_iso0 = el_IDMedium[0];
-            mu_iso0 = mu_PFIso[0] < mu_iso;
+            mu_iso0 = mu_PFIso[0] < mu_iso_cut;
 
             mu.SetPtEtaPhiE(mu_Pt[0], mu_Eta[0], mu_Phi[0], mu_E[0]);
             el.SetPtEtaPhiE(el_ScaleCorr[0] * el_Pt[0], el_Eta[0], el_Phi[0], el_ScaleCorr[0] * el_E[0]);
