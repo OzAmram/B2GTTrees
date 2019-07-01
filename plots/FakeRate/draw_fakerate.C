@@ -22,7 +22,7 @@
 #include "TFitter.h"
 #include "TSystem.h"
 #include "Math/Functor.h"
-#include "../../analyze/HistMaker.C"
+#include "../../Utils/HistMaker.C"
 //
 
 void SetErrors(TH2D *h_rate, TH2D *h_total){
@@ -107,12 +107,12 @@ void construct_fakerate_template(TH2D *h_rate, TH2D *h_total, TTree *t, int flag
     if(flag == FLAG_MUONS){
         t->SetBranchAddress("mu_pt", &pt);
         t->SetBranchAddress("mu_eta", &eta);
-        lumi = mu_lumi;
+        lumi = mu_lumi16;
     }
     else{
         t->SetBranchAddress("el_pt", &pt);
         t->SetBranchAddress("el_eta", &eta);
-        lumi = el_lumi;
+        lumi = el_lumi16;
     }
     t->SetBranchAddress("pass", &pass);
     if(!isData) t->SetBranchAddress("gen_weight", &gen_weight);
@@ -134,26 +134,28 @@ void construct_fakerate_template(TH2D *h_rate, TH2D *h_total, TTree *t, int flag
 
 
 void draw_fakerate(){
-    ///*
-
-    TFile *f = TFile::Open("../analyze/FakeRate/root_files/SingleElectron_data_fakerate_nov27.root");
-    TFile *f_mc = TFile::Open("../analyze/FakeRate/root_files/SingleElectron_mc_fakerate_contam_nov27.root");
-    int FLAG = FLAG_ELECTRONS;
-    Float_t pt_bins[] = {10,20,32,45,60,100, 1000};
-    int n_pt_bins = 6;
-    //*/
-
     /*
-    TFile *f = TFile::Open("../analyze/FakeRate/root_files/SingleMuon_data_fakerate_nov27.root");
-    TFile *f_mc = TFile::Open("../analyze/FakeRate/root_files/SingleMuon_mc_fakerate_contam_nov27.root");
+
+    TFile *f = TFile::Open("../analyze/FakeRate/root_files/2016/SingleElectron_data_fakerate_june25.root");
+    TFile *f_mc = TFile::Open("../analyze/FakeRate/root_files/2016/SingleElectron_mc_fakerate_contam_june25.root");
+    int FLAG = FLAG_ELECTRONS;
+    Float_t pt_bins[] = {10,20,35,60,100, 1000};
+    int n_pt_bins = 5;
+    */
+
+    ///*
+    TFile *f = TFile::Open("../analyze/FakeRate/root_files/2016/SingleMuon_data_fakerate_june25.root");
+    TFile *f_mc = TFile::Open("../analyze/FakeRate/root_files/2016/SingleMuon_mc_fakerate_contam_june25.root");
     int FLAG = FLAG_MUONS;
     Float_t pt_bins[] = {10,20,26,35,1000};
     int n_pt_bins = 4;
-    */
+    //*/
 
     //
     Float_t eta_bins[] = {0,1.479,2.4};
     int n_eta_bins = 2;
+
+    bool write_out = true;
 
     TH2D *h_rate = new TH2D("h_rate", "passing iso cuts", n_eta_bins, eta_bins, n_pt_bins, pt_bins);
     TH2D *h_total = new TH2D("h_total", "passing iso cuts", n_eta_bins, eta_bins, n_pt_bins, pt_bins);
@@ -185,13 +187,12 @@ void draw_fakerate(){
     h_contam_rate->Divide(h_contam_total);
     */
 
-    bool write_out = false;
     SetCorrectedRate(h_rate_new, h_total_new, h_contam_rate, h_contam_total);
 
     SetErrors(h_rate_new, h_total_new);
     if(write_out){
-        //TFile *f_new = TFile::Open("../analyze/FakeRate/root_files/SingleMuon_data_fakerate_corrected_nov27.root", "RECREATE");
-        TFile *f_new = TFile::Open("../analyze/FakeRate/root_files/SingleElectron_data_fakerate_corrected_nov27.root", "RECREATE");
+        TFile *f_new = TFile::Open("../analyze/FakeRate/root_files/2016/SingleMuon_data_fakerate_corrected_june25.root", "RECREATE");
+        //TFile *f_new = TFile::Open("../analyze/FakeRate/root_files/2016/SingleElectron_data_fakerate_corrected_june25.root", "RECREATE");
         f_new->cd();
         h_rate_new->Write();
         h_total_new->Write();
@@ -214,8 +215,8 @@ void draw_fakerate(){
 
     TCanvas *c1 = new TCanvas("c1", "Histograms", 200, 10, 900, 700);
     c1->SetLogx();
-    //rate_barrel->SetTitle("Muons fakerate");
-    rate_barrel->SetTitle("Electrons fakerate");
+    if(FLAG == FLAG_MUONS) rate_barrel->SetTitle("Muons fakerate");
+    else rate_barrel->SetTitle("Electrons fakerate");
     rate_barrel->SetStats(0);
     rate_barrel->SetLineWidth(3);
     rate_barrel ->Draw("E1");

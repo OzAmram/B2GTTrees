@@ -237,9 +237,9 @@ typedef struct {
 //static type means functions scope is only this file, to avoid conflicts
 static void setup_new_el_fakerate(FakeRate *FR, int year){
     TFile *f0;
-    if (year == 2016) f0 = TFile::Open("../analyze/FakeRate/root_files/2016/SingleElectron_data_fakerate_corrected_nov27.root");
-    if (year == 2017) f0 = TFile::Open("../analyze/FakeRate/root_files/2016/SingleElectron_data_fakerate_corrected_nov27.root");
-    if (year == 2018) f0 = TFile::Open("../analyze/FakeRate/root_files/2016/SingleElectron_data_fakerate_corrected_nov27.root");
+    if (year == 2016) f0 = TFile::Open("../analyze/FakeRate/root_files/2016/SingleElectron_data_fakerate_corrected_june25.root");
+    if (year == 2017) f0 = TFile::Open("../analyze/FakeRate/root_files/2016/SingleElectron_data_fakerate_corrected_june25.root");
+    if (year == 2018) f0 = TFile::Open("../analyze/FakeRate/root_files/2016/SingleElectron_data_fakerate_corrected_june25.root");
     TH2D *h1 = (TH2D *) gDirectory->Get("h_rate_new")->Clone();
     h1->SetDirectory(0);
     FR->h = h1;
@@ -247,9 +247,9 @@ static void setup_new_el_fakerate(FakeRate *FR, int year){
 }
 static void setup_new_mu_fakerate(FakeRate *FR, int year){
     TFile *f0;
-    if (year == 2016) f0 = TFile::Open("../analyze/FakeRate/root_files/2016/SingleMuon_data_fakerate_corrected_nov27.root");
-    if (year == 2017) f0 = TFile::Open("../analyze/FakeRate/root_files/2016/SingleMuon_data_fakerate_corrected_nov27.root");
-    if (year == 2018) f0 = TFile::Open("../analyze/FakeRate/root_files/2016/SingleMuon_data_fakerate_corrected_nov27.root");
+    if (year == 2016) f0 = TFile::Open("../analyze/FakeRate/root_files/2016/SingleMuon_data_fakerate_corrected_june25.root");
+    if (year == 2017) f0 = TFile::Open("../analyze/FakeRate/root_files/2016/SingleMuon_data_fakerate_corrected_june25.root");
+    if (year == 2018) f0 = TFile::Open("../analyze/FakeRate/root_files/2016/SingleMuon_data_fakerate_corrected_june25.root");
     TDirectory *subdir = gDirectory;
     TH2D *h1 = (TH2D *) subdir->Get("h_rate_new")->Clone();
     h1->SetDirectory(0);
