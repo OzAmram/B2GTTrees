@@ -3,11 +3,13 @@
 
 
 
-void EMu_QCD_fakerate_est(int nJobs =1, int iJob = 0)
+void EMu_QCD_fakerate_est(int nJobs =1, int iJob = 0, string fin ="")
 {
 
 
-    NTupleReader nt("EOS_files/SingleMuon_files_test.txt","output_files/test.root", true);
+    if (fin == "") fin = string("EOS_files/2016/SingleMuon_files_may31.txt");
+    NTupleReader nt(fin.c_str(),"output_files/test.root", true);
+    nt.year = 2016;
     nt.nJobs = nJobs;
     nt.iJob = iJob;
     nt.do_emu = true;

@@ -179,8 +179,8 @@ Double_t get_HLT_SF_1mu(Double_t mu1_pt, Double_t mu1_eta, TH2D *h_SF){
     mu1_eta = abs(mu1_eta);
     TAxis *x_ax_SF =  h_SF->GetXaxis();
     TAxis *y_ax_SF =  h_SF->GetYaxis();
-    int xbin1_SF = x_ax_SF->FindBin(mu1_pt);
-    int ybin1_SF = y_ax_SF->FindBin(std::abs(mu1_eta));
+    int xbin1_SF = x_ax_SF->FindBin(std::abs(mu1_eta));
+    int ybin1_SF = y_ax_SF->FindBin(mu1_pt);
 
 
     Double_t SF1 = h_SF->GetBinContent(xbin1_SF, ybin1_SF);

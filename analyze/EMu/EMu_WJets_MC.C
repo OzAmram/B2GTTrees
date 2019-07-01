@@ -3,11 +3,12 @@
 
 
 
-void EMu_WJets_MC(int nJobs =1, int iJob = 0)
+void EMu_WJets_MC(int nJobs =1, int iJob = 0, string fin = "")
 {
 
 
-    NTupleReader nt("EOS_files/DY_files_test.txt","output_files/test.root", false);
+    if (fin == "") fin = string("EOS_files/2016/non_QCD_files_may29.txt");
+    NTupleReader nt(fin.c_str(),"output_files/test.root", false);
     nt.nJobs = nJobs;
     nt.iJob = iJob;
     nt.do_emu = true;
@@ -24,7 +25,7 @@ void EMu_WJets_MC(int nJobs =1, int iJob = 0)
         for (int i=0; i<nt.tin_nEntries; i++) {
             nt.getEvent(i);
             bool one_iso = nt.mu_iso0 ^ nt.el_iso0;
-            if(nt.good_trigger && nt.emu_ids && one_iso && nt.cm_m > 50.){
+            if(nt.good_trigger && nt.emu_ids && one_iso && nt.cm_m > 130.){
                 nt.fillEvent();
                 nt.fillEventSFs();
                 if(nt.mu_iso0) iso_lep = 0;

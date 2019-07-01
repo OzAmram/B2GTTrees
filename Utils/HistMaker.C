@@ -32,8 +32,8 @@ using namespace std;
 #define FLAG_M_BINS 0
 #define FLAG_PT_BINS 1
 
-Double_t bcdef_lumi16 = 6.04 + 2.68 + 4.37 + 4.06 + 3.17;
-Double_t gh_lumi16 =  7.69 + 0.216 + 8.67;
+Double_t bcdef_lumi16 = 3.119 + 4.035 + 4.270 +  2.615 + 5.809;
+Double_t gh_lumi16 =  8.754 + 7.655;
 Double_t mu_lumi16 = bcdef_lumi16 + gh_lumi16;
 Double_t el_lumi16 = 35.9;
 

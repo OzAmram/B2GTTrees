@@ -7,8 +7,9 @@ void EMu_data_check_Mu(int nJobs =1, int iJob = 0, string fin = "")
 {
 
 
-    if (fin == "") fin = string("EOS_files/SingleMuon_files_test.txt");
+    if (fin == "") fin = string("EOS_files/2016/SingleMuon_files_may31.txt");
     NTupleReader nt(fin.c_str(),"output_files/test.root", true);
+    nt.year = 2016;
     nt.nJobs = nJobs;
     nt.iJob = iJob;
     nt.do_emu = true;
