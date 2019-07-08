@@ -9,6 +9,7 @@ void ElEl_reco_data_batch(int nJobs =1, int iJob = 0, string fin = "")
     if (fin == "") fin = string("EOS_files/2016/SingleElectron_files_may31.txt");
     NTupleReader nt(fin.c_str(),"output_files/SingleElectron_files_test.root", true);
     nt.year = 2016;
+    nt.do_samesign = true;
 
     nt.nJobs = nJobs;
     nt.iJob = iJob;

@@ -39,50 +39,54 @@ Double_t alpha_denom_unc[6] = {0.05, 0.03, 0.03, 0.04,   0.04, 0.04};
 void init(int year){
     //MC templates
     printf("init \n");
-    f_elel_data = TFile::Open("../analyze/output_files/SingleElectron_data_slim_nov26.root");
+    f_elel_data = TFile::Open("../analyze/output_files/2016/ElEl_data16_june23.root");
     t_elel_data = (TTree *)f_elel_data->Get("T_data"); 
 
-    f_elel_mc = (TFile*) TFile::Open("../analyze/output_files/ElEl_dy_slim_june5.root");
+    f_elel_mc = (TFile*) TFile::Open("../analyze/output_files/2016/ElEl_dy_july1.root");
     t_elel_mc = (TTree *) f_elel_mc ->Get("T_data");
     t_elel_nosig = (TTree *) f_elel_mc ->Get("T_back");
 
-    f_elel_back = (TFile*) TFile::Open("../analyze/output_files/ElEl_comb_back_slim_june5.root");
+    f_elel_back = (TFile*) TFile::Open("../analyze/output_files/2016/ElEl_comb_back_july1.root");
     t_elel_back = (TTree *) f_elel_back ->Get("T_data");
 
+    f_mumu_gamgam = TFile::Open("../analyze/output_files/MuMu_gamgam_back_may7.root");
+    t_mumu_gamgam = (TTree *)f_mumu_gamgam->Get("T_data");
 
-    f_elel_QCD = TFile::Open("../analyze/output_files/ElEl_QCD_est_mar29.root");
+    f_elel_QCD = TFile::Open("../analyze/output_files/2016/ElEl_QCD_est_june25.root");
     t_elel_QCD = (TTree *)f_elel_QCD->Get("T_data");
 
-    f_elel_WJets = TFile::Open("../analyze/output_files/ElEl_WJets_est_mar29.root");
+    f_elel_WJets = TFile::Open("../analyze/output_files/2016/ElEl_WJets_est_june25.root");
     t_elel_WJets = (TTree *)f_elel_WJets->Get("T_data");
 
-    f_elel_WJets_contam = TFile::Open("../analyze/output_files/ElEl_WJets_MC_mar29.root");
+    f_elel_WJets_contam = TFile::Open("../analyze/output_files/ElEl_WJets_MC_july8.root");
     t_elel_WJets_contam = (TTree *)f_elel_WJets_contam->Get("T_data");
 
-    f_elel_QCD_contam = TFile::Open("../analyze/output_files/ElEl_QCD_MC_mar29.root");
+    f_elel_QCD_contam = TFile::Open("../analyze/output_files/ElEl_QCD_MC_july8.root");
     t_elel_QCD_contam = (TTree *)f_elel_QCD_contam->Get("T_data");
     ////////////////////////////////////////
 
-    f_mumu_data = TFile::Open("../analyze/output_files/SingleMuon_data_slim_nov26.root");
+    f_mumu_data = TFile::Open("../analyze/output_files/2016/MuMu_data16_june23.root");
     t_mumu_data = (TTree *)f_mumu_data->Get("T_data"); 
 
-    f_mumu_mc = (TFile*) TFile::Open("../analyze/output_files/MuMu_dy_slim_june5.root");
+    f_mumu_mc = (TFile*) TFile::Open("../analyze/output_files/2016/MuMu_dy_july1.root");
     t_mumu_mc = (TTree *) f_mumu_mc ->Get("T_data");
     t_mumu_nosig = (TTree *) f_mumu_mc ->Get("T_back");
-    f_mumu_back = (TFile*) TFile::Open("../analyze/output_files/MuMu_comb_back_slim_june5.root");
+    f_mumu_back = (TFile*) TFile::Open("../analyze/output_files/2016/MuMu_comb_back_july1.root");
     t_mumu_back = (TTree *) f_mumu_back ->Get("T_data");
 
+    f_elel_gamgam = TFile::Open("../analyze/output_files/ElEl_gamgam_back_may7.root");
+    t_elel_gamgam = (TTree *)f_elel_gamgam->Get("T_data");
 
-    f_mumu_QCD = TFile::Open("../analyze/output_files/MuMu_QCD_est_mar29.root");
+    f_mumu_QCD = TFile::Open("../analyze/output_files/2016/MuMu_QCD_est_june25.root");
     t_mumu_QCD = (TTree *)f_mumu_QCD->Get("T_data");
 
-    f_mumu_WJets = TFile::Open("../analyze/output_files/MuMu_WJets_est_mar29.root");
+    f_mumu_WJets = TFile::Open("../analyze/output_files/2016/MuMu_WJets_est_june25.root");
     t_mumu_WJets = (TTree *)f_mumu_WJets->Get("T_data");
 
-    f_mumu_WJets_contam = TFile::Open("../analyze/output_files/MuMu_WJets_MC_mar29.root");
+    f_mumu_WJets_contam = TFile::Open("../analyze/output_files/2016/MuMu_WJets_MC_july8.root");
     t_mumu_WJets_contam = (TTree *)f_mumu_WJets_contam->Get("T_data");
 
-    f_mumu_QCD_contam = TFile::Open("../analyze/output_files/MuMu_QCD_MC_mar29.root");
+    f_mumu_QCD_contam = TFile::Open("../analyze/output_files/2016/MuMu_QCD_MC_july8.root");
     t_mumu_QCD_contam = (TTree *)f_mumu_QCD_contam->Get("T_data");
 
     return;
@@ -90,43 +94,27 @@ void init(int year){
 void init_emu(int year){
 
 
-    f_emu_data = TFile::Open("../analyze/output_files/EMu_data_nov26.root");
+    f_emu_data = TFile::Open("../analyze/output_files/2016/EMu_data_july1.root");
     t_emu_data = (TTree *)f_emu_data->Get("T_data");
 
                          
-    f_emu_back = TFile::Open("../analyze/output_files/EMu_comb_back_june11.root");
+    f_emu_back = TFile::Open("../analyze/output_files/2016/EMu_comb_back_july2.root");
     t_emu_back = (TTree *)f_emu_back->Get("T_data");
 
-    f_emu_dy = TFile::Open("../analyze/output_files/EMu_dy_june11.root");
+    f_emu_dy = TFile::Open("../analyze/output_files/2016/EMu_dy_july2.root");
     t_emu_dy = (TTree *)f_emu_dy->Get("T_data");
 
-    f_emu_QCD = TFile::Open("../analyze/output_files/EMu_QCD_est_nov26.root");
+    f_emu_QCD = TFile::Open("../analyze/output_files/2016/EMu_QCD_est_july1.root");
     t_emu_QCD = (TTree *)f_emu_QCD->Get("T_data");
 
-    f_emu_WJets = TFile::Open("../analyze/output_files/EMu_WJets_est_nov26.root");
+    f_emu_WJets = TFile::Open("../analyze/output_files/2016/EMu_WJets_est_july1.root");
     t_emu_WJets = (TTree *)f_emu_WJets->Get("T_data");
 
-    f_emu_WJets_contam = TFile::Open("../analyze/output_files/EMu_WJets_MC_nov27.root");
+    f_emu_WJets_contam = TFile::Open("../analyze/output_files/2016/EMu_WJets_MC_july8.root");
     t_emu_WJets_contam = (TTree *)f_emu_WJets_contam->Get("T_data");
 
 }
 
-void init_emu_ss(int year){
-
-
-    f_emu_ss_data = TFile::Open("../analyze/output_files/EMu_data_samesign_jan17.root");
-    t_emu_ss_data = (TTree *)f_emu_ss_data->Get("T_data");
-
-                         
-    f_emu_ss_ttbar = TFile::Open("../analyze/output_files/EMu_ttbar_wt_samesign_jan17.root");
-    t_emu_ss_ttbar = (TTree *)f_emu_ss_ttbar->Get("T_data");
-
-    f_emu_ss_dy = TFile::Open("../analyze/output_files/EMu_DY_samesign_jan17.root");
-    t_emu_ss_dy = (TTree *)f_emu_ss_dy->Get("T_data");
-
-    f_emu_ss_diboson = TFile::Open("../analyze/output_files/EMu_diboson_samesign_jan18.root");
-    t_emu_ss_diboson = (TTree *)f_emu_ss_diboson->Get("T_data");
-}
 
 
 void init_ss(int year){
@@ -135,17 +123,6 @@ void init_ss(int year){
 
     f_elel_ss_dy = TFile::Open("../analyze/output_files/ElEl_samesign_dy_june11.root");
     t_elel_ss_dy = (TTree *)f_elel_ss_dy->Get("T_data");
-
-    f_elel_ss_QCD = TFile::Open("../analyze/output_files/ElEl_samesign_fakerate_qcd_est_dec3.root");
-    t_elel_ss_QCD = (TTree *)f_elel_ss_QCD->Get("T_data");
-
-    f_elel_ss_WJets = TFile::Open("../analyze/output_files/ElEl_samesign_wjets_est_jan16.root");
-    t_elel_ss_WJets = (TTree *)f_elel_ss_WJets->Get("T_data");
-    f_elel_ss_WJets_contam = TFile::Open("../analyze/output_files/ElEl_samesign_fakerate_wjets_MC_dec3.root");
-    t_elel_ss_WJets_contam = (TTree *)f_elel_ss_WJets_contam->Get("T_data");
-
-    //dummy tree
-    t_elel_ss_QCD_contam = new TTree();
 
     f_elel_ss_back = TFile::Open("../analyze/output_files/ElEl_samesign_comb_back_june11.root");
     t_elel_ss_back = (TTree *)f_elel_ss_back->Get("T_data");
@@ -157,26 +134,7 @@ void init_ss(int year){
     f_mumu_ss_dy = TFile::Open("../analyze/output_files/MuMu_samesign_DY_feb12.root");
     t_mumu_ss_dy = (TTree *)f_mumu_ss_dy->Get("T_data");
 
-    f_mumu_ss_QCD = TFile::Open("../analyze/output_files/MuMu_samesign_fakerate_qcd_est_dec3.root");
-    t_mumu_ss_QCD = (TTree *)f_mumu_ss_QCD->Get("T_data");
-
-    f_mumu_ss_WJets = TFile::Open("../analyze/output_files/MuMu_samesign_fakerate_wjets_est_dec3.root");
-    t_mumu_ss_WJets = (TTree *)f_mumu_ss_WJets->Get("T_data");
-    f_mumu_ss_WJets_contam = TFile::Open("../analyze/output_files/MuMu_samesign_fakerate_wjets_MC_dec3.root");
-    t_mumu_ss_WJets_contam = (TTree *)f_mumu_ss_WJets_contam->Get("T_data");
-
-    //dummy tree
-    t_mumu_ss_QCD_contam = new TTree();
-
     f_mumu_ss_back = TFile::Open("../analyze/output_files/MuMu_ss_backgrounds_mar6.root");
     t_mumu_ss_back = (TTree *)f_mumu_ss_back->Get("T_data");
-}
-
-void init_gamgam(int year){
-    f_mumu_gamgam = TFile::Open("../analyze/output_files/MuMu_gamgam_back_may7.root");
-    t_mumu_gamgam = (TTree *)f_mumu_gamgam->Get("T_data");
-
-    f_elel_gamgam = TFile::Open("../analyze/output_files/ElEl_gamgam_back_may7.root");
-    t_elel_gamgam = (TTree *)f_elel_gamgam->Get("T_data");
 }
 

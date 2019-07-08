@@ -9,10 +9,11 @@ void MuMu_reco_data_batch(int nJobs =1, int iJob = 0, string fin="")
     if(fin == "") fin = string("EOS_files/2016/SingleMuon_files_may31.txt");
     NTupleReader nt(fin.c_str(),"output_files/MuMu_data_test.root", true);
     nt.year = 2016;
+    nt.do_samesign = true;
+
     nt.nJobs = nJobs;
     nt.iJob = iJob;
     nt.do_muons = true;
-    nt.do_SFs = false;
     nt.do_RC = true;
     nt.setupRC();
     nt.setupOutputTree("T_data");

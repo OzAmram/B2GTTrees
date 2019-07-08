@@ -10,7 +10,7 @@ void ElEl_reco_mc_batch(int nJobs =1, int iJob = 0, string fin = "")
     if(fin == "") fin = string("EOS_files/2016/DY_files_may29.txt");
     NTupleReader nt(fin.c_str(),"output_files/ElEl_dy_test.root", false);
     nt.year = 2016;
-    nt.do_samesign = false;
+    nt.do_samesign = true;
 
 
     nt.nJobs = nJobs;

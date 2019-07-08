@@ -9,6 +9,8 @@ void EMu_WJets_MC(int nJobs =1, int iJob = 0, string fin = "")
 
     if (fin == "") fin = string("EOS_files/2016/non_QCD_files_may29.txt");
     NTupleReader nt(fin.c_str(),"output_files/test.root", false);
+    nt.year = 2016;
+
     nt.nJobs = nJobs;
     nt.iJob = iJob;
     nt.do_emu = true;

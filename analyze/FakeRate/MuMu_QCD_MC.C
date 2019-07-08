@@ -7,7 +7,9 @@ void MuMu_QCD_MC(int nJobs =1, int iJob = 0)
 {
 
 
-    NTupleReader nt("EOS_files/DY_files_test.txt","output_files/test.root", false);
+    NTupleReader nt("EOS_files/2016/non_QCD_files_may29.txt","output_files/test.root", false);
+    nt.year= 2016;
+
     nt.nJobs = nJobs;
     nt.iJob = iJob;
     nt.do_muons = true;

@@ -6,7 +6,7 @@
 void EMu_background_check_Mu(int nJobs =1, int iJob = 0, string fin = "")
 {
 
-    if(fin == "") fin = string("EOS_files/2016/non_QCD_files_may29.txt");
+    if(fin == "") fin = string("EOS_files/2016/combined_back_files_may29.txt");
     NTupleReader nt(fin.c_str() ,"output_files/test.root", false);
     nt.year = 2016;
     nt.nJobs = nJobs;

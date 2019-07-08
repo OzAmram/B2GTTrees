@@ -167,7 +167,7 @@ int gen_data_template(TTree *t1, TH2F* h,
 
 
 
-int gen_mc_template(TTree *t1, Double_t alpha_num, Double_t alpha_denom, TH2F* h_sym, TH2F *h_asym, 
+int gen_mc_template(TTree *t1, Double_t alpha_denom, TH2F* h_sym, TH2F *h_asym, TH2F *h_alpha 
         int year, Double_t m_low, Double_t m_high, int flag1 = FLAG_MUONS, bool turn_on_RC = true,
         const string &sys_label = "" ){
     Long64_t nEntries  =  t1->GetEntries();
@@ -353,10 +353,10 @@ int gen_mc_template(TTree *t1, Double_t alpha_num, Double_t alpha_denom, TH2F* h
             if(pass){
                 double denom = 3./8.*(1.+cost_st*cost_st + 0.5 * alpha_denom * (1. - 3. *cost_st*cost_st));
                 reweight_a = cost_st/ denom;
+                reweight_s = 3. * (1 + cost_st*cost_st)/4./denom;
+                reweight_alpha = 3. * (1 - cost_st*cost_st)/4./denom;
 
-                double new_num =  3./8.*(1.+cost_st*cost_st + 0.5 * alpha_num * (1. - 3. *cost_st*cost_st));
 
-                reweight_s = new_num/denom;
                 n++;
                 Double_t pu_SF_sys = 1.;
                 if(do_pileup_sys == -1) pu_SF_sys = get_pileup_SF(pu_NtrueInt, pu_sys.pileup_down);
@@ -398,11 +398,15 @@ int gen_mc_template(TTree *t1, Double_t alpha_num, Double_t alpha_denom, TH2F* h
                 if(year==2016) tot_weight = 1000*(era1_weight*bcdef_lumi16 + era2_weight*gh_lumi16);
                 if(year==2017) tot_weight = 1000*(era1_weight*mu_lumi17);
                 if(year==2018) tot_weight = 1000*(era1_weight*mu_lumi18);
+
                 h_sym->Fill(xF, cost, reweight_s * tot_weight); 
                 h_sym->Fill(xF, -cost, reweight_s * tot_weight); 
 
                 h_asym->Fill(xF, cost, reweight_a * tot_weight);
                 h_asym->Fill(xF, -cost, -reweight_a * tot_weight);
+
+                h_alpha->Fill(xF, cost, reweight_alpha * tot_weight); 
+                h_alpha->Fill(xF, -cost, reweight_alpha * tot_weight); 
                 //h_reweights->Fill(xF, fabs(cost), fabs(reweight));
 
             }
@@ -480,10 +484,8 @@ int gen_mc_template(TTree *t1, Double_t alpha_num, Double_t alpha_denom, TH2F* h
                 else cost_st = -fabs(cost);
                 double denom = 3./8.*(1.+cost_st*cost_st + 0.5 * alpha_denom * (1. - 3. *cost_st*cost_st));
                 reweight_a = cost_st/ denom;
-
-                double new_num =  3./8.*(1.+cost_st*cost_st + 0.5 * alpha_num * (1. - 3. *cost_st*cost_st));
-
-                reweight_s = new_num/denom;
+                reweight_s = 3. * (1 + cost_st*cost_st)/4./denom;
+                reweight_alpha = 3. * (1 - cost_st*cost_st)/4./denom;
 
 
                 n++;
@@ -524,6 +526,9 @@ int gen_mc_template(TTree *t1, Double_t alpha_num, Double_t alpha_denom, TH2F* h
 
                 h_asym->Fill(xF, cost, reweight_a * evt_weight);
                 h_asym->Fill(xF, -cost, -reweight_a * evt_weight);
+
+                h_alpha->Fill(xF, cost, reweight_alpha * evt_weight); 
+                h_alpha->Fill(xF, -cost, reweight_alpha * evt_weight); 
 
             }
         }

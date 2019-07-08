@@ -24,9 +24,9 @@
 
 
 
-TH2F *h_elel_asym, *h_elel_sym, *h_elel_back,  *h_elel_dy_gg, *h_elel_data, *h_elel_mc, *h_elel_qcd, *h_elel_gam;
+TH2F *h_elel_asym, *h_elel_sym, *h_elel_alpha, *h_elel_back,  *h_elel_dy_gg, *h_elel_data, *h_elel_mc, *h_elel_qcd, *h_elel_gam;
 TH2F *h_elel_mc_count, *h_elel_sym_count;
-TH2F *h_mumu_asym, *h_mumu_sym, *h_mumu_back,  *h_mumu_dy_gg, *h_mumu_data, *h_mumu_mc, *h_mumu_qcd, *h_mumu_gam;
+TH2F *h_mumu_asym, *h_mumu_sym, *h_mumu_alpha, *h_mumu_back,  *h_mumu_dy_gg, *h_mumu_data, *h_mumu_mc, *h_mumu_qcd, *h_mumu_gam;
 
 
 
@@ -184,11 +184,11 @@ void make_qcd_templates(int year, FILE* f_log){
 }
 
 void cleanup_mc_templates(){
-    delete h_elel_back, h_elel_dy_gg, h_elel_gam, h_elel_sym, h_elel_asym;
-    delete h_mumu_back, h_mumu_dy_gg, h_mumu_gam, h_mumu_sym, h_mumu_asym;
+    delete h_elel_back, h_elel_dy_gg, h_elel_gam, h_elel_sym, h_elel_asym, h_elel_alpha;
+    delete h_mumu_back, h_mumu_dy_gg, h_mumu_gam, h_mumu_sym, h_mumu_asym, h_mumu_alpha;
 }
 
-void make_mc_templates(int year, Double_t alpha_num, Double_t alpha_denom, const string &sys_label){
+void make_mc_templates(int year, Double_t alpha_denom, const string &sys_label){
     bool do_mu, do_el;
     if(sys_label.find("mu") != string::npos){
         printf("Doing mu only \n");
@@ -213,6 +213,10 @@ void make_mc_templates(int year, Double_t alpha_num, Double_t alpha_denom, const
         h_mumu_sym = new TH2F(title, "Symmetric template of mc",
                 n_xf_bins, xf_bins, n_cost_bins, cost_bins);
         h_mumu_sym->SetDirectory(0);
+        sprintf(title, "mumu%i_alpha%s", year %2000, sys_label.c_str());
+        h_mumu_alpha = new TH2F(title, "Gauge boson polarization template of mc",
+                n_xf_bins, xf_bins, n_cost_bins, cost_bins);
+        h_mumu_alpha->SetDirectory(0);
         sprintf(title, "mumu%i_asym%s", year %2000, sys_label.c_str());
         h_mumu_asym = new TH2F(title, "Asymmetric template of mc",
                 n_xf_bins, xf_bins, n_cost_bins, cost_bins);
@@ -231,7 +235,7 @@ void make_mc_templates(int year, Double_t alpha_num, Double_t alpha_denom, const
         h_mumu_gam->SetDirectory(0);
 
         printf("Making mumu mc \n");
-        gen_mc_template(t_mumu_mc, alpha_num, alpha_denom, h_mumu_sym, h_mumu_asym, year, m_low, m_high, FLAG_MUONS, do_RC, sys_label );
+        gen_mc_template(t_mumu_mc, alpha_denom, h_mumu_sym, h_mumu_asym, h_mumu_alpha, year, m_low, m_high, FLAG_MUONS, do_RC, sys_label );
         TTree *mumu_ts[1] = {t_mumu_back};
         printf("Making mumu back \n");
         gen_combined_background_template(1, mumu_ts, h_mumu_back, year, m_low, m_high, FLAG_MUONS,  do_RC, ss, sys_label);
@@ -249,6 +253,10 @@ void make_mc_templates(int year, Double_t alpha_num, Double_t alpha_denom, const
         h_elel_sym = new TH2F(title, "Symmetric template of mc",
                 n_xf_bins, xf_bins, n_cost_bins, cost_bins);
         h_elel_sym->SetDirectory(0);
+        sprintf(title, "ee%i_alpha%s", year %2000, sys_label.c_str());
+        h_elel_alpha = new TH2F(title, "Gauge boson polarization template of mc",
+                n_xf_bins, xf_bins, n_cost_bins, cost_bins);
+        h_elel_alpha->SetDirectory(0);
         sprintf(title, "ee%i_asym%s", year %2000, sys_label.c_str());
         h_elel_asym = new TH2F(title, "Asymmetric template of mc",
                 n_xf_bins, xf_bins, n_cost_bins, cost_bins);
@@ -266,7 +274,7 @@ void make_mc_templates(int year, Double_t alpha_num, Double_t alpha_denom, const
                 n_xf_bins, xf_bins, n_cost_bins, cost_bins);
         h_elel_gam->SetDirectory(0);
 
-        gen_mc_template(t_elel_mc, alpha_num, alpha_denom, h_elel_sym, h_elel_asym, year, m_low, m_high, FLAG_ELECTRONS,  do_RC, sys_label);
+        gen_mc_template(t_elel_mc, alpha_denom, h_elel_sym, h_elel_asym, h_elel_alpha, year, m_low, m_high, FLAG_ELECTRONS,  do_RC, sys_label);
         TTree *elel_ts[1] = {t_elel_back};
         gen_combined_background_template(1, elel_ts, h_elel_back, year, m_low, m_high, FLAG_ELECTRONS, do_RC,ss, sys_label);
         elel_ts[0] = t_elel_nosig;
@@ -300,6 +308,7 @@ void convert_mc_templates(int year, const string &sys_label){
         auto h1_mumu_back = convert2d(h_mumu_back);
         auto h1_mumu_dy_gg = convert2d(h_mumu_dy_gg);
         auto h1_mumu_gam = convert2d(h_mumu_gam);
+        auto h1_mumu_alpha = convert2d(h_mumu_alpha);
 
         auto h_mumu_pl = *h_mumu_sym + *h_mumu_asym;
         auto h_mumu_mn = *h_mumu_sym - *h_mumu_asym;
@@ -316,6 +325,7 @@ void convert_mc_templates(int year, const string &sys_label){
         write_roo_hist(h1_mumu_back, var);
         write_roo_hist(h1_mumu_dy_gg, var);
         write_roo_hist(h1_mumu_gam, var);
+        write_roo_hist(h1_mumu_alpha, var);
         write_roo_hist(h1_mumu_pl, var);
         write_roo_hist(h1_mumu_mn, var);
     }
@@ -325,6 +335,7 @@ void convert_mc_templates(int year, const string &sys_label){
         auto h1_elel_back = convert2d(h_elel_back);
         auto h1_elel_dy_gg = convert2d(h_elel_dy_gg);
         auto h1_elel_gam = convert2d(h_elel_gam);
+        auto h1_elel_alpha = convert2d(h_elel_alpha);
 
         auto h_elel_pl = *h_elel_sym + *h_elel_asym;
         auto h_elel_mn = *h_elel_sym - *h_elel_asym;
@@ -343,6 +354,7 @@ void convert_mc_templates(int year, const string &sys_label){
         write_roo_hist(h1_elel_back, var);
         write_roo_hist(h1_elel_dy_gg, var);
         write_roo_hist(h1_elel_gam, var);
+        write_roo_hist(h1_elel_alpha, var);
         write_roo_hist(h1_elel_pl, var);
         write_roo_hist(h1_elel_mn, var);
     }
@@ -376,7 +388,7 @@ void write_groups(int year, FILE *f_log){
 
 
 void make_templates(int year = 2016, int nJobs = 6, int iJob =-1){
-    const TString fout_name("combine/templates/june21_test.root");
+    const TString fout_name("combine/templates/july8_test.root");
     year = 2016;
 
 
@@ -384,7 +396,6 @@ void make_templates(int year = 2016, int nJobs = 6, int iJob =-1){
     init(year);
     init_ss(year);
     init_emu(year);
-    init_gamgam(year);
     printf("Setting up SFs... ");
     setup_all_SFs(year);
     printf("   done \n");
@@ -430,10 +441,9 @@ void make_templates(int year = 2016, int nJobs = 6, int iJob =-1){
         make_qcd_templates(year,f_log);
         for(auto iter = sys_labels.begin(); iter !=sys_labels.end(); iter++){
             printf("Making MC templates for sys %s \n", (*iter).c_str());
-            Double_t alpha_num = alphas_num[i];
             Double_t alpha_denom = alphas_denom[i];
 
-            make_mc_templates(year, alpha_num, alpha_denom, *iter);
+            make_mc_templates(year, alpha_denom, *iter);
             convert_mc_templates(year, *iter);
         }
         fout->cd();
