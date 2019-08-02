@@ -11,6 +11,10 @@
 import FWCore.ParameterSet.Config as cms
 import FWCore.ParameterSet.VarParsing as opts
 import os
+from FWCore.MessageService.MessageLogger_cfi import *
+MessageLogger = cms.Service("MessageLogger")
+
+
 
 
 useMINIAOD = True # True: Use on top of B2GAnaFW to produce TTrees, False: Use already produced B2G Edm ntuple')
@@ -546,14 +550,12 @@ process.extraVar = cms.EDProducer("B2GEdmExtraVarProducer",
 
 ### Filter - Selects events with at least one muon with pt>25, |eta|<3.0
 process.MuonCountFilter = cms.EDFilter("PatMuonCountFilter", 
-    filter = cms.bool(True),
     src = cms.InputTag("slimmedMuons"),
     cut = cms.string("pt>24. && abs(eta)<2.4"),
     minNumber = cms.uint32(1)
 )
 ### Filter - Selects events with at least one electron with pt>25, |eta|<3.0
 process.ElectronCountFilter = cms.EDFilter("PatElectronCountFilter", 
-    filter = cms.bool(True),
     src = cms.InputTag("slimmedElectrons"),
     cut = cms.string("pt>27. && abs(eta)<2.5"),
     minNumber = cms.uint32(1)
