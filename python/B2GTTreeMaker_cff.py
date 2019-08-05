@@ -6,7 +6,7 @@ import os
 # Set to false, and define your own lists (eg. comment out unused vairables)
 getVariablesFromConfig = False
 
-from Analysis.B2GAnaFW.b2gedmntuples_cff import puppimetFull, metFull, genPart, electrons, muons, photons, photonjets, jetsAK4CHS, jetsAK4Puppi, jetsAK8CHS, subjetsAK8CHS, jetsAK8Puppi, subjetsAK8Puppi, genJetsAK8, genJetsAK8SoftDrop, eventInfo # metNoHF, subjetsCmsTopTag off since 76X
+from Analysis.B2GAnaFW.b2gedmntuples_cff import puppimetFull, metFull, genPart, electrons, muons, photons, photonjets, jetsAK4CHS, jetsAK8CHS, subjetsAK8CHS, subjetsAK8Puppi, genJetsAK8, genJetsAK8SoftDrop, eventInfo # metNoHF, subjetsCmsTopTag off since 76X
 
 if getVariablesFromConfig:
     
@@ -60,11 +60,11 @@ if getVariablesFromConfig:
         s = str(pset.tag).replace("cms.untracked.string('","").replace("')","")
         jetsAK4CHS_var.append(s)
     
-    jetsAK4Puppi_var = cms.untracked.vstring()
-    for pset in jetsAK4Puppi.variables:
-        s = str(pset.tag).replace("cms.untracked.string('","").replace("')","")
-        jetsAK4Puppi_var.append(s)
-    
+    #jetsAK4Puppi_var = cms.untracked.vstring()
+    #for pset in jetsAK4Puppi.variables:
+    #    s = str(pset.tag).replace("cms.untracked.string('","").replace("')","")
+    #    jetsAK4Puppi_var.append(s)
+    #
     #jetsAK8CHS_var = cms.untracked.vstring()
     #for pset in jetsAK8CHS.variables:
     #    s = str(pset.tag).replace("cms.untracked.string('","").replace("')","")
@@ -294,10 +294,9 @@ else:
     )
     
     jetVars = cms.untracked.vstring(
-        'CSVv2',
-        'CMVAv2',
-        #'CvsL',
-        #'CvsB',
+        'DeepCSV',
+        'DeepCSVb',
+        'DeepCSVbb',
         'GenPartonEta',
         'GenPartonPhi',
         'GenPartonPt',
@@ -332,14 +331,14 @@ else:
         #'SV1mass',
     )
     
-    jetVarsForSys = cms.untracked.vstring(
-        'jecUncertainty',
-        #'PtResolution',
-        'JERSF',
-        'JERSFUp',
-        'JERSFDown',
-        'SmearedPt',
-    )
+    #jetVarsForSys = cms.untracked.vstring(
+    #    'jecUncertainty',
+    #    #'PtResolution',
+    #    'JERSF',
+    #    'JERSFUp',
+    #    'JERSFDown',
+    #    'SmearedPt',
+    #)
     
     ## jetVarsJEC = cms.untracked.vstring(
     ##     "jecFactor0",
@@ -429,12 +428,12 @@ else:
     
     jetsAK4CHS_var      = copy.deepcopy(basicVars)
     jetsAK4CHS_var     += jetVars
-    jetsAK4CHS_var     += qglVars
-    jetsAK4CHS_var     += jetVarsForSys
+    #jetsAK4CHS_var     += qglVars
+    #jetsAK4CHS_var     += jetVarsForSys
     
-    jetsAK4Puppi_var    = copy.deepcopy(basicVars)
-    jetsAK4Puppi_var   += jetVars
-    jetsAK4Puppi_var   += jetVarsForSys
+    #jetsAK4Puppi_var    = copy.deepcopy(basicVars)
+    #jetsAK4Puppi_var   += jetVars
+    #jetsAK4Puppi_var   += jetVarsForSys
     
     #jetsAK8CHS_var      = copy.deepcopy(basicVars)
     #jetsAK8CHS_var     += jetVars

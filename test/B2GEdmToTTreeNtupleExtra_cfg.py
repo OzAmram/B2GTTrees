@@ -145,7 +145,7 @@ genHtFilter = False
 process.TFileService = cms.Service("TFileService", fileName = cms.string(ttreeOutputLabel))
 
 ### B2GEdmExtraVarProducer
-from Analysis.B2GAnaFW.b2gedmntuples_cff import metFull, puppimetFull, genPart, electrons, muons, photons, photonjets, jetsAK4CHS, jetsAK4Puppi, jetsAK8CHS, jetsAK8Puppi, subjetsAK8CHS, subjetsAK8Puppi, genJetsAK8, genJetsAK8SoftDrop, eventInfo # metNoHF off since 76X
+from Analysis.B2GAnaFW.b2gedmntuples_cff import metFull, puppimetFull, genPart, electrons, muons, photons,  jetsAK4CHS, jetsAK8CHS, subjetsAK8CHS, subjetsAK8Puppi, genJetsAK8, genJetsAK8SoftDrop, eventInfo # metNoHF off since 76X
 
 # import DB content from sqlite
 
