@@ -1,39 +1,44 @@
 #include "make_templates.C"
+TTree *t_elel_mc_raw, *t_elel_nosig_raw, *t_elel_back_raw;
+TTree *t_mumu_mc_raw, *t_mumu_nosig_raw, *t_mumu_back_raw;
+
+void init_condor_files(int year){
+    f_elel_mc = (TFile*) TFile::Open("root://131.225.204.161:1094//store/user/oamram/Condor_inputs/ElEl_dy_july1.root");
+    f_elel_back = (TFile*) TFile::Open("root://131.225.204.161:1094//store/user/oamram/Condor_inputs/ElEl_comb_back_july1.root");
+    f_mumu_mc = (TFile*) TFile::Open("root://131.225.204.161:1094//store/user/oamram/Condor_inputs/MuMu_dy_july15.root");
+    f_mumu_back = (TFile*) TFile::Open("root://131.225.204.161:1094//store/user/oamram/Condor_inputs/MuMu_comb_back_july15.root");
+    f_mumu_gamgam = (TFile*) TFile::Open("root://131.225.204.161:1094//store/user/oamram/Condor_inputs/MuMu_gamgam_july15.root");
+    f_elel_gamgam = (TFile*) TFile::Open("root://131.225.204.161:1094//store/user/oamram/Condor_inputs/ElEl_gamgam_back_june25.root");
+
+    
+    t_mumu_mc_raw = (TTree *) f_mumu_mc ->Get("T_data");
+    t_mumu_nosig_raw = (TTree *) f_mumu_mc ->Get("T_back");
+    t_mumu_back_raw = (TTree *) f_mumu_back ->Get("T_data");
+    t_elel_mc_raw = (TTree *) f_elel_mc ->Get("T_data");
+    t_elel_nosig_raw = (TTree *) f_elel_mc ->Get("T_back");
+    t_elel_back_raw = (TTree *) f_elel_back ->Get("T_data");
+    t_mumu_gamgam = (TTree *)f_mumu_gamgam->Get("T_data");
+    t_elel_gamgam = (TTree *)f_elel_gamgam->Get("T_data");
+}
 
 
 
 void make_sys_templates(int nJobs = 1, int iJob =0, int type=0){
 
     //const TString pdf_fout_name("combine/templates/april18_pdf_test.root");
-    const TString pdf_fout_name("output_files/june7_sys.root");
+    const TString pdf_fout_name("output_files/july12_sys.root");
     TFile *pdf_fout = TFile::Open(pdf_fout_name, "RECREATE");
 
     //init();
+    int year = 2016;
+    init_condor_files(year);
 
 
-    f_elel_mc = (TFile*) TFile::Open("root://131.225.204.161:1094//store/user/oamram/Condor_inputs/ElEl_dy_slim_june5.root");
-    TTree *t_elel_mc_raw = (TTree *) f_elel_mc ->Get("T_data");
-    TTree *t_elel_nosig_raw = (TTree *) f_elel_mc ->Get("T_back");
-    f_elel_back = (TFile*) TFile::Open("root://131.225.204.161:1094//store/user/oamram/Condor_inputs/ElEl_comb_back_slim_june5.root");
-    TTree *t_elel_back_raw = (TTree *) f_elel_back ->Get("T_data");
-
-    f_mumu_mc = (TFile*) TFile::Open("root://131.225.204.161:1094//store/user/oamram/Condor_inputs/MuMu_dy_slim_june5.root");
-    TTree *t_mumu_mc_raw = (TTree *) f_mumu_mc ->Get("T_data");
-    TTree *t_mumu_nosig_raw = (TTree *) f_mumu_mc ->Get("T_back");
-    f_mumu_back = (TFile*) TFile::Open("root://131.225.204.161:1094//store/user/oamram/Condor_inputs/MuMu_comb_back_slim_june5.root");
-    TTree *t_mumu_back_raw = (TTree *) f_mumu_back ->Get("T_data");
-
-
-    f_mumu_gamgam = (TFile*) TFile::Open("root://131.225.204.161:1094//store/user/oamram/Condor_inputs/MuMu_gamgam_back_june5.root");
-    t_mumu_gamgam = (TTree *)f_mumu_gamgam->Get("T_data");
-
-    f_elel_gamgam = (TFile*) TFile::Open("root://131.225.204.161:1094//store/user/oamram/Condor_inputs/ElEl_gamgam_back_june5.root");
-    t_elel_gamgam = (TTree *)f_elel_gamgam->Get("T_data");
 
 
 
     printf("Setting up SFs... ");
-    setup_all_SFs();
+    setup_all_SFs(year);
     printf("   done \n");
 
 
@@ -58,7 +63,7 @@ void make_sys_templates(int nJobs = 1, int iJob =0, int type=0){
        "_elHLTUp", "_elHLTDown", "_elIDUp", "_elIDDown", "_elRECOUp", "_elRECODown", 
        "_RENORMUp", "_RENORMDown", "_FACUp", "_FACDown",
        "_PuUp", "_PuDown", "_BTAGUp", "_BTAGDown", 
-       "_alphaUp", "_alphaDown", "_alphaDenUp", "_alphaDenDown", "_alphaSUp", "_alphaSDown" };
+       "_alphaDenUp", "_alphaDenDown", "_alphaSUp", "_alphaSDown" };
 
 
     }
@@ -87,7 +92,8 @@ void make_sys_templates(int nJobs = 1, int iJob =0, int type=0){
         printf("\n \n Start making templates for mass bin %.0f-%.0f \n", m_low, m_high);
 
         char cut_str[100];
-        sprintf(cut_str, "(m > %.0f) && (m < %0.f)", m_low - 10., m_high+10.);
+        printf("Cutting templates \n");
+        sprintf(cut_str, "(m > %.0f) && (m < %0.f)", m_low - 15., m_high+15.);
         t_elel_mc = t_elel_mc_raw->CopyTree(cut_str);
         t_elel_nosig = t_elel_nosig_raw->CopyTree(cut_str);
         t_elel_back = t_elel_back_raw->CopyTree(cut_str);
@@ -104,16 +110,14 @@ void make_sys_templates(int nJobs = 1, int iJob =0, int type=0){
                 Double_t alpha_num = alphas_num[i];
                 Double_t alpha_denom = alphas_denom[i];
 
-                if(iter->find("alphaUp") != string::npos) alpha_num = alphas_num[i] + alpha_num_unc[i];
-                if(iter->find("alphaDown") != string::npos) alpha_num = alphas_num[i] - alpha_num_unc[i];
 
                 if(iter->find("alphaDenUp") != string::npos) alpha_denom = alphas_denom[i] + alpha_denom_unc[i];
                 if(iter->find("alphaDenDown") != string::npos) alpha_denom = alphas_denom[i] - alpha_denom_unc[i];
 
-                printf("alpha_num %.2f alpha_denom %.2f \n", alpha_num, alpha_denom);
+                printf("alpha_denom %.2f \n", alpha_denom);
 
-                make_mc_templates(alpha_num, alpha_denom, *iter);
-                convert_mc_templates(*iter);
+                make_mc_templates(year, alpha_denom, *iter);
+                convert_mc_templates(year, *iter);
             }
             i_sys++;
         }

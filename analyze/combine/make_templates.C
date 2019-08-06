@@ -144,8 +144,8 @@ void make_data_templates(int year){
 
     int nElEl_DataEvents = gen_data_template(t_elel_data, h_elel_data,  year, m_low, m_high, FLAG_ELECTRONS,  do_RC);
     int nMuMu_DataEvents = gen_data_template(t_mumu_data, h_mumu_data,  year, m_low, m_high, FLAG_MUONS, do_RC);
-    h1_elel_data = convert2d(h_elel_data);
-    h1_mumu_data = convert2d(h_mumu_data);
+    auto h1_elel_data = convert2d(h_elel_data);
+    auto h1_mumu_data = convert2d(h_mumu_data);
     
 
     printf("Integral of data templates are %.2f %.2f \n", h1_elel_data->Integral(), h1_mumu_data->Integral()); 
@@ -184,8 +184,18 @@ void make_qcd_templates(int year, FILE* f_log){
 }
 
 void cleanup_mc_templates(){
-    delete h_elel_back, h_elel_dy_gg, h_elel_gam, h_elel_sym, h_elel_asym, h_elel_alpha;
-    delete h_mumu_back, h_mumu_dy_gg, h_mumu_gam, h_mumu_sym, h_mumu_asym, h_mumu_alpha;
+    delete h_elel_back; 
+    delete h_elel_dy_gg; 
+    delete h_elel_gam; 
+    delete h_elel_sym; 
+    delete h_elel_asym; 
+    delete h_elel_alpha;
+    delete h_mumu_back; 
+    delete h_mumu_dy_gg; 
+    delete h_mumu_gam; 
+    delete h_mumu_sym; 
+    delete h_mumu_asym; 
+    delete h_mumu_alpha;
 }
 
 void make_mc_templates(int year, Double_t alpha_denom, const string &sys_label){
@@ -274,6 +284,7 @@ void make_mc_templates(int year, Double_t alpha_denom, const string &sys_label){
                 n_xf_bins, xf_bins, n_cost_bins, cost_bins);
         h_elel_gam->SetDirectory(0);
 
+        printf("starting elel dy \n");
         gen_mc_template(t_elel_mc, alpha_denom, h_elel_sym, h_elel_asym, h_elel_alpha, year, m_low, m_high, FLAG_ELECTRONS,  do_RC, sys_label);
         TTree *elel_ts[1] = {t_elel_back};
         gen_combined_background_template(1, elel_ts, h_elel_back, year, m_low, m_high, FLAG_ELECTRONS, do_RC,ss, sys_label);
@@ -388,11 +399,12 @@ void write_groups(int year, FILE *f_log){
 
 
 void make_templates(int year = 2016, int nJobs = 6, int iJob =-1){
-    const TString fout_name("combine/templates/july8_test.root");
+    const TString fout_name("combine/templates/july15_no_sys.root");
     year = 2016;
 
 
 
+    printf("Initializing files \n");
     init(year);
     init_ss(year);
     init_emu(year);

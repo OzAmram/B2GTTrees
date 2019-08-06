@@ -141,9 +141,15 @@ bool NTupleReader::getNextFile(){
             tin->SetBranchAddress("jetAK4CHS_Eta", &jet_Eta);
             tin->SetBranchAddress("jetAK4CHS_Phi", &jet_Phi);
             tin->SetBranchAddress("jetAK4CHS_E", &jet_E);
-            tin->SetBranchAddress("jetAK4CHS_CSVv2", &jet_CSV);
-            tin->SetBranchAddress("jetAK4CHS_CMVAv2", &jet_CMVA);
             tin->SetBranchAddress("jetAK4CHS_PartonFlavour", &jet_partonflavour);
+            if(year == 2016 || year == 2017) {
+                //tin->SetBranchAddress("jetAK4CHS_CSVv2", &jet_CSV);
+                tin->SetBranchAddress("jetAK4CHS_CMVAv2", &jet_btag);
+            }
+            else if(year == 2018) {
+                tin->SetBranchAddress("jetAK4CHS_DeepCSV", &jet_btag);
+            }
+
 
             tin->SetBranchAddress("met_MuCleanOnly_size", &met_size);
             tin->SetBranchAddress("met_MuCleanOnly_Pt", &met_pt);
@@ -263,12 +269,25 @@ void NTupleReader::setupOutputTree(char treeName[100]){
     outTrees[idx]->Branch("cost_st", &cost_st, "cost_st/D");
     outTrees[idx]->Branch("jet1_pt", &jet1_pt, "jet1_pt/D");
     outTrees[idx]->Branch("jet1_eta", &jet1_eta, "jet1_eta/D");
-    outTrees[idx]->Branch("jet1_CMVA", &jet1_cmva, "jet1_CMVA/D");
     outTrees[idx]->Branch("jet2_pt", &jet2_pt, "jet2_pt/D");
     outTrees[idx]->Branch("jet2_eta", &jet2_eta, "jet2_eta/D");
-    outTrees[idx]->Branch("jet2_CMVA", &jet2_cmva, "jet2_CMVA/D");
     outTrees[idx]->Branch("nJets", &nJets, "nJets/I");
     outTrees[idx]->Branch("met_pt", &met_pt, "met_Pt/F");
+
+
+    outTrees[idx]->Branch("jet1_btag", &jet1_btag, "jet1_btag/D");
+    outTrees[idx]->Branch("jet2_btag", &jet2_btag, "jet2_btag/D");
+    /*
+    if(year != 2016){
+        outTrees[idx]->Branch("jet1_btag", &jet1_btag, "jet1_btag/D");
+        outTrees[idx]->Branch("jet2_btag", &jet2_btag, "jet2_btag/D");
+    }
+    else{
+        outTrees[idx]->Branch("jet1_CMVA", &jet1_btag, "jet1_btag/D");
+        outTrees[idx]->Branch("jet2_CMVA", &jet2_btag, "jet2_btag/D");
+    }
+    */
+
 
     if(do_muons){
         outTrees[idx]->Branch("mu1_eta", &mu1_eta, "mu1_eta/D");
@@ -279,6 +298,16 @@ void NTupleReader::setupOutputTree(char treeName[100]){
         outTrees[idx]->Branch("mu2_pt", &mu2_pt, "mu2_pt/D");
         outTrees[idx]->Branch("mu1_charge", &mu1_charge, "mu1_charge/F");
         outTrees[idx]->Branch("mu2_charge", &mu2_charge, "mu2_charge/F");
+
+
+        if(do_RC){
+            outTrees[idx]->Branch("mu_p_SF", &mu_p_SF, "mu_p_SF/D");
+            outTrees[idx]->Branch("mu_m_SF", &mu_m_SF, "mu_m_SF/D");
+            outTrees[idx]->Branch("mu_p_SF_up", &mu_p_SF_up, "mu_p_SF_up/D");
+            outTrees[idx]->Branch("mu_m_SF_up", &mu_m_SF_up, "mu_m_SF_up/D");
+            outTrees[idx]->Branch("mu_p_SF_down", &mu_p_SF_down, "mu_p_SF_down/D");
+            outTrees[idx]->Branch("mu_m_SF_down", &mu_m_SF_down, "mu_m_SF_down/D");
+        }
     }
     if(do_electrons){
         outTrees[idx]->Branch("el1_pt", &el1_pt, "el1_pt/D");
@@ -334,14 +363,6 @@ void NTupleReader::setupOutputTree(char treeName[100]){
             outTrees[idx]->Branch("era2_iso_SF", &era2_iso_SF);
             outTrees[idx]->Branch("era2_id_SF", &era2_id_SF);
 
-            if(do_RC){
-                outTrees[idx]->Branch("mu_p_SF", &mu_p_SF, "mu_p_SF/D");
-                outTrees[idx]->Branch("mu_m_SF", &mu_m_SF, "mu_m_SF/D");
-                outTrees[idx]->Branch("mu_p_SF_up", &mu_p_SF_up, "mu_p_SF_up/D");
-                outTrees[idx]->Branch("mu_m_SF_up", &mu_m_SF_up, "mu_m_SF_up/D");
-                outTrees[idx]->Branch("mu_p_SF_down", &mu_p_SF_down, "mu_p_SF_down/D");
-                outTrees[idx]->Branch("mu_m_SF_down", &mu_m_SF_down, "mu_m_SF_down/D");
-            }
         }
 
         if(do_electrons || do_emu){
@@ -506,9 +527,13 @@ void NTupleReader::getEvent(int i){
                 good_trigger = HLT_IsoMu24 || HLT_IsoTkMu24;
                 min_pt = 26.;
             }
-            else if(year == 2017 || year == 2018){
+            else if(year == 2017) {
                 good_trigger = HLT_IsoMu27;
                 min_pt = 29.;
+            }
+            else if(year == 2018) {
+                good_trigger = HLT_IsoMu24;
+                min_pt = 26.;
             }
 
 
@@ -538,7 +563,7 @@ void NTupleReader::fillEvent(){
             if(nJets == 1){
                 jet2_pt = jet_Pt[j];
                 jet2_eta = jet_Eta[j];
-                jet2_cmva = jet_CMVA[j];
+                jet2_btag = jet_btag[j];
                 if(!is_data) jet2_flavour = jet_partonflavour[j];
                 nJets =2;
                 break;
@@ -546,7 +571,7 @@ void NTupleReader::fillEvent(){
             else if(nJets ==0){
                 jet1_pt = jet_Pt[j];
                 jet1_eta = jet_Eta[j];
-                jet1_cmva = jet_CMVA[j];
+                jet1_btag = jet_btag[j];
                 if(!is_data) jet1_flavour = jet_partonflavour[j];
                 nJets = 1;
             }
@@ -714,14 +739,15 @@ void NTupleReader::fillEventRC(){
         mu_p_SF_alt1 = rc.kScaleFromGenMC(1, mu_p.Pt(), mu_p.Eta(), mu_p.Phi(), mu_p_n_TL, gen_mu_p_vec.Pt(), rand1, 2, 0) - mu_p_SF;
         mu_m_SF_alt1 = rc.kScaleFromGenMC(-1, mu_m.Pt(), mu_m.Eta(), mu_m.Phi(), mu_m_n_TL, gen_mu_m_vec.Pt(), rand2, 2, 0) - mu_m_SF;
 
-        mu_p_SF_alt2 = rc.kScaleFromGenMC(1, mu_p.Pt(), mu_p.Eta(), mu_p.Phi(), mu_p_n_TL, gen_mu_p_vec.Pt(), rand1, 2, 0) - mu_p_SF;
-        mu_m_SF_alt2 = rc.kScaleFromGenMC(-1, mu_m.Pt(), mu_m.Eta(), mu_m.Phi(), mu_m_n_TL, gen_mu_m_vec.Pt(), rand2, 2, 0) - mu_m_SF;;
+        mu_p_SF_alt2 = rc.kScaleFromGenMC(1, mu_p.Pt(), mu_p.Eta(), mu_p.Phi(), mu_p_n_TL, gen_mu_p_vec.Pt(), rand1, 3, 0) - mu_p_SF;
+        mu_m_SF_alt2 = rc.kScaleFromGenMC(-1, mu_m.Pt(), mu_m.Eta(), mu_m.Phi(), mu_m_n_TL, gen_mu_m_vec.Pt(), rand2, 3, 0) - mu_m_SF;;
 
-        mu_p_SF_alt3 = rc.kScaleFromGenMC(1, mu_p.Pt(), mu_p.Eta(), mu_p.Phi(), mu_p_n_TL, gen_mu_p_vec.Pt(), rand1, 2, 0) - mu_p_SF;
-        mu_m_SF_alt3 = rc.kScaleFromGenMC(-1, mu_m.Pt(), mu_m.Eta(), mu_m.Phi(), mu_m_n_TL, gen_mu_m_vec.Pt(), rand2, 2, 0) - mu_m_SF;
+        mu_p_SF_alt3 = rc.kScaleFromGenMC(1, mu_p.Pt(), mu_p.Eta(), mu_p.Phi(), mu_p_n_TL, gen_mu_p_vec.Pt(), rand1, 4, 0) - mu_p_SF;
+        mu_m_SF_alt3 = rc.kScaleFromGenMC(-1, mu_m.Pt(), mu_m.Eta(), mu_m.Phi(), mu_m_n_TL, gen_mu_m_vec.Pt(), rand2, 4, 0) - mu_m_SF;
 
-        mu_p_SF_alt4 = rc.kScaleFromGenMC(1, mu_p.Pt(), mu_p.Eta(), mu_p.Phi(), mu_p_n_TL, gen_mu_p_vec.Pt(), rand1, 2, 0) - mu_p_SF;
-        mu_m_SF_alt4 = rc.kScaleFromGenMC(-1, mu_m.Pt(), mu_m.Eta(), mu_m.Phi(), mu_m_n_TL, gen_mu_m_vec.Pt(), rand2, 2, 0) - mu_m_SF;
+        mu_p_SF_alt4 = rc.kScaleFromGenMC(1, mu_p.Pt(), mu_p.Eta(), mu_p.Phi(), mu_p_n_TL, gen_mu_p_vec.Pt(), rand1, 5, 0) - mu_p_SF;
+        mu_m_SF_alt4 = rc.kScaleFromGenMC(-1, mu_m.Pt(), mu_m.Eta(), mu_m.Phi(), mu_m_n_TL, gen_mu_m_vec.Pt(), rand2, 5, 0) - mu_m_SF;
+
 
         for(int k=0; k<100; k++){
             mu_p_SF_vars[k] = rc.kScaleFromGenMC(1, mu_p.Pt(), mu_p.Eta(), mu_p.Phi(), mu_p_n_TL, gen_mu_p_vec.Pt(), rand1, 1, k);
@@ -752,7 +778,6 @@ void NTupleReader::fillEventRC(){
         mu_m_SF_alt4 = rc.kScaleAndSmearMC(-1, mu_m.Pt(), mu_m.Eta(), mu_m.Phi(), mu_m_n_TL, rand2a, rand2b, 5, 0)- mu_m_SF;
         
 
-        Double_t mu_p_SF_vars[100], mu_m_SF_vars[100];
         for(int k=0; k<100; k++){
             mu_p_SF_vars[k] = rc.kScaleAndSmearMC(1, mu_p.Pt(), mu_p.Eta(), mu_p.Phi(), mu_p_n_TL, rand1a, rand1b, 1, k);
             mu_m_SF_vars[k] = rc.kScaleAndSmearMC(-1, mu_m.Pt(), mu_m.Eta(), mu_m.Phi(), mu_m_n_TL, rand2a, rand2b, 1, k);
@@ -766,6 +791,8 @@ void NTupleReader::fillEventRC(){
 
     double mu_p_unc = sqrt(mu_p_SF_var + mu_p_SF_alt1*mu_p_SF_alt1 + mu_p_SF_alt2*mu_p_SF_alt2  + mu_p_SF_alt3*mu_p_SF_alt3  + mu_p_SF_alt4*mu_p_SF_alt4);
     double mu_m_unc = sqrt(mu_m_SF_var + mu_m_SF_alt1*mu_m_SF_alt1 + mu_m_SF_alt2*mu_m_SF_alt2  + mu_m_SF_alt3*mu_m_SF_alt3  + mu_m_SF_alt4*mu_m_SF_alt4);
+
+
 
     mu_p_SF_up = mu_p_SF + mu_p_unc;
     mu_p_SF_down = mu_p_SF - mu_p_unc;

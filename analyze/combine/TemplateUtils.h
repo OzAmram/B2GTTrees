@@ -1,6 +1,9 @@
 #ifndef TemplateUtils
 #define TemplateUtils
 #include "RooWorkspace.h"
+#include "RooRealVar.h"
+#include "RooDataHist.h"
+#include "RooFormulaVar.h"
 #include "HiggsAnalysis/CombinedLimit/interface/RooParametricHist.h"
 #include "../../Utils/TemplateMaker_systematics.C"
 #include "../../Utils/root_files.h"

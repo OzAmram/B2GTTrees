@@ -141,14 +141,14 @@ void make_ss_mc_templates(int year){
 
 
     TTree *mumu_ts[1] = {t_mumu_ss_back};
-    gen_combined_background_template(1, mumu_ts, h_mumu_bk, m_low, m_high, FLAG_MUONS,  do_RC, ss);
+    gen_combined_background_template(1, mumu_ts, h_mumu_bk, year, m_low, m_high, FLAG_MUONS,  do_RC, ss);
     mumu_ts[0] = t_mumu_ss_dy;
-    gen_combined_background_template(1, mumu_ts, h_mumu_dy, m_low, m_high, FLAG_MUONS,  do_RC, ss);
+    gen_combined_background_template(1, mumu_ts, h_mumu_dy, year, m_low, m_high, FLAG_MUONS,  do_RC, ss);
 
     TTree *elel_ts[1] = {t_elel_ss_back};
-    gen_combined_background_template(1, elel_ts, h_elel_bk, m_low, m_high, FLAG_ELECTRONS,  do_RC, ss);
+    gen_combined_background_template(1, elel_ts, h_elel_bk, year, m_low, m_high, FLAG_ELECTRONS,  do_RC, ss);
     elel_ts[0] = t_elel_ss_dy;
-    gen_combined_background_template(1, elel_ts, h_elel_dy, m_low, m_high, FLAG_ELECTRONS,  do_RC, ss);
+    gen_combined_background_template(1, elel_ts, h_elel_dy, year, m_low, m_high, FLAG_ELECTRONS,  do_RC, ss);
 
     auto h1_elel_bk = convert2d(h_elel_bk);
     auto h1_mumu_bk = convert2d(h_mumu_bk);

@@ -3,13 +3,13 @@
 
 
 
-void MuMu_reco_background_batch(int nJobs =1, int iJob = 0, string fin ="")
+void MuMu_reco_background_batch(int nJobs =1, int iJob = 0, string fin ="", bool do_ss = false)
 {
 
     if(fin == "") fin = string("EOS_files/2016/combined_back_files_may29.txt");
-    NTupleReader nt(fin.c_str(),"output_files/MuMu_back_june25.root", false);
+    NTupleReader nt(fin.c_str(),"output_files/MuMu_gamgam_july15.root", false);
     nt.year = 2016;
-    nt.do_samesign = true;
+    nt.do_samesign = do_ss;
 
     nt.nJobs = nJobs;
     nt.iJob = iJob;
@@ -19,7 +19,14 @@ void MuMu_reco_background_batch(int nJobs =1, int iJob = 0, string fin ="")
     nt.RC_from_gen = false;
     nt.setupSFs();
     nt.setupRC();
-    nt.setupOutputTree("T_data");
+
+    nt.setupOutputTree("T_sig");
+    nt.setupOutputTree("T_WJets");
+    nt.setupOutputTree("T_QCD");
+    nt.setupOutputTree("T_ss");
+
+    int iso_mu;
+    nt.outTrees[1]->Branch("iso_mu", &iso_mu); 
 
 
     while(nt.getNextFile()){
@@ -27,12 +34,27 @@ void MuMu_reco_background_batch(int nJobs =1, int iJob = 0, string fin ="")
 
         for (int i=0; i<nt.tin_nEntries; i++) {
             nt.getEvent(i);
-            if(nt.good_trigger && nt.good_sign && nt.dimuon_id &&
-                    nt.mu_iso0 && nt.mu_iso1 && nt.cm_m > 130. ){
+            if(nt.good_trigger && nt.dimuon_id && nt.cm_m > 130.){
                 nt.fillEvent();
                 nt.fillEventSFs();
                 nt.fillEventRC();
-                nt.outTrees[0]->Fill();
+                bool one_iso = nt.mu_iso0 ^ nt.mu_iso1;
+
+                //pick the category
+                if(nt.opp_sign && nt.mu_iso0 && nt.mu_iso1){ //signal region
+                    nt.outTrees[0]->Fill();
+                }
+                else if(!nt.opp_sign && nt.mu_iso0 && nt.mu_iso1){ //samesign region
+                    nt.outTrees[3]->Fill();
+                }
+                else if(one_iso){ //wjets control region
+                    if(nt.mu_iso0) iso_mu = 0;
+                    else           iso_mu = 1;
+                    nt.outTrees[1]->Fill();
+                }
+                else if(!nt.mu_iso0 && !nt.mu_iso1){ //qcd control region
+                    nt.outTrees[2]->Fill();
+                }
 
             }
         } 
@@ -41,7 +63,6 @@ void MuMu_reco_background_batch(int nJobs =1, int iJob = 0, string fin ="")
 
 
     }
-    printf("Finished. There were %i events in %i files \n", nt.nEvents, nt.fileCount);
     nt.finish();
 
     return;

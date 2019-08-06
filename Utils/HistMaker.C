@@ -235,7 +235,7 @@ typedef struct {
 } FakeRate;
 //
 //static type means functions scope is only this file, to avoid conflicts
-static void setup_new_el_fakerate(FakeRate *FR, int year){
+void setup_new_el_fakerate(FakeRate *FR, int year){
     TFile *f0;
     if (year == 2016) f0 = TFile::Open("../analyze/FakeRate/root_files/2016/SingleElectron_data_fakerate_corrected_june25.root");
     if (year == 2017) f0 = TFile::Open("../analyze/FakeRate/root_files/2016/SingleElectron_data_fakerate_corrected_june25.root");
@@ -245,7 +245,7 @@ static void setup_new_el_fakerate(FakeRate *FR, int year){
     FR->h = h1;
     f0->Close();
 }
-static void setup_new_mu_fakerate(FakeRate *FR, int year){
+void setup_new_mu_fakerate(FakeRate *FR, int year){
     TFile *f0;
     if (year == 2016) f0 = TFile::Open("../analyze/FakeRate/root_files/2016/SingleMuon_data_fakerate_corrected_june25.root");
     if (year == 2017) f0 = TFile::Open("../analyze/FakeRate/root_files/2016/SingleMuon_data_fakerate_corrected_june25.root");
@@ -258,7 +258,7 @@ static void setup_new_mu_fakerate(FakeRate *FR, int year){
 }
 
 
-static Double_t get_new_fakerate_prob(Double_t pt, Double_t eta, TH2D *h){
+Double_t get_new_fakerate_prob(Double_t pt, Double_t eta, TH2D *h){
     //pt=35;
     if (pt >= 150) pt =150 ;
     if(abs(eta) > 2.4) eta = 2.3;
@@ -294,7 +294,7 @@ static Double_t get_new_fakerate_prob(Double_t pt, Double_t eta, TH2D *h){
     //printf("Efficiency is %f \n", eff);
     return prob;
 }
-static Double_t get_new_fakerate_unc(Double_t pt, Double_t eta, TH2D *h){
+Double_t get_new_fakerate_unc(Double_t pt, Double_t eta, TH2D *h){
     //pt=35;
     if (pt >= 150) pt =150 ;
     if(abs(eta) > 2.4) eta = 2.3;
@@ -700,9 +700,9 @@ void Fakerate_est_mu(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_contam, TTree 
                 Double_t era2_weight = gen_weight * era2_HLT_SF * era2_id_SF * era2_iso_SF;
 
                 Double_t mc_weight;
-                if(year ==2016) mc_weight = 1000 * (mc_weight * era2_weight * gh_lumi16 + mc_weight * era1_weight * bcdef_lumi16);
-                if(year ==2017) mc_weight = 1000 * mc_weight * era1_weight * mu_lumi17;
-                if(year ==2018) mc_weight = 1000 * mc_weight * era1_weight * mu_lumi18;
+                if(year ==2016) mc_weight = 1000 * (era2_weight * gh_lumi16 + era1_weight * bcdef_lumi16);
+                if(year ==2017) mc_weight = 1000 * era1_weight * mu_lumi17;
+                if(year ==2018) mc_weight = 1000 * era1_weight * mu_lumi18;
 
 
                 if(iso_mu ==1) mu1_fakerate = get_new_fakerate_prob(mu1_pt, mu1_eta, FR.h);
@@ -713,9 +713,13 @@ void Fakerate_est_mu(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_contam, TTree 
                 Double_t era1_weight = gen_weight * era1_HLT_SF *  era1_id_SF;
                 Double_t era2_weight = gen_weight * era2_HLT_SF * era2_id_SF;
                 Double_t mc_weight;
-                if(year ==2016) mc_weight = 1000 * (mc_weight * era2_weight * gh_lumi16 + mc_weight * era1_weight * bcdef_lumi16);
-                if(year ==2017) mc_weight = 1000 * mc_weight * era1_weight * mu_lumi17;
-                if(year ==2018) mc_weight = 1000 * mc_weight * era1_weight * mu_lumi18;
+                if(year ==2016) mc_weight = 1000 * (era2_weight * gh_lumi16 + era1_weight * bcdef_lumi16);
+                if(year ==2017) mc_weight = 1000 * era1_weight * mu_lumi17;
+                if(year ==2018) mc_weight = 1000 * era1_weight * mu_lumi18;
+
+                mu1_fakerate = get_new_fakerate_prob(mu1_pt, mu1_eta, FR.h);
+                mu2_fakerate = get_new_fakerate_prob(mu2_pt, mu2_eta, FR.h);
+                evt_fakerate = mc_weight * (mu1_fakerate/(1-mu1_fakerate)) * (mu2_fakerate/(1-mu2_fakerate));
             }
 
 
@@ -975,8 +979,8 @@ void Fakerate_est_emu(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_MC, TH1F *h_m
                 evt_fakerate = -(lep1_fakerate/(1-lep1_fakerate)) * (lep2_fakerate/(1-lep2_fakerate));
             }
             if(l==2){
-                Double_t era1_SF = gen_weight *   era1_id_SF;
-                Double_t era2_SF = gen_weight *  era2_id_SF;
+                Double_t era1_SF = era1_id_SF;
+                Double_t era2_SF = era2_id_SF;
 
                 Double_t mu_SF, mu_lumi;
                 if(year ==2016){

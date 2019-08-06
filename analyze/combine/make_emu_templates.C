@@ -98,7 +98,7 @@ void make_emu_qcd_templates(int year, FILE *f_log){
             n_xf_bins, xf_bins, n_cost_bins, cost_bins);
     h_emu_qcd->SetDirectory(0);
 
-    gen_emu_fakes_template(t_emu_WJets, t_emu_QCD, t_emu_WJets_contam,  h_emu_qcd, m_low, m_high);
+    gen_emu_fakes_template(t_emu_WJets, t_emu_QCD, t_emu_WJets_contam,  h_emu_qcd, year, m_low, m_high);
     printf("Integral of qcd template are %.2f \n", h_emu_qcd->Integral()); 
     auto h1_emu_qcd = convert2d(h_emu_qcd);
 

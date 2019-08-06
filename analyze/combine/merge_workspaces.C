@@ -4,47 +4,30 @@
 void merge_workspaces(){
 
 
-    const TString f1_s("combine/templates/june13_no_sys.root");
-    const TString fout_s("combine/templates/june13_merge.root");
+    const TString f1_s("combine/templates/july15_no_sys.root");
+    const TString fout_s("combine/templates/july15_merge.root");
     TFile *f1 = TFile::Open(f1_s, "READ");
     TFile *fout = TFile::Open(fout_s, "RECREATE");
     char dirname[40];
 
-    std::vector<string> fs{
-        "root://131.225.204.161:1094//store/user/oamram/Condor_outputs/templ_sys_june10_v2/file_0.root",
-        "root://131.225.204.161:1094//store/user/oamram/Condor_outputs/templ_sys_june10_v2/file_1.root",
-        "root://131.225.204.161:1094//store/user/oamram/Condor_outputs/templ_sys_june10_v2/file_2.root",
-        "root://131.225.204.161:1094//store/user/oamram/Condor_outputs/templ_sys_june10_v2/file_3.root",
-        "root://131.225.204.161:1094//store/user/oamram/Condor_outputs/templ_sys_june10_v2/file_4.root",
-        "root://131.225.204.161:1094//store/user/oamram/Condor_outputs/templ_sys_june10_v2/file_5.root",
-        "root://131.225.204.161:1094//store/user/oamram/Condor_outputs/templ_sys_june10_v2/file_6.root",
-        "root://131.225.204.161:1094//store/user/oamram/Condor_outputs/templ_sys_june10_v2/file_7.root",
-        "root://131.225.204.161:1094//store/user/oamram/Condor_outputs/templ_sys_june10_v2/file_8.root",
-        "root://131.225.204.161:1094//store/user/oamram/Condor_outputs/templ_sys_june10_v2/file_9.root",
-        "root://131.225.204.161:1094//store/user/oamram/Condor_outputs/templ_sys_june10_v2/file_10.root",
-        "root://131.225.204.161:1094//store/user/oamram/Condor_outputs/templ_sys_june10_v2/file_11.root",
-        "root://131.225.204.161:1094//store/user/oamram/Condor_outputs/templ_sys_june10_v2/file_12.root",
-        "root://131.225.204.161:1094//store/user/oamram/Condor_outputs/templ_sys_june10_v2/file_13.root",
-        "root://131.225.204.161:1094//store/user/oamram/Condor_outputs/templ_sys_june10_v2/file_14.root",
-        "root://131.225.204.161:1094//store/user/oamram/Condor_outputs/templ_pdf_sys_june10_v2/file_0.root",
-        "root://131.225.204.161:1094//store/user/oamram/Condor_outputs/templ_pdf_sys_june10_v2/file_1.root",
-        "root://131.225.204.161:1094//store/user/oamram/Condor_outputs/templ_pdf_sys_june10_v2/file_2.root",
-        "root://131.225.204.161:1094//store/user/oamram/Condor_outputs/templ_pdf_sys_june10_v2/file_3.root",
-        "root://131.225.204.161:1094//store/user/oamram/Condor_outputs/templ_pdf_sys_june10_v2/file_4.root",
-        "root://131.225.204.161:1094//store/user/oamram/Condor_outputs/templ_pdf_sys_june10_v2/file_5.root",
-        "root://131.225.204.161:1094//store/user/oamram/Condor_outputs/templ_pdf_sys_june10_v2/file_6.root",
-        "root://131.225.204.161:1094//store/user/oamram/Condor_outputs/templ_pdf_sys_june10_v2/file_7.root",
-        "root://131.225.204.161:1094//store/user/oamram/Condor_outputs/templ_pdf_sys_june10_v2/file_8.root",
-        "root://131.225.204.161:1094//store/user/oamram/Condor_outputs/templ_pdf_sys_june10_v2/file_9.root",
-        "root://131.225.204.161:1094//store/user/oamram/Condor_outputs/templ_pdf_sys_june10_v2/file_10.root",
-        "root://131.225.204.161:1094//store/user/oamram/Condor_outputs/templ_pdf_sys_june10_v2/file_11.root",
-        "root://131.225.204.161:1094//store/user/oamram/Condor_outputs/templ_pdf_sys_june10_v2/file_12.root",
-        "root://131.225.204.161:1094//store/user/oamram/Condor_outputs/templ_pdf_sys_june10_v2/file_13.root",
-        "root://131.225.204.161:1094//store/user/oamram/Condor_outputs/templ_pdf_sys_june10_v2/file_14.root"
 
+    char *sys_base = "root://131.225.204.161:1094//store/user/oamram/Condor_outputs/templ_sys_july15";
+    char *pdf_base = "root://131.225.204.161:1094//store/user/oamram/Condor_outputs/templ_pdf_sys_july12";
+    int num_sys_files = 15;
+    int num_pdf_files = 20;
 
-    };
-
+    std::vector<string> fs;
+    for(int i=0; i<num_sys_files; i++){
+        char fname[180];
+        sprintf(fname, "%s/file_%i.root", sys_base, i);
+        fs.push_back(string(fname));
+    }
+    for(int i=0; i<num_pdf_files; i++){
+        char fname[180];
+        sprintf(fname, "%s/file_%i.root", pdf_base, i);
+        fs.push_back(string(fname));
+    }
+   
     int i_start=0;
     int i_max = 6;
 

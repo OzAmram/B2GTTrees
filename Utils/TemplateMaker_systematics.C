@@ -86,7 +86,7 @@ int gen_data_template(TTree *t1, TH2F* h,
     Double_t m, xF, cost, gen_weight, jet1_cmva, jet2_cmva,
              jet1_pt, jet2_pt, lep1_pt, lep2_pt, lep1_pt_corr, lep2_pt_corr,
              lep1_pt_alt, lep2_pt_alt, pt;
-    Double_t mu_p_SF, mu_m_SF, mu_p_SF_alt, mu_m_SF_alt;
+    Double_t mu_p_SF, mu_m_SF;
     Float_t met_pt;
     Int_t nJets;
     TLorentzVector *lep_p = 0;
@@ -109,8 +109,6 @@ int gen_data_template(TTree *t1, TH2F* h,
         if(turn_on_RC){
             t1->SetBranchAddress("mu_p_SF", &mu_p_SF);
             t1->SetBranchAddress("mu_m_SF", &mu_m_SF);
-            t1->SetBranchAddress("mu_p_SF_alt", &mu_p_SF_alt);
-            t1->SetBranchAddress("mu_m_SF_alt", &mu_m_SF_alt);
         }
     }
     else{
@@ -167,7 +165,7 @@ int gen_data_template(TTree *t1, TH2F* h,
 
 
 
-int gen_mc_template(TTree *t1, Double_t alpha_denom, TH2F* h_sym, TH2F *h_asym, TH2F *h_alpha 
+int gen_mc_template(TTree *t1, Double_t alpha_denom, TH2F* h_sym, TH2F *h_asym, TH2F *h_alpha,
         int year, Double_t m_low, Double_t m_high, int flag1 = FLAG_MUONS, bool turn_on_RC = true,
         const string &sys_label = "" ){
     Long64_t nEntries  =  t1->GetEntries();
@@ -176,7 +174,7 @@ int gen_mc_template(TTree *t1, Double_t alpha_denom, TH2F* h_sym, TH2F *h_asym, 
     h_asym->Sumw2();
 
 
-    Double_t m, xF, cost, gen_weight, reweight_a, reweight_s, jet1_cmva, jet2_cmva, cost_st;
+    Double_t m, xF, cost, gen_weight, reweight_a, reweight_s, reweight_alpha, jet1_cmva, jet2_cmva, cost_st;
     Double_t era1_HLT_SF, era1_iso_SF, era1_id_SF;
     Double_t era2_HLT_SF, era2_iso_SF, era2_id_SF;
     Double_t el_id_SF, el_reco_SF, pu_SF, el_HLT_SF;
@@ -570,7 +568,7 @@ float gen_fakes_template(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_contam, TT
             Double_t m, xF, cost, jet1_cmva, jet2_cmva, gen_weight;
             Double_t era1_HLT_SF, era1_iso_SF, era1_id_SF;
             Double_t era2_HLT_SF, era2_iso_SF, era2_id_SF;
-            Double_t jet1_pt, jet2_pt, jet1_b_weight, jet2_b_weight, pu_SF;
+            Double_t jet1_pt, jet2_pt, pu_SF;
             Double_t evt_fakerate, mu1_fakerate, mu2_fakerate, mu1_eta, mu1_pt, mu2_eta, mu2_pt;
             Float_t mu1_charge, mu2_charge;
             Int_t iso_mu;
@@ -599,12 +597,10 @@ float gen_fakes_template(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_contam, TT
             t->SetBranchAddress("mu_p", &lep_p);
             t->SetBranchAddress("mu_m", &lep_m);
             if(l==0 || l==2 ){
-                t->SetBranchAddress("iso_muon", &iso_mu);
+                t->SetBranchAddress("iso_mu", &iso_mu);
             }
             if(l==2 || l==3){
                 t->SetBranchAddress("gen_weight", &gen_weight);
-                t->SetBranchAddress("jet1_b_weight", &jet1_b_weight);
-                t->SetBranchAddress("jet2_b_weight", &jet2_b_weight);
                 t->SetBranchAddress("pu_SF", &pu_SF);
                 t->SetBranchAddress("era1_HLT_SF", &era1_HLT_SF);
                 t->SetBranchAddress("era1_iso_SF", &era1_iso_SF);
@@ -633,9 +629,9 @@ float gen_fakes_template(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_contam, TT
                     Double_t era1_weight = gen_weight * era1_HLT_SF *  era1_id_SF * era1_iso_SF;
                     Double_t era2_weight = gen_weight * era2_HLT_SF * era2_id_SF * era2_iso_SF;
                     Double_t mc_weight;
-                    if(year ==2016) mc_weight = 1000 * (mc_weight * era2_weight * gh_lumi16 + mc_weight * era1_weight * bcdef_lumi16);
-                    if(year ==2017) mc_weight = 1000 * mc_weight * era1_weight * mu_lumi17;
-                    if(year ==2018) mc_weight = 1000 * mc_weight * era1_weight * mu_lumi18;
+                    if(year ==2016) mc_weight = 1000 * (era2_weight * gh_lumi16 + era1_weight * bcdef_lumi16);
+                    if(year ==2017) mc_weight = 1000 * era1_weight * mu_lumi17;
+                    if(year ==2018) mc_weight = 1000 * era1_weight * mu_lumi18;
                     if(iso_mu ==1) mu1_fakerate = get_new_fakerate_prob(mu1_pt, mu1_eta, FR.h);
                     if(iso_mu ==0) mu1_fakerate = get_new_fakerate_prob(mu2_pt, mu2_eta, FR.h);
                     evt_fakerate = -(mu1_fakerate * mc_weight)/(1-mu1_fakerate);
@@ -644,9 +640,9 @@ float gen_fakes_template(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_contam, TT
                     Double_t era1_weight = gen_weight * era1_HLT_SF *  era1_id_SF;
                     Double_t era2_weight = gen_weight * era2_HLT_SF * era2_id_SF;
                     Double_t mc_weight;
-                    if(year ==2016) mc_weight = 1000 * (mc_weight * era2_weight * gh_lumi16 + mc_weight * era1_weight * bcdef_lumi16);
-                    if(year ==2017) mc_weight = 1000 * mc_weight * era1_weight * mu_lumi17;
-                    if(year ==2018) mc_weight = 1000 * mc_weight * era1_weight * mu_lumi18;
+                    if(year ==2016) mc_weight = 1000 * (era2_weight * gh_lumi16 + era1_weight * bcdef_lumi16);
+                    if(year ==2017) mc_weight = 1000 * era1_weight * mu_lumi17;
+                    if(year ==2018) mc_weight = 1000 * era1_weight * mu_lumi18;
                     mu1_fakerate = get_new_fakerate_prob(mu1_pt, mu1_eta, FR.h);
                     mu2_fakerate = get_new_fakerate_prob(mu2_pt, mu2_eta, FR.h);
                     evt_fakerate = mc_weight * (mu1_fakerate/(1-mu1_fakerate)) * (mu2_fakerate/(1-mu2_fakerate));
@@ -691,7 +687,7 @@ float gen_fakes_template(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_contam, TT
             if (l==2) t = t_WJets_contam;
             if (l==3) t = t_QCD_contam;
             Double_t m, xF, cost, jet1_cmva, jet2_cmva, gen_weight;
-            Double_t jet1_pt, jet2_pt, jet1_b_weight, jet2_b_weight, pu_SF;
+            Double_t jet1_pt, jet2_pt, pu_SF;
             Double_t el_id_SF, el_reco_SF;
             Double_t evt_fakerate, el1_fakerate, el2_fakerate, el1_eta, el1_pt, el2_eta, el2_pt;
             Float_t el1_charge, el2_charge;
@@ -726,8 +722,6 @@ float gen_fakes_template(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_contam, TT
                 t->SetBranchAddress("el_id_SF", &el_id_SF);
                 t->SetBranchAddress("el_reco_SF", &el_reco_SF);
                 t->SetBranchAddress("gen_weight", &gen_weight);
-                t->SetBranchAddress("jet1_b_weight", &jet1_b_weight);
-                t->SetBranchAddress("jet2_b_weight", &jet2_b_weight);
                 t->SetBranchAddress("pu_SF", &pu_SF);
             }
 
@@ -818,9 +812,8 @@ void gen_emu_fakes_template(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_MC, TH2
         if (l==1) t = t_QCD;
         if (l==2) t = t_WJets_MC;
         Double_t m, xF, cost, jet1_cmva, jet2_cmva, gen_weight;
-        Double_t jet1_pt, jet2_pt, jet1_b_weight, jet2_b_weight, pu_SF;
+        Double_t jet1_pt, jet2_pt, pu_SF;
 
-        jet1_b_weight = jet2_b_weight =1.;
         Double_t el_id_SF, el_reco_SF;
         Double_t era1_iso_SF, era1_id_SF;
         Double_t era2_iso_SF, era2_id_SF;
@@ -875,12 +868,11 @@ void gen_emu_fakes_template(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_MC, TH2
                 evt_fakerate = -(lep1_fakerate/(1-lep1_fakerate)) * (lep2_fakerate/(1-lep2_fakerate));
             }
             if(l==2){
-                Double_t era1_SF = gen_weight *   era1_id_SF;
-                Double_t era2_SF = gen_weight *  era2_id_SF;
+                Double_t era1_SF =  era1_id_SF;
+                Double_t era2_SF =  era2_id_SF;
                 Double_t mu_SF, mu_lumi;
                 if(year ==2016){
-                    mu_SF = (era1_SF *bcdef_lumi16 + era2_SF * gh_lumi16) / 
-                    (bcdef_lumi16 + gh_lumi16);
+                    mu_SF = (era1_SF *bcdef_lumi16 + era2_SF * gh_lumi16)/(bcdef_lumi16 + gh_lumi16);
                     mu_lumi=mu_lumi16;
                 }
                 if(year==2017){
@@ -892,8 +884,7 @@ void gen_emu_fakes_template(TTree *t_WJets, TTree *t_QCD, TTree *t_WJets_MC, TH2
                     mu_lumi=mu_lumi18;
                 }
 
-                Double_t mc_weight = gen_weight * el_id_SF * el_reco_SF *pu_SF *
-                    mu_SF  * 1000. * mu_lumi;
+                Double_t mc_weight = gen_weight * el_id_SF * el_reco_SF *pu_SF * mu_SF  * 1000. * mu_lumi;
                 if(iso_lep ==1) lep1_fakerate = get_new_fakerate_prob(mu1_pt, mu1_eta, mu_FR.h);
                 if(iso_lep ==0) lep1_fakerate = get_new_fakerate_prob(el1_pt, el1_eta, el_FR.h);
                 evt_fakerate = -(lep1_fakerate * mc_weight)/(1-lep1_fakerate);
@@ -1137,9 +1128,9 @@ int gen_combined_background_template(int nTrees, TTree **ts, TH2F* h,
 
                     nEvents++;
                     Double_t evt_weight;
-                    if(year ==2016) evt_weight = 1000 * (evt_weight * era2_weight * gh_lumi16 + evt_weight * era1_weight * bcdef_lumi16);
-                    if(year ==2017) evt_weight = 1000 * evt_weight * era1_weight * mu_lumi17;
-                    if(year ==2018) evt_weight = 1000 * evt_weight * era1_weight * mu_lumi18;
+                    if(year ==2016) evt_weight = 1000 * (era2_weight * gh_lumi16 + era1_weight * bcdef_lumi16);
+                    if(year ==2017) evt_weight = 1000 * era1_weight * mu_lumi17;
+                    if(year ==2018) evt_weight = 1000 *  era1_weight * mu_lumi18;
                     if(!ss) h->Fill(xF, cost, evt_weight);
                     else{
                         h->Fill(xF, -abs(cost), evt_weight);

@@ -101,7 +101,7 @@ class NTupleReader{
         Long64_t tin_nEntries;
 
         Double_t cm_m, xF, cost, cost_r, cost_st, mu1_pt, mu2_pt, mu1_eta, mu2_eta, jet1_pt, jet2_pt, jet1_eta, jet2_eta, 
-                 gen_weight, jet1_csv, jet1_cmva, jet2_csv, jet2_cmva, gen_m;
+                 gen_weight, jet1_csv, jet1_btag, jet2_csv, jet2_btag, gen_m;
         Double_t mu_p_SF, mu_m_SF, mu_p_SF_alt, mu_m_SF_alt, mu_p_SF_up, mu_p_SF_down, mu_m_SF_up, mu_m_SF_down;
         Double_t era1_HLT_SF, era1_iso_SF, era1_id_SF, era2_HLT_SF, era2_iso_SF, era2_id_SF,
                  era1_trk_SF, era2_trk_SF,
@@ -140,7 +140,7 @@ class NTupleReader{
 
         Float_t mu_PFIso[MU_SIZE];
         Float_t jet_Pt[JET_SIZE], jet_Eta[JET_SIZE], jet_Phi[JET_SIZE], jet_E[JET_SIZE],
-                jet_CSV[JET_SIZE], jet_CMVA[JET_SIZE], jet_partonflavour[JET_SIZE];
+                jet_btag[JET_SIZE], jet_partonflavour[JET_SIZE];
 
         Float_t el_Pt[EL_SIZE], el_Eta[EL_SIZE], el_Phi[EL_SIZE], el_E[EL_SIZE], 
                 el_Charge[EL_SIZE], el_SCEta[EL_SIZE];
