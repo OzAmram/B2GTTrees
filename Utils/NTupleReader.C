@@ -142,11 +142,11 @@ bool NTupleReader::getNextFile(){
             tin->SetBranchAddress("jetAK4CHS_Phi", &jet_Phi);
             tin->SetBranchAddress("jetAK4CHS_E", &jet_E);
             tin->SetBranchAddress("jetAK4CHS_PartonFlavour", &jet_partonflavour);
-            if(year == 2016 || year == 2017) {
+            if(year == 2016) {
                 //tin->SetBranchAddress("jetAK4CHS_CSVv2", &jet_CSV);
                 tin->SetBranchAddress("jetAK4CHS_CMVAv2", &jet_btag);
             }
-            else if(year == 2018) {
+            else{
                 tin->SetBranchAddress("jetAK4CHS_DeepCSV", &jet_btag);
             }
 
