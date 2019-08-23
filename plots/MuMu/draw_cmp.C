@@ -33,9 +33,8 @@ const int type = FLAG_MUONS;
 
 void draw_cmp(){
     setTDRStyle();
-    init();
+    init(2016);
     mumu_init();
-    init_gamgam();
 
     int n_pt_bins = 40;
     TH1F *mc_pt = new TH1F("mc_pt", "MC signal", n_pt_bins, 0, 1000);
