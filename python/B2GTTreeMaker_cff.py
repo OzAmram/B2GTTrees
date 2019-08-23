@@ -295,9 +295,12 @@ else:
     
     jetVars = cms.untracked.vstring(
         'CSVv2',
-        'CMVAv2',
+        #'CMVAv2',
         #'CvsL',
         #'CvsB',
+        'DeepCSV',
+        'DeepCSVb',
+        'DeepCSVbb',
         'GenPartonEta',
         'GenPartonPhi',
         'GenPartonPt',
