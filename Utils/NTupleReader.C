@@ -275,6 +275,7 @@ void NTupleReader::setupOutputTree(char treeName[100]){
     outTrees[idx]->Branch("met_pt", &met_pt, "met_Pt/F");
 
 
+    outTrees[idx]->Branch("has_nobjets", &has_nobjets, "has_nobjets/I");
     outTrees[idx]->Branch("jet1_btag", &jet1_btag, "jet1_btag/D");
     outTrees[idx]->Branch("jet2_btag", &jet2_btag, "jet2_btag/D");
     /*
@@ -558,12 +559,19 @@ void NTupleReader::fillEvent(){
     xF = compute_xF(cm); 
     //pick out 2 highest pt jets with eta < 2.4
     nJets =0;
+    has_nobjets = 1;
+    float bjet_med_cut = 0.;
+    if(year == 2016) bjet_med_cut = 0.6321;
+    if(year == 2017) bjet_med_cut = 0.4941;
+    if(year == 2018) bjet_med_cut = 0.4184;
+
     for(unsigned int j=0; j < jet_size; j++){
         if(jet_Pt[j] > 20. && std::abs(jet_Eta[j]) < 2.4){
             if(nJets == 1){
                 jet2_pt = jet_Pt[j];
                 jet2_eta = jet_Eta[j];
                 jet2_btag = jet_btag[j];
+                has_nobjets = has_nobjets && (jet2_btag < bjet_med_cut);
                 if(!is_data) jet2_flavour = jet_partonflavour[j];
                 nJets =2;
                 break;
@@ -572,6 +580,7 @@ void NTupleReader::fillEvent(){
                 jet1_pt = jet_Pt[j];
                 jet1_eta = jet_Eta[j];
                 jet1_btag = jet_btag[j];
+                has_nobjets = has_nobjets && (jet1_btag < bjet_med_cut);
                 if(!is_data) jet1_flavour = jet_partonflavour[j];
                 nJets = 1;
             }

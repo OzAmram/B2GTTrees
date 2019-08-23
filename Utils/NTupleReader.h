@@ -100,6 +100,7 @@ class NTupleReader{
         TTree *tin;
         Long64_t tin_nEntries;
 
+
         Double_t cm_m, xF, cost, cost_r, cost_st, mu1_pt, mu2_pt, mu1_eta, mu2_eta, jet1_pt, jet2_pt, jet1_eta, jet2_eta, 
                  gen_weight, jet1_csv, jet1_btag, jet2_csv, jet2_btag, gen_m;
         Double_t mu_p_SF, mu_m_SF, mu_p_SF_alt, mu_m_SF_alt, mu_p_SF_up, mu_p_SF_down, mu_m_SF_up, mu_m_SF_down;
@@ -115,7 +116,7 @@ class NTupleReader{
 
 
         Double_t mu_R_up, mu_R_down, mu_F_up, mu_F_down, mu_RF_up, mu_RF_down, alpha_up, alpha_down;
-        Int_t nJets, jet1_flavour, jet2_flavour, pu_NtrueInt;
+        Int_t nJets, jet1_flavour, jet2_flavour, pu_NtrueInt, has_nobjets;
         Bool_t is_tau_event;
         Float_t met_pt, mu1_charge, mu2_charge, el1_charge, el2_charge;
         TLorentzVector cm, gen_cm;

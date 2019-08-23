@@ -5,13 +5,14 @@
 
 void draw_phot_pdf_cmp(){
     gStyle->SetOptStat(0);
-    TFile *f_mad= TFile::Open("/home/ozamram/Documents/Research/B2GTTrees/generator_stuff/root_files/photOnly_mrst_may2.root");
+    TFile *f_mad= TFile::Open("/home/ozamram/Documents/Research/B2GTTrees/generator_stuff/root_files/photOnly_lux_may2.root");
+    //TFile * f_mad = TFile::Open("/home/ozamram/Documents/Research/B2GTTrees/generator_stuff/root_files/phot_induced_aug21.root");
     TTree *t_mad = (TTree *)f_mad->Get("T_lhe");
 
-    TFile *f_pwg = TFile::Open("/home/ozamram/Documents/Research/B2GTTrees/generator_stuff/root_files/photOnly_lux_may2.root");
+    TFile *f_pwg = TFile::Open("/home/ozamram/Documents/Research/B2GTTrees/generator_stuff/root_files/photInd_lux_may2.root");
     TTree *t_pwg = (TTree *) f_pwg->Get("T_lhe");
 
-    char title[80] = "LO QED mrst vs. LUX pdf sets (M > 150)";
+    char title[80] = "LO vs. NLO QED, Lux (M > 150)";
     TH1F *h_pwg_cost_st = new TH1F("h_pwg_cost_st", title, 20, -1., 1.);
     TH1F *h_pwg_cost_r = new TH1F("h_pwg_cost_r", title, 20, -1., 1.);
     TH1F *h_pwg_pt = new TH1F("h_pwg_pt", title, 20, 0., 200.);
@@ -65,10 +66,11 @@ void draw_phot_pdf_cmp(){
     h_mad_xf->SetLineWidth(3);
     h_pwg_xf->SetLineWidth(3);
 
-    make_ratio_plot("lo_mrst_vs_lux_cost_st_cmp.pdf", h_mad_cost_r, "mrst2004qed",h_pwg_cost_r, "LUXqed17", "mrst/LUX", "cos(#theta_{r})", false, false);
-    make_ratio_plot("lo_mrst_vs_lux_xf_cmp.pdf", h_mad_xf, "mrst2004qed",h_pwg_xf, "LUXqed17", "mrst/LUX", "x_{F}", false, false);
-    //make_ratio_plot("lo_mrst_vs_lux_pt_cmp.pdf", h_mad_pt, "mrst2004qed",h_pwg_pt, "LUXqed17", "mrst/LUX", "p_{T}", false, false);
-    //make_ratio_plot("pwg_vs_mad_m200_cost_r_cmp.pdf", h_mad_cost_r, "amc@NLO",h_pwg_cost_r, "POWHEG", "aMC/POWHEG", "cos(#theta_{r})", false);
+    
+    make_ratio_plot("lo_vs_nlo_lux_cost_cmp.pdf", h_mad_cost_st, "lo",h_pwg_cost_st, "nlo", "lo/nlo", "cos(#theta_{*})", false, true);
+    make_ratio_plot("lo_vs_nlo_lux_xf_cmp.pdf", h_mad_xf, "lo",h_pwg_xf, "nlo", "lo/nlo", "x_{F}", false, true);
+    make_ratio_plot("lo_vs_nlo_lux_pt_cmp.pdf", h_mad_pt, "lo",h_pwg_pt, "nlo", "lo/nlo", "p_{T}", false, true);
+    make_ratio_plot("lo_vs_nlo_cost_r_cmp.pdf", h_mad_cost_r, "lo",h_pwg_cost_r, "nlo", "lo/nlo", "cos(#theta_{r})", false, true);
 
     return;
 }
