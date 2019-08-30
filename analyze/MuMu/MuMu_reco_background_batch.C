@@ -6,8 +6,8 @@
 void MuMu_reco_background_batch(int nJobs =1, int iJob = 0, string fin ="", bool do_ss = false)
 {
 
-    if(fin == "") fin = string("EOS_files/2016/combined_back_files_may29.txt");
-    NTupleReader nt(fin.c_str(),"output_files/MuMu_gamgam_july15.root", false);
+    if(fin == "") fin = string("EOS_files/2016/test.txt");
+    NTupleReader nt(fin.c_str(),"output_files/test.root", false);
     nt.year = 2016;
     nt.do_samesign = do_ss;
 

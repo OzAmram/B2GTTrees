@@ -64,7 +64,7 @@ class NTupleReader{
         RoccoR rc;
         TRandom *rand;
         mu_SFs era1, era2;
-        pileup_SFs pu_SFs;
+        pileup_systematics pu_sys;
         el_SFs el_SF;
 
         const float mu_iso_cut = 0.15; //tight PF based iso
@@ -100,13 +100,14 @@ class NTupleReader{
         TTree *tin;
         Long64_t tin_nEntries;
 
+        float bjet_med_cut = 0.;
 
         Double_t cm_m, xF, cost, cost_r, cost_st, mu1_pt, mu2_pt, mu1_eta, mu2_eta, jet1_pt, jet2_pt, jet1_eta, jet2_eta, 
                  gen_weight, jet1_csv, jet1_btag, jet2_csv, jet2_btag, gen_m;
         Double_t mu_p_SF, mu_m_SF, mu_p_SF_alt, mu_m_SF_alt, mu_p_SF_up, mu_p_SF_down, mu_m_SF_up, mu_m_SF_down;
         Double_t era1_HLT_SF, era1_iso_SF, era1_id_SF, era2_HLT_SF, era2_iso_SF, era2_id_SF,
                  era1_trk_SF, era2_trk_SF,
-                 jet1_b_weight, jet2_b_weight, pu_SF;
+                 jet1_b_weight, jet2_b_weight, pu_SF, pu_SF_up, pu_SF_down;
 
         Double_t el1_pt, el2_pt, el1_eta, el2_eta;
         Double_t el_id_SF, el_reco_SF, el_HLT_SF;
@@ -141,7 +142,7 @@ class NTupleReader{
 
         Float_t mu_PFIso[MU_SIZE];
         Float_t jet_Pt[JET_SIZE], jet_Eta[JET_SIZE], jet_Phi[JET_SIZE], jet_E[JET_SIZE],
-                jet_btag[JET_SIZE], jet_partonflavour[JET_SIZE];
+                jet_btag[JET_SIZE], jet_hadronflavour[JET_SIZE], jet_genPt[JET_SIZE];
 
         Float_t el_Pt[EL_SIZE], el_Eta[EL_SIZE], el_Phi[EL_SIZE], el_E[EL_SIZE], 
                 el_Charge[EL_SIZE], el_SCEta[EL_SIZE];

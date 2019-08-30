@@ -73,7 +73,7 @@ void NTupleReader::setupSFs(){
 
     printf("getting pu SFs \n");
 
-    setup_pu_SFs(&pu_SFs, year);
+    setup_pileup_systematic(&pu_sys, year);
 
     if(do_muons || do_emu){
         printf("getting muon SFs \n");
@@ -129,7 +129,12 @@ bool NTupleReader::getNextFile(){
                 TDirectory *subdir = gDirectory;
                 TH1D *mc_pileup = (TH1D *)subdir->Get("pileup");
                 mc_pileup->Scale(1./mc_pileup->Integral());
-                pu_SFs.pileup_ratio->Divide(pu_SFs.data_pileup, mc_pileup);
+
+
+                pu_sys.ratio_pileup_nom->Divide(pu_sys.data_pileup_nom, mc_pileup);
+                pu_sys.ratio_pileup_up->Divide(pu_sys.data_pileup_up, mc_pileup);
+                pu_sys.ratio_pileup_down->Divide(pu_sys.data_pileup_down, mc_pileup);
+
             }
 
 
@@ -141,7 +146,9 @@ bool NTupleReader::getNextFile(){
             tin->SetBranchAddress("jetAK4CHS_Eta", &jet_Eta);
             tin->SetBranchAddress("jetAK4CHS_Phi", &jet_Phi);
             tin->SetBranchAddress("jetAK4CHS_E", &jet_E);
-            tin->SetBranchAddress("jetAK4CHS_PartonFlavour", &jet_partonflavour);
+            tin->SetBranchAddress("jetAK4CHS_HadronFlavour", &jet_hadronflavour);
+            tin->SetBranchAddress("jetAK4CHS_GenJetPt", &jet_genPt);
+
             if(year == 2016) {
                 //tin->SetBranchAddress("jetAK4CHS_CSVv2", &jet_CSV);
                 tin->SetBranchAddress("jetAK4CHS_CMVAv2", &jet_btag);
@@ -338,6 +345,8 @@ void NTupleReader::setupOutputTree(char treeName[100]){
     if(!is_data){
 
         outTrees[idx]->Branch("pu_SF", &pu_SF);
+        outTrees[idx]->Branch("pu_SF_up", &pu_SF_up);
+        outTrees[idx]->Branch("pu_SF_down", &pu_SF_down);
         outTrees[idx]->Branch("gen_weight", &gen_weight, "gen_weight/D");
         outTrees[idx]->Branch("gen_m", &gen_m, "gen_m/D");
         outTrees[idx]->Branch("mu_R_up", &mu_R_up);
@@ -420,6 +429,9 @@ void NTupleReader::setupRC(){
 
 void NTupleReader::getEvent(int i){
     tin->GetEntry(i);
+    if(year == 2016) bjet_med_cut = 0.6321;
+    if(year == 2017) bjet_med_cut = 0.4941;
+    if(year == 2018) bjet_med_cut = 0.4184;
     event_idx = i;
     if(mu_size > MU_SIZE || el_size > EL_SIZE ||  gen_size >GEN_SIZE) printf("WARNING: MU_SIZE EL_SIZE OR GEN_SIZE TOO LARGE \n");
     if(met_size != 1) printf("WARNING: Met size not equal to 1\n");
@@ -560,10 +572,6 @@ void NTupleReader::fillEvent(){
     //pick out 2 highest pt jets with eta < 2.4
     nJets =0;
     has_nobjets = 1;
-    float bjet_med_cut = 0.;
-    if(year == 2016) bjet_med_cut = 0.6321;
-    if(year == 2017) bjet_med_cut = 0.4941;
-    if(year == 2018) bjet_med_cut = 0.4184;
 
     for(unsigned int j=0; j < jet_size; j++){
         if(jet_Pt[j] > 20. && std::abs(jet_Eta[j]) < 2.4){
@@ -572,7 +580,7 @@ void NTupleReader::fillEvent(){
                 jet2_eta = jet_Eta[j];
                 jet2_btag = jet_btag[j];
                 has_nobjets = has_nobjets && (jet2_btag < bjet_med_cut);
-                if(!is_data) jet2_flavour = jet_partonflavour[j];
+                if(!is_data) jet2_flavour = jet_hadronflavour[j];
                 nJets =2;
                 break;
             }
@@ -581,7 +589,7 @@ void NTupleReader::fillEvent(){
                 jet1_eta = jet_Eta[j];
                 jet1_btag = jet_btag[j];
                 has_nobjets = has_nobjets && (jet1_btag < bjet_med_cut);
-                if(!is_data) jet1_flavour = jet_partonflavour[j];
+                if(!is_data) jet1_flavour = jet_hadronflavour[j];
                 nJets = 1;
             }
         }
@@ -632,7 +640,10 @@ void NTupleReader::fillEvent(){
 }
 
 void NTupleReader::fillEventSFs(){
-    pu_SF = get_pileup_SF(pu_NtrueInt, pu_SFs.pileup_ratio);
+    pu_SF = get_pileup_SF(pu_NtrueInt, pu_sys.ratio_pileup_nom);
+    pu_SF_up = get_pileup_SF(pu_NtrueInt, pu_sys.ratio_pileup_up);
+    pu_SF_down = get_pileup_SF(pu_NtrueInt, pu_sys.ratio_pileup_down);
+    //printf("pu, pu_up, pu_down: %.2f %.2f %.2f \n", pu_SF, pu_SF_up, pu_SF_down);
 
     if(pdf_size <60){
         for(int i=0;i<60; i++){

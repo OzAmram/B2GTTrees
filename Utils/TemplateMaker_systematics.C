@@ -177,7 +177,7 @@ int gen_mc_template(TTree *t1, Double_t alpha_denom, TH2F* h_sym, TH2F *h_asym, 
     Double_t m, xF, cost, gen_weight, reweight_a, reweight_s, reweight_alpha, jet1_cmva, jet2_cmva, cost_st;
     Double_t era1_HLT_SF, era1_iso_SF, era1_id_SF;
     Double_t era2_HLT_SF, era2_iso_SF, era2_id_SF;
-    Double_t el_id_SF, el_reco_SF, pu_SF, el_HLT_SF;
+    Double_t el_id_SF, el_reco_SF, pu_SF, pu_SF_up, pu_SF_down, el_HLT_SF;
     Double_t jet1_pt, jet2_pt, jet1_b_weight, jet2_b_weight, jet1_eta, jet2_eta;
     Double_t mu1_pt, mu1_eta, mu2_pt, mu2_eta;
     Double_t el1_pt, el1_eta, el2_pt, el2_eta;
@@ -202,6 +202,8 @@ int gen_mc_template(TTree *t1, Double_t alpha_denom, TH2F* h_sym, TH2F *h_asym, 
     t1->SetBranchAddress("nJets", &nJets);
     t1->SetBranchAddress("gen_weight", &gen_weight);
     t1->SetBranchAddress("pu_SF", &pu_SF);
+    t1->SetBranchAddress("pu_SF_up", &pu_SF_up);
+    t1->SetBranchAddress("pu_SF_down", &pu_SF_down);
     t1->SetBranchAddress("mu_R_up", &mu_R_up);
     t1->SetBranchAddress("mu_R_down", &mu_R_down);
     t1->SetBranchAddress("mu_F_up", &mu_F_up);
@@ -356,14 +358,13 @@ int gen_mc_template(TTree *t1, Double_t alpha_denom, TH2F* h_sym, TH2F *h_asym, 
 
 
                 n++;
-                Double_t pu_SF_sys = 1.;
-                if(do_pileup_sys == -1) pu_SF_sys = get_pileup_SF(pu_NtrueInt, pu_sys.pileup_down);
-                if(do_pileup_sys == 1) pu_SF_sys = get_pileup_SF(pu_NtrueInt, pu_sys.pileup_up);
+                if(do_pileup_sys == -1) pu_SF = pu_SF_down;
+                if(do_pileup_sys == 1) pu_SF = pu_SF_up;
                 if(do_pdf_sys != 0){
                     if(shift > 0) *systematic = pdf_weights[do_pdf_sys-1];
                     if(shift < 0) *systematic = 2. - pdf_weights[do_pdf_sys-1];
                 }
-                gen_weight *= *systematic * pu_SF * pu_SF_sys;
+                gen_weight *= *systematic * pu_SF;
 
 
                 if(do_muHLT_sys)   era1_HLT_SF = get_HLT_SF(mu1_pt, mu1_eta, mu2_pt, mu2_eta, era1_SFs.HLT_SF, era1_SFs.HLT_MC_EFF, do_muHLT_sys);
@@ -487,15 +488,14 @@ int gen_mc_template(TTree *t1, Double_t alpha_denom, TH2F* h_sym, TH2F *h_asym, 
 
 
                 n++;
-                Double_t pu_SF_sys = 1.;
-                if(do_pileup_sys == -1) pu_SF_sys = get_pileup_SF(pu_NtrueInt, pu_sys.pileup_down);
-                if(do_pileup_sys == 1) pu_SF_sys = get_pileup_SF(pu_NtrueInt, pu_sys.pileup_up);
+                if(do_pileup_sys == -1) pu_SF = pu_SF_down;
+                if(do_pileup_sys == 1) pu_SF = pu_SF_up;
 
                 if(do_pdf_sys != 0){
                     if(shift > 0) *systematic = pdf_weights[do_pdf_sys-1];
                     if(shift < 0) *systematic = 2. - pdf_weights[do_pdf_sys-1];
                 }
-                gen_weight *= *systematic * pu_SF_sys * pu_SF;
+                gen_weight *= *systematic * pu_SF;
 
 
                 if(do_elID_sys) el_id_SF = get_el_SF(el1_pt, el1_eta, el_SF.ID_SF, do_elID_sys) * get_el_SF(el2_pt, el2_eta, el_SF.ID_SF, do_elID_sys);
@@ -922,7 +922,7 @@ int gen_combined_background_template(int nTrees, TTree **ts, TH2F* h,
         Double_t m, xF, cost, gen_weight, jet1_cmva, jet2_cmva, cost_st;
         Double_t era1_HLT_SF, era1_iso_SF, era1_id_SF;
         Double_t era2_HLT_SF, era2_iso_SF, era2_id_SF;
-        Double_t el_id_SF, el_reco_SF, pu_SF, el_HLT_SF;
+        Double_t el_id_SF, el_reco_SF, pu_SF, pu_SF_up, pu_SF_down, el_HLT_SF;
         Double_t jet1_pt, jet2_pt, jet1_b_weight, jet2_b_weight, jet1_eta, jet2_eta;
         Double_t mu1_pt, mu1_eta, mu2_pt, mu2_eta;
         Double_t el1_pt, el1_eta, el2_pt, el2_eta;
@@ -946,6 +946,8 @@ int gen_combined_background_template(int nTrees, TTree **ts, TH2F* h,
         t1->SetBranchAddress("nJets", &nJets);
         t1->SetBranchAddress("gen_weight", &gen_weight);
         t1->SetBranchAddress("pu_SF", &pu_SF);
+        t1->SetBranchAddress("pu_SF_up", &pu_SF_up);
+        t1->SetBranchAddress("pu_SF_down", &pu_SF_down);
         t1->SetBranchAddress("mu_R_up", &mu_R_up);
         t1->SetBranchAddress("mu_R_down", &mu_R_down);
         t1->SetBranchAddress("mu_F_up", &mu_F_up);
@@ -1091,15 +1093,14 @@ int gen_combined_background_template(int nTrees, TTree **ts, TH2F* h,
 
                 if(pass){
 
-                    Double_t pu_SF_sys = 1.;
-                    if(do_pileup_sys == -1) pu_SF_sys = get_pileup_SF(pu_NtrueInt, pu_sys.pileup_down);
-                    if(do_pileup_sys == 1) pu_SF_sys = get_pileup_SF(pu_NtrueInt, pu_sys.pileup_up);
+                    if(do_pileup_sys == -1) pu_SF = pu_SF_down;
+                    if(do_pileup_sys == 1) pu_SF = pu_SF_up;
                     if(do_pdf_sys != 0){
                         if(shift > 0) *systematic = pdf_weights[do_pdf_sys-1];
                         if(shift < 0) *systematic = 2. - pdf_weights[do_pdf_sys-1];
                         //printf("mumu sys is  %.6f pdf weight is %.4f \n", *systematic, pdf_weights[do_pdf_sys-1]);
                     }
-                    gen_weight *= (*systematic) * pu_SF * pu_SF_sys;
+                    gen_weight *= (*systematic) * pu_SF;
 
                     if(do_muHLT_sys) era1_HLT_SF = get_HLT_SF(mu1_pt, mu1_eta, mu2_pt, mu2_eta, era1_SFs.HLT_SF, era1_SFs.HLT_MC_EFF, do_muHLT_sys);
                     if(do_muHLT_sys) era2_HLT_SF = get_HLT_SF(mu1_pt, mu1_eta, mu2_pt, mu2_eta, era2_SFs.HLT_SF, era2_SFs.HLT_MC_EFF, do_muHLT_sys);
@@ -1215,15 +1216,14 @@ int gen_combined_background_template(int nTrees, TTree **ts, TH2F* h,
 
                     cost = get_cost(*lep_p, *lep_m);
 
-                    Double_t pu_SF_sys = 1.;
-                    if(do_pileup_sys == -1) pu_SF_sys = get_pileup_SF(pu_NtrueInt, pu_sys.pileup_down);
-                    if(do_pileup_sys == 1) pu_SF_sys = get_pileup_SF(pu_NtrueInt, pu_sys.pileup_up);
+                    if(do_pileup_sys == -1) pu_SF = pu_SF_down;
+                    if(do_pileup_sys == 1) pu_SF = pu_SF_up;
                     if(do_pdf_sys != 0){
                         if(shift > 0) *systematic = pdf_weights[do_pdf_sys-1];
                         if(shift < 0) *systematic = 2. - pdf_weights[do_pdf_sys-1];
                         //printf("elel sys is  %.6f pdf weight is %.4f \n", *systematic, pdf_weights[do_pdf_sys-1]);
                     }
-                    gen_weight *= (*systematic) * pu_SF * pu_SF_sys;
+                    gen_weight *= (*systematic) * pu_SF;
 
                     if(do_elID_sys) el_id_SF = get_el_SF(el1_pt, el1_eta, el_SF.ID_SF, do_elID_sys) * get_el_SF(el2_pt, el2_eta, el_SF.ID_SF, do_elID_sys);
                     if(do_elRECO_sys) el_reco_SF = get_el_SF(el1_pt, el1_eta, el_SF.RECO_SF, do_elRECO_sys) * get_el_SF(el2_pt, el2_eta, el_SF.RECO_SF, do_elRECO_sys);

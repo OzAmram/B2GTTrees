@@ -26,8 +26,13 @@ typedef struct {
 } pileup_SFs;
 
 typedef struct {
-    TH1D *pileup_up;
-    TH1D *pileup_down;
+    TH1D *data_pileup_up;
+    TH1D *data_pileup_down;
+    TH1D *data_pileup_nom;
+
+    TH1D *ratio_pileup_up;
+    TH1D *ratio_pileup_down;
+    TH1D *ratio_pileup_nom;
 } pileup_systematics;
 
 typedef struct{
@@ -515,38 +520,48 @@ void setup_pileup_systematic(pileup_systematics *pu_sys, int year){
 
     TFile *f7, *f8, *f9;
     if(year == 2016){
-        f7 = TFile::Open("SFs/2016/DataPileupHistogram_69200.root");
-        f8 = TFile::Open("SFs/2016/DataPileupHistogram_66017.root");
-        f9 = TFile::Open("SFs/2016/DataPileupHistogram_72383.root");
+        f7 = TFile::Open("SFs/2016/Data16PileupHistogram_69200.root");
+        f8 = TFile::Open("SFs/2016/Data16PileupHistogram_66017.root");
+        f9 = TFile::Open("SFs/2016/Data16PileupHistogram_72383.root");
     }
     if(year == 2017){
-        f7 = TFile::Open("SFs/2016/DataPileupHistogram_69200.root");
-        f8 = TFile::Open("SFs/2016/DataPileupHistogram_66017.root");
-        f9 = TFile::Open("SFs/2016/DataPileupHistogram_72383.root");
+        f7 = TFile::Open("SFs/2017/Data17PileupHistogram_69200.root");
+        f8 = TFile::Open("SFs/2017/Data17PileupHistogram_66017.root");
+        f9 = TFile::Open("SFs/2017/Data17PileupHistogram_72383.root");
     }
     if(year == 2018){
-        f7 = TFile::Open("SFs/2016/DataPileupHistogram_69200.root");
-        f8 = TFile::Open("SFs/2016/DataPileupHistogram_66017.root");
-        f9 = TFile::Open("SFs/2016/DataPileupHistogram_72383.root");
+        f7 = TFile::Open("SFs/2018/Data18PileupHistogram_69200.root");
+        f8 = TFile::Open("SFs/2018/Data18PileupHistogram_66017.root");
+        f9 = TFile::Open("SFs/2018/Data18PileupHistogram_72383.root");
     }
 
 
     TH1D * pileup_data_nom = (TH1D *) f7->Get("pileup")->Clone();
+    pileup_data_nom->Scale(1./pileup_data_nom->Integral());
     pileup_data_nom->SetDirectory(0);
 
     TH1D * pileup_data_up = (TH1D *) f8->Get("pileup")->Clone();
+    pileup_data_up->Scale(1./pileup_data_up->Integral());
     pileup_data_up->SetDirectory(0);
 
     TH1D * pileup_data_down = (TH1D *) f9->Get("pileup")->Clone();
+    pileup_data_down->Scale(1./pileup_data_down->Integral());
     pileup_data_down->SetDirectory(0);
 
     //Printf(" Ints are %.4e %.4e %.4e \n", pileup_data_nom->Integral(), pileup_data_up->Integral(), pileup_data_down->Integral());
-    pu_sys->pileup_up = (TH1D *) pileup_data_nom->Clone();
-    pu_sys->pileup_down = (TH1D *) pileup_data_nom->Clone();
-    pu_sys->pileup_up->Divide(pileup_data_up, pileup_data_nom);
-    pu_sys->pileup_down->Divide(pileup_data_down, pileup_data_nom);
-    pu_sys->pileup_up->SetDirectory(0);
-    pu_sys->pileup_down->SetDirectory(0);
+    pu_sys->data_pileup_up = (TH1D *) pileup_data_up->Clone("data_pu_up");
+    pu_sys->data_pileup_down = (TH1D *) pileup_data_down->Clone("data_pu_down");
+    pu_sys->data_pileup_nom = (TH1D *) pileup_data_nom->Clone("data_pu_nom");
+    pu_sys->data_pileup_up->SetDirectory(0);
+    pu_sys->data_pileup_down->SetDirectory(0);
+    pu_sys->data_pileup_nom->SetDirectory(0);
+
+    pu_sys->ratio_pileup_up = (TH1D *) pileup_data_up->Clone("ratio_pu_up");
+    pu_sys->ratio_pileup_down = (TH1D *) pileup_data_down->Clone("ratio_pu_down");
+    pu_sys->ratio_pileup_nom = (TH1D *) pileup_data_nom->Clone("ratio_pu_nom");
+    pu_sys->ratio_pileup_up->SetDirectory(0);
+    pu_sys->ratio_pileup_down->SetDirectory(0);
+    pu_sys->ratio_pileup_nom->SetDirectory(0);
     f7->Close();
     f8->Close();
     f9->Close();
