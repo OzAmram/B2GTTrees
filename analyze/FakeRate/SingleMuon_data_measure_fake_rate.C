@@ -12,9 +12,9 @@ void SingleMuon_data_measure_fake_rate(int nJobs =1, int iJob=0, string fin="")
 {
 
 
-    if(fin == "") fin = string("EOS_files/2016/SingleMuon_files_may31.txt");
+    if(fin == "") fin = string("EOS_files/2017/SingleMuon_files.txt");
     NTupleReader nt(fin.c_str(),"output_files/MuMu_fake_rate_test.root", true);
-    nt.year = 2016;
+    nt.year = 2017;
     nt.nJobs = nJobs;
     nt.iJob = iJob;
     nt.do_muons = true;
@@ -42,7 +42,6 @@ void SingleMuon_data_measure_fake_rate(int nJobs =1, int iJob=0, string fin="")
                 //Want events with 3 muons, 2 from Z and 1 extra
 
                 nt.fillEvent();
-                bool no_bjets = has_no_bjets(nt.nJets, nt.jet1_pt, nt.jet2_pt, nt.jet1_cmva, nt.jet2_cmva);
                 const float mu_mass = 0.1056; // in GEV
 
                 TLorentzVector mu0, mu1, mu2;
@@ -105,7 +104,7 @@ void SingleMuon_data_measure_fake_rate(int nJobs =1, int iJob=0, string fin="")
                 }
 
 
-                if( (mu_p != -1) && no_bjets && nt.met_pt < 25.){
+                if( (mu_p != -1) && nt.has_nobjets && nt.met_pt < 25.){
                     mu_pt = nt.mu_Pt[mu_extra];
                     mu_eta = nt.mu_Eta[mu_extra];
                     pass = iso[mu_extra];

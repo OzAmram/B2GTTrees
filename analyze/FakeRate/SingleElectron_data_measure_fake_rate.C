@@ -12,9 +12,9 @@ void SingleElectron_data_measure_fake_rate(int nJobs =1, int iJob=0, string fin=
 {
 
 
-    if(fin == "") fin = string("EOS_files/2016/SingleElectron_files_may31.txt");
+    if(fin == "") fin = string("EOS_files/2017/SingleElectron_files.txt");
     NTupleReader nt(fin.c_str(),"output_files/ElEl_fake_rate_test.root", true);
-    nt.year = 2016;
+    nt.year = 2017;
     nt.nJobs = nJobs;
     nt.iJob = iJob;
     nt.do_electrons =  true;
@@ -41,7 +41,6 @@ void SingleElectron_data_measure_fake_rate(int nJobs =1, int iJob=0, string fin=
                 //Want events with 3 electrons, 2 from Z and 1 extra
 
                 nt.fillEvent();
-                bool no_bjets = has_no_bjets(nt.nJets, nt.jet1_pt, nt.jet2_pt, nt.jet1_cmva, nt.jet2_cmva);
                 const float el_mass = 0.; // in GEV
 
                 TLorentzVector el0, el1, el2;
@@ -104,7 +103,7 @@ void SingleElectron_data_measure_fake_rate(int nJobs =1, int iJob=0, string fin=
                 }
 
 
-                if( (el_p != -1) && no_bjets && nt.met_pt < 25.){
+                if( (el_p != -1) && nt.has_nobjets && nt.met_pt < 25.){
                     el_pt = nt.el_Pt[el_extra];
                     el_eta = nt.el_Eta[el_extra];
                     pass = iso[el_extra];

@@ -6,9 +6,9 @@
 void ElEl_reco_data_batch(int nJobs =1, int iJob = 0, string fin = "", bool do_ss = false)
 {
 
-    if (fin == "") fin = string("EOS_files/2016/SingleElectron_files_test.txt");
+    if (fin == "") fin = string("EOS_files/2017/SingleElectron_files.txt");
     NTupleReader nt(fin.c_str(),"output_files/ElEl_data_test.root", true);
-    nt.year = 2016;
+    nt.year = 2017;
     nt.do_samesign = do_ss;
 
     nt.nJobs = nJobs;
@@ -29,7 +29,7 @@ void ElEl_reco_data_batch(int nJobs =1, int iJob = 0, string fin = "", bool do_s
         for (int i=0; i<nt.tin_nEntries; i++) {
             nt.getEvent(i);
 
-            if(nt.good_trigger && nt.dielec_id && nt.cm_m > 50.){
+            if(nt.good_trigger && nt.dielec_id && nt.cm_m > 130.){
                 nt.fillEvent();
                 bool one_iso = nt.el_iso0 ^ nt.el_iso1;
 

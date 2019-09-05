@@ -188,6 +188,8 @@ int gen_mc_template(TTree *t1, Double_t alpha_denom, TH2F* h_sym, TH2F *h_asym, 
     Float_t pdf_weights[60];
     TLorentzVector *lep_p=0;
     TLorentzVector *lep_m=0;
+    TLorentzVector *gen_lep_p=0;
+    TLorentzVector *gen_lep_m=0;
     Double_t pt;
     Int_t nJets, pu_NtrueInt, jet1_flavour, jet2_flavour;
     t1->SetBranchAddress("m", &m);
@@ -297,6 +299,8 @@ int gen_mc_template(TTree *t1, Double_t alpha_denom, TH2F* h_sym, TH2F *h_asym, 
     if(flag1 == FLAG_MUONS){
         t1->SetBranchAddress("mu_p", &lep_p);
         t1->SetBranchAddress("mu_m", &lep_m);
+        t1->SetBranchAddress("gen_mu_p", &gen_lep_m);
+        t1->SetBranchAddress("gen_mu_m", &gen_lep_p);
         t1->SetBranchAddress("mu1_pt", &mu1_pt);
         t1->SetBranchAddress("mu1_eta", &mu1_eta);
         t1->SetBranchAddress("mu2_pt", &mu2_pt);
@@ -347,14 +351,16 @@ int gen_mc_template(TTree *t1, Double_t alpha_denom, TH2F* h_sym, TH2F *h_asym, 
 
             }
             else cost = get_cost(*lep_p, *lep_m);
-            if(cost_st>0.) cost_st = fabs(cost);
-            else cost_st = -fabs(cost);
             bool pass = (m >= m_low && m <= m_high) && met_pt < 50.  && no_bjets && not_cosmic;
             if(pass){
-                double denom = 3./8.*(1.+cost_st*cost_st + 0.5 * alpha_denom * (1. - 3. *cost_st*cost_st));
-                reweight_a = cost_st/ denom;
-                reweight_s = 3. * (1 + cost_st*cost_st)/4./denom;
-                reweight_alpha = 3. * (1 - cost_st*cost_st)/4./denom;
+            //muons
+                double gen_cost = get_cost(*gen_lep_p, *gen_lep_m);
+                if(cost_st>0.) gen_cost = fabs(gen_cost);
+                else gen_cost = -fabs(gen_cost);
+                double denom = 3./8.*(1.+gen_cost*gen_cost + 0.5 * alpha_denom * (1. - 3. *gen_cost*gen_cost));
+                reweight_a = gen_cost/ denom;
+                reweight_s = (1 + gen_cost*gen_cost)/denom;
+                reweight_alpha = (1 - gen_cost*gen_cost)/denom;
 
 
                 n++;
@@ -415,6 +421,8 @@ int gen_mc_template(TTree *t1, Double_t alpha_denom, TH2F* h_sym, TH2F *h_asym, 
     else if (flag1 == FLAG_ELECTRONS) {
         t1->SetBranchAddress("el_p", &lep_p);
         t1->SetBranchAddress("el_m", &lep_m);
+        t1->SetBranchAddress("gen_el_p", &gen_lep_p);
+        t1->SetBranchAddress("gen_el_m", &gen_lep_m);
         t1->SetBranchAddress("el1_pt", &el1_pt);
         t1->SetBranchAddress("el1_eta", &el1_eta);
         t1->SetBranchAddress("el2_pt", &el2_pt);
@@ -478,13 +486,23 @@ int gen_mc_template(TTree *t1, Double_t alpha_denom, TH2F* h_sym, TH2F *h_asym, 
             }
             bool pass = (m >= m_low && m <= m_high) && met_pt < 50.  && no_bjets && not_cosmic;
             if(pass){
+                //electrons
                 cost = get_cost(*lep_p, *lep_m);
-                if(cost_st>0.) cost_st = fabs(cost);
-                else cost_st = -fabs(cost);
-                double denom = 3./8.*(1.+cost_st*cost_st + 0.5 * alpha_denom * (1. - 3. *cost_st*cost_st));
-                reweight_a = cost_st/ denom;
-                reweight_s = 3. * (1 + cost_st*cost_st)/4./denom;
-                reweight_alpha = 3. * (1 - cost_st*cost_st)/4./denom;
+                double gen_cost = get_cost(*gen_lep_p, *gen_lep_m);
+                if(std::isnan(gen_cost)){
+                    printf("Nan! \n");
+                    gen_lep_p->Print();
+                    gen_lep_m->Print();
+                    lep_p->Print();
+                    lep_m->Print();
+                    continue;
+                }
+                if(cost_st>0.) gen_cost = fabs(gen_cost);
+                else gen_cost = -fabs(gen_cost);
+                double denom = 3./8.*(1.+gen_cost*gen_cost + 0.5 * alpha_denom * (1. - 3. *gen_cost*gen_cost));
+                reweight_a = gen_cost/ denom;
+                reweight_s = (1 + gen_cost*gen_cost)/denom;
+                reweight_alpha = (1 - gen_cost*gen_cost)/denom;
 
 
                 n++;
@@ -521,7 +539,6 @@ int gen_mc_template(TTree *t1, Double_t alpha_denom, TH2F* h_sym, TH2F *h_asym, 
 
                 h_sym->Fill(xF, cost, reweight_s * evt_weight); 
                 h_sym->Fill(xF, -cost, reweight_s * evt_weight); 
-
                 h_asym->Fill(xF, cost, reweight_a * evt_weight);
                 h_asym->Fill(xF, -cost, -reweight_a * evt_weight);
 
@@ -534,8 +551,9 @@ int gen_mc_template(TTree *t1, Double_t alpha_denom, TH2F* h_sym, TH2F *h_asym, 
     }
 
     //float norm = h_sym -> Integral();
-    //h_sym->Scale(1./norm);
-    //h_asym->Scale(1./norm);
+    h_sym->Scale(0.5);
+    h_asym->Scale(0.5);
+    h_alpha->Scale(0.5);
     t1->ResetBranchAddresses();
     printf("MC templates generated from %i events \n \n", n);
     return 0;

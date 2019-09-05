@@ -12,9 +12,9 @@ void SingleElectron_mc_contam_fake_rate(int nJobs =1, int iJob=0, string fin="")
 {
 
 
-    if(fin == "") fin = string("EOS_files/2016/diboson_files_may29.txt");
+    if(fin == "") fin = string("EOS_files/2017/diboson_files_may29.txt");
     NTupleReader nt(fin.c_str(),"output_files/ElEl_fake_rate_contam_test.root", false);
-    nt.year = 2016;
+    nt.year = 2017;
     nt.nJobs = nJobs;
     nt.iJob = iJob;
     nt.do_electrons =  true;
@@ -43,7 +43,6 @@ void SingleElectron_mc_contam_fake_rate(int nJobs =1, int iJob=0, string fin="")
 
                 nt.fillEvent();
                 gen_weight = nt.gen_weight;
-                bool no_bjets = has_no_bjets(nt.nJets, nt.jet1_pt, nt.jet2_pt, nt.jet1_cmva, nt.jet2_cmva);
                 const float el_mass = 0.; // in GEV
 
                 TLorentzVector el0, el1, el2;
@@ -106,7 +105,7 @@ void SingleElectron_mc_contam_fake_rate(int nJobs =1, int iJob=0, string fin="")
                 }
 
 
-                if( (el_p != -1) && no_bjets && nt.met_pt < 25.){
+                if( (el_p != -1) && nt.has_nobjets && nt.met_pt < 25.){
                     el_pt = nt.el_Pt[el_extra];
                     el_eta = nt.el_Eta[el_extra];
                     pass = iso[el_extra];

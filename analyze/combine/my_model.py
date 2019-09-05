@@ -19,8 +19,8 @@ class DY_AFB(PhysicsModel):
         self.modelBuilder.factory_('expr::Alph("2.0*@0/(2.0-@0)",A0)')
         self.modelBuilder.factory_('expr::Norm("3.0/(4.0*(2.0+@0))",Alph)')
         self.modelBuilder.factory_('expr::RAlph("@0*@1",Alph,Norm)')
-        self.modelBuilder.factory_('expr::Rpl("0.5*(@1+@0)",Afb,Norm)')
-        self.modelBuilder.factory_('expr::Rmn("0.5*(@1-@0)",Afb,Norm)')
+        self.modelBuilder.factory_('expr::Rpl("(@0+@1)",Norm,Afb)')
+        self.modelBuilder.factory_('expr::Rmn("(@0-@1)",Norm,Afb)')
 
 
  
@@ -51,8 +51,8 @@ class DY_AFB_LO(PhysicsModel):
         self.modelBuilder.doVar("Rdy_mumu_ss[1.0,0.0,10.0]");
         self.modelBuilder.doVar("Rdy_ee_ss[1.0,0.0,10.0]");
       
-        self.modelBuilder.factory_('expr::Rpl("0.5*(1.+@0)",Afb)')
-        self.modelBuilder.factory_('expr::Rmn("0.5*(1.-@0)",Afb)')
+        self.modelBuilder.factory_('expr::Rpl("(1.+@0)",Afb)')
+        self.modelBuilder.factory_('expr::Rmn("(1.-@0)",Afb)')
 
 
  

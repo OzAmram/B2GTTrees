@@ -7,9 +7,9 @@ void ElEl_reco_background_batch(int nJobs =1, int iJob = 0, string fin ="")
 {
 
 
-    if(fin == "") fin = string("EOS_files/2016/combined_back_files_may29.txt");
+    if(fin == "") fin = string("EOS_files/2017/TTbar_files.txt");
     NTupleReader nt(fin.c_str(),"output_files/ElEl_back_june25.root", false);
-    nt.year = 2016;
+    nt.year = 2017;
     nt.do_samesign = true;
 
     nt.nJobs = nJobs;
@@ -31,7 +31,7 @@ void ElEl_reco_background_batch(int nJobs =1, int iJob = 0, string fin ="")
 
         for (int i=0; i<nt.tin_nEntries; i++) {
             nt.getEvent(i);
-            if(nt.good_trigger && nt.dielec_id && nt.cm_m > 50.){
+            if(nt.good_trigger && nt.dielec_id && nt.cm_m > 130.){
                 nt.fillEvent();
                 nt.fillEventSFs();
 

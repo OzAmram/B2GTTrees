@@ -5,9 +5,9 @@
 
 void MuMu_reco_mc_batch(int nJobs =1, int iJob = 0, string fin = "", bool do_ss=false)
 {
-    if(fin == "") fin = string("EOS_files/2017/DY_files_test.txt");
-    NTupleReader nt(fin.c_str(),"output_files/MuMu_DY_test18.root", false);
-    nt.year = 2018;
+    if(fin == "") fin = string("EOS_files/2017/DY_files.txt");
+    NTupleReader nt(fin.c_str(),"output_files/MuMu_DY_test17.root", false);
+    nt.year = 2017;
     nt.do_samesign = do_ss;
 
     nt.nJobs = nJobs;
@@ -18,8 +18,8 @@ void MuMu_reco_mc_batch(int nJobs =1, int iJob = 0, string fin = "", bool do_ss=
     nt.RC_from_gen = true;
     nt.setupSFs();
     nt.setupRC();
-    nt.setupOutputTree("T_data");
-    nt.setupOutputTree("T_back");
+    nt.setupOutputTree("T_sig");
+    nt.setupOutputTree("T_DY_back");
 
     while(nt.getNextFile()){
 
@@ -27,7 +27,7 @@ void MuMu_reco_mc_batch(int nJobs =1, int iJob = 0, string fin = "", bool do_ss=
         for (int i=0; i<nt.tin_nEntries; i++) {
             nt.getEvent(i);
             if(nt.good_trigger && nt.good_sign && nt.dimuon_id &&
-                    nt.mu_iso0 && nt.mu_iso1 && nt.cm_m > 50. ){
+                    nt.mu_iso0 && nt.mu_iso1 && nt.cm_m > 130. ){
                 nt.fillEvent();
                 nt.fillEventSFs();
                 nt.parseGenParts();

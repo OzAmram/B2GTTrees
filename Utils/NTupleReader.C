@@ -418,6 +418,7 @@ void NTupleReader::setupRC(){
     }
     else if(year == 2018){
         sprintf(path, "%s/src/Analysis/B2GTTrees/Utils/roccor_Run2_v3/RoccoR2018.txt", getenv("CMSSW_BASE"));
+        //sprintf(path, "%s/src/Analysis/B2GTTrees/Utils/roccor_Run2_v3/RoccoR2017.txt", getenv("CMSSW_BASE"));
     }
 
    
@@ -770,9 +771,12 @@ void NTupleReader::fillEventRC(){
 
 
         for(int k=0; k<100; k++){
+            //printf("P %.1f %.1f %.1f %i %.1f %.3f %i %i \n" ,mu_p.Pt(), mu_p.Eta(), mu_p.Phi(), mu_p_n_TL, gen_mu_p_vec.Pt(), rand1, 1, k);
             mu_p_SF_vars[k] = rc.kScaleFromGenMC(1, mu_p.Pt(), mu_p.Eta(), mu_p.Phi(), mu_p_n_TL, gen_mu_p_vec.Pt(), rand1, 1, k);
+            //printf("M %.1f %.1f %.1f %i %.1f %.3f %i %i \n" ,mu_m.Pt(), mu_m.Eta(), mu_m.Phi(), mu_m_n_TL, gen_mu_m_vec.Pt(), rand2, 1, k);
             mu_m_SF_vars[k] = rc.kScaleFromGenMC(-1, mu_m.Pt(), mu_m.Eta(), mu_m.Phi(), mu_m_n_TL, gen_mu_m_vec.Pt(), rand2, 1, k);
         }
+        //printf("7 \n");
     }
 
     else{
