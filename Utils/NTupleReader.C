@@ -417,8 +417,8 @@ void NTupleReader::setupRC(){
         sprintf(path, "%s/src/Analysis/B2GTTrees/Utils/roccor_Run2_v3/RoccoR2017.txt", getenv("CMSSW_BASE"));
     }
     else if(year == 2018){
-        sprintf(path, "%s/src/Analysis/B2GTTrees/Utils/roccor_Run2_v3/RoccoR2018.txt", getenv("CMSSW_BASE"));
-        //sprintf(path, "%s/src/Analysis/B2GTTrees/Utils/roccor_Run2_v3/RoccoR2017.txt", getenv("CMSSW_BASE"));
+        //sprintf(path, "%s/src/Analysis/B2GTTrees/Utils/roccor_Run2_v3/RoccoR2018.txt", getenv("CMSSW_BASE"));
+        sprintf(path, "%s/src/Analysis/B2GTTrees/Utils/roccor_Run2_v3/RoccoR2017.txt", getenv("CMSSW_BASE"));
     }
 
    
@@ -748,7 +748,9 @@ void NTupleReader::fillEventRC(){
         mu_p_SF = rc.kScaleDT(1, mu_p.Pt(), mu_p.Eta(), mu_p.Phi(), 0, 0);
         mu_m_SF = rc.kScaleDT(-1, mu_m.Pt(), mu_m.Eta(), mu_m.Phi(), 0, 0);
 
+        applyRC();
         return;
+
     }
     else if(!is_data && RC_from_gen){
         double rand1 = rand->Rndm(); 
@@ -823,7 +825,19 @@ void NTupleReader::fillEventRC(){
     mu_m_SF_up = mu_m_SF + mu_m_unc;
     mu_m_SF_down = mu_m_SF - mu_m_unc;
 
+    applyRC();
+
 }
+
+void NTupleReader::applyRC(){
+    mu_p.SetPtEtaPhiE(mu_p.Pt() * mu_p_SF, mu_p.Eta(), mu_p.Phi(), mu_p_SF * mu_p.E());
+    mu_m.SetPtEtaPhiE(mu_m.Pt() * mu_m_SF, mu_m.Eta(), mu_m.Phi(), mu_m_SF * mu_m.E());
+    cost = get_cost(mu_p, mu_m);
+    cm = mu_p + mu_m;
+    cm_m = cm.M();
+    xF = compute_xF(cm); 
+}
+
 
 bool NTupleReader::parseGenParts(bool PRINT = false){
     //returns false if unable to match all gen parts
@@ -1073,12 +1087,16 @@ bool NTupleReader::parseGenParts(bool PRINT = false){
         gen_mu_m_vec.SetPtEtaPhiE(gen_Pt[gen_lep_m], gen_Eta[gen_lep_m], gen_Phi[gen_lep_m], gen_E[gen_lep_m]);
         gen_cm = gen_mu_p_vec + gen_mu_m_vec;
         gen_cost = get_cost(gen_mu_p_vec, gen_mu_m_vec, false);
+        if(std::isnan(gen_cost)) gen_cost = get_cost_v2(gen_mu_p_vec, gen_mu_m_vec);
+        if(std::isnan(gen_cost)) gen_cost = cost;
     }
     else{
         gen_el_p_vec.SetPtEtaPhiE(gen_Pt[gen_lep_p], gen_Eta[gen_lep_p], gen_Phi[gen_lep_p], gen_E[gen_lep_p]);
         gen_el_m_vec.SetPtEtaPhiE(gen_Pt[gen_lep_m], gen_Eta[gen_lep_m], gen_Phi[gen_lep_m], gen_E[gen_lep_m]);
         gen_cm = gen_el_p_vec + gen_el_m_vec;
         gen_cost = get_cost(gen_el_p_vec, gen_el_m_vec, false);
+        if(std::isnan(gen_cost)) gen_cost = get_cost_v2(gen_el_p_vec, gen_el_m_vec);
+        if(std::isnan(gen_cost)) gen_cost = cost;
     }
     if(quark_dir_eta < 0){
         cost_st = -gen_cost;

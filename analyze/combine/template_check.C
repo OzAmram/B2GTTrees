@@ -37,17 +37,17 @@ void template_check(){
 
         TH2F * h_elel_plain = new TH2F("elel_plain", "", n_xf_bins, xf_bins, n_cost_bins, cost_bins);
 
-        double m_low = 200.;
+        double m_low = 150.;
        
-        double m_high = 250.;
+        double m_high = 200.;
         Double_t alpha_denom = alphas_denom[1];
 
         bool ss = false;
 
         gen_mc_template(t_elel_mc, alpha_denom, h_elel_sym, h_elel_asym, h_elel_alpha, year, m_low, m_high, FLAG_ELECTRONS, do_RC, "");
-        h_elel_sym->Print("all");
-        h_elel_asym->Print("all");
-        h_elel_alpha->Print("all");
+        //h_elel_sym->Print("all");
+        //h_elel_asym->Print("all");
+        //h_elel_alpha->Print("all");
 
 
         gen_mc_template(t_mumu_mc, alpha_denom, h_mumu_sym, h_mumu_asym, h_mumu_alpha, year, m_low, m_high, FLAG_MUONS, do_RC, "");

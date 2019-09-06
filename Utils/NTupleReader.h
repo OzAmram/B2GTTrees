@@ -170,6 +170,8 @@ class NTupleReader{
         bool signal_event, failed_match;
 
         Double_t quark_dir_eta;
+ private:
+        void applyRC();
 };
         
 
