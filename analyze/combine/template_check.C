@@ -3,7 +3,7 @@
 
 void template_check(){
     
-        int year = 2016;
+        int year = 2017;
         init(year);
         setup_all_SFs(year);
         string sys_label = string("");
@@ -54,12 +54,12 @@ void template_check(){
         TTree *mumu_ts[1] = {t_mumu_mc};
         printf("Making mumu back \n");
         gen_combined_background_template(1, mumu_ts, h_mumu_plain, year, m_low, m_high, FLAG_MUONS,  do_RC, ss, "");
-        h1_mumu_back = convert2d(h_mumu_plain);
+        auto h1_mumu_back = convert2d(h_mumu_plain);
 
         TTree *elel_ts[1] = {t_elel_mc};
         printf("Making elel back \n");
         gen_combined_background_template(1, elel_ts, h_elel_plain, year, m_low, m_high, FLAG_ELECTRONS,  do_RC, ss, "");
-        h1_elel_back = convert2d(h_elel_plain);
+        auto h1_elel_back = convert2d(h_elel_plain);
 
 
 
@@ -81,7 +81,7 @@ void template_check(){
 
 
         auto h1_mumu_lo = convert2d(h_mumu_dy);
-        h1_mumu_alpha = convert2d(h_mumu_alpha);
+        auto h1_mumu_alpha = convert2d(h_mumu_alpha);
         TH1F *h1_mumu_templ = (TH1F *) h1_mumu_lo->Clone("h1_mumu_templ");
         h1_mumu_templ->Add(h1_mumu_alpha);
         
@@ -119,7 +119,7 @@ void template_check(){
 
 
         auto h1_elel_lo = convert2d(h_elel_dy);
-        h1_elel_alpha = convert2d(h_elel_alpha);
+        auto h1_elel_alpha = convert2d(h_elel_alpha);
         TH1F *h1_elel_templ = (TH1F *) h1_elel_lo->Clone("h1_elel_templ");
         h1_elel_templ->Add(h1_elel_alpha);
         
