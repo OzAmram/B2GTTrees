@@ -68,6 +68,7 @@ double get_var(Double_t vals[100]){
 }
 
 Double_t get_pileup_SF(Int_t n_int, TH1D *h){
+    if(n_int > 99) n_int = 99;
 
     TAxis* x_ax =  h->GetXaxis();
     int xbin = x_ax->FindBin(n_int);

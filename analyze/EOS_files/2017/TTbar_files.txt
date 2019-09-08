@@ -1,0 +1,23 @@
+################ TTbar files
+!idx = 16 xsec = 72.48
+#########################
+root://cmseos.fnal.gov//store/user/oamram/NTuples/2017/Aug26/TT_DiLept_TuneCP5_13TeV-amcatnlo-pythia8/B2GAnaFW_9_4_X_V0_RunIIFall17MiniAODv2-PU2017_12Apr2018_94X_mc2017_realistic_v14-v2/190826_214142/0000/B2GTTreeNtupleExtra_1.root
+root://cmseos.fnal.gov//store/user/oamram/NTuples/2017/Aug26/TT_DiLept_TuneCP5_13TeV-amcatnlo-pythia8/B2GAnaFW_9_4_X_V0_RunIIFall17MiniAODv2-PU2017_12Apr2018_94X_mc2017_realistic_v14-v2/190826_214142/0000/B2GTTreeNtupleExtra_10.root
+root://cmseos.fnal.gov//store/user/oamram/NTuples/2017/Aug26/TT_DiLept_TuneCP5_13TeV-amcatnlo-pythia8/B2GAnaFW_9_4_X_V0_RunIIFall17MiniAODv2-PU2017_12Apr2018_94X_mc2017_realistic_v14-v2/190826_214142/0000/B2GTTreeNtupleExtra_11.root
+root://cmseos.fnal.gov//store/user/oamram/NTuples/2017/Aug26/TT_DiLept_TuneCP5_13TeV-amcatnlo-pythia8/B2GAnaFW_9_4_X_V0_RunIIFall17MiniAODv2-PU2017_12Apr2018_94X_mc2017_realistic_v14-v2/190826_214142/0000/B2GTTreeNtupleExtra_12.root
+root://cmseos.fnal.gov//store/user/oamram/NTuples/2017/Aug26/TT_DiLept_TuneCP5_13TeV-amcatnlo-pythia8/B2GAnaFW_9_4_X_V0_RunIIFall17MiniAODv2-PU2017_12Apr2018_94X_mc2017_realistic_v14-v2/190826_214142/0000/B2GTTreeNtupleExtra_13.root
+root://cmseos.fnal.gov//store/user/oamram/NTuples/2017/Aug26/TT_DiLept_TuneCP5_13TeV-amcatnlo-pythia8/B2GAnaFW_9_4_X_V0_RunIIFall17MiniAODv2-PU2017_12Apr2018_94X_mc2017_realistic_v14-v2/190826_214142/0000/B2GTTreeNtupleExtra_14.root
+root://cmseos.fnal.gov//store/user/oamram/NTuples/2017/Aug26/TT_DiLept_TuneCP5_13TeV-amcatnlo-pythia8/B2GAnaFW_9_4_X_V0_RunIIFall17MiniAODv2-PU2017_12Apr2018_94X_mc2017_realistic_v14-v2/190826_214142/0000/B2GTTreeNtupleExtra_15.root
+root://cmseos.fnal.gov//store/user/oamram/NTuples/2017/Aug26/TT_DiLept_TuneCP5_13TeV-amcatnlo-pythia8/B2GAnaFW_9_4_X_V0_RunIIFall17MiniAODv2-PU2017_12Apr2018_94X_mc2017_realistic_v14-v2/190826_214142/0000/B2GTTreeNtupleExtra_16.root
+root://cmseos.fnal.gov//store/user/oamram/NTuples/2017/Aug26/TT_DiLept_TuneCP5_13TeV-amcatnlo-pythia8/B2GAnaFW_9_4_X_V0_RunIIFall17MiniAODv2-PU2017_12Apr2018_94X_mc2017_realistic_v14-v2/190826_214142/0000/B2GTTreeNtupleExtra_17.root
+root://cmseos.fnal.gov//store/user/oamram/NTuples/2017/Aug26/TT_DiLept_TuneCP5_13TeV-amcatnlo-pythia8/B2GAnaFW_9_4_X_V0_RunIIFall17MiniAODv2-PU2017_12Apr2018_94X_mc2017_realistic_v14-v2/190826_214142/0000/B2GTTreeNtupleExtra_18.root
+root://cmseos.fnal.gov//store/user/oamram/NTuples/2017/Aug26/TT_DiLept_TuneCP5_13TeV-amcatnlo-pythia8/B2GAnaFW_9_4_X_V0_RunIIFall17MiniAODv2-PU2017_12Apr2018_94X_mc2017_realistic_v14-v2/190826_214142/0000/B2GTTreeNtupleExtra_19.root
+root://cmseos.fnal.gov//store/user/oamram/NTuples/2017/Aug26/TT_DiLept_TuneCP5_13TeV-amcatnlo-pythia8/B2GAnaFW_9_4_X_V0_RunIIFall17MiniAODv2-PU2017_12Apr2018_94X_mc2017_realistic_v14-v2/190826_214142/0000/B2GTTreeNtupleExtra_2.root
+root://cmseos.fnal.gov//store/user/oamram/NTuples/2017/Aug26/TT_DiLept_TuneCP5_13TeV-amcatnlo-pythia8/B2GAnaFW_9_4_X_V0_RunIIFall17MiniAODv2-PU2017_12Apr2018_94X_mc2017_realistic_v14-v2/190826_214142/0000/B2GTTreeNtupleExtra_20.root
+root://cmseos.fnal.gov//store/user/oamram/NTuples/2017/Aug26/TT_DiLept_TuneCP5_13TeV-amcatnlo-pythia8/B2GAnaFW_9_4_X_V0_RunIIFall17MiniAODv2-PU2017_12Apr2018_94X_mc2017_realistic_v14-v2/190826_214142/0000/B2GTTreeNtupleExtra_3.root
+root://cmseos.fnal.gov//store/user/oamram/NTuples/2017/Aug26/TT_DiLept_TuneCP5_13TeV-amcatnlo-pythia8/B2GAnaFW_9_4_X_V0_RunIIFall17MiniAODv2-PU2017_12Apr2018_94X_mc2017_realistic_v14-v2/190826_214142/0000/B2GTTreeNtupleExtra_4.root
+root://cmseos.fnal.gov//store/user/oamram/NTuples/2017/Aug26/TT_DiLept_TuneCP5_13TeV-amcatnlo-pythia8/B2GAnaFW_9_4_X_V0_RunIIFall17MiniAODv2-PU2017_12Apr2018_94X_mc2017_realistic_v14-v2/190826_214142/0000/B2GTTreeNtupleExtra_5.root
+root://cmseos.fnal.gov//store/user/oamram/NTuples/2017/Aug26/TT_DiLept_TuneCP5_13TeV-amcatnlo-pythia8/B2GAnaFW_9_4_X_V0_RunIIFall17MiniAODv2-PU2017_12Apr2018_94X_mc2017_realistic_v14-v2/190826_214142/0000/B2GTTreeNtupleExtra_6.root
+root://cmseos.fnal.gov//store/user/oamram/NTuples/2017/Aug26/TT_DiLept_TuneCP5_13TeV-amcatnlo-pythia8/B2GAnaFW_9_4_X_V0_RunIIFall17MiniAODv2-PU2017_12Apr2018_94X_mc2017_realistic_v14-v2/190826_214142/0000/B2GTTreeNtupleExtra_7.root
+root://cmseos.fnal.gov//store/user/oamram/NTuples/2017/Aug26/TT_DiLept_TuneCP5_13TeV-amcatnlo-pythia8/B2GAnaFW_9_4_X_V0_RunIIFall17MiniAODv2-PU2017_12Apr2018_94X_mc2017_realistic_v14-v2/190826_214142/0000/B2GTTreeNtupleExtra_8.root
+root://cmseos.fnal.gov//store/user/oamram/NTuples/2017/Aug26/TT_DiLept_TuneCP5_13TeV-amcatnlo-pythia8/B2GAnaFW_9_4_X_V0_RunIIFall17MiniAODv2-PU2017_12Apr2018_94X_mc2017_realistic_v14-v2/190826_214142/0000/B2GTTreeNtupleExtra_9.root

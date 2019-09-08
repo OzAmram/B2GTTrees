@@ -120,6 +120,7 @@ BTag_readers b_reader;
 BTag_effs btag_effs;
 
 void setup_all_SFs(int year){
+    printf("Setting up SF's \n");
     setup_btag_SFs(&b_reader, &btag_effs, year);
     setup_el_SF(&el_SF, year);
     setup_mu_SFs(&era1_SFs, &era2_SFs,  year);

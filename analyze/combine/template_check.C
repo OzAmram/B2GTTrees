@@ -37,9 +37,9 @@ void template_check(){
 
         TH2F * h_elel_plain = new TH2F("elel_plain", "", n_xf_bins, xf_bins, n_cost_bins, cost_bins);
 
-        double m_low = 150.;
+        double m_low = 200.;
        
-        double m_high = 200.;
+        double m_high = 250.;
         Double_t alpha_denom = alphas_denom[1];
 
         bool ss = false;
@@ -105,7 +105,7 @@ void template_check(){
         leg->AddEntry(h1_mumu_back, "Straight Hist", "f");
         leg->Draw();
 
-        c_mumu->Print("mumu_template_check.png");
+        c_mumu->Print("mumu17_template_check.png");
 
 
         h_elel_alpha->Scale(norm * alpha_denom);
@@ -139,7 +139,7 @@ void template_check(){
 
         leg->Draw();
 
-        c_elel->Print("elel_template_check.png");
+        c_elel->Print("elel17_template_check.png");
 
 
         /*

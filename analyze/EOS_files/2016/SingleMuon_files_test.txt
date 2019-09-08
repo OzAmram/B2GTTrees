@@ -1,0 +1,7 @@
+
+root://cmseos.fnal.gov//store/user/oamram/NTuples/May31/SingleMuon/B2GAnaFW_9_4_X_V0_Run2016B-17Jul2018_ver2-v1/190606_213210/0000/B2GTTreeNtupleExtra_1-1.root
+root://cmseos.fnal.gov//store/user/oamram/NTuples/May31/SingleMuon/B2GAnaFW_9_4_X_V0_Run2016B-17Jul2018_ver2-v1/190606_213210/0000/B2GTTreeNtupleExtra_1-10.root
+root://cmseos.fnal.gov//store/user/oamram/NTuples/May31/SingleMuon/B2GAnaFW_9_4_X_V0_Run2016C-17Jul2018-v1/190618_153705/0000/B2GTTreeNtupleExtra_119.root
+root://cmseos.fnal.gov//store/user/oamram/NTuples/May31/SingleMuon/B2GAnaFW_9_4_X_V0_Run2016C-17Jul2018-v1/190618_153705/0000/B2GTTreeNtupleExtra_12.root
+root://cmseos.fnal.gov//store/user/oamram/NTuples/May31/SingleMuon/B2GAnaFW_9_4_X_V0_Run2016H-17Jul2018-v1/190618_153906/0003/B2GTTreeNtupleExtra_3479.root
+root://cmseos.fnal.gov//store/user/oamram/NTuples/May31/SingleMuon/B2GAnaFW_9_4_X_V0_Run2016H-17Jul2018-v1/190618_153906/0003/B2GTTreeNtupleExtra_3480.root

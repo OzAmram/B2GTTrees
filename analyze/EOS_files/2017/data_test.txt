@@ -1,0 +1,1 @@
+/uscms_data/d3/oamram/cmssw_ntuple_makers/2017/src/Analysis/B2GTTrees/test/data_test.root

@@ -417,8 +417,8 @@ void NTupleReader::setupRC(){
         sprintf(path, "%s/src/Analysis/B2GTTrees/Utils/roccor_Run2_v3/RoccoR2017.txt", getenv("CMSSW_BASE"));
     }
     else if(year == 2018){
-        //sprintf(path, "%s/src/Analysis/B2GTTrees/Utils/roccor_Run2_v3/RoccoR2018.txt", getenv("CMSSW_BASE"));
-        sprintf(path, "%s/src/Analysis/B2GTTrees/Utils/roccor_Run2_v3/RoccoR2017.txt", getenv("CMSSW_BASE"));
+        sprintf(path, "%s/src/Analysis/B2GTTrees/Utils/roccor_Run2_v3/RoccoR2018.txt", getenv("CMSSW_BASE"));
+        //sprintf(path, "%s/src/Analysis/B2GTTrees/Utils/roccor_Run2_v3/RoccoR2017.txt", getenv("CMSSW_BASE"));
     }
 
    
@@ -753,60 +753,56 @@ void NTupleReader::fillEventRC(){
 
     }
     else if(!is_data && RC_from_gen){
-        double rand1 = rand->Rndm(); 
-        double rand2 = rand->Rndm(); 
 
-        mu_p_SF = rc.kScaleFromGenMC(1, mu_p.Pt(), mu_p.Eta(), mu_p.Phi(), mu_p_n_TL, gen_mu_p_vec.Pt(), rand1, 0, 0);
-        mu_m_SF = rc.kScaleFromGenMC(-1, mu_m.Pt(), mu_m.Eta(), mu_m.Phi(), mu_m_n_TL, gen_mu_m_vec.Pt(), rand2, 0, 0);
+        mu_p_SF = rc.kSpreadMC(1, mu_p.Pt(), mu_p.Eta(), mu_p.Phi(),  gen_mu_p_vec.Pt(),  0, 0);
+        mu_m_SF = rc.kSpreadMC(-1, mu_m.Pt(), mu_m.Eta(), mu_m.Phi(),  gen_mu_m_vec.Pt(),  0, 0);
 
-        mu_p_SF_alt1 = rc.kScaleFromGenMC(1, mu_p.Pt(), mu_p.Eta(), mu_p.Phi(), mu_p_n_TL, gen_mu_p_vec.Pt(), rand1, 2, 0) - mu_p_SF;
-        mu_m_SF_alt1 = rc.kScaleFromGenMC(-1, mu_m.Pt(), mu_m.Eta(), mu_m.Phi(), mu_m_n_TL, gen_mu_m_vec.Pt(), rand2, 2, 0) - mu_m_SF;
+        mu_p_SF_alt1 = rc.kSpreadMC(1, mu_p.Pt(), mu_p.Eta(), mu_p.Phi(),  gen_mu_p_vec.Pt(),  2, 0) - mu_p_SF;
+        mu_m_SF_alt1 = rc.kSpreadMC(-1, mu_m.Pt(), mu_m.Eta(), mu_m.Phi(),  gen_mu_m_vec.Pt(),  2, 0) - mu_m_SF;
 
-        mu_p_SF_alt2 = rc.kScaleFromGenMC(1, mu_p.Pt(), mu_p.Eta(), mu_p.Phi(), mu_p_n_TL, gen_mu_p_vec.Pt(), rand1, 3, 0) - mu_p_SF;
-        mu_m_SF_alt2 = rc.kScaleFromGenMC(-1, mu_m.Pt(), mu_m.Eta(), mu_m.Phi(), mu_m_n_TL, gen_mu_m_vec.Pt(), rand2, 3, 0) - mu_m_SF;;
+        mu_p_SF_alt2 = rc.kSpreadMC(1, mu_p.Pt(), mu_p.Eta(), mu_p.Phi(),  gen_mu_p_vec.Pt(),  3, 0) - mu_p_SF;
+        mu_m_SF_alt2 = rc.kSpreadMC(-1, mu_m.Pt(), mu_m.Eta(), mu_m.Phi(),  gen_mu_m_vec.Pt(),  3, 0) - mu_m_SF;;
 
-        mu_p_SF_alt3 = rc.kScaleFromGenMC(1, mu_p.Pt(), mu_p.Eta(), mu_p.Phi(), mu_p_n_TL, gen_mu_p_vec.Pt(), rand1, 4, 0) - mu_p_SF;
-        mu_m_SF_alt3 = rc.kScaleFromGenMC(-1, mu_m.Pt(), mu_m.Eta(), mu_m.Phi(), mu_m_n_TL, gen_mu_m_vec.Pt(), rand2, 4, 0) - mu_m_SF;
+        mu_p_SF_alt3 = rc.kSpreadMC(1, mu_p.Pt(), mu_p.Eta(), mu_p.Phi(),  gen_mu_p_vec.Pt(),  4, 0) - mu_p_SF;
+        mu_m_SF_alt3 = rc.kSpreadMC(-1, mu_m.Pt(), mu_m.Eta(), mu_m.Phi(),  gen_mu_m_vec.Pt(),  4, 0) - mu_m_SF;
 
-        mu_p_SF_alt4 = rc.kScaleFromGenMC(1, mu_p.Pt(), mu_p.Eta(), mu_p.Phi(), mu_p_n_TL, gen_mu_p_vec.Pt(), rand1, 5, 0) - mu_p_SF;
-        mu_m_SF_alt4 = rc.kScaleFromGenMC(-1, mu_m.Pt(), mu_m.Eta(), mu_m.Phi(), mu_m_n_TL, gen_mu_m_vec.Pt(), rand2, 5, 0) - mu_m_SF;
+        mu_p_SF_alt4 = rc.kSpreadMC(1, mu_p.Pt(), mu_p.Eta(), mu_p.Phi(),  gen_mu_p_vec.Pt(),  5, 0) - mu_p_SF;
+        mu_m_SF_alt4 = rc.kSpreadMC(-1, mu_m.Pt(), mu_m.Eta(), mu_m.Phi(),  gen_mu_m_vec.Pt(),  5, 0) - mu_m_SF;
 
 
         for(int k=0; k<100; k++){
-            //printf("P %.1f %.1f %.1f %i %.1f %.3f %i %i \n" ,mu_p.Pt(), mu_p.Eta(), mu_p.Phi(), mu_p_n_TL, gen_mu_p_vec.Pt(), rand1, 1, k);
-            mu_p_SF_vars[k] = rc.kScaleFromGenMC(1, mu_p.Pt(), mu_p.Eta(), mu_p.Phi(), mu_p_n_TL, gen_mu_p_vec.Pt(), rand1, 1, k);
-            //printf("M %.1f %.1f %.1f %i %.1f %.3f %i %i \n" ,mu_m.Pt(), mu_m.Eta(), mu_m.Phi(), mu_m_n_TL, gen_mu_m_vec.Pt(), rand2, 1, k);
-            mu_m_SF_vars[k] = rc.kScaleFromGenMC(-1, mu_m.Pt(), mu_m.Eta(), mu_m.Phi(), mu_m_n_TL, gen_mu_m_vec.Pt(), rand2, 1, k);
+            //printf("P %.1f %.1f %.1f %i %.1f %.3f %i %i \n" ,mu_p.Pt(), mu_p.Eta(), mu_p.Phi(),  gen_mu_p_vec.Pt(), rand1, 1, k);
+            mu_p_SF_vars[k] = rc.kSpreadMC(1, mu_p.Pt(), mu_p.Eta(), mu_p.Phi(),  gen_mu_p_vec.Pt(), 1, k);
+            //printf("M %.1f %.1f %.1f %i %.1f %.3f %i %i \n" ,mu_m.Pt(), mu_m.Eta(), mu_m.Phi(),  gen_mu_m_vec.Pt(), rand2, 1, k);
+            mu_m_SF_vars[k] = rc.kSpreadMC(-1, mu_m.Pt(), mu_m.Eta(), mu_m.Phi(),  gen_mu_m_vec.Pt(), 1, k);
         }
         //printf("7 \n");
     }
 
     else{
         double rand1a = rand->Rndm(); 
-        double rand1b = rand->Rndm(); 
         double rand2a = rand->Rndm(); 
-        double rand2b = rand->Rndm(); 
 
 
-        mu_p_SF = rc.kScaleAndSmearMC(1, mu_p.Pt(), mu_p.Eta(), mu_p.Phi(), mu_p_n_TL, rand1a, rand1b, 0, 0);
-        mu_m_SF = rc.kScaleAndSmearMC(-1, mu_m.Pt(), mu_m.Eta(), mu_m.Phi(), mu_m_n_TL, rand2a, rand2b, 0, 0);
+        mu_p_SF = rc.kSmearMC(1, mu_p.Pt(), mu_p.Eta(), mu_p.Phi(), mu_p_n_TL, rand1a,  0, 0);
+        mu_m_SF = rc.kSmearMC(-1, mu_m.Pt(), mu_m.Eta(), mu_m.Phi(), mu_m_n_TL, rand2a,  0, 0);
 
-        mu_p_SF_alt1 = rc.kScaleAndSmearMC(1, mu_p.Pt(), mu_p.Eta(), mu_p.Phi(), mu_p_n_TL, rand1a, rand1b, 2, 0) - mu_p_SF;
-        mu_m_SF_alt1 = rc.kScaleAndSmearMC(-1, mu_m.Pt(), mu_m.Eta(), mu_m.Phi(), mu_m_n_TL, rand2a, rand2b, 2, 0)- mu_m_SF;
+        mu_p_SF_alt1 = rc.kSmearMC(1, mu_p.Pt(), mu_p.Eta(), mu_p.Phi(), mu_p_n_TL, rand1a,  2, 0) - mu_p_SF;
+        mu_m_SF_alt1 = rc.kSmearMC(-1, mu_m.Pt(), mu_m.Eta(), mu_m.Phi(), mu_m_n_TL, rand2a,  2, 0)- mu_m_SF;
 
-        mu_p_SF_alt2 = rc.kScaleAndSmearMC(1, mu_p.Pt(), mu_p.Eta(), mu_p.Phi(), mu_p_n_TL, rand1a, rand1b, 3, 0) - mu_p_SF;
-        mu_m_SF_alt2 = rc.kScaleAndSmearMC(-1, mu_m.Pt(), mu_m.Eta(), mu_m.Phi(), mu_m_n_TL, rand2a, rand2b, 3, 0)- mu_m_SF;
+        mu_p_SF_alt2 = rc.kSmearMC(1, mu_p.Pt(), mu_p.Eta(), mu_p.Phi(), mu_p_n_TL, rand1a,  3, 0) - mu_p_SF;
+        mu_m_SF_alt2 = rc.kSmearMC(-1, mu_m.Pt(), mu_m.Eta(), mu_m.Phi(), mu_m_n_TL, rand2a,  3, 0)- mu_m_SF;
 
-        mu_p_SF_alt3 = rc.kScaleAndSmearMC(1, mu_p.Pt(), mu_p.Eta(), mu_p.Phi(), mu_p_n_TL, rand1a, rand1b, 4, 0) - mu_p_SF;
-        mu_m_SF_alt3 = rc.kScaleAndSmearMC(-1, mu_m.Pt(), mu_m.Eta(), mu_m.Phi(), mu_m_n_TL, rand2a, rand2b, 4, 0)- mu_m_SF;
+        mu_p_SF_alt3 = rc.kSmearMC(1, mu_p.Pt(), mu_p.Eta(), mu_p.Phi(), mu_p_n_TL, rand1a,  4, 0) - mu_p_SF;
+        mu_m_SF_alt3 = rc.kSmearMC(-1, mu_m.Pt(), mu_m.Eta(), mu_m.Phi(), mu_m_n_TL, rand2a,  4, 0)- mu_m_SF;
 
-        mu_p_SF_alt4 = rc.kScaleAndSmearMC(1, mu_p.Pt(), mu_p.Eta(), mu_p.Phi(), mu_p_n_TL, rand1a, rand1b, 5, 0) - mu_p_SF;
-        mu_m_SF_alt4 = rc.kScaleAndSmearMC(-1, mu_m.Pt(), mu_m.Eta(), mu_m.Phi(), mu_m_n_TL, rand2a, rand2b, 5, 0)- mu_m_SF;
+        mu_p_SF_alt4 = rc.kSmearMC(1, mu_p.Pt(), mu_p.Eta(), mu_p.Phi(), mu_p_n_TL, rand1a,  5, 0) - mu_p_SF;
+        mu_m_SF_alt4 = rc.kSmearMC(-1, mu_m.Pt(), mu_m.Eta(), mu_m.Phi(), mu_m_n_TL, rand2a,  5, 0)- mu_m_SF;
         
 
         for(int k=0; k<100; k++){
-            mu_p_SF_vars[k] = rc.kScaleAndSmearMC(1, mu_p.Pt(), mu_p.Eta(), mu_p.Phi(), mu_p_n_TL, rand1a, rand1b, 1, k);
-            mu_m_SF_vars[k] = rc.kScaleAndSmearMC(-1, mu_m.Pt(), mu_m.Eta(), mu_m.Phi(), mu_m_n_TL, rand2a, rand2b, 1, k);
+            mu_p_SF_vars[k] = rc.kSmearMC(1, mu_p.Pt(), mu_p.Eta(), mu_p.Phi(), mu_p_n_TL, rand1a,  1, k);
+            mu_m_SF_vars[k] = rc.kSmearMC(-1, mu_m.Pt(), mu_m.Eta(), mu_m.Phi(), mu_m_n_TL, rand2a,  1, k);
         }
     }
 

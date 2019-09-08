@@ -1,0 +1,12 @@
+
+##GammaGammaToEE
+!idx = 17 xsec = 3.75
+#################
+root://cmseos.fnal.gov//store/user/oamram/NTuples/May29/PhotonIndBkgGGToEE_M-60To500_TuneCUETP8M1_13TeV-pythia8/B2GAnaFW_9_4_X_V0_RunIISpring16MiniAODv2-PUSpring16RAWAODSIM_80X_mcRun2_asymptotic_2016_miniAODv2_v0-v1/190529_220702/0000/B2GTTreeNtupleExtra_1.root
+
+
+##GammaGammaToEE
+!idx = 18 xsec = 0.0135
+#################
+root://cmseos.fnal.gov//store/user/oamram/NTuples/May29/PhotonIndBkgGGToEE_M-500_TuneCUETP8M1_13TeV-pythia8/B2GAnaFW_9_4_X_V0_RunIISpring16MiniAODv2-PUSpring16RAWAODSIM_80X_mcRun2_asymptotic_2016_miniAODv2_v0-v1/190529_220826/0000/B2GTTreeNtupleExtra_1.root
+

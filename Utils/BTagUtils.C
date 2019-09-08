@@ -139,19 +139,22 @@ void setup_btag_SFs(BTag_readers *btag_r, BTag_effs *b_effs, int year){
     TH1::AddDirectory(kFALSE);
     char file[80];
     // USE OLD FOR NOW, CHANGE WHEN REMAKE NTUPLES
+    BTagCalibration calib;
     //if(year == 2016) sprintf(file, "%s", "SFs/2016/DeepCSV_2016LegacySF_V1.csv");
-    if(year == 2016) sprintf(file, "%s", "SFs/2016/cMVAv2_Moriond17_B_H.csv");
+    if(year == 2016) calib = BTagCalibration("DeepCSV", "SFs/2016/DeepCSV_2016LegacySF_V1.csv");
     if(year == 2017) sprintf(file, "%s", "SFs/2017/DeepCSV_94XSF_V4_B_F.csv");
     if(year == 2018) sprintf(file, "%s", "SFs/2018/DeepCSV_102XSF_V1.csv");
-    BTagCalibration calib("csvv1", file);
+    printf("1 \n");
 
 
+    printf("1 \n");
     btag_r->b_reader = BTagCalibrationReader(BTagEntry::OP_MEDIUM, "central");
     btag_r->b_reader.load(calib, BTagEntry::FLAV_B, "ttbar");
     btag_r->c_reader = BTagCalibrationReader(BTagEntry::OP_MEDIUM, "central");
     btag_r->c_reader.load(calib, BTagEntry::FLAV_C, "ttbar");
     btag_r->udsg_reader = BTagCalibrationReader(BTagEntry::OP_MEDIUM, "central");
     btag_r->udsg_reader.load(calib, BTagEntry::FLAV_UDSG, "incl");
+    printf("2 \n");
 
     btag_r->b_reader_up = BTagCalibrationReader(BTagEntry::OP_MEDIUM, "up");
     btag_r->b_reader_up.load(calib, BTagEntry::FLAV_B, "ttbar");
@@ -159,6 +162,7 @@ void setup_btag_SFs(BTag_readers *btag_r, BTag_effs *b_effs, int year){
     btag_r->c_reader_up.load(calib, BTagEntry::FLAV_C, "ttbar");
     btag_r->udsg_reader_up = BTagCalibrationReader(BTagEntry::OP_MEDIUM, "up");
     btag_r->udsg_reader_up.load(calib, BTagEntry::FLAV_UDSG, "incl");
+    printf("3 \n");
 
     btag_r->b_reader_down = BTagCalibrationReader(BTagEntry::OP_MEDIUM, "down");
     btag_r->b_reader_down.load(calib, BTagEntry::FLAV_B, "ttbar");
@@ -166,6 +170,7 @@ void setup_btag_SFs(BTag_readers *btag_r, BTag_effs *b_effs, int year){
     btag_r->c_reader_down.load(calib, BTagEntry::FLAV_C, "ttbar");
     btag_r->udsg_reader_down = BTagCalibrationReader(BTagEntry::OP_MEDIUM, "down");
     btag_r->udsg_reader_down.load(calib, BTagEntry::FLAV_UDSG, "incl");
+    printf("4 \n");
 
     TFile *f0 = TFile::Open("SFs/2016/BTag_efficiency_may24.root");
     TDirectory *subdir0 = gDirectory;

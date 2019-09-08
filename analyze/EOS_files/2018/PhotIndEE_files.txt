@@ -1,0 +1,10 @@
+
+##GammaGammaToEE
+!idx = 17 xsec = 0.18
+#################
+root://cmseos.fnal.gov//store/user/oamram/NTuples/2018/Sep3/PhotIndEE_M150/B2GAnaFW_10_2_X_RunIIAutumn18MiniAOD-102X_upgrade2018_realistic_v15-v1/190903_204344/0000/B2GTTreeNtupleExtra_1.root
+
+##GammaGammaToEE
+!idx = 18 xsec = 0.0135
+#################
+root://cmseos.fnal.gov//store/user/oamram/NTuples/2018/Sep3/PhotIndEE_M500/B2GAnaFW_10_2_X_RunIIAutumn18MiniAOD-102X_upgrade2018_realistic_v15-v1/190903_205503/0000/B2GTTreeNtupleExtra_1.root
