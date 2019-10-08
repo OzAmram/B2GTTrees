@@ -17,7 +17,6 @@ useMINIAOD = True # True: Use on top of B2GAnaFW to produce TTrees, False: Use a
 
 if useMINIAOD:
     from Analysis.B2GTTrees.b2gedmntuples_cfg import *
-    process.skimmedPatElectrons.cut = "pt >= 10 && abs(eta) < 2.5"
     #process.myTask = cms.Task()
     #process.myTask.add(*[getattr(process,prod) for prod in process.producers_()])
     #process.myTask.add(*[getattr(process,filt) for filt in process.filters_()])
@@ -367,12 +366,12 @@ process.extraVar = cms.EDProducer("B2GEdmExtraVarProducer",
         #"HLT_IsoMu20",
         #"HLT_IsoMu22",
         "HLT_IsoMu24",
-        #"HLT_IsoMu27",
+        "HLT_IsoMu27",
         #"HLT_IsoTkMu18",
         #"HLT_IsoTkMu20",
         #"HLT_IsoTkMu22",
         "HLT_IsoTkMu24",
-        #"HLT_IsoTkMu27",
+        "HLT_IsoTkMu27",
         # Single Ele
         #"HLT_Ele17_CaloIdL_GsfTrkIdVL",
         #"HLT_Ele22_eta2p1_WPLoose_Gsf",
@@ -388,7 +387,7 @@ process.extraVar = cms.EDProducer("B2GEdmExtraVarProducer",
         #"HLT_Ele30_WPTight_Gsf",
         #"HLT_Ele30_eta2p1_WPLoose_Gsf",
         #"HLT_Ele30_eta2p1_WPTight_Gsf",
-        #"HLT_Ele32_WPTight_Gsf",
+        "HLT_Ele32_WPTight_Gsf",
         #"HLT_Ele32_eta2p1_WPLoose_Gsf",
         #"HLT_Ele32_eta2p1_WPTight_Gsf",
         #"HLT_Ele35_WPLoose_Gsf",
@@ -457,18 +456,6 @@ process.extraVar = cms.EDProducer("B2GEdmExtraVarProducer",
         #"mu_IsPartOfNearAK8Jet",
         #"mu_IsPartOfNearSubjet",
         #"el_mvaIDvalueHZZ",
-        "el_IDVeto_NoIso",
-        "el_IDLoose_NoIso",
-        "el_IDMedium_NoIso",
-        "el_IDTight_NoIso",
-        "el_IsoVeto",
-        "el_IsoLoose",
-        "el_IsoMedium",
-        "el_IsoTight",
-        "el_IDVeto",
-        "el_IDLoose",
-        "el_IDMedium",
-        "el_IDTight",
     ),
     vectorF = cms.untracked.vstring(
         "scale_Weights",
@@ -597,7 +584,7 @@ process.EventCounter = cms.EDAnalyzer("EventCounter",
 )
 from RecoEgamma.EgammaTools.EgammaPostRecoTools import setupEgammaPostRecoSeq
 setupEgammaPostRecoSeq(process,
-                       runVID=False,
+                       runEnergyCorrections=False,
                        era='2016-Legacy')  #era is new to select between 2016 / 2017,  it defaults to 2017
 #a sequence egammaPostRecoSeq has now been created and should be added to your path, eg process.p=cms.Path(process.egammaPostRecoSeq)
 
