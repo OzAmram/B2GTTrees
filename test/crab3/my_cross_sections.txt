@@ -1,50 +1,45 @@
-#Note that these xsecs are for 2016 tunes, should update for 2017
 
-DYJetsToLL_M-10to50_TuneCP5_13TeV-amcatnloFXFX-pythia8  18610.0      1.00
+DYJetsToLL_M-10to50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8  18610.0      1.00
 
-DYJetsToLL_M-50_TuneCP5_13TeV-amcatnloFXFX-pythia8  5941.0      1.00
+DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8  5941.0      1.00
 
-DYJetsToLL_M-100to200_TuneCP5_13TeV-amcatnloFXFX-pythia8  226.6 1.00
+DYJetsToLL_M-100to200_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8  226.6 1.00
 
-DYJetsToLL_M-100to200_TuneCP5_13TeV-amcatnloFXFX-pythia8  226.6 1.00
+DYJetsToLL_M-100to200_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8  226.6 1.00
 
-DYJetsToLL_M-200to400_TuneCP5_13TeV-amcatnloFXFX-pythia8  7.77 1.00
-DYJetsToLL_M-200to400_TuneCP5_13TeV-amcatnloFXFX-pythia8  7.77 1.00
+DYJetsToLL_M-200to400_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8  7.77 1.00
+DYJetsToLL_M-200to400_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8  7.77 1.00
 
-DYJetsToLL_M-400to500_TuneCP5_13TeV-amcatnloFXFX-pythia8 0.406  1.00
+DYJetsToLL_M-400to500_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8 0.406  1.00
 
-DYJetsToLL_M-500to700_TuneCP5_13TeV-amcatnloFXFX-pythia8 0.2334 1.00
+DYJetsToLL_M-500to700_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8 0.2334 1.00
 
-DYJetsToLL_M-700to800_TuneCP5_13TeV-amcatnloFXFX-pythia8 0.0361 1.00
+DYJetsToLL_M-700to800_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8 0.0361 1.00
 
-DYJetsToLL_M-800to1000_TuneCP5_13TeV-amcatnloFXFX-pythia8 0.0304 1.00
+DYJetsToLL_M-800to1000_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8 0.0304 1.00
 
-DYJetsToLL_M-1000to1500_TuneCP5_13TeV-amcatnloFXFX-pythia8 0.01636 1.00
+DYJetsToLL_M-1000to1500_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8 0.01636 1.00
 
-DYJetsToLL_M-1500to2000_TuneCP5_13TeV-amcatnloFXFX-pythia8 0.00218 1.00
+DYJetsToLL_M-1500to2000_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8 0.00218 1.00
 
-DYJetsToLL_M-2000to3000_TuneCP5_13TeV-amcatnloFXFX-pythia8 0.0005156 1.00
-
-DYJetsToLL_M-3000toInf_TuneCP5_13TeV-amcatnloFXFX-pythia8 0.00005 1.00
+DYJetsToLL_M-2000to3000_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8 0.0005156 1.00
 
 
 TT_TuneCUETP8M2T4_13TeV-powheg-pythia8 730.6 1.00
 
-TT_DiLept_TuneCP5_13TeV-amcatnlo-pythia8  72.48 1.00
+ST_tW_top_5f_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M2T4  38.09 1.00
 
-ST_tW_antitop_5f_inclusiveDecays_TuneCP5_13TeV-powheg-pythia8 38.09 1.00
+ST_tW_antitop_5f_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M2T4 38.09 1.00
 
-ST_tW_top_5f_inclusiveDecays_TuneCP5_13TeV-powheg-pythia8 38.09 1.00
+WW_TuneCUETP8M1_13TeV-pythia8  64.3 1.00
 
-WW_TuneCP5_13TeV-pythia8  64.3 1.00
+WZ_TuneCUETP8M1_13TeV-pythia8 23.43 1.00
 
-WZ_TuneCP5_13TeV-pythia8 23.43 1.00
-
-ZZ_TuneCP5_13TeV-pythia8 10.16 1.00
+ZZ_TuneCUETP8M1_13TeV-pythia8 10.16 1.00
 
 
-PhotonIndBkgGGToMuMu_M-60To500_TuneCP5_13TeV-pythia8    4.0   1.00
-PhotonIndBkgGGToMuMu_M-500_TuneCP5_13TeV-pythia8        0.01  1.00
+PhotonIndBkgGGToMuMu_M-60To500_TuneCUETP8M1_13TeV-pythia8    4.0   1.00
+PhotonIndBkgGGToMuMu_M-500_TuneCUETP8M1_13TeV-pythia8        0.01  1.00
                                                            
-PhotonIndBkgGGToEE_M-60To500_TuneCP5_13TeV-pythia8     4.0    1.00
-PhotonIndBkgGGToEE_M-500_TuneCP5_13TeV-pythia8         0.01   1.00
+PhotonIndBkgGGToEE_M-60To500_TuneCUETP8M1_13TeV-pythia8     4.0    1.00
+PhotonIndBkgGGToEE_M-500_TuneCUETP8M1_13TeV-pythia8         0.01   1.00

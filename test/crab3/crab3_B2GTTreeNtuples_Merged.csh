@@ -109,7 +109,8 @@ if ( `echo $cmd | grep "create" | wc -l` ) then
     set XSEC_FILE=$5
     set SE_SITE=$6
     set SE_USERDIR=$7
-    set CERT_DIR="https://cms-service-dqm.web.cern.ch/cms-service-dqm/CAF/certification/Collisions17/13TeV/ReReco"
+    set CERT_DIR="https://cms-service-dqm.web.cern.ch/cms-service-dqm/CAF/certification/Collisions16/13TeV/ReReco/Final"
+    #set LATEST_GOLDEN_JSON=`ls -lrt /afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions16/13TeV/ReReco/Final | awk '{ print $NF }' | grep -vE "MuonPhys|LowPU" | grep "\.txt" | tail -1`
     #set JSON="$LATEST_GOLDEN_JSON"
     mkdir $TASKDIR
     echo "SE_SITE "$SE_SITE >! $TASKDIR/config.txt
@@ -134,26 +135,27 @@ if ( `echo $cmd | grep "create" | wc -l` ) then
 
 
 	if ( `echo $DATASET | grep "SingleMuon" | wc -l`) then
-        set JSON="Cert_294927-306462_13TeV_EOY2017ReReco_Collisions17_JSON_MuonPhys.txt"
+        set JSON="Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON_MuonPhys.txt"
     else
-        set JSON="Cert_294927-306462_13TeV_EOY2017ReReco_Collisions17_JSON.txt"
+        set JSON="Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt"
     endif
 	#echo $primary
-	# 2017 Data
-	if ( `echo $PROCESSED_DS_NAME | grep "Run2017" | wc -l`) then
+	# 2016 Data
+	if ( `echo $PROCESSED_DS_NAME | grep "Run2016" | wc -l`) then
 	    set DATAPROC="Data_94X"
-	    set JEC_ERA="Fall17_17Nov2017BCDEF_V6_DATA"
+	    set JEC_ERA="Summer16_07Aug2017All_V11_DATA"
 	    set RUNS="1-999999"
-	else if ( `echo $PROCESSED_DS_NAME | grep "RunIIFall17" | wc -l` ) then
+	# Spring16 FastSim MC - Only Signal is needed from here
+	else if ( `echo $PROCESSED_DS_NAME | grep "RunIISummer16MiniAODv2" | wc -l` ) then
 	    # FullSim
 	    set DATAPROC="MC"
-	    set JEC_ERA="Fall17_17Nov2017_V6_MC.db"
+	    set JEC_ERA="Summer16_07Aug2017_V11_MC"
 	else
-        echo "WARNING - Dataset not defined, Assuming it is MC from 2017: "$DATASET
+        echo "ERROR - Dataset not defined (probably because not using latest): "$DATASET
         #rm -r $TASKDIR Usage.txt
         #exit
 	    set DATAPROC="MC"
-	    set JEC_ERA="Fall17_17Nov2017_V6_MC.db"
+	    set JEC_ERA="Summer16_07Aug2017_V11_MC"
 	endif
 	# Create xsec txt file for each dataset
 	if ( `echo $primary | grep SMS | wc -l` || $isData ) then
