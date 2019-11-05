@@ -43,3 +43,6 @@ PhotonIndBkgGGToMuMu_M-500_TuneCUETP8M1_13TeV-pythia8        0.01  1.00
                                                            
 PhotonIndBkgGGToEE_M-60To500_TuneCUETP8M1_13TeV-pythia8     4.0    1.00
 PhotonIndBkgGGToEE_M-500_TuneCUETP8M1_13TeV-pythia8         0.01   1.00
+
+PhotInd_M150   0.2    1.00
+PhotInd_M500  0.02    1.00

@@ -119,6 +119,7 @@ if ( `echo $cmd | grep "create" | wc -l` ) then
 	echo "$TXT_FILE doesn't exist"; rm Usage.txt; exit
     endif
     grep -v '^#' $TXT_FILE | grep "/MINIAOD" >! $TASKDIR/input_datasets.txt
+    grep -v '^#' $TXT_FILE | grep "/USER" >> $TASKDIR/input_datasets.txt
     cp $XSEC_FILE $TASKDIR/xsec_datasets.txt
     mkdir -p $TASKDIR/cross_sections
     sed "s;TASKDIR;$TASKDIR;;s;SE_SITE;$SE_SITE;;s;SE_USERDIR;$SE_USERDIR;" crab_template_ttreentuple_merged_Data.py > $TASKDIR/crab_template_ttreentuple_merged_Data.py
@@ -146,12 +147,12 @@ if ( `echo $cmd | grep "create" | wc -l` ) then
 	    set JEC_ERA="Summer16_07Aug2017All_V11_DATA"
 	    set RUNS="1-999999"
 	# Spring16 FastSim MC - Only Signal is needed from here
-	else if ( `echo $PROCESSED_DS_NAME | grep "RunIISummer16MiniAODv2" | wc -l` ) then
+	else if ( `echo $PROCESSED_DS_NAME | grep "RunIISummer16MiniAODv3" | wc -l` ) then
 	    # FullSim
 	    set DATAPROC="MC"
 	    set JEC_ERA="Summer16_07Aug2017_V11_MC"
 	else
-        echo "ERROR - Dataset not defined (probably because not using latest): "$DATASET
+        echo "WARNING - Dataset not defined (probably because not using latest): "$DATASET
         #rm -r $TASKDIR Usage.txt
         #exit
 	    set DATAPROC="MC"
@@ -265,7 +266,7 @@ else if ( `echo $cmd | grep "status" | wc -l` ) then
 	    grep "%.*\(.*\)" $status_txt
             if ( $nfail != 0 ) then
 		set extra_arg=""
-		if ( `grep "jobs failed with exit code 50660" $status_txt | wc -l` != 0 ) set extra_arg="$extra_arg --maxmemory=3000"
+		if ( `grep "jobs failed with exit code 50660" $status_txt | wc -l` != 0 ) set extra_arg="$extra_arg --maxmemory=3200"
 		if ( `grep "jobs failed with exit code 50664" $status_txt | wc -l` != 0 ) set extra_arg="$extra_arg --maxjobruntime=1900"
 		echo "  -> Resubmitting failed jobs ...\n"
 		eval_or_echo "crab resubmit -d $dir $extra_arg"

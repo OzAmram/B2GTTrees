@@ -545,6 +545,7 @@ process.extraVar = cms.EDProducer("B2GEdmExtraVarProducer",
 )
 
 ### Filter - Selects events with at least one muon with pt>25, |eta|<3.0
+#only filter on data
 process.MuonCountFilter = cms.EDFilter("PatMuonCountFilter", 
     filter = cms.bool(True),
     src = cms.InputTag("slimmedMuons"),
@@ -552,6 +553,7 @@ process.MuonCountFilter = cms.EDFilter("PatMuonCountFilter",
     minNumber = cms.uint32(1)
 )
 ### Filter - Selects events with at least one electron with pt>25, |eta|<3.0
+#only filter on data
 process.ElectronCountFilter = cms.EDFilter("PatElectronCountFilter", 
     filter = cms.bool(True),
     src = cms.InputTag("slimmedElectrons"),
@@ -584,26 +586,40 @@ process.EventCounter = cms.EDAnalyzer("EventCounter",
 )
 
 # Paths
-process.muonAnalysisPath = cms.Path(
-    process.egammaPostRecoSeq *
-    process.extraVar *
-    process.EventCounter *
-    process.MuonCountFilter *
-    process.B2GTTreeMaker
-    )
+if(isData):
+    process.muonAnalysisPath = cms.Path(
+        process.egammaPostRecoSeq *
+        process.extraVar *
+        process.EventCounter *
+        process.MuonCountFilter *
+        process.B2GTTreeMaker
+        )
 
 
-process.electronAnalysisPath = cms.Path(
-    process.egammaPostRecoSeq *
-    process.extraVar *
-    process.EventCounter *
-    process.ElectronCountFilter *
-    process.B2GTTreeMaker
-    )
+    process.electronAnalysisPath = cms.Path(
+        process.egammaPostRecoSeq *
+        process.extraVar *
+        process.EventCounter *
+        process.ElectronCountFilter *
+        process.B2GTTreeMaker
+        )
 
 
-process.myTask = cms.Task()
-process.myTask.add(*[getattr(process,prod) for prod in process.producers_()])
-process.myTask.add(*[getattr(process,filt) for filt in process.filters_()])
-process.muonAnalysisPath.associate(process.myTask)
-process.electronAnalysisPath.associate(process.myTask)
+    process.myTask = cms.Task()
+    process.myTask.add(*[getattr(process,prod) for prod in process.producers_()])
+    process.myTask.add(*[getattr(process,filt) for filt in process.filters_()])
+    process.muonAnalysisPath.associate(process.myTask)
+    process.electronAnalysisPath.associate(process.myTask)
+else:
+    process.muonAnalysisPath = cms.Path(
+        process.egammaPostRecoSeq *
+        process.extraVar *
+        process.EventCounter *
+        process.B2GTTreeMaker
+        )
+
+
+    process.myTask = cms.Task()
+    process.myTask.add(*[getattr(process,prod) for prod in process.producers_()])
+    process.myTask.add(*[getattr(process,filt) for filt in process.filters_()])
+    process.muonAnalysisPath.associate(process.myTask)
