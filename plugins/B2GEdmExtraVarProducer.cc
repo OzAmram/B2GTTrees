@@ -679,15 +679,13 @@ void B2GEdmExtraVarProducer::calculate_variables(edm::Event const& iEvent, edm::
         }
 
 
-
-
-    } // End !isData
-
     // ---------------------
     // -        MET        -
     // ---------------------
 
-    // Uncertainties
+    //
+    // Do MET Uncertainties for MC
+
     edm::Handle<pat::METCollection> mets;
     iEvent.getByLabel(edm::InputTag("skimmedPatMET"), mets);
     const pat::MET &met = mets->front();
@@ -721,6 +719,10 @@ void B2GEdmExtraVarProducer::calculate_variables(edm::Event const& iEvent, edm::
         vector_float_["puppimetsyst_Pt"].push_back(puppimet_shiftedPt);
         vector_float_["puppimetsyst_Phi"].push_back(puppimet_shiftedPhi);
       }
+
+
+
+    } // End !isData
 
 
     // ---------------------

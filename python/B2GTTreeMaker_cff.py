@@ -541,6 +541,14 @@ B2GTTreeMaker = cms.EDAnalyzer("B2GTTreeMaker",
             prefix_out = cms.untracked.string("met_MuCleanOnly_"), # It is the "Out of the box" MET
             vectorF = metFull_var,
         ),
+
+        cms.PSet(
+            label = cms.untracked.string("metCorrFull"),
+            prefix_in = metCorrFull.prefix,
+            prefix_out = cms.untracked.string("met_Corr_"),
+            vectorF = metFull_var,
+        ),
+
         #cms.PSet(
         #    label = cms.untracked.string("metFullClean"), # This is the mu/eg cleaned MET + recalc JEC
         #    prefix_in = metFullClean.prefix,
