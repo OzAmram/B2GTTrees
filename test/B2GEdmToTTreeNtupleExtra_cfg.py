@@ -141,7 +141,7 @@ genHtFilter = False
 process.TFileService = cms.Service("TFileService", fileName = cms.string(ttreeOutputLabel))
 
 ### B2GEdmExtraVarProducer
-from Analysis.B2GAnaFW.b2gedmntuples_cff import metFull, puppimetFull, genPart, electrons, muons, photons, photonjets, jetsAK4CHS, jetsAK4Puppi, jetsAK8CHS, jetsAK8Puppi, subjetsAK8CHS, subjetsAK8Puppi, genJetsAK8, genJetsAK8SoftDrop, eventInfo # metNoHF off since 76X
+from Analysis.B2GAnaFW.b2gedmntuples_cff import metFull, metCorrFull, puppimetFull, genPart, electrons, muons, photons, photonjets, jetsAK4CHS, jetsAK4Puppi, jetsAK8CHS, jetsAK8Puppi, subjetsAK8CHS, subjetsAK8Puppi, genJetsAK8, genJetsAK8SoftDrop, eventInfo # metNoHF off since 76X
 
 # import DB content from sqlite
 
@@ -215,7 +215,7 @@ if usePuppiMet:
     met_prefix = puppimetFull.prefix
 else:
     met_label  = "metFull"
-    met_prefix = metFull.prefix
+    met_prefix = metCorrFull.prefix
 
 process.extraVar = cms.EDProducer("B2GEdmExtraVarProducer",
     isData = cms.untracked.bool(isData),
@@ -463,8 +463,10 @@ process.extraVar = cms.EDProducer("B2GEdmExtraVarProducer",
         "alphas_Weights",
         #"metsyst_MuCleanOnly_Pt",
         #"metsyst_MuCleanOnly_Phi",
-        #"metsyst_Pt",
-        #"metsyst_Phi",
+        "metsyst_Pt",
+        "metsyst_Phi",
+        "metModsyst_Pt",
+        "metModsyst_Phi",
         #"puppimetsyst_Pt",
         #"puppimetsyst_Phi",
         "gen_Pt",
@@ -584,26 +586,41 @@ process.EventCounter = cms.EDAnalyzer("EventCounter",
 )
 
 # Paths
-process.muonAnalysisPath = cms.Path(
-    process.egammaPostRecoSeq *
-    process.extraVar *
-    process.EventCounter *
-    process.MuonCountFilter *
-    process.B2GTTreeMaker
-    )
+if(isData):
+    process.muonAnalysisPath = cms.Path(
+        process.egammaPostRecoSeq *
+        process.extraVar *
+        process.EventCounter *
+        process.MuonCountFilter *
+        process.B2GTTreeMaker
+        )
 
 
-process.electronAnalysisPath = cms.Path(
-    process.egammaPostRecoSeq *
-    process.extraVar *
-    process.EventCounter *
-    process.ElectronCountFilter *
-    process.B2GTTreeMaker
-    )
+    process.electronAnalysisPath = cms.Path(
+        process.egammaPostRecoSeq *
+        process.extraVar *
+        process.EventCounter *
+        process.ElectronCountFilter *
+        process.B2GTTreeMaker
+        )
 
 
-process.myTask = cms.Task()
-process.myTask.add(*[getattr(process,prod) for prod in process.producers_()])
-process.myTask.add(*[getattr(process,filt) for filt in process.filters_()])
-process.muonAnalysisPath.associate(process.myTask)
-process.electronAnalysisPath.associate(process.myTask)
+    process.myTask = cms.Task()
+    process.myTask.add(*[getattr(process,prod) for prod in process.producers_()])
+    process.myTask.add(*[getattr(process,filt) for filt in process.filters_()])
+    process.muonAnalysisPath.associate(process.myTask)
+    process.electronAnalysisPath.associate(process.myTask)
+else:
+    process.muonAnalysisPath = cms.Path(
+        process.egammaPostRecoSeq *
+        process.extraVar *
+        process.EventCounter *
+        process.B2GTTreeMaker
+        )
+
+
+
+    process.myTask = cms.Task()
+    process.myTask.add(*[getattr(process,prod) for prod in process.producers_()])
+    process.myTask.add(*[getattr(process,filt) for filt in process.filters_()])
+    process.muonAnalysisPath.associate(process.myTask)

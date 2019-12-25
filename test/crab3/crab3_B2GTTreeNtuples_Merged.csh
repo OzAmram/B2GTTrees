@@ -118,6 +118,7 @@ if ( `echo $cmd | grep "create" | wc -l` ) then
 	echo "$TXT_FILE doesn't exist"; rm Usage.txt; exit
     endif
     grep -v '^#' $TXT_FILE | grep "/MINIAOD" >! $TASKDIR/input_datasets.txt
+    grep -v '^#' $TXT_FILE | grep "/USER" >> $TASKDIR/input_datasets.txt
     cp $XSEC_FILE $TASKDIR/xsec_datasets.txt
     mkdir -p $TASKDIR/cross_sections
     sed "s;TASKDIR;$TASKDIR;;s;SE_SITE;$SE_SITE;;s;SE_USERDIR;$SE_USERDIR;" crab_template_ttreentuple_merged_Data.py > $TASKDIR/crab_template_ttreentuple_merged_Data.py
@@ -142,18 +143,18 @@ if ( `echo $cmd | grep "create" | wc -l` ) then
 	# 2017 Data
 	if ( `echo $PROCESSED_DS_NAME | grep "Run2017" | wc -l`) then
 	    set DATAPROC="Data_94X"
-	    set JEC_ERA="Fall17_17Nov2017BCDEF_V6_DATA"
+	    set JEC_ERA="Fall17_17Nov2017_V32_94X_DATA"
 	    set RUNS="1-999999"
 	else if ( `echo $PROCESSED_DS_NAME | grep "RunIIFall17" | wc -l` ) then
 	    # FullSim
 	    set DATAPROC="MC"
-	    set JEC_ERA="Fall17_17Nov2017_V6_MC.db"
+	    set JEC_ERA="Fall17_17Nov2017_V32_94X_MC"
 	else
         echo "WARNING - Dataset not defined, Assuming it is MC from 2017: "$DATASET
         #rm -r $TASKDIR Usage.txt
         #exit
 	    set DATAPROC="MC"
-	    set JEC_ERA="Fall17_17Nov2017_V6_MC.db"
+	    set JEC_ERA="Fall17_17Nov2017_V32_94X_MC"
 	endif
 	# Create xsec txt file for each dataset
 	if ( `echo $primary | grep SMS | wc -l` || $isData ) then

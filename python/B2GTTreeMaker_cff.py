@@ -6,7 +6,7 @@ import os
 # Set to false, and define your own lists (eg. comment out unused vairables)
 getVariablesFromConfig = False
 
-from Analysis.B2GAnaFW.b2gedmntuples_cff import puppimetFull, metFull, genPart, electrons, muons, photons, photonjets, jetsAK4CHS, jetsAK4Puppi, jetsAK8CHS, subjetsAK8CHS, jetsAK8Puppi, subjetsAK8Puppi, genJetsAK8, genJetsAK8SoftDrop, eventInfo # metNoHF, subjetsCmsTopTag off since 76X
+from Analysis.B2GAnaFW.b2gedmntuples_cff import puppimetFull, metFull, metCorrFull, genPart, electrons, muons, photons, photonjets, jetsAK4CHS, jetsAK4Puppi, jetsAK8CHS, subjetsAK8CHS, jetsAK8Puppi, subjetsAK8Puppi, genJetsAK8, genJetsAK8SoftDrop, eventInfo # metNoHF, subjetsCmsTopTag off since 76X
 
 if getVariablesFromConfig:
     
@@ -19,6 +19,11 @@ if getVariablesFromConfig:
     for pset in metFull.variables:
         s = str(pset.tag).replace("cms.untracked.string('","").replace("')","")
         metFull_var.append(s)
+
+    metCorrFull = cms.untracked.vstring()
+    for pset in metCorrFull.variables:
+        s = str(pset.tag).replace("cms.untracked.string('","").replace("')","")
+        metCorrFull_var.append(s)
 
     #metFullClean_var = cms.untracked.vstring()
     #for pset in metFullClean.variables:
@@ -106,12 +111,12 @@ else:
         #"Px",
         #"Py",
         "Phi",
-        #"uncorPt",
-        #"uncorPhi",
-        #"uncorSumEt",
+        "uncorPt",
+        "uncorPhi",
+        "uncorSumEt",
     )
     metFull_var          = copy.deepcopy(metNoHF_var)
-    #metFullClean_var     = copy.deepcopy(metNoHF_var)
+    metCorrFull_var     = copy.deepcopy(metNoHF_var)
     puppimetFull_var     = copy.deepcopy(metNoHF_var)
     
     basicVars = cms.untracked.vstring(
