@@ -109,8 +109,7 @@ if ( `echo $cmd | grep "create" | wc -l` ) then
     set XSEC_FILE=$5
     set SE_SITE=$6
     set SE_USERDIR=$7
-    set CERT_DIR="https://cms-service-dqm.web.cern.ch/cms-service-dqm/CAF/certification/Collisions16/13TeV/ReReco/Final"
-    #set LATEST_GOLDEN_JSON=`ls -lrt /afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions16/13TeV/ReReco/Final | awk '{ print $NF }' | grep -vE "MuonPhys|LowPU" | grep "\.txt" | tail -1`
+    set CERT_DIR="https://cms-service-dqm.web.cern.ch/cms-service-dqm/CAF/certification/Collisions18/13TeV/ReReco"
     #set JSON="$LATEST_GOLDEN_JSON"
     mkdir $TASKDIR
     echo "SE_SITE "$SE_SITE >! $TASKDIR/config.txt
@@ -135,30 +134,26 @@ if ( `echo $cmd | grep "create" | wc -l` ) then
 
 
 	if ( `echo $DATASET | grep "SingleMuon" | wc -l`) then
-        set JSON="Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON_MuonPhys.txt"
+        set JSON="Cert_314472-325175_13TeV_17SeptEarlyReReco2018ABC_PromptEraD_Collisions18_JSON_MuonPhys.txt"
     else
-        set JSON="Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt"
+        set JSON="Cert_314472-325175_13TeV_17SeptEarlyReReco2018ABC_PromptEraD_Collisions18_JSON.txt"
     endif
 	#echo $primary
-	# 2016 Data
-	if ( `echo $PROCESSED_DS_NAME | grep "Run2016" | wc -l`) then
-	    set DATAPROC="Data_94x"
-	    set JEC_ERA="Summer16_23Sep2016AllV4_DATA"
+	# 2018 Data
+	if ( `echo $PROCESSED_DS_NAME | grep "Run2018" | wc -l`) then
+	    set DATAPROC="Data_102X"
+	    set JEC_ERA="Autumn18_RunABCD_V8_DATA.db"
 	    set RUNS="1-999999"
-	# Spring16 FastSim MC - Only Signal is needed from here
-	else if ( `echo $PROCESSED_DS_NAME | grep "RunIISpring16MiniAODv2.*PUSpring16Fast" | wc -l` ) then
-	    set DATAPROC="MC_MiniAODv2_80X_FastSim"
-	    set JEC_ERA="Spring16_25nsFastSimMC_V1"
-	else if ( `echo $PROCESSED_DS_NAME | grep "RunIISummer16MiniAODv2" | wc -l` ) then
+	else if ( `echo $PROCESSED_DS_NAME | grep "RunIIAutumn18" | wc -l` ) then
 	    # FullSim
 	    set DATAPROC="MC"
-	    set JEC_ERA="Summer16_23Sep2016V4_MC"
+	    set JEC_ERA="Autumn18_V8_MC.db"
 	else
-        #echo "ERROR - Dataset not defined (probably because not using latest): "$DATASET
+        echo "WARNING - Dataset not defined, Assuming it is MC from 2018: "$DATASET
         #rm -r $TASKDIR Usage.txt
         #exit
 	    set DATAPROC="MC"
-	    set JEC_ERA="Summer16_23Sep2016V4_MC"
+	    set JEC_ERA="Autumn18_V8_MC.db"
 	endif
 	# Create xsec txt file for each dataset
 	if ( `echo $primary | grep SMS | wc -l` || $isData ) then
@@ -267,9 +262,9 @@ else if ( `echo $cmd | grep "status" | wc -l` ) then
         else if ( `echo $Status | grep COMPLETED | wc -l` == 0 ) then
 	    grep "%.*\(.*\)" $status_txt
             if ( $nfail != 0 ) then
-		set extra_arg=""
+		set extra_arg=" --siteblacklist=T2_EE_Estonia"
 		if ( `grep "jobs failed with exit code 50660" $status_txt | wc -l` != 0 ) set extra_arg="$extra_arg --maxmemory=3000"
-		if ( `grep "jobs failed with exit code 50664" $status_txt | wc -l` != 0 ) set extra_arg="$extra_arg --maxjobruntime=1900"
+		if ( `grep "jobs failed with exit code 50664" $status_txt | wc -l` != 0 ) set extra_arg="$extra_arg --maxjobruntime=2100"
 		echo "  -> Resubmitting failed jobs ...\n"
 		eval_or_echo "crab resubmit -d $dir $extra_arg"
 		echo

@@ -678,47 +678,37 @@ void B2GEdmExtraVarProducer::calculate_variables(edm::Event const& iEvent, edm::
         }
 
 
-
-
-    } // End !isData
-
     // ---------------------
     // -        MET        -
     // ---------------------
 
     // Uncertainties
-    //edm::Handle<pat::METCollection> mets_MuCleanOnly;
-    //iEvent.getByLabel(edm::InputTag("slimmedMETs"), mets_MuCleanOnly);
-    //const pat::MET &met_MuCleanOnly = mets_MuCleanOnly->front();
-    //edm::Handle<pat::METCollection> mets;
-    //if (isData_) iEvent.getByLabel(edm::InputTag("slimmedMETsMuEGClean","","b2gEDMNtuples"), mets);
-    //else         iEvent.getByLabel(edm::InputTag("slimmedMETsMuClean",  "","b2gEDMNtuples"), mets);
-    //const pat::MET &met = mets->front();
-    //edm::Handle<pat::METCollection> puppimets;
-    //iEvent.getByLabel(edm::InputTag("slimmedMETsPuppi"), puppimets);
-    //const pat::MET &puppimet = puppimets->front();
-    //
-    //vector_float_["metsyst_MuCleanOnly_Pt"].clear();
-    //vector_float_["metsyst_MuCleanOnly_Phi"].clear();
-    //vector_float_["metsyst_Pt"].clear();
-    //vector_float_["metsyst_Phi"].clear();
-    //vector_float_["puppimetsyst_Pt"].clear();
-    //vector_float_["puppimetsyst_Phi"].clear();
-    //for (int shift=0; shift<pat::MET::METUncertainty::METUncertaintySize; ++shift)
-    //  if (shift != pat::MET::METUncertainty::NoShift) {
-    //    float met_MuCleanOnly_shiftedPt  = met_MuCleanOnly.shiftedPt ((pat::MET::METUncertainty)shift, pat::MET::METCorrectionLevel::Type1);
-    //    float met_MuCleanOnly_shiftedPhi = met_MuCleanOnly.shiftedPhi((pat::MET::METUncertainty)shift, pat::MET::METCorrectionLevel::Type1);
-    //    float met_shiftedPt  = met.shiftedPt ((pat::MET::METUncertainty)shift, pat::MET::METCorrectionLevel::Type1);
-    //    float met_shiftedPhi = met.shiftedPhi((pat::MET::METUncertainty)shift, pat::MET::METCorrectionLevel::Type1);
-    //    float puppimet_shiftedPt  = puppimet.shiftedPt ((pat::MET::METUncertainty)shift, pat::MET::METCorrectionLevel::Type1);
-    //    float puppimet_shiftedPhi = puppimet.shiftedPhi((pat::MET::METUncertainty)shift, pat::MET::METCorrectionLevel::Type1);
-    //    vector_float_["metsyst_MuCleanOnly_Pt"].push_back(met_MuCleanOnly_shiftedPt);
-    //    vector_float_["metsyst_MuCleanOnly_Phi"].push_back(met_MuCleanOnly_shiftedPhi);
-    //    vector_float_["metsyst_Pt"].push_back(met_shiftedPt);
-    //    vector_float_["metsyst_Phi"].push_back(met_shiftedPhi);
-    //    vector_float_["puppimetsyst_Pt"].push_back(puppimet_shiftedPt);
-    //    vector_float_["puppimetsyst_Phi"].push_back(puppimet_shiftedPhi);
-    //  }
+    edm::Handle<pat::METCollection> mets;
+    iEvent.getByLabel(edm::InputTag("slimmedMETs"), mets);
+    const pat::MET &met = mets->front();
+    edm::Handle<pat::METCollection> puppimets;
+    iEvent.getByLabel(edm::InputTag("slimmedMETsPuppi"), puppimets);
+    const pat::MET &puppimet = puppimets->front();
+    
+    vector_float_["metsyst_Pt"].clear();
+    vector_float_["metsyst_Phi"].clear();
+    vector_float_["puppimetsyst_Pt"].clear();
+    vector_float_["puppimetsyst_Phi"].clear();
+    for (int shift=0; shift<pat::MET::METUncertainty::METUncertaintySize; ++shift)
+      if (shift != pat::MET::METUncertainty::NoShift) {
+        float met_shiftedPt  = met.shiftedPt ((pat::MET::METUncertainty)shift, pat::MET::METCorrectionLevel::Type1);
+        float met_shiftedPhi = met.shiftedPhi((pat::MET::METUncertainty)shift, pat::MET::METCorrectionLevel::Type1);
+        float puppimet_shiftedPt  = puppimet.shiftedPt ((pat::MET::METUncertainty)shift, pat::MET::METCorrectionLevel::Type1);
+        float puppimet_shiftedPhi = puppimet.shiftedPhi((pat::MET::METUncertainty)shift, pat::MET::METCorrectionLevel::Type1);
+        vector_float_["metsyst_Pt"].push_back(met_shiftedPt);
+        vector_float_["metsyst_Phi"].push_back(met_shiftedPhi);
+        vector_float_["puppimetsyst_Pt"].push_back(puppimet_shiftedPt);
+        vector_float_["puppimetsyst_Phi"].push_back(puppimet_shiftedPhi);
+      }
+
+
+    } // End !isData
+
 
 
     // ---------------------

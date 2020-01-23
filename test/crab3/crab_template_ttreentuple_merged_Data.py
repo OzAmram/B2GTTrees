@@ -22,8 +22,8 @@ config.JobType.pyCfgParams = ['DataProcessing=DATAPROC', 'wantSummary=False', 'o
 config.JobType.outputFiles = ['B2GTTreeNtupleExtra.root']
 config.JobType.inputFiles = input_files
 #config.JobType.sendExternalFolder = True
-config.JobType.maxMemoryMB = 2500
-config.JobType.maxJobRuntimeMin = 1900
+#config.JobType.maxMemoryMB = 2500
+#config.JobType.maxJobRuntimeMin = 1900
 
 config.section_('Data')
 config.Data.outLFNDirBase = 'SE_USERDIR'
