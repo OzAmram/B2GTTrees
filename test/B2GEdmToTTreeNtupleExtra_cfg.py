@@ -410,6 +410,7 @@ process.extraVar = cms.EDProducer("B2GEdmExtraVarProducer",
         #"evt_MTR_Smear",
         #"evt_XSec",
         "evt_Gen_Weight",
+        "evt_lhe_weight",
         "evt_Gen_Ht",
         #"SUSY_Stop_Mass",
         #"SUSY_Gluino_Mass",
@@ -584,28 +585,41 @@ process.B2GTTreeMaker.isData = isData
 process.EventCounter = cms.EDAnalyzer("EventCounter",
     isData = cms.untracked.bool(isData)
 )
-
-# Paths
-process.muonAnalysisPath = cms.Path(
-    process.egammaPostRecoSeq *
-    process.extraVar *
-    process.EventCounter *
-    process.MuonCountFilter *
-    process.B2GTTreeMaker
-    )
-
-
-process.electronAnalysisPath = cms.Path(
-    process.egammaPostRecoSeq *
-    process.extraVar *
-    process.EventCounter *
-    process.ElectronCountFilter *
-    process.B2GTTreeMaker
-    )
+if(isData):
+    process.muonAnalysisPath = cms.Path(
+        process.egammaPostRecoSeq *
+        process.extraVar *
+        process.EventCounter *
+        process.MuonCountFilter *
+        process.B2GTTreeMaker
+        )
 
 
-process.myTask = cms.Task()
-process.myTask.add(*[getattr(process,prod) for prod in process.producers_()])
-process.myTask.add(*[getattr(process,filt) for filt in process.filters_()])
-process.muonAnalysisPath.associate(process.myTask)
-process.electronAnalysisPath.associate(process.myTask)
+    process.electronAnalysisPath = cms.Path(
+        process.egammaPostRecoSeq *
+        process.extraVar *
+        process.EventCounter *
+        process.ElectronCountFilter *
+        process.B2GTTreeMaker
+        )
+
+
+    process.myTask = cms.Task()
+    process.myTask.add(*[getattr(process,prod) for prod in process.producers_()])
+    process.myTask.add(*[getattr(process,filt) for filt in process.filters_()])
+    process.muonAnalysisPath.associate(process.myTask)
+    process.electronAnalysisPath.associate(process.myTask)
+else:
+    process.muonAnalysisPath = cms.Path(
+        process.egammaPostRecoSeq *
+        process.extraVar *
+        process.EventCounter *
+        process.B2GTTreeMaker
+        )
+
+
+
+    process.myTask = cms.Task()
+    process.myTask.add(*[getattr(process,prod) for prod in process.producers_()])
+    process.myTask.add(*[getattr(process,filt) for filt in process.filters_()])
+    process.muonAnalysisPath.associate(process.myTask)

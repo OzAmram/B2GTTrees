@@ -376,7 +376,8 @@ void B2GEdmExtraVarProducer::calculate_variables(edm::Event const& iEvent, edm::
     // Usage: Multiply this number by the total int luminosity in units of fb^-1
     single_int_["evt_LHA_PDF_ID"] = -9999;                                               /* evt_LHA_PDF_ID */
     single_float_["evt_XSec"] = isData_ ? -9999 : cross_section_;                        /* evt_Xsec */
-    single_float_["evt_Gen_Weight"] = -9999;                                             /* evt_Gen_Weight */
+    single_float_["evt_gen_weight"] = -9999;                                             /* evt_gen_weight */
+    single_float_["evt_lhe_weight"] = -9999;                                             /* evt_gen_weight */
     single_float_["evt_Gen_Ht"] = -9999;                                                 /* evt_Gen_Ht */
 
     // NLO negative weights, see:
@@ -440,6 +441,7 @@ void B2GEdmExtraVarProducer::calculate_variables(edm::Event const& iEvent, edm::
 
             // This weight is used to normalize pdf/scale etc weights
             double lheOrigWeight = lheEvtInfo->originalXWGTUP();
+            single_float_["evt_lhe_weight"] = lheOrigWeight;
 
             // Print factors for an event
             //if (nfilt_!=h_strings_["filter_names"]->size()) for (size_t i=0; i<lheEvtInfo->weights().size(); ++i)

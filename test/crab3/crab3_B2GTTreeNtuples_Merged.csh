@@ -118,6 +118,7 @@ if ( `echo $cmd | grep "create" | wc -l` ) then
 	echo "$TXT_FILE doesn't exist"; rm Usage.txt; exit
     endif
     grep -v '^#' $TXT_FILE | grep "/MINIAOD" >! $TASKDIR/input_datasets.txt
+    grep -v '^#' $TXT_FILE | grep "/USER" >> $TASKDIR/input_datasets.txt
     cp $XSEC_FILE $TASKDIR/xsec_datasets.txt
     mkdir -p $TASKDIR/cross_sections
     sed "s;TASKDIR;$TASKDIR;;s;SE_SITE;$SE_SITE;;s;SE_USERDIR;$SE_USERDIR;" crab_template_ttreentuple_merged_Data.py > $TASKDIR/crab_template_ttreentuple_merged_Data.py
