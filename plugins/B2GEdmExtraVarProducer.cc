@@ -378,6 +378,7 @@ void B2GEdmExtraVarProducer::calculate_variables(edm::Event const& iEvent, edm::
     single_int_["evt_LHA_PDF_ID"] = -9999;                                               /* evt_LHA_PDF_ID */
     single_float_["evt_XSec"] = isData_ ? -9999 : cross_section_;                        /* evt_Xsec */
     single_float_["evt_Gen_Weight"] = -9999;                                             /* evt_Gen_Weight */
+    single_float_["evt_lhe_Weight"] = -9999;                                             /* evt_Gen_Weight */
     single_float_["evt_Gen_Ht"] = -9999;                                                 /* evt_Gen_Ht */
 
     // NLO negative weights, see:
@@ -396,6 +397,7 @@ void B2GEdmExtraVarProducer::calculate_variables(edm::Event const& iEvent, edm::
     // https://indico.cern.ch/event/459797/contributions/1961581/attachments/1181555/1800214/mcaod-Feb15-2016.pdf
     vector_float_["scale_Weights"].clear();
     vector_float_["pdf_Weights"].clear();
+    vector_float_["pdfext_Weights"].clear();
     vector_float_["alphas_Weights"].clear();
     if (!isData_) {
         edm::Handle<GenEventInfoProduct> genEvtInfo;
@@ -441,6 +443,7 @@ void B2GEdmExtraVarProducer::calculate_variables(edm::Event const& iEvent, edm::
 
             // This weight is used to normalize pdf/scale etc weights
             double lheOrigWeight = lheEvtInfo->originalXWGTUP();
+            single_float_["evt_lhe_Weight"] = lheOrigWeight;
 
             // Print factors for an event
             //if (nfilt_!=h_strings_["filter_names"]->size()) for (size_t i=0; i<lheEvtInfo->weights().size(); ++i)
@@ -464,6 +467,7 @@ void B2GEdmExtraVarProducer::calculate_variables(edm::Event const& iEvent, edm::
             // index of first weight varies, beware!
             // Sometimes first weight is default=1 weight (has to skip!)
             // Additional info: MC2Hessian conversion will soon be provided
+            /*
             size_t first = 9;
             // Madgraph nf5 - have to skip 1 weight which is default
             if (lha_pdf_id_ == 263000) first = 10;
@@ -472,12 +476,27 @@ void B2GEdmExtraVarProducer::calculate_variables(edm::Event const& iEvent, edm::
             if (lha_pdf_id_ == 263400) first = 111;
             // FastSim indices are larger by 1
             if (isFastSim_) ++first;
+            */
+
+            
+            //for 2017/8 DY MC, nnpdf 3.0 reweights start at index 1973 (default
+            //weight followed by 100 variations)
+            //id is 1973, subtact 1000 b/c of naming and 1 because id starts at 1 not 0
+            size_t nnpdf_30_idx = 972;
+
+            //printf("LHE weights size %i \n", (int) lheEvtInfo->weights().size());
+            //std::cout << "NNpdf 3.0 id is " << lheEvtInfo->weights()[nnpdf_30_idx].id << std::endl;
+
+            float nnpdf30_orig_weight = lheEvtInfo->weights()[nnpdf_30_idx].wgt;
+            single_float_["pdf_nnpdf30_weight"] =  nnpdf30_orig_weight /lheOrigWeight;
 
             //fill vector of set replica weights
             const int nRepWeights = 100;
             const int nEigWeights = 60;
 
             std::vector<double> inpdfweights(nRepWeights);
+
+            size_t first = nnpdf_30_idx +1; // start of 100 replicas
             if (lheEvtInfo->weights().size()>=first+100) for (size_t i=0; i<100; ++i){
                 int idx = i+first;
                 inpdfweights[i] = lheEvtInfo->weights()[idx].wgt;
@@ -486,13 +505,23 @@ void B2GEdmExtraVarProducer::calculate_variables(edm::Event const& iEvent, edm::
             std::vector<double> outpdfweights(nEigWeights);
             // do the actual conversion, where the nominal lhe weight is
             //needed as the reference point for the linearization
-            pdfweightshelper_.DoMC2Hessian(lheOrigWeight,inpdfweights.data(),outpdfweights.data());
+            pdfweightshelper_.DoMC2Hessian(nnpdf30_orig_weight,inpdfweights.data(),outpdfweights.data());
             for (unsigned int iwgt=0; iwgt<nEigWeights; ++iwgt) {
                 double wgtval = outpdfweights[iwgt];
 
                 //the is the weight to be used for evaluating uncertainties with hessian weights
-                vector_float_["pdf_Weights"].push_back(wgtval/lheOrigWeight);
+                vector_float_["pdf_Weights"].push_back(wgtval/nnpdf30_orig_weight);
             }    
+
+            first = 10;
+            for (size_t i=0; i<100; ++i){
+                int idx = i+first;
+                double val = lheEvtInfo->weights()[idx].wgt;
+
+                //the is the weight to be used for evaluating uncertainties with hessian weights
+                vector_float_["pdfext_Weights"].push_back(val/lheOrigWeight);
+            }    
+
 
             // Alpha_s weights (only for NLO!)
             // A set of two weights for 

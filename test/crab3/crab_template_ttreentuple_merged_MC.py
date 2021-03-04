@@ -21,6 +21,7 @@ config.JobType.disableAutomaticOutputCollection = True
 config.JobType.pyCfgParams = ['DataProcessing=DATAPROC', 'wantSummary=False', 'outputLabel=B2GTTreeNtupleExtra.root']
 config.JobType.outputFiles = ['B2GTTreeNtupleExtra.root']
 config.JobType.inputFiles = input_files
+config.JobType.allowUndistributedCMSSW = True
 #config.JobType.sendExternalFolder = True
 #config.JobType.maxMemoryMB = 2500
 #config.JobType.maxJobRuntimeMin = 1900
